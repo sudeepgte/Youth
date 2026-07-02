@@ -14,6 +14,8 @@ public interface UserActivityRepository extends JpaRepository<UserActivity, Long
 
     List<UserActivity> findByUserIdAndPostId(Long userId, Long postId);
 
+    List<UserActivity> findByPostIdAndActivityType(Long postId, ActivityType activityType);
+
     List<UserActivity> findByUserId(Long userId);
 
     /** All activities for any post — used to compute relationship score */

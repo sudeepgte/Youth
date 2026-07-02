@@ -31,6 +31,10 @@ public class EventRegistration {
     private String registrationStatus = "REGISTERED"; // REGISTERED, CANCELLED
 
     private String paymentStatus = "FREE"; // FREE, PAID, PENDING
+    
+    private Integer quantity = 1;
+    
+    private Double totalPrice = 0.0;
 
     // User-provided registration info
     private String fullName;
@@ -81,6 +85,12 @@ public class EventRegistration {
 
     public String getPaymentStatus() { return paymentStatus; }
     public void setPaymentStatus(String paymentStatus) { this.paymentStatus = paymentStatus; }
+    
+    public Integer getQuantity() { return quantity; }
+    public void setQuantity(Integer quantity) { this.quantity = quantity; }
+    
+    public Double getTotalPrice() { return totalPrice; }
+    public void setTotalPrice(Double totalPrice) { this.totalPrice = totalPrice; }
 
     public String getFullName() { return fullName; }
     public void setFullName(String fullName) { this.fullName = fullName; }

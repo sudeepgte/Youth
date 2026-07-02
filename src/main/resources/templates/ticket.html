@@ -530,13 +530,35 @@
                 </div>
                 <div class="ticket-field">
                     <label>Amount Paid</label>
-                    <div class="val" th:text="${event.price != null ? event.price : 'Free'}">Free</div>
+                    <div class="val" th:text="${registration.totalPrice != null and registration.totalPrice > 0 ? '₹' + #numbers.formatDecimal(registration.totalPrice, 1, 0) : (event.price == null or event.price == 'Free' or event.price == '0' ? 'Free' : '₹0')}">Free</div>
                 </div>
-                <div th:if="${not #lists.isEmpty(bookedSeats)}" class="ticket-field"
-                    style="grid-column: span 3; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05);">
-                    <label>Selected Seats</label>
-                    <div class="val" style="font-size: 1.2rem; color: #fbbf24;"
-                        th:text="${#strings.listJoin(bookedSeats.![seatIdentifier], ', ')}">A1, A2</div>
+                <div th:if="${not #lists.isEmpty(bookedSeats)}" style="grid-column: span 3; margin-top: 15px;">
+                    <label style="color: rgba(255,255,255,0.5); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; display: block;">Selected Tickets</label>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <div th:each="type : ${#sets.toSet(bookedSeats.![seatType])}" 
+                             style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px;">
+                            
+                            <div style="margin-bottom: 10px;">
+                                <span th:if="${type == 'VIP'}" style="background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #000; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; letter-spacing: 1px;"><i class="fas fa-star"></i> VIP</span>
+                                <span th:if="${type == 'PREMIUM'}" style="background: linear-gradient(135deg, #a855f7, #9333ea); color: #fff; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; letter-spacing: 1px;"><i class="fas fa-gem"></i> PREMIUM</span>
+                                <span th:if="${type == 'REGULAR'}" style="background: linear-gradient(135deg, #3b82f6, #2563eb); color: #fff; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; letter-spacing: 1px;"><i class="fas fa-ticket-alt"></i> REGULAR</span>
+                                <span th:if="${type == 'STUDENT'}" style="background: linear-gradient(135deg, #06b6d4, #0891b2); color: #fff; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; letter-spacing: 1px;"><i class="fas fa-graduation-cap"></i> STUDENT</span>
+                                <span th:if="${type != 'VIP' and type != 'PREMIUM' and type != 'REGULAR' and type != 'STUDENT'}" style="background: linear-gradient(135deg, #10b981, #059669); color: #fff; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; letter-spacing: 1px;"><i class="fas fa-tag"></i> <span th:text="${type}">CATEGORY</span></span>
+                            </div>
+                            
+                            <div style="color: rgba(255,255,255,0.6); font-size: 0.75rem; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">Seats:</div>
+                            
+                            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                                <th:block th:each="seat : ${bookedSeats}">
+                                    <span th:if="${seat.seatType == type}" 
+                                          th:text="${seat.seatIdentifier}" 
+                                          style="background: rgba(255,255,255,0.1); padding: 5px 10px; border-radius: 6px; font-size: 1.1rem; color: #fff; font-weight: 700; border: 1px solid rgba(255,255,255,0.15);">
+                                    </span>
+                                </th:block>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 

@@ -77,6 +77,9 @@ public class ProfileController {
     @Autowired
     private com.example.demo.repository.EventRegistrationRepository eventRegistrationRepository;
 
+    @Autowired
+    private com.example.demo.repository.UserActivityRepository userActivityRepository;
+
     @Transactional(readOnly = true)
     @GetMapping("/{username}")
     public String showPublicProfile(@PathVariable String username, HttpSession session, Model model) {
@@ -156,6 +159,15 @@ public class ProfileController {
                     .map(User::getId)
                     .collect(java.util.stream.Collectors.toSet());
             model.addAttribute("followingUserIds", followingUserIds);
+
+            // Fetch saved posts
+            List<UserActivity> activities = userActivityRepository.findByUserId(currentUser.getId());
+            List<Post> savedPosts = activities.stream()
+                    .filter(a -> a.getActivityType() == ActivityType.SAVE)
+                    .map(UserActivity::getPost)
+                    .distinct()
+                    .collect(java.util.stream.Collectors.toList());
+            model.addAttribute("savedPosts", savedPosts);
         }
 
         return "profile";
