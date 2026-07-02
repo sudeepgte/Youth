@@ -96,7 +96,7 @@
                 });
                 const data = await res.json();
                 if (data.error) throw data.error;
-                pNum = data.playerNum;
+                pNum = parseInt(data.playerNum);
                 connect();
             } catch (e) { document.getElementById('status').innerText = e; }
         }

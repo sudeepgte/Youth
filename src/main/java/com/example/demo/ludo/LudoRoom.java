@@ -101,4 +101,9 @@ public class LudoRoom {
             currentPlayerIndex = (currentPlayerIndex + 1) % 4;
         } while (players.get(currentPlayerIndex).name.isEmpty() && currentPlayerIndex != original);
     }
+
+    public void skipTurn() {
+        diceRolled = false;
+        nextTurn();
+    }
 }
