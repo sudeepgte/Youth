@@ -8,7 +8,10 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.multipart.MultipartFile;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -23,6 +26,15 @@ import java.util.stream.Collectors;
 public class ChatRestController {
 
     private User getUserFromSession(HttpSession session) {
+        ServletRequestAttributes attrs = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if (attrs != null) {
+            HttpServletRequest request = attrs.getRequest();
+            Object authUser = request.getAttribute("authenticatedUser");
+            if (authUser instanceof User) {
+                return (User) authUser;
+            }
+        }
+
         Object sessionUser = session.getAttribute("user");
         if (sessionUser instanceof User) {
             return (User) sessionUser;

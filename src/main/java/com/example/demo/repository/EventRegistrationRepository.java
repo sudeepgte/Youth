@@ -10,7 +10,7 @@ import java.util.Optional;
 
 @Repository
 public interface EventRegistrationRepository extends JpaRepository<EventRegistration, Long> {
-    Optional<EventRegistration> findByEventAndUser(Event event, User user);
+    List<EventRegistration> findByEventAndUser(Event event, User user);
     Optional<EventRegistration> findByTicketId(String ticketId);
     List<EventRegistration> findByUser(User user);
     List<EventRegistration> findByEvent(Event event);

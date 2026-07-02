@@ -40,6 +40,7 @@ public class ChatViewController {
 
     @GetMapping("/messages")
     public String messagesPage(HttpSession session, Model model) {
+        // Triggering auto-restart to fix expired session bug!
         User user = getUserFromSession(session);
         if (user == null) {
             return "redirect:/login";

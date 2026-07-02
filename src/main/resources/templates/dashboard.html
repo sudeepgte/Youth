@@ -486,9 +486,16 @@
                         <h4 th:text="${poll.title}"
                             style="font-size: 13px; font-weight: 700; margin-bottom: 5px; color: #111;">
                             Event</h4>
-                        <form th:action="@{'/events/' + ${poll.id} + '/poll-vote'}" method="POST">
-                            <button type="submit" class="btn-dashboard-vote">Vote Now</button>
-                        </form>
+                        <th:block th:if="${votedPollIds != null and votedPollIds.contains(poll.id)}">
+                            <button type="button" class="btn-dashboard-vote" disabled style="cursor: not-allowed; background: #10b981; color: #fff; border: none;">
+                                <i class="fas fa-check"></i> Voted
+                            </button>
+                        </th:block>
+                        <th:block th:unless="${votedPollIds != null and votedPollIds.contains(poll.id)}">
+                            <form th:action="@{'/events/' + ${poll.id} + '/poll-vote'}" method="POST">
+                                <button type="submit" class="btn-dashboard-vote">Vote Now</button>
+                            </form>
+                        </th:block>
                     </div>
                 </div>
             </div>
