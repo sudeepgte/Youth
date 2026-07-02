@@ -327,7 +327,10 @@ public class ChatService {
         if (!message.getSender().getId().equals(sender.getId())) {
             throw new RuntimeException("Unauthorized to delete this message");
         }
-        chatMessageRepository.delete(message);
+        
+        message.setContent("Message unsent");
+        message.setMediaUrl(null);
+        chatMessageRepository.save(message);
     }
 
     @Transactional

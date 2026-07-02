@@ -686,6 +686,22 @@
                                 <span class="cat-name">Cultural</span>
                             </div>
                         </label>
+                        <label class="cat-btn">
+                            <input type="radio" name="category" value="Music"
+                                th:checked="${event.category == 'Music'}">
+                            <div class="cat-label">
+                                <span class="cat-icon">🎵</span>
+                                <span class="cat-name">Music</span>
+                            </div>
+                        </label>
+                        <label class="cat-btn">
+                            <input type="radio" name="category" value="Art"
+                                th:checked="${event.category == 'Art'}">
+                            <div class="cat-label">
+                                <span class="cat-icon">🎨</span>
+                                <span class="cat-name">Art</span>
+                            </div>
+                        </label>
                     </div>
                 </div>
 

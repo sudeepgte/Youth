@@ -1,5 +1,5 @@
 package com.example.demo.model;
 
 public enum MessageStatus {
-    SENT, DELIVERED, SEEN
+    SENT, DELIVERED, SEEN, DELETED
 }

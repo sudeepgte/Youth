@@ -475,12 +475,23 @@
             </div>
 
             <div class="order-line">
-                <span class="lbl">Category</span>
-                <span class="val" th:text="${event.category}">Tech</span>
+                <span class="lbl">Event</span>
+                <span class="val" th:text="${event.title}">Event Title</span>
             </div>
+            
+            <div class="order-line" th:if="${session.regTier != null and !session.regTier.isBlank()}">
+                <span class="lbl">Category</span>
+                <span class="val" th:text="${session.regTier}">General</span>
+            </div>
+
             <div class="order-line">
-                <span class="lbl">Registration Fee</span>
-                <span class="val" th:text="${event.price}">₹500</span>
+                <span class="lbl">Quantity</span>
+                <span class="val" th:text="${quantity != null ? quantity : 1}">1</span>
+            </div>
+
+            <div class="order-line">
+                <span class="lbl">Base Price (Per Ticket)</span>
+                <span class="val" th:text="${event.price != null ? #strings.replace(event.price, '$', '₹') : '₹0'}">₹1500</span>
             </div>
             <div class="order-line" th:if="${isDiscounted}">
                 <span class="lbl">Coin Reward Discount (50%)</span>
@@ -497,7 +508,7 @@
 
             <div class="total-line">
                 <div class="total-lbl">Total</div>
-                <div class="total-val" th:text="${finalPrice != null ? finalPrice : event.price}">₹500</div>
+                <div class="total-val" th:text="${finalPrice != null ? finalPrice : event.price}">₹1500</div>
             </div>
         </div>
 
@@ -561,7 +572,7 @@
 
                     <button type="submit" class="btn-pay">
                         <i class="fas fa-lock"></i>
-                        Pay <span th:text="${event.price}">₹500</span> Securely
+                        Pay <span th:text="${finalPrice != null ? finalPrice : (event.price != null ? #strings.replace(event.price, '$', '₹') : '₹0')}">₹1500</span> Securely
                     </button>
                 </form>
             </div>

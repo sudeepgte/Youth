@@ -195,6 +195,164 @@
             color: rgba(59, 130, 246, 0.95);
             text-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
         }
+
+        /* Instagram-style Reels Scroll Snapping */
+        body:has(.reels-container) .dashboard-container {
+            grid-template-columns: 250px 1fr;
+            max-width: 900px;
+        }
+        
+        .reels-container {
+            height: calc(100vh - var(--dashboard-nav-height) - 40px);
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+            scrollbar-width: none; /* Firefox */
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            padding-bottom: 50px;
+        }
+        .reels-container::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera */
+        }
+        .reel-card {
+            scroll-snap-align: start;
+            scroll-snap-stop: always;
+            min-height: calc(100vh - var(--dashboard-nav-height) - 50px);
+            max-height: calc(100vh - var(--dashboard-nav-height) - 50px);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            background: #000 !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 16px;
+            overflow: hidden;
+            position: relative;
+            width: 100%;
+            max-width: 420px;
+            margin: 0 auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+        .reel-card .post-header {
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%);
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 10;
+            padding: 15px;
+        }
+        .reel-card .post-header h4, 
+        .reel-card .post-header span {
+            color: #fff !important;
+        }
+        .reel-card .post-media-wrap {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #000;
+            height: 100%;
+        }
+        .reel-card .post-media-wrap video {
+            width: 100%;
+            height: 100%;
+            max-height: 100%;
+            object-fit: cover;
+            border-radius: 0;
+        }
+        .reel-card .post-actions {
+            position: absolute !important;
+            right: 12px !important;
+            bottom: 90px !important;
+            left: auto !important;
+            z-index: 25 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            gap: 16px !important;
+            background: none !important;
+            padding: 0 !important;
+            border: none !important;
+        }
+        .reel-card .post-actions .action-btn {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            justify-content: center !important;
+            color: #fff !important;
+            background: rgba(0, 0, 0, 0.5) !important;
+            border: none !important;
+            border-radius: 50% !important;
+            width: 48px !important;
+            height: 48px !important;
+            cursor: pointer !important;
+            transition: all 0.2s !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important;
+        }
+        .reel-card .post-actions .action-btn i {
+            font-size: 18px !important;
+        }
+        .reel-card .post-actions .action-btn span {
+            font-size: 11px !important;
+            margin-left: 0 !important;
+            margin-top: 3px !important;
+            font-weight: 700 !important;
+            color: #fff !important;
+        }
+        .reel-card .post-content {
+            position: absolute;
+            bottom: 20px;
+            left: 15px;
+            right: 80px;
+            z-index: 10;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.85);
+            pointer-events: none;
+        }
+        .reel-card .post-content p {
+            color: #fff !important;
+            font-size: 14px;
+            margin-bottom: 3px;
+        }
+
+        /* Slide-up Comments Panel overlay for Reels */
+        .reel-card div[id^="comments-panel-"] {
+            position: absolute !important;
+            bottom: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            background: rgba(10, 10, 20, 0.98) !important;
+            backdrop-filter: blur(20px) !important;
+            border-top: 1px solid rgba(255, 255, 255, 0.15) !important;
+            border-top-left-radius: 16px !important;
+            border-top-right-radius: 16px !important;
+            z-index: 30 !important;
+            padding: 18px !important;
+            margin-top: 0 !important;
+            height: 320px !important;
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.6) !important;
+        }
+        .reel-card div[id^="comments-panel-"][style*="display: block"] {
+            display: flex !important;
+            flex-direction: column !important;
+        }
+        .reel-card div[id^="comments-list-"] {
+            flex: 1 !important;
+            max-height: none !important;
+            overflow-y: auto !important;
+            margin-bottom: 12px !important;
+        }
+        .reel-card .comments-panel-header {
+            display: flex !important;
+        }
+        .reel-card div[id^="comments-panel-"] input {
+            background: rgba(255,255,255,0.08) !important;
+            border: 1px solid rgba(255,255,255,0.15) !important;
+            color: #fff !important;
+        }
+        .reel-card div[id^="comments-panel-"] input::placeholder {
+            color: #bbb !important;
+        }
     </style>
     <script th:src="@{/js/tab-support.js}"></script>
     <script th:src="@{/js/game-rewards.js}"></script>
@@ -283,7 +441,7 @@
             </div>
 
             <!-- Stories / Highlights -->
-            <div style="display: flex; gap: 15px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 10px;">
+            <div th:if="${isReelsPage == null or !isReelsPage}" style="display: flex; gap: 15px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 10px;">
                 <!-- Current User Story or Add Story -->
                 <div style="text-align: center; min-width: 70px; cursor: pointer;"
                     th:attr="onclick=${hasStory} ? 'openStoryViewer(' + ${session.user.id} + ')' : 'openM(\'createPostModal\')'">
@@ -311,7 +469,7 @@
             </div>
 
             <!-- 🗳️ Voting Polls -->
-            <div th:if="${not #lists.isEmpty(votingPolls)}" class="dashboard-vote-section">
+            <div th:if="${(isReelsPage == null or !isReelsPage) and not #lists.isEmpty(votingPolls)}" class="dashboard-vote-section">
                 <div style="margin-bottom: 15px;">
                     <h3 style="font-size: 14px; font-weight: 800; color: #111;">Vote for Next Event! 🗳️
                     </h3>
@@ -328,15 +486,22 @@
                         <h4 th:text="${poll.title}"
                             style="font-size: 13px; font-weight: 700; margin-bottom: 5px; color: #111;">
                             Event</h4>
-                        <form th:action="@{'/events/' + ${poll.id} + '/poll-vote'}" method="POST">
-                            <button type="submit" class="btn-dashboard-vote">Vote Now</button>
-                        </form>
+                        <th:block th:if="${votedPollIds != null and votedPollIds.contains(poll.id)}">
+                            <button type="button" class="btn-dashboard-vote" disabled style="cursor: not-allowed; background: #10b981; color: #fff; border: none;">
+                                <i class="fas fa-check"></i> Voted
+                            </button>
+                        </th:block>
+                        <th:block th:unless="${votedPollIds != null and votedPollIds.contains(poll.id)}">
+                            <form th:action="@{'/events/' + ${poll.id} + '/poll-vote'}" method="POST">
+                                <button type="submit" class="btn-dashboard-vote">Vote Now</button>
+                            </form>
+                        </th:block>
                     </div>
                 </div>
             </div>
 
             <!-- 💬 Share Your Thought Banner -->
-            <div style="background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%); border: 1.5px solid rgba(59,130,246,0.20); border-radius: 20px; padding: 18px 22px; margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
+            <div th:if="${isReelsPage == null or !isReelsPage}" style="background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%); border: 1.5px solid rgba(59,130,246,0.20); border-radius: 20px; padding: 18px 22px; margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
                 <div style="display: flex; align-items: center; gap: 14px;">
                     <div style="width: 44px; height: 44px; background: linear-gradient(135deg, #3B82F6, #22D3EE); border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                         <i class="fas fa-quote-left" style="color: #fff; font-size: 18px;"></i>
@@ -352,7 +517,7 @@
             </div>
 
             <!-- Feed toolbar (Filter) -->
-            <div class="feed-toolbar">
+            <div th:if="${isReelsPage == null or !isReelsPage}" class="feed-toolbar">
                 <div class="feed-filter">
                     <button class="filter-btn" type="button" onclick="toggleFeedFilterMenu()">
                         <i class="fas fa-filter"></i>
@@ -411,7 +576,8 @@
             </div>
 
             <!-- Posts -->
-            <div th:each="post : ${posts}" class="post-card" th:attr="data-post-id=${post.id}">
+            <div th:class="${isReelsPage} ? 'reels-container' : 'posts-feed'">
+                <div th:each="post : ${posts}" th:class="${isReelsPage} ? 'post-card reel-card' : 'post-card'" th:attr="data-post-id=${post.id}">
                 <div class="post-header">
                     <!-- Clickable avatar opens profile/story popup -->
                     <img th:src="${post.user != null and post.user.profilePhotoUrl != null and !post.user.profilePhotoUrl.isEmpty()} ? ${post.user.profilePhotoUrl} : 'https://ui-avatars.com/api/?name=' + ${post.user != null ? post.user.username : 'U'} + '&background=F84464&color=fff&size=80'"
@@ -491,6 +657,11 @@
                 <!-- Comment Panel (hidden by default) -->
                 <div th:id="'comments-panel-' + ${post.id}"
                     style="display:none; margin-top:10px; border-top:1px solid var(--glass-border); padding-top:10px;">
+                    <!-- Close header for reels -->
+                    <div class="comments-panel-header" style="display:none; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.12); padding-bottom:8px;">
+                        <span style="font-weight:700; font-size:14px; color:#fff;">Comments</span>
+                        <span style="cursor:pointer; font-size:18px; color:#aaa; font-weight:bold; line-height:1;" th:attr="onclick='toggleComments(' + ${post.id} + ')'">&times;</span>
+                    </div>
                     <div th:id="'comments-list-' + ${post.id}"
                         style="max-height:200px; overflow-y:auto; margin-bottom:10px;">
                         <div th:each="c : ${post.comments}"
@@ -507,11 +678,49 @@
                             style="font-size:13px; color:var(--text-secondary); text-align:center; padding:10px;">No
                             comments yet.</div>
                     </div>
-                    <div style="display:flex; gap:8px;">
-                        <input type="text" th:id="'comment-input-' + ${post.id}" placeholder="Write a comment..."
-                            style="flex:1; padding:8px 12px; border-radius:20px; background:var(--card-bg); border:1px solid var(--glass-border); color:var(--text-primary); font-size:13px; outline:none;">
+                    <!-- Emoji Selection Bar -->
+                    <div class="emoji-bar" style="display:flex; gap:12px; margin-bottom:8px; overflow-x:auto; padding:4px 2px; scrollbar-width:none; -ms-overflow-style:none;">
+                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'❤️\')'">❤️</span>
+                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'😂\')'">😂</span>
+                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'🔥\')'">🔥</span>
+                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'😍\')'">😍</span>
+                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'👏\')'">👏</span>
+                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'🙌\')'">🙌</span>
+                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'😢\')'">😢</span>
+                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'😮\')'">😮</span>
+                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'🎉\')'">🎉</span>
+                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'💯\')'">💯</span>
+                    </div>
+                    <style>
+                        .emoji-bar::-webkit-scrollbar { display:none; }
+                    </style>
+                    <div style="display:flex; gap:8px; align-items:center; position:relative;">
+                        <div style="position:relative; flex:1; display:flex; align-items:center;">
+                            <input type="text" th:id="'comment-input-' + ${post.id}" placeholder="Write a comment..."
+                                style="flex:1; padding:8px 36px 8px 12px; border-radius:20px; background:var(--card-bg); border:1px solid var(--glass-border); color:var(--text-primary); font-size:13px; outline:none;">
+                            <button type="button" th:attr="onclick='toggleEmojiPicker(' + ${post.id} + ')'" 
+                                    style="position:absolute; right:12px; background:none; border:none; font-size:16px; cursor:pointer; color:#aaa; outline:none; user-select:none;">😀</button>
+                        </div>
                         <button th:onclick="'postComment(' + ${post.id} + ')'"
-                            style="background:var(--accent); color:white; border:none; border-radius:20px; padding:8px 16px; font-size:13px; cursor:pointer; font-weight:600;">Post</button>
+                            style="background:var(--accent); color:white; border:none; border-radius:20px; padding:8px 16px; font-size:13px; cursor:pointer; font-weight:600; flex-shrink:0;">Post</button>
+                        
+                        <!-- Dynamic Emoji Picker Popup -->
+                        <div th:id="'emoji-picker-' + ${post.id}" class="emoji-picker-popup" 
+                             style="display:none; position:absolute; bottom:42px; right:10px; background:#101018; border:1px solid rgba(255,255,255,0.15); border-radius:12px; padding:10px; width:260px; z-index:100; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+                             <!-- Categories / Tabs -->
+                             <div style="display:flex; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:6px; margin-bottom:8px; font-size:14px; color:#aaa; font-weight:700; user-select:none;">
+                                 <span style="cursor:pointer; color:#fff;" onclick="switchEmojiCategory(this, 'smileys')">😀</span>
+                                 <span style="cursor:pointer;" onclick="switchEmojiCategory(this, 'gestures')">👍</span>
+                                 <span style="cursor:pointer;" onclick="switchEmojiCategory(this, 'hearts')">❤️</span>
+                                 <span style="cursor:pointer;" onclick="switchEmojiCategory(this, 'animals')">🐱</span>
+                                 <span style="cursor:pointer;" onclick="switchEmojiCategory(this, 'food')">🍕</span>
+                                 <span style="cursor:pointer;" onclick="switchEmojiCategory(this, 'activities')">⚽</span>
+                             </div>
+                             <!-- Emoji Content Area -->
+                             <div class="emoji-picker-content" style="height:140px; overflow-y:auto; display:grid; grid-template-columns:repeat(7, 1fr); gap:6px; font-size:18px; text-align:center;">
+                                 <!-- Loaded dynamically via JS -->
+                             </div>
+                        </div>
                     </div>
                 </div>
                 <div class="post-content">
@@ -522,13 +731,11 @@
                         style="color: var(--accent);">#hashtags</div>
                 </div>
             </div>
-
-
-
+            </div> <!-- Close reels-container / posts-feed -->
         </main>
 
         <!-- Right Sidebar -->
-        <aside class="widgets">
+        <aside class="widgets" th:if="${isReelsPage == null or !isReelsPage}">
             <!-- Ongoing Music Battles -->
             <div class="widget-card" th:if="${ongoingMusicBattles != null and !ongoingMusicBattles.isEmpty()}">
                 <div class="widget-header">
@@ -607,7 +814,6 @@
                     No new suggestions.
                 </div>
             </div>
-    </div>
     </aside>
 
     </div>
@@ -681,18 +887,23 @@
     <div class="overlay" id="overlay" onclick="closeAllModals()"></div>
 
     <script>
+        function openCreateModal() { openM('createPostModal'); }
+        function closeCreateModal() { closeM('createPostModal'); }
+
         function openM(id) {
             const el = document.getElementById(id);
             if (el) {
                 el.classList.add('open');
-                el.style.display = 'block'; 
+                el.style.display = 'flex'; 
                 const modal = el.querySelector('.modal');
                 if (modal) modal.style.display = 'block';
             }
-            const overlay = document.getElementById('overlay');
-            if (overlay) {
-                overlay.classList.add('open');
-                overlay.style.display = 'block';
+            if (el && !el.classList.contains('overlay')) {
+                const overlay = document.getElementById('overlay');
+                if (overlay) {
+                    overlay.classList.add('open');
+                    overlay.style.display = 'flex';
+                }
             }
         }
         function closeM(id) {
@@ -724,25 +935,39 @@
         }
     </script>
     <!-- Share Modal -->
-    <div class="modal" id="shareModal" style="display:none; z-index:2100;">
-        <div class="modal-header">
-            <h3>Share to Chat</h3>
-            <i class="fas fa-times close-modal" onclick="closeShareModal()"></i>
-        </div>
-        <div style="padding: 15px;">
-            <div style="margin-bottom: 12px;">
-                <input type="text" id="shareSearchInput" placeholder="Search users to share with..." onkeyup="filterShareList()"
-                    style="width:100%; padding:10px 14px; border-radius:12px; background:var(--card-bg); border:1px solid var(--glass-border); color:white; outline:none; font-size:14px;">
+    <div class="overlay" id="shareModal" onclick="if(event.target===this)closeShareModal()"
+        style="display:none; position:fixed; inset:0; z-index:9000; background:rgba(0,0,0,0.7); align-items:center; justify-content:center; backdrop-filter:blur(4px);">
+        <div style="background:var(--card-bg,#1e1e2e); border:1px solid var(--glass-border,rgba(255,255,255,0.1)); border-radius:20px; width:100%; max-width:420px; max-height:80vh; display:flex; flex-direction:column; box-shadow:0 25px 60px rgba(0,0,0,0.6); overflow:hidden;">
+            <!-- Header -->
+            <div style="padding:18px 20px; border-bottom:1px solid var(--glass-border,rgba(255,255,255,0.1)); display:flex; justify-content:space-between; align-items:center;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#f84464,#ff6b9d);display:flex;align-items:center;justify-content:center;">
+                        <i class="fas fa-paper-plane" style="color:#fff;font-size:15px;"></i>
+                    </div>
+                    <h3 style="font-size:16px; font-weight:700; color:var(--text-primary,#fff); margin:0;">Share to Chat</h3>
+                </div>
+                <button onclick="closeShareModal()" style="background:rgba(255,255,255,0.08); border:none; color:var(--text-secondary,#aaa); width:32px; height:32px; border-radius:50%; cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center; transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
-            <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 10px;">Select to share this post:
-            </p>
-            <div id="shareConvList" style="max-height: 350px; overflow-y: auto;">
+            <!-- Search -->
+            <div style="padding:14px 20px 0;">
+                <div style="position:relative;">
+                    <i class="fas fa-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-secondary,#aaa);font-size:13px;"></i>
+                    <input type="text" id="shareSearchInput" placeholder="Search users to share with..." onkeyup="filterShareList()"
+                        style="width:100%; padding:10px 14px 10px 36px; border-radius:12px; background:rgba(255,255,255,0.07); border:1px solid var(--glass-border,rgba(255,255,255,0.1)); color:var(--text-primary,#fff); outline:none; font-size:13px; box-sizing:border-box; transition:border 0.2s;"
+                        onfocus="this.style.borderColor='rgba(248,68,100,0.5)'" onblur="this.style.borderColor='var(--glass-border,rgba(255,255,255,0.1))'">
+                </div>
+                <p style="font-size:12px; color:var(--text-secondary,#aaa); margin:10px 0 6px;">Select someone to share this post with:</p>
+            </div>
+            <!-- User list -->
+            <div id="shareConvList" style="flex:1; overflow-y:auto; padding:0 20px 20px; max-height:380px;">
                 <!-- Followers will be loaded here via JS -->
             </div>
         </div>
     </div>
 
-    <script>
+    <script th:inline="javascript">
         let currentSharePostId = null;
         const FEED_USER_ID = /*[[${user != null ? user.id : 0}]]*/ 0;
 
@@ -801,15 +1026,39 @@
             }
         }
 
+        function showToast(message) {
+            let toast = document.getElementById('dashboard-toast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'dashboard-toast';
+                toast.style.cssText = 'position:fixed; bottom:30px; left:50%; transform:translateX(-50%) translateY(120px); background:rgba(15,23,42,0.92); backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,0.15); color:#fff; padding:12px 24px; border-radius:30px; font-size:13px; font-weight:700; z-index:10000; transition:transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow:0 10px 30px rgba(0,0,0,0.3); letter-spacing:0.3px;';
+                document.body.appendChild(toast);
+            }
+            toast.textContent = message;
+            // Force layout reflow
+            toast.offsetHeight;
+            toast.style.transform = 'translateX(-50%) translateY(0)';
+            
+            setTimeout(() => {
+                toast.style.transform = 'translateX(-50%) translateY(120px)';
+            }, 2500);
+        }
+
         async function toggleSave(postId) {
             const btn = document.getElementById('save-btn-' + postId);
             const icon = btn ? btn.querySelector('i') : null;
             if (icon) {
                 const isSaved = icon.classList.contains('fas');
                 icon.className = isSaved ? 'far fa-bookmark' : 'fas fa-bookmark';
-                if (!isSaved) recordFeedActivity(postId, 'SAVE');
+                if (!isSaved) {
+                    recordFeedActivity(postId, 'SAVE');
+                    showToast("Saved successfully! 🔖");
+                } else {
+                    showToast("Removed from saved");
+                }
             } else {
                 recordFeedActivity(postId, 'SAVE');
+                showToast("Saved successfully! 🔖");
             }
         }
 
@@ -919,6 +1168,78 @@
             });
         }
 
+        const EMOJI_CATEGORIES = {
+            smileys: ['😀','😃','😄','😁','😆','😅','😂','🤣','😊','😇','🙂','🙃','😉','😌','😍','🥰','😘','😗','😙','😚','😋','😛','😝','😜','🤪','🤨','🧐','🤓','😎','🤩','🥳','😏','😒','😞','😔','😟','😕','🙁','☹️','😣','😖','😫','😩','🥺','😢','😭','😤','😠','😡','🤬','🤯','😳','🥵','🥶','😱','😨','😰','😥','😓','🤗','🤔','🤭','🤫','🤥','😶','😐','😑','😬','🙄','😯','😦','😧','😮','😲','🥱','😴','🤤','😪','😵','🤐','🥴','🤢','🤮','🤧','😷','🤒','🤕'],
+            gestures: ['👋','🤚','🖐️','✋','🖖','👌','💥','✌️','🤞','🤟','🤘','🤙','👈','👉','👆','🖕','👇','☝️','👍','👎','✊','👊','🤛','🤜','👏','🙌','👐','🤲','🤝','🙏','✍️','💅','🤳','💪','🦾','👂','👃','🧠','🦷','🦴','👀','👁️'],
+            hearts: ['❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','💕','💞','💓','💗','💖','💘','💝','💟'],
+            animals: ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐽','🐸','🐵','🙈','🙉','🙊','🐒','🐔','🐧','🐦','🐤','🐣','🐥','🦆','🦅','🦉','🦇','🐺','🐗','🐴','🦄','🐝','🐛','🦋','🐌','🐞','🐜','🕷️','🕸️','🐢','🐍','🦎','🐙','🦑','🦞','🦀','🐡','🐠','🐟','🐬','🐳','🐋','🦈','🐊'],
+            food: ['🍏','🍎','🍐','🍊','🍋','🍌','🍉','🍇','🍓','🍒','🍑','🥭','🍍','🥥','🥝','🍅','茄','🥑','🥦','🥬','🥒','🌶️','🌽','🥕','🥔','🥖','🧀','🍗','🥩','🥓','🍔','🍟','🍕','🌭','🥪','🌮','🌯','🍳','🥘','🍲','🥣','🥗','🍿','🍱','🍣','🍤','🥟','🍦','🍧','🍨','🍩','🍪','🎂','🍰','🍫','🍬','🍭','🍮','🍯','☕','🍵','🍶','🍷','🍸','🍹','🍺','🍻'],
+            activities: ['⚽','🏀','🏈','⚾','🥎','🎾','🏐','🏉','🎱','🏓','🏸','🏒','🏑','🥍','🥅','⛳','🏹','🎣','🥊','🥋','🛹','🛼','🎯','🎮','🕹️','🎰','🎳','🎸','🎺','🎻','🎨','🎬','🎤']
+        };
+
+        function toggleEmojiPicker(postId) {
+            const picker = document.getElementById('emoji-picker-' + postId);
+            if (!picker) return;
+            const isOpen = picker.style.display === 'block';
+            
+            // Close all picker popups first
+            document.querySelectorAll('.emoji-picker-popup').forEach(p => p.style.display = 'none');
+            
+            if (!isOpen) {
+                picker.style.display = 'block';
+                loadEmojiCategory(postId, 'smileys');
+            }
+        }
+
+        function loadEmojiCategory(postId, category) {
+            const container = document.querySelector(`#emoji-picker-${postId} .emoji-picker-content`);
+            if (!container) return;
+            container.innerHTML = '';
+            
+            const list = EMOJI_CATEGORIES[category] || [];
+            list.forEach(emoji => {
+                const span = document.createElement('span');
+                span.style.cursor = 'pointer';
+                span.style.userSelect = 'none';
+                span.textContent = emoji;
+                span.onclick = (e) => {
+                    e.stopPropagation();
+                    insertEmoji(postId, emoji);
+                };
+                container.appendChild(span);
+            });
+        }
+
+        function switchEmojiCategory(tabEl, category) {
+            event.stopPropagation();
+            // Find parent picker
+            const picker = tabEl.closest('.emoji-picker-popup');
+            if (!picker) return;
+            const postId = picker.id.replace('emoji-picker-', '');
+            
+            // Active tab styling
+            tabEl.parentNode.querySelectorAll('span').forEach(s => s.style.color = 'inherit');
+            tabEl.style.color = '#fff';
+            
+            loadEmojiCategory(postId, category);
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.emoji-picker-popup') && 
+                !e.target.closest('button[onclick*="toggleEmojiPicker"]') && 
+                !e.target.closest('button[onclick*="toggleStoryEmojiPicker"]')) {
+                document.querySelectorAll('.emoji-picker-popup').forEach(p => p.style.display = 'none');
+            }
+        });
+
+        function insertEmoji(postId, emoji) {
+            const input = document.getElementById('comment-input-' + postId);
+            if (input) {
+                input.value += emoji;
+                input.focus();
+            }
+        }
+
         // ── Comments Toggle ──────────────────────────────────
         function toggleComments(postId) {
             const panel = document.getElementById('comments-panel-' + postId);
@@ -963,7 +1284,8 @@
         let allFollowers = [];
         async function openShareModal(postId) {
             currentSharePostId = postId;
-            openM('shareModal');
+            const modal = document.getElementById('shareModal');
+            if (modal) { modal.style.display = 'flex'; }
             document.getElementById('shareSearchInput').value = '';
 
             try {
@@ -977,18 +1299,20 @@
         function renderShareList(list) {
             const container = document.getElementById('shareConvList');
             if (!list || list.length === 0) {
-                container.innerHTML = '<p style="text-align:center; padding:10px; color:var(--text-secondary); font-size:13px;">No users found.</p>';
+                container.innerHTML = '<div style="text-align:center; padding:30px 10px;"><i class="fas fa-user-slash" style="font-size:32px; opacity:0.3; margin-bottom:10px; display:block;"></i><p style="color:var(--text-secondary,#aaa); font-size:13px;">No users found.</p></div>';
                 return;
             }
             container.innerHTML = list.map(u => `
-                <div style="padding: 8px 10px; border-bottom: 1px solid var(--glass-border); display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition: background 0.2s;" 
-                     onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
+                <div style="padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.06); display:flex; justify-content:space-between; align-items:center; transition:background 0.2s;">
                     <div style="display:flex; align-items:center; gap:12px;">
                         <img src="${u.profilePhotoUrl || 'https://ui-avatars.com/api/?name=' + u.username + '&background=F84464&color=fff&size=80'}" 
-                             style="width:40px; height:40px; border-radius:50%; object-fit:cover;">
-                        <span style="font-size:14px; font-weight:600;">${u.username}</span>
+                             style="width:42px; height:42px; border-radius:50%; object-fit:cover; border:2px solid rgba(248,68,100,0.3);">
+                        <div>
+                            <div style="font-size:14px; font-weight:600; color:var(--text-primary,#fff);">${u.username}</div>
+                            <div style="font-size:11px; color:var(--text-secondary,#aaa);">Tap Send to share</div>
+                        </div>
                     </div>
-                    <button class="nav-btn" onclick="shareToUser(${u.id})" style="padding:6px 16px; font-size:12px; border-radius:8px;">Send</button>
+                    <button onclick="shareToUser(${u.id})" style="background:linear-gradient(135deg,#f84464,#ff6b9d); border:none; color:#fff; padding:7px 16px; border-radius:20px; font-size:12px; font-weight:600; cursor:pointer; transition:opacity 0.2s; display:flex; align-items:center; gap:6px;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'"><i class="fas fa-paper-plane" style="font-size:11px;"></i> Send</button>
                 </div>
             `).join('');
         }
@@ -1012,7 +1336,8 @@
         }
 
         function closeShareModal() {
-            closeM('shareModal');
+            const modal = document.getElementById('shareModal');
+            if (modal) { modal.style.display = 'none'; }
         }
         async function shareToUser(userId) {
             const res = await fetch('/api/chat/share-post-to-user', {
@@ -1198,6 +1523,167 @@
             clearTimeout(storyTimer);
             const video = document.getElementById('storyVideo');
             if (video) video.pause();
+            
+            const picker = document.getElementById('story-emoji-picker');
+            if (picker) picker.style.display = 'none';
+            isStoryTimerPaused = false;
+        }
+
+        function formatRelativeTime(dateStr) {
+            if (!dateStr) return '';
+            const now = new Date();
+            const past = new Date(dateStr);
+            const diffMs = now - past;
+            const diffMins = Math.floor(diffMs / 60000);
+            if (diffMins < 1) return 'just now';
+            if (diffMins < 60) return diffMins + 'm';
+            const diffHours = Math.floor(diffMins / 60);
+            if (diffHours < 24) return diffHours + 'h';
+            const diffDays = Math.floor(diffHours / 24);
+            return diffDays + 'd';
+        }
+
+        let isStoryTimerPaused = false;
+
+        function pauseStoryTimer() {
+            isStoryTimerPaused = true;
+            clearTimeout(storyTimer);
+            const video = document.getElementById('storyVideo');
+            if (video) video.pause();
+
+            // Pause CSS progress bar animation
+            const activeBar = document.querySelector('#storyProgressBarContainer > div:nth-child(' + (currentStoryIndex + 1) + ') > div');
+            if (activeBar) {
+                activeBar.style.animationPlayState = 'paused';
+            }
+        }
+
+        function resumeStoryTimer() {
+            if (!isStoryTimerPaused) return;
+            isStoryTimerPaused = false;
+            const video = document.getElementById('storyVideo');
+            if (video) {
+                video.play();
+            } else {
+                startStoryTimer(5000);
+            }
+
+            // Resume CSS progress bar animation
+            const activeBar = document.querySelector('#storyProgressBarContainer > div:nth-child(' + (currentStoryIndex + 1) + ') > div');
+            if (activeBar) {
+                activeBar.style.animationPlayState = 'running';
+            }
+        }
+
+        async function sendStoryReaction(emoji) {
+            const story = currentStories[currentStoryIndex];
+            if (!story) return;
+            
+            const selfId = (typeof CURRENT_USER_ID !== 'undefined') ? CURRENT_USER_ID : (typeof FEED_USER_ID !== 'undefined' ? FEED_USER_ID : 0);
+            const authorId = story.userId || (story.user ? story.user.id : null);
+            if (!authorId || authorId == selfId) return;
+
+            try {
+                const res = await fetch('/api/chat/send-direct', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        recipientId: authorId,
+                        content: `Reacted to your story: ${emoji}`
+                    })
+                });
+                if (res.ok) {
+                    showToast("Reaction sent! ❤️");
+                }
+            } catch (e) {
+                console.error("Failed to send reaction", e);
+            }
+        }
+
+        async function sendStoryReply() {
+            const input = document.getElementById('storyReplyInput');
+            if (!input || !input.value.trim()) return;
+            const replyText = input.value.trim();
+            input.value = '';
+
+            const story = currentStories[currentStoryIndex];
+            if (!story) return;
+
+            const selfId = (typeof CURRENT_USER_ID !== 'undefined') ? CURRENT_USER_ID : (typeof FEED_USER_ID !== 'undefined' ? FEED_USER_ID : 0);
+            const authorId = story.userId || (story.user ? story.user.id : null);
+            if (!authorId || authorId == selfId) return;
+
+            pauseStoryTimer();
+            try {
+                const res = await fetch('/api/chat/send-direct', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        recipientId: authorId,
+                        content: `Replied to your story: "${replyText}"`
+                    })
+                });
+                if (res.ok) {
+                    showToast("Reply sent! ✉️");
+                    input.blur();
+                }
+            } catch (e) {
+                console.error("Failed to send reply", e);
+            } finally {
+                resumeStoryTimer();
+            }
+        }
+
+        function toggleStoryEmojiPicker() {
+            const picker = document.getElementById('story-emoji-picker');
+            if (!picker) return;
+            const isOpen = picker.style.display === 'block';
+            
+            // Close other pickers
+            document.querySelectorAll('.emoji-picker-popup').forEach(p => p.style.display = 'none');
+            
+            if (!isOpen) {
+                picker.style.display = 'block';
+                loadStoryEmojiCategory('smileys');
+                pauseStoryTimer(); // Keep story paused when choosing emoji!
+            } else {
+                picker.style.display = 'none';
+                resumeStoryTimer();
+            }
+        }
+
+        function loadStoryEmojiCategory(category) {
+            const container = document.querySelector(`#story-emoji-picker .emoji-picker-content`);
+            if (!container) return;
+            container.innerHTML = '';
+            
+            const list = EMOJI_CATEGORIES[category] || [];
+            list.forEach(emoji => {
+                const span = document.createElement('span');
+                span.style.cursor = 'pointer';
+                span.style.userSelect = 'none';
+                span.textContent = emoji;
+                span.onclick = (e) => {
+                    e.stopPropagation();
+                    insertStoryEmoji(emoji);
+                };
+                container.appendChild(span);
+            });
+        }
+
+        function switchStoryEmojiCategory(tabEl, category) {
+            event.stopPropagation();
+            tabEl.parentNode.querySelectorAll('span').forEach(s => s.style.color = 'inherit');
+            tabEl.style.color = '#fff';
+            loadStoryEmojiCategory(category);
+        }
+
+        function insertStoryEmoji(emoji) {
+            const input = document.getElementById('storyReplyInput');
+            if (input) {
+                input.value += emoji;
+                input.focus();
+            }
         }
 
         function renderStory() {
@@ -1212,12 +1698,69 @@
             const story = currentStories[currentStoryIndex];
             const contentDiv = document.getElementById('storyViewerContent');
 
+            // Set story header information
+            const avatarImg = document.getElementById('storyViewerAvatar');
+            const usernameSpan = document.getElementById('storyViewerUsername');
+            const timeSpan = document.getElementById('storyViewerTime');
+
+            if (avatarImg) {
+                avatarImg.src = (story.profilePhotoUrl && story.profilePhotoUrl.trim() !== '') 
+                    ? story.profilePhotoUrl 
+                    : `https://ui-avatars.com/api/?name=${story.username || 'U'}&background=F84464&color=fff&size=80`;
+            }
+            if (usernameSpan) {
+                usernameSpan.textContent = story.username || 'Unknown';
+            }
+            if (timeSpan) {
+                timeSpan.textContent = '• ' + formatRelativeTime(story.createdAt);
+            }
+
+            // Show/hide bottom reply panel or viewers panel based on ownership
+            const bottomPanel = document.getElementById('storyViewerBottom');
+            const statsEl = document.getElementById('storyViewerStats');
+            const selfId = (typeof CURRENT_USER_ID !== 'undefined' && CURRENT_USER_ID !== null) ? CURRENT_USER_ID : (typeof FEED_USER_ID !== 'undefined' ? FEED_USER_ID : 0);
+            const authorId = story.userId || (story.user ? story.user.id : null);
+
+            if (authorId == selfId) {
+                if (bottomPanel) bottomPanel.style.display = 'none';
+                if (statsEl) {
+                    statsEl.style.display = 'flex';
+                    fetch(`/api/stories/${story.id}/viewers`)
+                        .then(r => r.json())
+                        .then(viewers => {
+                            document.getElementById('storyViewerCount').textContent = viewers.length + (viewers.length === 1 ? ' view' : ' views');
+                        }).catch(() => {});
+                }
+            } else {
+                if (statsEl) statsEl.style.display = 'none';
+                if (bottomPanel) bottomPanel.style.display = 'flex';
+                recordStoryView(story.id);
+            }
+
+            // Clear input
+            const input = document.getElementById('storyReplyInput');
+            if (input) input.value = '';
+
             let mediaHtml = '';
             if (story.mediaType === 'IMAGE') {
-                mediaHtml = `<img src="${story.mediaUrl}" style="width: 100%; height: auto; max-height: 80vh; object-fit: contain;">`;
+                mediaHtml = `
+                    <div style="position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 20px;">
+                        <!-- Blurred Background -->
+                        <div style="position: absolute; inset: 0; background-image: url('${story.mediaUrl}'); background-size: cover; background-position: center; filter: blur(28px) brightness(0.5); transform: scale(1.2); z-index: 1;"></div>
+                        <!-- Main Image -->
+                        <img src="${story.mediaUrl}" style="position: relative; z-index: 2; max-width: 100%; max-height: 100%; object-fit: contain; box-shadow: 0 10px 40px rgba(0,0,0,0.6);">
+                    </div>
+                `;
                 startStoryTimer(5000); // 5 seconds for images
             } else if (story.mediaType === 'VIDEO') {
-                mediaHtml = `<video id="storyVideo" src="${story.mediaUrl}" autoplay style="width: 100%; max-height: 80vh; object-fit: contain;" onended="nextStory()"></video>`;
+                mediaHtml = `
+                    <div style="position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 20px;">
+                        <!-- Styled Ambient Vignette -->
+                        <div style="position: absolute; inset: 0; background: radial-gradient(circle, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.85) 100%); z-index: 1;"></div>
+                        <!-- Main Video -->
+                        <video id="storyVideo" src="${story.mediaUrl}" autoplay style="position: relative; z-index: 2; max-width: 100%; max-height: 100%; object-fit: contain;" onended="nextStory()"></video>
+                    </div>
+                `;
                 clearTimeout(storyTimer);
             } else {
                 mediaHtml = `<div style="padding: 20px; color: white; text-align: center; font-size: 20px; font-family: 'DM Sans', sans-serif;">${story.content || 'Text Story'}</div>`;
@@ -1226,6 +1769,59 @@
 
             contentDiv.innerHTML = mediaHtml;
             updateStoryProgressBars();
+        }
+
+        async function recordStoryView(storyId) {
+            const selfId = (typeof CURRENT_USER_ID !== 'undefined' && CURRENT_USER_ID !== null) ? CURRENT_USER_ID : (typeof FEED_USER_ID !== 'undefined' ? FEED_USER_ID : 0);
+            if (!selfId) return;
+            try {
+                await fetch('/api/feed/activity', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: selfId,
+                        postId: storyId,
+                        action: 'VIEW'
+                    })
+                });
+            } catch (e) {
+                console.error("Failed to record story view", e);
+            }
+        }
+
+        async function showStoryViewersList() {
+            const story = currentStories[currentStoryIndex];
+            if (!story) return;
+            pauseStoryTimer();
+            const modal = document.getElementById('storyViewersListModal');
+            const listContent = document.getElementById('storyViewersListContent');
+            if (modal) modal.style.display = 'flex';
+            if (listContent) {
+                listContent.innerHTML = '<div style="color: #aaa; text-align: center; padding: 20px;"><i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i>Loading viewers...</div>';
+            }
+            try {
+                const res = await fetch(`/api/stories/${story.id}/viewers`);
+                const viewers = await res.json();
+                if (viewers.length === 0) {
+                    listContent.innerHTML = '<p style="text-align: center; color: #aaa; font-size: 13px; padding: 20px;">No views yet.</p>';
+                    return;
+                }
+                listContent.innerHTML = viewers.map(v => `
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px; text-align: left;">
+                        <img src="${v.profilePhotoUrl || 'https://ui-avatars.com/api/?name=' + v.username + '&background=f84464&color=fff&size=80'}" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;">
+                        <span style="color: #fff; font-size: 14px; font-weight: 600;">@${v.username}</span>
+                    </div>
+                `).join('');
+            } catch (e) {
+                console.error("Failed to load story viewers", e);
+                listContent.innerHTML = '<p style="text-align: center; color: #ff4d4d; font-size: 13px; padding: 20px;">Failed to load viewers.</p>';
+            }
+        }
+
+        function closeStoryViewersList() {
+            const modal = document.getElementById('storyViewersListModal');
+            if (modal) modal.style.display = 'none';
+            resumeStoryTimer();
         }
 
         function startStoryTimer(duration) {
@@ -1299,29 +1895,107 @@
 
     <!-- Story Viewer HTML -->
     <div id="storyViewerModal" class="modal-overlay"
-        style="z-index: 9999; position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: none; align-items: center; justify-content: center;">
+        style="z-index: 9999; position: fixed; inset: 0; background: rgba(0,0,0,0.96); display: none; align-items: center; justify-content: center;">
         <div class="modal-content"
-            style="position: relative; background: #111; box-shadow: 0 20px 60px rgba(0,0,0,0.8); border: none; max-width: 380px; height: 80vh; max-height: 680px; border-radius: 16px; overflow: hidden; padding: 0; width: 100%;">
-
-            <button
-                style="position: absolute; top: 20px; right: 15px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; color: #fff; background: rgba(0,0,0,0.5); border-radius: 50%; border: none; z-index: 100;"
-                onclick="closeStoryViewer()">✕</button>
+            style="position: relative; background: #050508; box-shadow: 0 24px 70px rgba(0,0,0,0.95); border: 1px solid rgba(255,255,255,0.08); max-width: 400px; height: 85vh; max-height: 720px; border-radius: 20px; overflow: hidden; padding: 0; width: 100%; display: flex; flex-direction: column; justify-content: center;">
 
             <!-- Progress bars container -->
             <div id="storyProgressBarContainer"
-                style="position: absolute; top: 12px; left: 12px; right: 55px; display: flex; gap: 4px; z-index: 10;">
+                style="position: absolute; top: 16px; left: 16px; right: 16px; display: flex; gap: 6px; z-index: 110;">
             </div>
+
+            <!-- Story Header (Avatar & Username) -->
+            <div id="storyViewerHeader" style="position: absolute; top: 28px; left: 16px; display: flex; align-items: center; gap: 10px; z-index: 110; color: white;">
+                <img id="storyViewerAvatar" src="" style="width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid #fff; object-fit: cover; box-shadow: 0 2px 8px rgba(0,0,0,0.5);">
+                <span id="storyViewerUsername" style="font-weight: 700; font-size: 13.5px; text-shadow: 0 2px 5px rgba(0,0,0,0.95); font-family: 'DM Sans', sans-serif;">Username</span>
+                <span id="storyViewerTime" style="font-size: 11px; color: rgba(255,255,255,0.7); text-shadow: 0 2px 5px rgba(0,0,0,0.95); font-family: 'DM Sans', sans-serif;">• 2h ago</span>
+            </div>
+
+            <button
+                style="position: absolute; top: 28px; right: 16px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: #fff; background: rgba(0,0,0,0.4); border-radius: 50%; border: none; z-index: 120; font-weight: bold; transition: background 0.2s;"
+                onmouseover="this.style.background='rgba(0,0,0,0.7)'"
+                onmouseout="this.style.background='rgba(0,0,0,0.4)'"
+                onclick="closeStoryViewer()">✕</button>
 
             <div id="storyViewerContent"
                 style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #000;">
                 <!-- Content injected via JS -->
             </div>
 
+            <!-- Story Bottom Reply & React Panel -->
+            <div id="storyViewerBottom" onclick="event.stopPropagation()" style="position: absolute; bottom: 0; left: 0; right: 0; padding: 16px; background: linear-gradient(transparent, rgba(0,0,0,0.9)); z-index: 110; display: flex; flex-direction: column; gap: 10px;">
+                <!-- Quick React Emojis -->
+                <div class="story-reactions" style="display: flex; justify-content: space-around; font-size: 22px; user-select: none;">
+                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('❤️')">❤️</span>
+                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('😂')">😂</span>
+                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('😮')">😮</span>
+                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('😢')">😢</span>
+                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('👏')">👏</span>
+                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('🔥')">🔥</span>
+                </div>
+                <!-- Message Input -->
+                <div style="display: flex; gap: 8px; align-items: center; position: relative;">
+                    <div style="position: relative; flex: 1; display: flex; align-items: center;">
+                        <input type="text" id="storyReplyInput" placeholder="Send message..." 
+                               style="flex: 1; padding: 8px 36px 8px 16px; border-radius: 20px; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25); color: #ffffff !important; font-size: 13px; outline: none;"
+                               onfocus="pauseStoryTimer()" onblur="resumeStoryTimer()"
+                               onkeydown="if(event.key === 'Enter') sendStoryReply()">
+                        <button type="button" onclick="event.stopPropagation(); toggleStoryEmojiPicker()" 
+                                style="position: absolute; right: 12px; background: none; border: none; font-size: 16px; cursor: pointer; color: #aaa; outline: none; user-select: none;">😀</button>
+                    </div>
+                    <button onclick="sendStoryReply()" 
+                            style="background: #f84464; border: none; border-radius: 50%; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; flex-shrink: 0;">
+                        <i class="far fa-paper-plane" style="font-size: 13px;"></i>
+                    </button>
+                    
+                    <!-- Story Emoji Picker Popup -->
+                    <div id="story-emoji-picker" class="emoji-picker-popup" 
+                         style="display: none; position: absolute; bottom: 44px; right: 42px; background: #101018; border: 1px solid rgba(255,255,255,0.15); border-radius: 12px; padding: 10px; width: 260px; z-index: 130; box-shadow: 0 10px 30px rgba(0,0,0,0.5);"
+                         onclick="event.stopPropagation()">
+                         <!-- Categories / Tabs -->
+                         <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px; margin-bottom: 8px; font-size: 14px; color: #aaa; font-weight: 700; user-select: none;">
+                             <span style="cursor: pointer; color: #fff;" onclick="switchStoryEmojiCategory(this, 'smileys')">😀</span>
+                             <span style="cursor: pointer;" onclick="switchStoryEmojiCategory(this, 'gestures')">👍</span>
+                             <span style="cursor: pointer;" onclick="switchStoryEmojiCategory(this, 'hearts')">❤️</span>
+                             <span style="cursor: pointer;" onclick="switchStoryEmojiCategory(this, 'animals')">🐱</span>
+                             <span style="cursor: pointer;" onclick="switchStoryEmojiCategory(this, 'food')">🍕</span>
+                             <span style="cursor: pointer;" onclick="switchStoryEmojiCategory(this, 'activities')">⚽</span>
+                         </div>
+                         <!-- Emoji Content Area -->
+                         <div class="emoji-picker-content" style="height: 140px; overflow-y: auto; display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; font-size: 18px; text-align: center;">
+                             <!-- Loaded dynamically via JS -->
+                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Story Bottom Viewers Panel (for Owner) -->
+            <div id="storyViewerStats" onclick="event.stopPropagation(); showStoryViewersList()" style="position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); padding: 10px 22px; background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 30px; z-index: 110; display: none; align-items: center; justify-content: center; cursor: pointer; color: white; gap: 8px; transition: all 0.2s; box-shadow: 0 8px 32px rgba(0,0,0,0.3);" onmouseover="this.style.background='rgba(255,255,255,0.25)'; this.style.transform='translateX(-50%) scale(1.05)';" onmouseout="this.style.background='rgba(255,255,255,0.15)'; this.style.transform='translateX(-50%) scale(1)';">
+                <i class="fas fa-eye" style="font-size: 14px; color: #fff;"></i>
+                <span id="storyViewerCount" style="font-size: 13px; font-weight: 700; font-family: 'DM Sans', sans-serif; letter-spacing: 0.5px;">0 views</span>
+            </div>
+
             <!-- Navigation controls -->
-            <div style="position: absolute; top: 0; bottom: 0; left: 0; width: 40%; cursor: pointer; z-index: 5;"
+            <div style="position: absolute; top: 80px; bottom: 120px; left: 0; width: 40%; cursor: pointer; z-index: 5;"
                 onclick="prevStory()"></div>
-            <div style="position: absolute; top: 0; bottom: 0; right: 0; width: 40%; cursor: pointer; z-index: 5;"
+            <div style="position: absolute; top: 80px; bottom: 120px; right: 0; width: 40%; cursor: pointer; z-index: 5;"
                 onclick="nextStory()"></div>
+        </div>
+    </div>
+
+    <!-- Story Viewers Modal -->
+    <div id="storyViewersListModal" onclick="if(event.target===this) closeStoryViewersList()"
+        style="display:none; position:fixed; inset:0; z-index:10000; background:rgba(0,0,0,0.85); align-items:center; justify-content:center; backdrop-filter:blur(4px);">
+        <div style="background:#1e1e2e; border:1px solid rgba(255,255,255,0.1); border-radius:20px; width:100%; max-width:360px; max-height:60vh; display:flex; flex-direction:column; box-shadow:0 25px 60px rgba(0,0,0,0.6); overflow:hidden;">
+            <!-- Header -->
+            <div style="padding:16px 20px; border-bottom:1px solid rgba(255,255,255,0.1); display:flex; justify-content:space-between; align-items:center;">
+                <h3 style="font-size:15px; font-weight:700; color:#fff; margin:0;"><i class="fas fa-eye" style="margin-right:8px; color:#f84464;"></i>Viewers</h3>
+                <button onclick="closeStoryViewersList()" style="background:rgba(255,255,255,0.08); border:none; color:#aaa; width:28px; height:28px; border-radius:50%; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'"><i class="fas fa-times"></i></button>
+            </div>
+            <!-- Body -->
+            <div id="storyViewersListContent" style="flex:1; overflow-y:auto; padding:15px 20px;">
+                <!-- Viewers list -->
+            </div>
         </div>
     </div>
 
