@@ -523,6 +523,35 @@
 
         const skyTexture = createGradientTexture();
 
+        // --- SHARED Geometries & Materials (Performance: avoid per-spawn allocations) ---
+        const sharedCoinGeo = new THREE.CylinderGeometry(1.0, 1.0, 0.35, 16);
+        const sharedCoinMat = new THREE.MeshStandardMaterial({ color: 0xffde00, metalness: 1, roughness: 0, emissive: 0xffde00, emissiveIntensity: 4 });
+        const sharedTrailGeo = new THREE.BoxGeometry(1.6, 3.2, 0.1);
+        const sharedTrailMat = new THREE.MeshBasicMaterial({ color: COLORS.neonBlue, transparent: true, opacity: 0.4 });
+        const sharedSleeperGeo = new THREE.BoxGeometry(4.6, 0.5, 1.8);
+        const sharedSleeperMat = new THREE.MeshStandardMaterial({ color: 0x3d3d3d, map: metalTexture });
+        const sharedRailGeo = new THREE.BoxGeometry(0.3, 0.7, 100);
+        const sharedRailMat = new THREE.MeshStandardMaterial({ color: COLORS.rail, metalness: 0.9, map: metalTexture });
+        const sharedParticleGeo = new THREE.SphereGeometry(0.2, 6, 6);
+        const sharedBarrierLegGeo = new THREE.CylinderGeometry(0.25, 0.25, 6, 6);
+        const sharedBarrierLegMat = new THREE.MeshStandardMaterial({ color: 0x111111 });
+
+        // --- Disposal Helper (prevents GPU memory leaks) ---
+        function disposeMesh(obj) {
+            if (!obj) return;
+            if (obj.children) {
+                for (let i = obj.children.length - 1; i >= 0; i--) disposeMesh(obj.children[i]);
+            }
+            if (obj.geometry && obj.geometry !== sharedCoinGeo && obj.geometry !== sharedTrailGeo && obj.geometry !== sharedSleeperGeo && obj.geometry !== sharedRailGeo && obj.geometry !== sharedParticleGeo && obj.geometry !== sharedBarrierLegGeo) {
+                obj.geometry.dispose();
+            }
+            if (obj.material && obj.material !== sharedCoinMat && obj.material !== sharedTrailMat && obj.material !== sharedSleeperMat && obj.material !== sharedRailMat && obj.material !== sharedBarrierLegMat) {
+                if (Array.isArray(obj.material)) obj.material.forEach(m => m.dispose());
+                else obj.material.dispose();
+            }
+            if (obj.isLight && obj.dispose) obj.dispose();
+        }
+
         function init() {
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0x020617);
@@ -536,7 +565,7 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.shadowMap.enabled = true;
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
             renderer.physicallyCorrectLights = true;
             renderer.outputEncoding = THREE.sRGBEncoding;
             renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -564,7 +593,7 @@
             const sun = new THREE.DirectionalLight(0xffffff, 1.2);
             sun.position.set(100, 200, 100);
             sun.castShadow = true;
-            sun.shadow.mapSize.set(2048, 2048);
+            sun.shadow.mapSize.set(1024, 1024);
             scene.add(sun);
 
             const moon = new THREE.DirectionalLight(0x3b82f6, 0.8);
@@ -750,11 +779,11 @@
 
                     // Random Windows
                     const windowColors = [0x00d2ff, 0xff007f, 0xfacc15, 0xffffff];
+                    const sharedWinGeo = new THREE.PlaneGeometry(2, 3);
                     for(let i=0; i<Math.floor(h/12); i++) {
-                        if (Math.random() > 0.3) {
-                            const wG = new THREE.PlaneGeometry(2, 3);
+                        if (Math.random() > 0.5) {
                             const wM = new THREE.MeshBasicMaterial({ color: windowColors[Math.floor(Math.random()*windowColors.length)] });
-                            const win = new THREE.Mesh(wG, wM);
+                            const win = new THREE.Mesh(sharedWinGeo, wM);
                             win.position.set(x > 0 ? -w/2-0.2 : w/2+0.2, 15 + i*10, Math.random()*20 - 10);
                             win.rotation.y = x > 0 ? -Math.PI/2 : Math.PI/2;
                             group.add(win);
@@ -768,13 +797,13 @@
                 }
 
                 lanes.forEach(lx => {
-                    // Sleepers
+                    // Sleepers (shared geometry/material)
                     for(let i=0; i<25; i++) {
-                        const s = new THREE.Mesh(new THREE.BoxGeometry(4.6, 0.5, 1.8), new THREE.MeshStandardMaterial({ color: 0x3d3d3d, map: metalTexture }));
+                        const s = new THREE.Mesh(sharedSleeperGeo, sharedSleeperMat);
                         s.position.set(lx, 0.25, -50 + i*4); group.add(s);
                     }
-                    // Rails
-                    const rL = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.7, 100), new THREE.MeshStandardMaterial({ color: COLORS.rail, metalness: 0.9, map: metalTexture }));
+                    // Rails (shared geometry/material)
+                    const rL = new THREE.Mesh(sharedRailGeo, sharedRailMat);
                     rL.position.set(lx-1.6, 0.6, 0); group.add(rL);
                     const rR = rL.clone(); rR.position.x = lx+1.6; group.add(rR);
 
@@ -817,16 +846,12 @@
                 );
                 body.position.y = 4.5; g.add(body);
                 
-                // Emissive Headlights
-                const lightG = new THREE.CircleGeometry(0.8, 16);
+                // Emissive Headlights (no PointLight - bloom handles glow)
+                const lightG = new THREE.CircleGeometry(0.8, 12);
                 const lightM = new THREE.MeshBasicMaterial({ color: 0xffffff });
                 const l1 = new THREE.Mesh(lightG, lightM);
                 l1.position.set(-1.4, 6, 22.6); g.add(l1);
                 const l2 = l1.clone(); l2.position.x = 1.4; g.add(l2);
-                
-                // Add a PointLight for headlight glow
-                const pLight = new THREE.PointLight(0xffffff, 2, 20);
-                pLight.position.set(0, 6, 23); g.add(pLight);
                 
                 const win = new THREE.Mesh(new THREE.BoxGeometry(4.2, 2.5, 0.2), new THREE.MeshStandardMaterial({ color: 0x00d2ff, emissive: 0x00d2ff, emissiveIntensity: 2 }));
                 win.position.set(0, 5.5, 22.6); g.add(win);
@@ -842,10 +867,10 @@
                 const bar = new THREE.Mesh(new THREE.BoxGeometry(4.8, 1.0, 1.8), new THREE.MeshStandardMaterial({ 
                     color: COLORS.barrier,
                     emissive: COLORS.barrier,
-                    emissiveIntensity: 0.8 // Makes barriers clearly visible
+                    emissiveIntensity: 0.8
                 }));
                 bar.position.y = 6.0; g.add(bar);
-                const l1 = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.25, 6, 8), new THREE.MeshStandardMaterial({ color: 0x111111 }));
+                const l1 = new THREE.Mesh(sharedBarrierLegGeo, sharedBarrierLegMat);
                 l1.position.set(-2.2, 3, 0); g.add(l1);
                 const l2 = l1.clone(); l2.position.x = 2.2; g.add(l2);
                 mesh = g; mesh.position.set(lane, 0, -550);
@@ -854,9 +879,9 @@
         }
 
         function createBurst(pos, color) {
-            for(let i=0; i<15; i++) {
+            for(let i=0; i<8; i++) {
                 const p = new THREE.Mesh(
-                    new THREE.SphereGeometry(0.2, 8, 8), 
+                    sharedParticleGeo, 
                     new THREE.MeshBasicMaterial({ color })
                 );
                 p.position.copy(pos);
@@ -869,20 +894,9 @@
         function spawnCoins() {
             const lane = lanes[Math.floor(Math.random() * 3)];
             const y = isFlying ? 32 : (Math.random() > 0.7 ? 14 : 2.5);
-            for (let i = 0; i < 15; i++) {
-                const coin = new THREE.Mesh(new THREE.CylinderGeometry(1.0, 1.0, 0.35, 24), new THREE.MeshStandardMaterial({ 
-                    color: 0xffde00, 
-                    metalness: 1, 
-                    roughness: 0, 
-                    emissive: 0xffde00, 
-                    emissiveIntensity: 4 
-                }));
-                coin.rotation.x = Math.PI/2; coin.position.set(lane, y, -500 - i*6.5);
-                
-                // Light glow for coin
-                const cLight = new THREE.PointLight(0xffde00, 1.5, 8);
-                cLight.position.set(0, 0, 0); coin.add(cLight);
-                
+            for (let i = 0; i < 12; i++) {
+                const coin = new THREE.Mesh(sharedCoinGeo, sharedCoinMat);
+                coin.rotation.x = Math.PI/2; coin.position.set(lane, y, -500 - i*7.5);
                 scene.add(coin); coins.push(coin);
             }
         }
@@ -907,9 +921,6 @@
                 g.add(rib);
                 mesh = g; type = 'mystery';
             }
-            
-            const pLight = new THREE.PointLight(mesh.material ? mesh.material.color : 0xffffff, 3, 15);
-            mesh.add(pLight);
             
             mesh.position.set(lane, 4.5, -550);
             scene.add(mesh); powerups.push({ mesh, type });
@@ -1045,11 +1056,9 @@
             if (coreMesh) coreMesh.material.opacity = 0.4 + Math.sin(animTime * 4) * 0.4;
 
             // Motion Trails
-            if (frameCount % 4 === 0) {
-                const trail = new THREE.Mesh(
-                    new THREE.BoxGeometry(1.6, 3.2, 0.1),
-                    new THREE.MeshBasicMaterial({ color: COLORS.neonBlue, transparent: true, opacity: 0.4 })
-                );
+            if (frameCount % 6 === 0) {
+                const tMat = sharedTrailMat.clone();
+                const trail = new THREE.Mesh(sharedTrailGeo, tMat);
                 trail.position.copy(player.position);
                 trail.position.y += 2;
                 scene.add(trail);
@@ -1057,9 +1066,10 @@
             }
             for (let i = trailPool.length - 1; i >= 0; i--) {
                 const tp = trailPool[i];
-                tp.material.opacity -= 0.04;
+                tp.material.opacity -= 0.06;
                 if (tp.material.opacity <= 0) {
                     scene.remove(tp);
+                    tp.material.dispose();
                     trailPool.splice(i, 1);
                 }
             }
@@ -1094,7 +1104,7 @@
                         }
                     }
                 }
-                if (o.mesh.position.z > 80) { scene.remove(o.mesh); obstacles.splice(i, 1); }
+                if (o.mesh.position.z > 80) { scene.remove(o.mesh); disposeMesh(o.mesh); obstacles.splice(i, 1); }
             }
 
             // Coins
@@ -1133,7 +1143,7 @@
                     createBurst(p.mesh.position, p.type === 'magnet' ? COLORS.magnet : COLORS.jetpack);
                     scene.remove(p.mesh); powerups.splice(i, 1);
                 } else if (p.mesh.position.z > 80) { 
-                    scene.remove(p.mesh); powerups.splice(i, 1); 
+                    scene.remove(p.mesh); disposeMesh(p.mesh); powerups.splice(i, 1); 
                 }
             }
 
@@ -1142,9 +1152,9 @@
                 const p = particles[i];
                 p.position.add(p.vel);
                 p.vel.y -= 0.04;
-                p.life -= 0.02;
+                p.life -= 0.03;
                 p.scale.setScalar(p.life);
-                if (p.life <= 0) { scene.remove(p); particles.splice(i, 1); }
+                if (p.life <= 0) { scene.remove(p); p.material.dispose(); particles.splice(i, 1); }
             }
 
             const spawnRate = Math.max(15, Math.floor(65 / speed));

@@ -105,11 +105,19 @@
     </div>
 
     <style>
+        /* ---- LAYOUT ---- */
+        .game-layout {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            gap: 20px;
+            padding: 20px;
+            flex-wrap: wrap;
+        }
+
         /* ---- BOARD ---- */
         #board {
             position: relative;
-            width: var(--board-size);
-            height: var(--board-size);
             border-radius: 12px;
             overflow: hidden;
             flex-shrink: 0;
@@ -678,18 +686,25 @@
         };
         const userName = getUniqueGuestName();
         const cp = (document.querySelector('meta[name="context-path"]')?.content || '').replace(/\/$/, '');
-        // Set initial value
-        document.addEventListener('DOMContentLoaded', () => {
+        // Set initial values once DOM is ready
+        let _ludoInitDone = false;
+        function ludoInitOnce() {
+            if (_ludoInitDone) return;
+            _ludoInitDone = true;
             const input = document.getElementById('playerNameInput');
             if (input && !input.value) input.value = userName;
             
             const rId = new URLSearchParams(window.location.search).get('room');
             if (rId) {
                 document.getElementById('roomCodeInput').value = rId;
-                // Auto-join
                 setTimeout(joinRoom, 500);
             }
-        });
+        }
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', ludoInitOnce);
+        } else {
+            ludoInitOnce();
+        }
 const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
         const C = BOARD_SIZE / 15;
         const canvas = document.getElementById('boardCanvas');
@@ -855,9 +870,7 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
                 });
                 stompClient.subscribe('/topic/ludo/' + state.roomId + '/roll', function (msg) {
                     const payload = JSON.parse(msg.body);
-                    if (payload.playerIndex !== state.playerIndex) {
-                        animateExternalRoll(payload.val);
-                    }
+                    animateDiceRoll(payload.val);
                 });
                 stompClient.send("/app/ludo/" + state.roomId + "/subscribe", {}, "{}");
             });
@@ -888,6 +901,10 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
             state.activeSlots = roomState.players.filter(p => p.name !== "").map(p => p.index);
             if (state.activeSlots.length === 0) state.activeSlots = [0];
 
+            // Update currentSlotIndex to match currentPlayer
+            const slotIdx = state.activeSlots.indexOf(state.currentPlayer);
+            if (slotIdx !== -1) state.currentSlotIndex = slotIdx;
+
             if (state.status === 'waiting' && roomState.status === 'active') {
                 if (rafId) cancelAnimationFrame(rafId);
                 render();
@@ -899,16 +916,40 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
             }
             state.status = roomState.status;
 
+            // Compute moveable pieces if it's my turn and dice has been rolled
+            if (state.diceRolled && state.currentPlayer === state.playerIndex) {
+                const moveable = [];
+                state.pieces[state.currentPlayer].forEach((p, i) => {
+                    if (canPieceMove(state.currentPlayer, i)) moveable.push(i);
+                });
+                state.moveableIndices = moveable;
+                if (moveable.length === 0) {
+                    setStatus('No valid moves!', '');
+                    showToast(`${NAMES[state.currentPlayer]} rolled ${state.diceValue} — no moves`);
+                    // Auto-advance turn after a delay — send a skip to server
+                    setTimeout(() => {
+                        if (stompClient && state.roomId) {
+                            stompClient.send("/app/ludo/" + state.roomId + "/skip", {}, JSON.stringify({ playerIndex: state.playerIndex }));
+                        }
+                    }, 1200);
+                } else {
+                    setStatus(`Rolled ${state.diceValue} — choose a piece!`, 'good');
+                }
+            } else {
+                state.moveableIndices = [];
+            }
+
+            // Fallback: Ensure dice face matches state if not currently animating
+            const diceEl = document.getElementById('dice');
+            if (state.diceRolled && !diceEl.classList.contains('rolling')) {
+                diceEl.textContent = FACES[state.diceValue - 1] || '⚀';
+            }
+
             buildPlayerCards();
             updateTurnUI();
-            
-            // If it's my turn and dice not rolled, enable dice
-            // In multiplayer, state.playerIndex is 0-3. In local, it's -1.
-            diceDisabled = (state.playerIndex !== -1 && state.currentPlayer !== state.playerIndex) || state.diceRolled;
-            document.getElementById('rollBtn').disabled = diceDisabled;
         }
 
-        function animateExternalRoll(val) {
+        function animateDiceRoll(val) {
             const diceEl = document.getElementById('dice');
             diceEl.classList.add('rolling');
             let frame = 0;
@@ -1282,10 +1323,19 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
             label.style.color = COLORS[pi];
             const rollBtn = document.getElementById('rollBtn');
             const isCPU = state.playerTypes[pi] === 'computer';
-            diceDisabled = state.diceRolled || isCPU;
-            rollBtn.disabled = state.diceRolled || isCPU;
+            
+            // In multiplayer: disable if not my turn OR dice already rolled
+            // In local: disable if dice already rolled OR CPU turn
+            if (state.playerIndex !== -1) {
+                // Multiplayer mode
+                diceDisabled = (state.currentPlayer !== state.playerIndex) || state.diceRolled;
+            } else {
+                // Local mode
+                diceDisabled = state.diceRolled || isCPU;
+            }
+            rollBtn.disabled = diceDisabled;
             updatePlayerCards();
-            if (!state.diceRolled) setStatus('Ready to roll', 'good');
+            if (!state.diceRolled && !diceDisabled) setStatus('Ready to roll', 'good');
         }
 
         function setStatus(msg, cls = '') {
@@ -1581,16 +1631,6 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
         // Initial board draw
         drawBoard();
         initLocalIfNoRoom();
-        
-        // Auto-join if room in URL
-        document.addEventListener('DOMContentLoaded', () => {
-             const roomParam = new URLSearchParams(window.location.search).get('room');
-             if (roomParam) {
-                 const input = document.getElementById('roomCodeInput');
-                 if (input) input.value = roomParam;
-                 joinRoom();
-             }
-        });
 
         // ]]>
     </script>

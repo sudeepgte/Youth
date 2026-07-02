@@ -45,7 +45,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            overflow: hidden;
+            overflow-y: auto;
+            padding: 20px 0;
         }
 
         .bg-particles {
@@ -480,6 +481,17 @@ const { useState, useEffect, useCallback, useRef, useMemo } = React;
 
         function useSnakeSocket(roomId, onStateUpdate, onRollAnim) {
             const stompRef = useRef(null);
+            const onStateUpdateRef = useRef(onStateUpdate);
+            const onRollAnimRef = useRef(onRollAnim);
+
+            useEffect(() => {
+                onStateUpdateRef.current = onStateUpdate;
+            }, [onStateUpdate]);
+
+            useEffect(() => {
+                onRollAnimRef.current = onRollAnim;
+            }, [onRollAnim]);
+
             useEffect(() => {
                 if (!roomId) return;
                 console.log("Connecting to room:", roomId);
@@ -494,14 +506,15 @@ const { useState, useEffect, useCallback, useRef, useMemo } = React;
                 stompRef.current = stomp;
                 stomp.connect({}, () => {
                     console.log("Joined WebSocket channel.");
-                    stomp.subscribe(`/topic/snake/${roomId}`, (m) => onStateUpdate(JSON.parse(m.body)));
-                    stomp.subscribe(`/topic/snake/${roomId}/rollEvent`, (m) => onRollAnim(JSON.parse(m.body)));
+                    stomp.subscribe(`/topic/snake/${roomId}`, (m) => onStateUpdateRef.current(JSON.parse(m.body)));
+                    stomp.subscribe(`/topic/snake/${roomId}/rollEvent`, (m) => onRollAnimRef.current(JSON.parse(m.body)));
                     stomp.send(`/app/snake/${roomId}/subscribe`, {}, "{}");
                 }, (err) => {
                     console.error("WebSocket Connection Failed", err);
                 });
                 return () => stomp && stomp.disconnect();
             }, [roomId]);
+
             return {
                 sendRoll: (steps, idx) => stompRef.current?.send(`/app/snake/${roomId}/roll`, {}, JSON.stringify({ steps, playerIndex: idx })),
             };
@@ -514,25 +527,51 @@ const { useState, useEffect, useCallback, useRef, useMemo } = React;
             const [logs, setLogs] = useState(["> Arena Online."]);
             const logRef = useRef(null);
 
+            const stateRef = useRef(state);
+            useEffect(() => {
+                stateRef.current = state;
+            }, [state]);
+
+            const pendingStateRef = useRef(null);
+            const isRollingRef = useRef(false);
+
             useEffect(() => { if (logRef.current) logRef.current.scrollTop = logRef.current.scrollHeight; }, [logs]);
 
             const onStateUpdate = useCallback((data) => {
                 console.log("State Update:", data);
-                setState(data);
-                if (data.status === "finished") {
-                    if (data.players[playerIndex]?.pos >= 100) GameRewards.award('Snake & Ladder', 'WIN');
-                    else GameRewards.award('Snake & Ladder', 'PLAY');
+                if (isRollingRef.current) {
+                    pendingStateRef.current = data;
+                } else {
+                    setState(data);
+                    if (data.status === "finished") {
+                        if (data.players[playerIndex]?.pos >= 100) GameRewards.award('Snake & Ladder', 'WIN');
+                        else GameRewards.award('Snake & Ladder', 'PLAY');
+                    }
                 }
             }, [playerIndex]);
 
             const onRollAnim = useCallback((data) => {
                 setRolling(true);
+                isRollingRef.current = true;
                 setTimeout(() => {
                     setRolling(false);
+                    isRollingRef.current = false;
                     setDiceVal(data.steps);
-                    setLogs(prev => [...prev, `> ${data.playerName} rolled ${data.steps}.`]);
+                    
+                    const name = (stateRef.current?.players && stateRef.current.players[data.playerIndex])?.name || "Player";
+                    setLogs(prev => [...prev, `> ${name} rolled ${data.steps}.`]);
+
+                    if (pendingStateRef.current) {
+                        const nextState = pendingStateRef.current;
+                        pendingStateRef.current = null;
+                        setState(nextState);
+                        if (nextState.status === "finished") {
+                            if (nextState.players[playerIndex]?.pos >= 100) GameRewards.award('Snake & Ladder', 'WIN');
+                            else GameRewards.award('Snake & Ladder', 'PLAY');
+                        }
+                    }
                 }, 800);
-            }, []);
+            }, [playerIndex]);
 
             const { sendRoll } = useSnakeSocket(roomId, onStateUpdate, onRollAnim);
 

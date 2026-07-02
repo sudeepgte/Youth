@@ -10,24 +10,140 @@
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-<style>
-        body { margin: 0; background: #0f172a; color: #fff; font-family: 'Inter', sans-serif; }
-        .memory-container { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; margin-top: 60px; }
-        .stats-bar { display: flex; justify-content: space-between; width: 100%; max-width: 600px; margin-bottom: 20px; padding: 15px 30px; background: rgba(255,255,255,0.05); border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
+    <script>
+        window.onerror = function(msg, url, line, col, error) {
+            const errDiv = document.createElement('div');
+            errDiv.style.cssText = 'position:fixed;top:0;left:0;width:100%;background:rgba(255,0,0,0.9);color:white;z-index:9999;padding:20px;text-align:center;font-family:sans-serif;';
+            errDiv.innerHTML = '<h2>Game Error</h2><p>' + msg + '</p><button onclick="this.parentElement.remove()" style="padding:10px;margin-top:10px;cursor:pointer;">Dismiss</button>';
+            document.body.appendChild(errDiv);
+            return false;
+        };
+    </script>
+    <script th:src="@{/js/game-rewards.js}"></script>
+    <style>
+        body { 
+            margin: 0; 
+            background: #0a0a0c !important; 
+            color: #fff; 
+            font-family: 'Inter', sans-serif; 
+            overflow-y: auto;
+        }
+        .memory-container { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            min-height: calc(100vh - 80px); 
+            padding: 40px 20px; 
+            box-sizing: border-box;
+        }
+        .stats-bar { 
+            display: flex; 
+            justify-content: space-between; 
+            width: 100%; 
+            max-width: 600px; 
+            margin-bottom: 25px; 
+            padding: 15px 30px; 
+            background: rgba(255,255,255,0.03); 
+            border-radius: 16px; 
+            border: 1px solid rgba(255,255,255,0.08); 
+            backdrop-filter: blur(10px);
+        }
         .stat-item { text-align: center; }
-        .stat-label { font-size: 12px; color: #94a3b8; text-transform: uppercase; font-weight: 700; }
-        .stat-value { font-size: 24px; font-weight: 900; color: #fbcc15; }
+        .stat-label { font-size: 11px; color: #94a3b8; text-transform: uppercase; font-weight: 800; letter-spacing: 1px; }
+        .stat-value { font-size: 26px; font-weight: 900; color: #fbcc15; margin-top: 2px; }
         
-        .grid-board { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; max-width: 600px; width: 100%; perspective: 1000px; }
-        .card { aspect-ratio: 1; cursor: pointer; position: relative; transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.4, 0.0, 0.2, 1); border-radius: 12px; }
-        .card.flipped { transform: rotateY(180deg); }
-        .card-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; align-items: center; justify-content: center; font-size: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
-        .card-back { background: linear-gradient(135deg, #1e293b 0%, #334155 100%); border: 2px solid rgba(255,255,255,0.1); }
-        .card-back::after { content: 'Z'; font-size: 32px; color: rgba(255,255,255,0.2); font-weight: 900; }
-        .card-front { background: #fff; transform: rotateY(180deg); border: 2px solid #fbcc15; }
+        .grid-board { 
+            display: grid; 
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 15px; 
+            max-width: 600px; 
+            width: 100%; 
+            perspective: 1000px; 
+        }
+        .memory-card { 
+            aspect-ratio: 1; 
+            cursor: pointer; 
+            position: relative; 
+            transform-style: preserve-3d; 
+            -webkit-transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.4, 0.0, 0.2, 1); 
+            border-radius: 16px; 
+            overflow: visible !important;
+        }
+        .memory-card.flipped { 
+            transform: rotateY(180deg); 
+            -webkit-transform: rotateY(180deg); 
+        }
+        .memory-card-face { 
+            position: absolute; 
+            width: 100%; 
+            height: 100%; 
+            backface-visibility: hidden; 
+            -webkit-backface-visibility: hidden;
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 44px; 
+            border-radius: 16px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5); 
+        }
+        .memory-card-back { 
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); 
+            border: 2px solid rgba(255,255,255,0.08); 
+            transform: rotateY(0deg);
+            -webkit-transform: rotateY(0deg);
+            z-index: 2;
+        }
+        .memory-card-back::after { 
+            content: 'Z'; 
+            font-size: 36px; 
+            color: rgba(251, 204, 21, 0.25); 
+            font-weight: 900; 
+            text-shadow: 0 0 10px rgba(251, 204, 21, 0.1);
+        }
+        .memory-card-front { 
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); 
+            transform: rotateY(180deg); 
+            -webkit-transform: rotateY(180deg); 
+            border: 2px solid #fbcc15; 
+            box-shadow: 0 0 15px rgba(251, 204, 21, 0.2);
+            z-index: 1;
+        }
+        .memory-card.flipped .memory-card-back {
+            z-index: 1;
+        }
+        .memory-card.flipped .memory-card-front {
+            z-index: 2;
+        }
         
-        .btn-restart { margin-top: 30px; padding: 12px 30px; background: linear-gradient(135deg, #fbcc15 0%, #eab308 100%); color: #000; font-weight: 800; font-size: 16px; border: none; border-radius: 8px; cursor: pointer; transition: 0.2s; text-transform: uppercase; letter-spacing: 2px; }
-        .btn-restart:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(250,204,21,0.3); }
+        .btn-restart { 
+            margin-top: 30px; 
+            padding: 14px 36px; 
+            background: linear-gradient(135deg, #fbcc15 0%, #eab308 100%); 
+            color: #000; 
+            font-weight: 900; 
+            font-size: 15px; 
+            border: none; 
+            border-radius: 12px; 
+            cursor: pointer; 
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            text-transform: uppercase; 
+            letter-spacing: 2px; 
+            box-shadow: 0 4px 15px rgba(250,204,21,0.2);
+        }
+        .btn-restart:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 10px 25px rgba(250,204,21,0.35); 
+        }
+        .btn-restart:active {
+            transform: translateY(1px);
+        }
+        
+        @keyframes modalPop {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
     </style>
 </head>
 
@@ -36,10 +152,30 @@
     <div id="root"></div>
 
     <script type="text/babel" th:inline="none">
-    /*<![CDATA[*/
-        const { useState, useEffect, useCallback } = React;
+        // <![CDATA[
+        const { useState, useEffect, useCallback, useRef } = React;
 
-        const ICONS = ['🍎', '🍌', '🍉', '🍇', '🍓', '🍒', '🍑', '🍍'];
+        const ICONS = [
+            'fa-solid fa-apple-whole',
+            'fa-solid fa-lemon',
+            'fa-solid fa-carrot',
+            'fa-solid fa-pepper-hot',
+            'fa-solid fa-pizza-slice',
+            'fa-solid fa-cookie-bite',
+            'fa-solid fa-burger',
+            'fa-solid fa-ice-cream'
+        ];
+
+        const ICON_COLORS = {
+            'fa-solid fa-apple-whole': '#ef4444',
+            'fa-solid fa-lemon': '#f59e0b',
+            'fa-solid fa-carrot': '#f97316',
+            'fa-solid fa-pepper-hot': '#dc2626',
+            'fa-solid fa-pizza-slice': '#eab308',
+            'fa-solid fa-cookie-bite': '#d97706',
+            'fa-solid fa-burger': '#854d0e',
+            'fa-solid fa-ice-cream': '#ec4899'
+        };
 
         const MemoryGame = () => {
             const [cards, setCards] = useState([]);
@@ -48,6 +184,8 @@
             const [moves, setMoves] = useState(0);
             const [bestScore, setBestScore] = useState(null);
             const [isLocked, setIsLocked] = useState(false);
+            const [showVictory, setShowVictory] = useState(false);
+            const [finalMovesCount, setFinalMovesCount] = useState(0);
 
             useEffect(() => {
                 const saved = localStorage.getItem('memoryBestScore');
@@ -56,12 +194,15 @@
             }, []);
 
             const initializeGame = () => {
-                const deck = [...ICONS, ...ICONS].sort(() => Math.random() - 0.5).map((icon, id) => ({ id, icon }));
+                const deck = [...ICONS, ...ICONS]
+                    .map((icon) => ({ id: Math.random().toString(36).substr(2, 9), icon }))
+                    .sort(() => Math.random() - 0.5);
                 setCards(deck);
                 setFlippedIndices([]);
                 setMatchedIndices(new Set());
                 setMoves(0);
                 setIsLocked(false);
+                setShowVictory(false);
             };
 
             const handleCardClick = (index) => {
@@ -90,7 +231,11 @@
                                 setBestScore(finalMoves);
                                 localStorage.setItem('memoryBestScore', finalMoves.toString());
                             }
-                            setTimeout(() => alert('You Won in ' + finalMoves + ' moves!'), 500);
+                            setFinalMovesCount(finalMoves);
+                            setShowVictory(true);
+                            if (typeof GameRewards !== 'undefined') {
+                                GameRewards.award('Memory Game', 'WIN');
+                            }
                         }
                     } else {
                         setTimeout(() => {
@@ -118,22 +263,62 @@
                         {cards.map((card, index) => {
                             const isFlipped = flippedIndices.includes(index) || matchedIndices.has(index);
                             return (
-                                <div key={card.id} className={`card ${isFlipped ? 'flipped' : ''}`} onClick={() => handleCardClick(index)}>
-                                    <div className="card-face card-back"></div>
-                                    <div className="card-face card-front">{card.icon}</div>
+                                <div key={card.id} className={`memory-card ${isFlipped ? 'flipped' : ''}`} onClick={() => handleCardClick(index)}>
+                                    <div className="memory-card-face memory-card-back"></div>
+                                    <div className="memory-card-face memory-card-front" style={{ color: ICON_COLORS[card.icon] || '#fbcc15' }}>
+                                        <i className={card.icon}></i>
+                                    </div>
                                 </div>
                             );
                         })}
                     </div>
 
                     <button className="btn-restart" onClick={initializeGame}>Restart Game</button>
+
+                    {showVictory && (
+                        <div className="victory-overlay" style={{
+                            position: 'fixed',
+                            inset: 0,
+                            background: 'rgba(10, 10, 12, 0.95)',
+                            backdropFilter: 'blur(12px)',
+                            zIndex: 10000,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontFamily: "'Inter', sans-serif"
+                        }}>
+                            <div className="victory-card" style={{
+                                background: 'rgba(255, 255, 255, 0.04)',
+                                padding: '40px 60px',
+                                borderRadius: '28px',
+                                border: '1px solid rgba(255, 255, 255, 0.08)',
+                                textAlign: 'center',
+                                boxShadow: '0 25px 60px rgba(0,0,0,0.6)',
+                                animation: 'modalPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                                maxWidth: '420px',
+                                width: '90%'
+                            }}>
+                                <div style={{ fontSize: '76px', marginBottom: '15px' }}>🏆</div>
+                                <h1 style={{ fontSize: '32px', fontWeight: '900', color: '#fbcc15', margin: '0 0 10px 0', textTransform: 'uppercase', letterSpacing: '2px' }}>Victory!</h1>
+                                <p style={{ fontSize: '16px', color: '#94a3b8', margin: '0 0 30px 0', lineHeight: '1.5' }}>
+                                    You matched all pairs in <span style={{ color: '#fbcc15', fontWeight: '800' }}>{finalMovesCount}</span> moves!
+                                </p>
+                                <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
+                                    <button className="btn-restart" style={{ marginTop: 0, flex: 1 }} onClick={initializeGame}>Play Again</button>
+                                    <button className="btn-restart" style={{ marginTop: 0, flex: 1, background: 'rgba(255,255,255,0.08)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', boxShadow: 'none' }} onClick={() => window.location.href = '/games'}>Exit</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             );
         };
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<MemoryGame />);
-    /*]]>*/
+        // ]]>
     </script>
 </body>
+
 </html>
