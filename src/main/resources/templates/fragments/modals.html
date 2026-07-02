@@ -6,6 +6,72 @@
 <body>
 
 <div th:fragment="createPostModal">
+    <style>
+        .collab-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+        .ctag {
+            background: rgba(167, 139, 250, .15);
+            border: 1px solid rgba(167, 139, 250, .4);
+            color: var(--accent2);
+            border-radius: 20px;
+            padding: 3px 10px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .mdrop {
+            position: absolute;
+            background: var(--card-bg);
+            border: 1px solid var(--accent2);
+            border-radius: 8px;
+            z-index: 600;
+            max-height: 180px;
+            overflow-y: auto;
+            min-width: 200px;
+            display: none;
+            top: 100%;
+            left: 0;
+            width: 100%;
+        }
+        .mdrop.open {
+            display: block;
+        }
+        .mi {
+            padding: 9px 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+        }
+        .mi:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .mi img {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+        }
+        .cat-btn {
+            padding:6px 12px; 
+            border-radius:20px; 
+            border:1.5px solid var(--glass-border); 
+            background:transparent; 
+            color:var(--text-secondary); 
+            font-size:12px; 
+            cursor:pointer; 
+            display:flex; 
+            align-items:center; 
+            gap:5px; 
+            transition:all 0.2s;
+        }
+    </style>
+
     <!-- Create Post Modal -->
     <div class="overlay" id="createPostModal">
         <div class="modal">
@@ -19,51 +85,108 @@
             </div>
             <div style="padding:20px;">
                 <form id="createPostForm" th:action="@{/profile/post}" method="post" enctype="multipart/form-data">
+                    <!-- Hidden fields for type & category -->
                     <input type="hidden" name="postType" id="postTypeInput" value="POST">
                     <input type="hidden" name="category" id="categoryInput" value="">
 
+                    <!-- Post Type Segmented Selector -->
                     <div class="form-group">
                         <label style="font-size:12px; color:var(--text-secondary); margin-bottom:8px; display:block;">
                             <i class="fas fa-layer-group"></i> &nbsp;Select Type
                         </label>
                         <div id="typeSelector" style="display:flex; gap:8px; margin-bottom:4px;">
-                            <button type="button" class="type-btn active" data-type="POST" onclick="selectPostType(this)"
-                                style="flex:1; padding:10px 6px; border-radius:10px; border:2px solid var(--accent); background:rgba(34,211,238,0.15); color:var(--accent); font-weight:600; font-size:13px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; transition:all 0.2s;">
-                                <i class="fas fa-image" style="font-size:18px;"></i> Post
+                            <button type="button" class="type-btn active" data-type="POST"
+                                onclick="selectPostType(this)"
+                                style="flex:1; padding:10px 6px; border-radius:10px; border:2px solid var(--accent); background:rgba(248,68,100,0.15); color:var(--accent); font-weight:600; font-size:13px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; transition:all 0.2s;">
+                                <i class="fas fa-image" style="font-size:18px;"></i>
+                                Post
                             </button>
                             <button type="button" class="type-btn" data-type="REEL" onclick="selectPostType(this)"
                                 style="flex:1; padding:10px 6px; border-radius:10px; border:2px solid var(--glass-border); background:transparent; color:var(--text-secondary); font-weight:600; font-size:13px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; transition:all 0.2s;">
-                                <i class="fas fa-film" style="font-size:18px;"></i> Reel
+                                <i class="fas fa-film" style="font-size:18px;"></i>
+                                Reel
                             </button>
                             <button type="button" class="type-btn" data-type="STORY" onclick="selectPostType(this)"
                                 style="flex:1; padding:10px 6px; border-radius:10px; border:2px solid var(--glass-border); background:transparent; color:var(--text-secondary); font-weight:600; font-size:13px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; transition:all 0.2s;">
-                                <i class="fas fa-circle-notch" style="font-size:18px;"></i> Story
+                                <i class="fas fa-circle-notch" style="font-size:18px;"></i>
+                                Story
                             </button>
-                            <button type="button" class="type-btn" data-type="THOUGHT" onclick="selectPostType(this)"
-                                style="flex:1; padding:10px 6px; border-radius:10px; border:2px solid var(--glass-border); background:transparent; color:var(--text-secondary); font-weight:600; font-size:13px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; transition:all 0.2s;">
-                                <i class="fas fa-lightbulb" style="font-size:18px;"></i> Thought
-                            </button>
+                        </div>
+                        <p id="typeHint"
+                            style="font-size:11px; color:var(--text-secondary); margin:4px 0 0; min-height:14px;">
+                            Share a photo with your followers
+                        </p>
+                    </div>
+
+                    <!-- Caption / Content -->
+                    <div class="form-group" style="position:relative;">
+                        <label style="font-size:12px; color:var(--text-secondary); margin-bottom:6px; display:block;">
+                            <i class="fas fa-pen"></i> &nbsp;Caption
+                        </label>
+                        <textarea id="postContent" name="content" class="form-input" rows="3"
+                            placeholder="What's on your mind? Type @ to mention..."></textarea>
+                        <div class="mdrop" id="mentionDrop"></div>
+                    </div>
+
+                    <!-- Category -->
+                    <div class="form-group">
+                        <label style="font-size:12px; color:var(--text-secondary); margin-bottom:6px; display:block;">
+                            <i class="fas fa-tags"></i> &nbsp;Category
+                        </label>
+                        <div id="categoryGrid" style="display:flex; flex-wrap:wrap; gap:7px;">
+                            <button type="button" class="cat-btn" data-cat="Food" onclick="selectCategory(this)">🍔 Food</button>
+                            <button type="button" class="cat-btn" data-cat="Vlog" onclick="selectCategory(this)">🎥 Vlog</button>
+                            <button type="button" class="cat-btn" data-cat="Blog" onclick="selectCategory(this)">📝 Blog</button>
+                            <button type="button" class="cat-btn" data-cat="Gym" onclick="selectCategory(this)">💪 Gym</button>
+                            <button type="button" class="cat-btn" data-cat="Dance" onclick="selectCategory(this)">💃 Dance</button>
+                            <button type="button" class="cat-btn" data-cat="Singing" onclick="selectCategory(this)">🎤 Singing</button>
+                            <button type="button" class="cat-btn" data-cat="Travel" onclick="selectCategory(this)">✈️ Travel</button>
+                            <button type="button" class="cat-btn" data-cat="Fashion" onclick="selectCategory(this)">👗 Fashion</button>
+                            <button type="button" class="cat-btn" data-cat="Comedy" onclick="selectCategory(this)">😂 Comedy</button>
+                            <button type="button" class="cat-btn" data-cat="Gaming" onclick="selectCategory(this)">🎮 Gaming</button>
                         </div>
                     </div>
 
-                    <div class="form-group">
-                        <textarea id="postContent" name="content" class="form-input" rows="3" placeholder="What's on your mind?"></textarea>
-                    </div>
-
+                    <!-- Media Upload -->
                     <div class="form-group">
                         <label style="font-size:12px; color:var(--text-secondary); margin-bottom:6px; display:block;">
                             <i class="fas fa-paperclip"></i> &nbsp;Media
                         </label>
-                        <div id="mediaDropZone" style="border:2px dashed var(--glass-border); border-radius:12px; padding:20px; text-align:center; cursor:pointer;" onclick="document.getElementById('mediaFile').click()">
-                            <i class="fas fa-cloud-upload-alt" style="font-size:28px; color:var(--text-secondary); display:block; margin-bottom:6px;"></i>
-                            <span style="font-size:13px; color:var(--text-secondary);">Click to upload</span>
-                            <input type="file" id="mediaFile" name="file" accept="image/*,video/*" style="display:none;" onchange="previewMedia(this)">
+                        <div id="mediaDropZone"
+                            style="border:2px dashed var(--glass-border); border-radius:12px; padding:20px; text-align:center; cursor:pointer; transition:border-color 0.2s; position:relative;"
+                            onclick="document.getElementById('mediaFile').click()"
+                            ondragover="event.preventDefault(); this.style.borderColor='var(--accent)';"
+                            ondragleave="this.style.borderColor='var(--glass-border)';" ondrop="handleFileDrop(event)">
+                            <i class="fas fa-cloud-upload-alt"
+                                style="font-size:28px; color:var(--text-secondary); display:block; margin-bottom:6px;"></i>
+                            <span id="dropZoneLabel" style="font-size:13px; color:var(--text-secondary);">Click or drag to upload a photo</span>
+                            <input type="file" id="mediaFile" name="file" accept="image/*" style="display:none;"
+                                onchange="previewMedia(this)">
                         </div>
                         <div id="mediaPreview" style="display:none; margin-top:10px;"></div>
                     </div>
 
-                    <button type="submit" class="cta-btn" style="width:100%; margin-top:10px;">
-                        <i class="fas fa-paper-plane"></i> &nbsp;Share Post
+                    <!-- Tag Collaborators -->
+                    <div class="form-group" style="position:relative;">
+                        <label style="font-size:12px; color:var(--text-secondary); margin-bottom:6px; display:block;">
+                            <i class="fas fa-user-tag"></i> &nbsp;Tag Collaborators
+                        </label>
+                        <div class="collab-tags" id="collabTags"></div>
+                        <input type="text" id="collabSearch" class="form-input" placeholder="Search users...">
+                        <div class="mdrop" id="collabDrop"></div>
+                        <input type="hidden" name="collaborators" id="collabHidden">
+                    </div>
+
+                    <!-- Hashtags -->
+                    <div class="form-group">
+                        <label style="font-size:12px; color:var(--text-secondary); margin-bottom:6px; display:block;">
+                            <i class="fas fa-hashtag"></i> &nbsp;Hashtags
+                        </label>
+                        <input type="text" name="hashtags" class="form-input" placeholder="#zentrix #creative">
+                    </div>
+
+                    <button type="submit" class="cta-btn" style="width:100%; margin-top:4px;">
+                        <i class="fas fa-paper-plane"></i> &nbsp;<span id="submitBtnLabel">Share Post</span>
                     </button>
                 </form>
             </div>
@@ -71,18 +194,23 @@
     </div>
 
     <script th:inline="javascript">
+        // Helper constants
+        var FB = FB || 'https://ui-avatars.com/api/?background=22d3ee&color=fff';
+
         function openM(id) {
             const el = document.getElementById(id);
             if (el) {
                 el.classList.add('open');
-                el.style.display = 'block'; 
+                el.style.display = 'flex'; 
                 const modal = el.querySelector('.modal');
                 if (modal) modal.style.display = 'block';
             }
-            const overlay = document.getElementById('overlay');
-            if (overlay) {
-                overlay.classList.add('open');
-                overlay.style.display = 'block';
+            if (el && !el.classList.contains('overlay')) {
+                const overlay = document.getElementById('overlay');
+                if (overlay) {
+                    overlay.classList.add('open');
+                    overlay.style.display = 'flex';
+                }
             }
         }
         function closeM(id) {
@@ -100,38 +228,144 @@
             }
         }
         function openCreateModal() { openM('createPostModal'); }
+        function closeCreateModal() { closeM('createPostModal'); }
+
+        /* ===== Category Selector ===== */
+        function selectCategory(btn) {
+            const cat = btn.dataset.cat;
+            const hidden = document.getElementById('categoryInput');
+
+            if (hidden.value === cat) {
+                hidden.value = '';
+                btn.style.borderColor = 'var(--glass-border)';
+                btn.style.background = 'transparent';
+                btn.style.color = 'var(--text-secondary)';
+            } else {
+                document.querySelectorAll('.cat-btn').forEach(b => {
+                    b.style.borderColor = 'var(--glass-border)';
+                    b.style.background = 'transparent';
+                    b.style.color = 'var(--text-secondary)';
+                });
+                hidden.value = cat;
+                btn.style.borderColor = 'var(--accent)';
+                btn.style.background = 'rgba(248,68,100,0.1)';
+                btn.style.color = 'var(--accent)';
+            }
+        }
+
+        /* ===== Drag-and-drop media ===== */
+        function handleFileDrop(event) {
+            event.preventDefault();
+            document.getElementById('mediaDropZone').style.borderColor = 'var(--glass-border)';
+            const files = event.dataTransfer.files;
+            if (!files || !files[0]) return;
+            const fileInput = document.getElementById('mediaFile');
+            const dt = new DataTransfer();
+            dt.items.add(files[0]);
+            fileInput.files = dt.files;
+            previewMedia(fileInput);
+        }
+
+        function previewMedia(inp) {
+            const wrap = document.getElementById('mediaPreview'); 
+            wrap.innerHTML = '';
+            if (!inp.files || !inp.files[0]) { wrap.style.display = 'none'; return; }
+            const f = inp.files[0], url = URL.createObjectURL(f);
+            wrap.style.display = 'block';
+            wrap.innerHTML = f.type.startsWith('video')
+                ? `<video src="${url}" controls style="width:100%; max-height:180px; border-radius:8px;"></video>`
+                : `<img src="${url}" style="width:100%; max-height:180px; border-radius:8px;">`;
+        }
+
+        /* ===== Post Type Selector ===== */
+        const typeConfig = {
+            POST: { accept: 'image/*', hint: 'Share a photo with your followers', label: 'Share Post', zone: 'Click or drag to upload a photo' },
+            REEL: { accept: 'video/*', hint: 'Upload a short video reel 🎬', label: 'Share Reel', zone: 'Click or drag to upload a video' },
+            STORY: { accept: 'image/*,video/*', hint: 'Your story disappears in 24 hours ⏳', label: 'Share Story', zone: 'Click or drag to upload a photo or video' }
+        };
 
         function selectPostType(btn) {
+            const type = btn.dataset.type;
+            document.getElementById('postTypeInput').value = type;
+
             document.querySelectorAll('.type-btn').forEach(b => {
-                b.classList.remove('active');
-                b.style.borderColor = 'var(--glass-border)';
+                b.style.border = '2px solid var(--glass-border)';
                 b.style.background = 'transparent';
                 b.style.color = 'var(--text-secondary)';
             });
-            btn.classList.add('active');
-            btn.style.borderColor = 'var(--accent)';
-            btn.style.background = 'rgba(34,211,238,0.15)';
+
+            btn.style.border = '2px solid var(--accent)';
+            btn.style.background = 'rgba(248,68,100,0.15)';
             btn.style.color = 'var(--accent)';
-            document.getElementById('postTypeInput').value = btn.dataset.type;
+
+            const cfg = typeConfig[type];
+            document.getElementById('typeHint').textContent = cfg.hint;
+            document.getElementById('mediaFile').accept = cfg.accept;
+            document.getElementById('dropZoneLabel').textContent = cfg.zone;
+            document.getElementById('submitBtnLabel').textContent = cfg.label;
+
+            const prev = document.getElementById('mediaPreview');
+            prev.innerHTML = ''; prev.style.display = 'none';
         }
 
-        function previewMedia(input) {
-            const preview = document.getElementById('mediaPreview');
-            preview.innerHTML = '';
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const isVideo = input.files[0].type.startsWith('video/');
-                    if (isVideo) {
-                        preview.innerHTML = `<video src="${e.target.result}" controls style="width:100%; border-radius:8px;"></video>`;
-                    } else {
-                        preview.innerHTML = `<img src="${e.target.result}" style="width:100%; border-radius:8px;">`;
-                    }
-                    preview.style.display = 'block';
-                }
-                reader.readAsDataURL(input.files[0]);
-            }
+        /* Mention/Collab Autocomplete logic */
+        function fetchU(q, drop, onSel) {
+            fetch('/profile/api/users/search?q=' + encodeURIComponent(q))
+                .then(r => r.json()).then(us => {
+                    drop.innerHTML = '';
+                    if (!us.length) { drop.classList.remove('open'); return; }
+                    us.forEach(u => {
+                        const d = document.createElement('div'); d.className = 'mi';
+                        d.innerHTML = `<img src="${u.profilePhotoUrl || FB}"><span class="mu">@${u.username}</span>`;
+                        d.onmousedown = (e) => { e.preventDefault(); onSel(u.username); };
+                        drop.appendChild(d);
+                    });
+                    drop.classList.add('open');
+                });
         }
+
+        // Initialize listeners after DOM loads
+        document.addEventListener('DOMContentLoaded', () => {
+            const postContent = document.getElementById('postContent');
+            const mentionDrop = document.getElementById('mentionDrop');
+            if (postContent && mentionDrop) {
+                postContent.oninput = () => {
+                    const val = postContent.value, pos = postContent.selectionStart;
+                    let at = -1;
+                    for (let i = pos - 1; i >= 0; i--) { if (val[i] === '@') { at = i; break; } if (/\s/.test(val[i])) break; }
+                    if (at === -1) { mentionDrop.classList.remove('open'); return; }
+                    const q = val.substring(at + 1, pos);
+                    if (!q) { mentionDrop.classList.remove('open'); return; }
+                    fetchU(q, mentionDrop, u => {
+                        postContent.value = val.substring(0, at) + '@' + u + ' ' + val.substring(pos);
+                        mentionDrop.classList.remove('open');
+                    });
+                };
+            }
+
+            const collabSearch = document.getElementById('collabSearch');
+            const collabDrop = document.getElementById('collabDrop');
+            const collabTags = document.getElementById('collabTags');
+            const collabHidden = document.getElementById('collabHidden');
+            let selCollabs = [];
+
+            if (collabSearch && collabDrop) {
+                collabSearch.oninput = () => {
+                    const q = collabSearch.value.trim();
+                    if (!q) { collabDrop.classList.remove('open'); return; }
+                    fetchU(q, collabDrop, u => {
+                        if (!selCollabs.includes(u)) {
+                            selCollabs.push(u); collabHidden.value = selCollabs.join(',');
+                            const t = document.createElement('div'); t.className = 'ctag';
+                            t.innerHTML = `@${u} <span style="cursor:pointer; font-weight:bold;">&times;</span>`;
+                            t.onclick = () => { selCollabs = selCollabs.filter(x => x !== u); collabHidden.value = selCollabs.join(','); t.remove(); };
+                            collabTags.appendChild(t);
+                        }
+                        collabSearch.value = ''; collabDrop.classList.remove('open');
+                    });
+                };
+            }
+        });
     </script>
 </div>
 

@@ -658,7 +658,6 @@
                     </div>
                 </div>
             </div>
-    </div>
 
     <!-- Tabs -->
     <div class="tabs">
@@ -666,8 +665,8 @@
         <button class="tab-btn" onclick="switchTab('reels',this)"><i class="fas fa-film"></i> Reels</button>
         <button class="tab-btn" onclick="switchTab('followers',this)"><i class="fas fa-users"></i> Followers</button>
         <button class="tab-btn" onclick="switchTab('following',this)"><i class="fas fa-user-friends"></i> Following</button>
-        <button class="tab-btn" th:if="${isOwnProfile}" onclick="switchTab('settings',this)"><i class="fas fa-cog"></i>
-            Settings</button>
+        <button class="tab-btn" th:if="${isOwnProfile}" onclick="switchTab('saved',this)"><i class="fas fa-bookmark"></i> Saved</button>
+        <button class="tab-btn" th:if="${isOwnProfile}" onclick="switchTab('settings',this)"><i class="fas fa-cog"></i> Settings</button>
     </div>
 
     <!-- Grid -->
@@ -715,8 +714,8 @@
 
     <!-- Reels -->
     <div class="tab-panel" id="tab-reels">
-        <div class="posts-grid" th:if="${not #lists.isEmpty(posts.?[postType == 'REEL'])}">
-            <div th:each="post : ${posts}" th:if="${post.postType == 'REEL'}" class="grid-item"
+        <div class="posts-grid" th:if="${not #lists.isEmpty(posts.?[postType == 'REEL'])}" id="reelGrid">
+            <div th:each="post,iterStat : ${posts}" th:if="${post.postType == 'REEL'}" class="grid-item reel-grid-item"
                 th:attr="data-id=${post.id},
                                data-content=${post.content},
                                data-hashtags=${post.hashtags != null ? post.hashtags : ''},
@@ -725,22 +724,25 @@
                                data-username=${post.user.username},
                                data-avatar=${post.user.profilePhotoUrl != null ? post.user.profilePhotoUrl : ''},
                                data-date=${#temporals.format(post.createdAt,'dd MMM yyyy')},
-                               data-collabs=${#strings.listJoin(post.collaborations.?[status.name() == 'ACCEPTED'].![user.username], ', ')}" onclick="openPostDetail(this)">
+                               data-collabs=${#strings.listJoin(post.collaborations.?[status.name() == 'ACCEPTED'].![user.username], ', ')}"
+                onclick="openReelViewer(this)">
 
-                <img th:if="${post.mediaUrl != null and post.mediaType == 'IMAGE'}" th:src="@{${post.mediaUrl}}"
-                    alt="reel">
                 <video th:if="${post.mediaUrl != null and post.mediaType == 'VIDEO'}" th:src="@{${post.mediaUrl}}"
-                    muted></video>
+                    muted loop class="reel-thumb-vid" preload="none"></video>
+                <img th:if="${post.mediaUrl != null and post.mediaType == 'IMAGE'}" th:src="@{${post.mediaUrl}}" alt="reel">
 
                 <div class="grid-overlay">
                     <span><i class="fas fa-play"></i></span>
+                    <span><i class="fas fa-heart"></i> <span class="lc">—</span></span>
                 </div>
+                <div style="position:absolute;top:6px;left:6px;background:rgba(0,0,0,0.6);border-radius:4px;padding:2px 6px;font-size:10px;color:#fff;"><i class="fas fa-film"></i> REEL</div>
             </div>
         </div>
         <div th:if="${#lists.isEmpty(posts.?[postType == 'REEL'])}"
             style="text-align:center; padding:60px 20px; color:var(--text-secondary);">
             <i class="fas fa-video-slash" style="font-size:48px; opacity:0.3; margin-bottom:15px; display:block;"></i>
             <p style="font-weight:600;">No Reels Yet</p>
+            <p style="font-size:13px; margin-top:6px;">Create your first reel using the + button!</p>
         </div>
     </div>
 
@@ -795,6 +797,38 @@
                     <button type="submit" class="cta-btn" style="padding:10px 20px;">Reset</button>
                 </form>
             </div>
+        </div>
+    </div>
+
+    <!-- Saved Posts -->
+    <div class="tab-panel" id="tab-saved" th:if="${isOwnProfile}">
+        <div class="posts-grid" th:if="${savedPosts != null and not #lists.isEmpty(savedPosts)}">
+            <div th:each="post : ${savedPosts}" class="grid-item"
+                th:attr="data-id=${post.id},
+                               data-content=${post.content},
+                               data-hashtags=${post.hashtags != null ? post.hashtags : ''},
+                               data-mediaurl=${post.mediaUrl != null ? post.mediaUrl : ''},
+                               data-mediatype=${post.mediaType != null ? post.mediaType : ''},
+                               data-username=${post.user.username},
+                               data-avatar=${post.user.profilePhotoUrl != null ? post.user.profilePhotoUrl : ''},
+                               data-date=${#temporals.format(post.createdAt,'dd MMM yyyy')},
+                               data-collabs=${#strings.listJoin(post.collaborations.?[status.name() == 'ACCEPTED'].![user.username], ', ')}"
+                onclick="openPostDetail(this)">
+
+                <img th:if="${post.mediaUrl != null and post.mediaType == 'IMAGE'}" th:src="@{${post.mediaUrl}}"
+                    alt="saved post">
+                <video th:if="${post.mediaUrl != null and post.mediaType == 'VIDEO'}" th:src="@{${post.mediaUrl}}"
+                    muted></video>
+                <div th:if="${post.mediaUrl == null}"
+                    style="display:flex; align-items:center; justify-content:center; height:100%; padding:20px; background:var(--card-bg);">
+                    <p style="font-size:12px; text-align:center; color:var(--text-secondary);"
+                        th:text="${#strings.abbreviate(post.content,90)}">text</p>
+                </div>
+            </div>
+        </div>
+        <div th:if="${savedPosts == null or #lists.isEmpty(savedPosts)}" class="empty-state">
+            <i class="far fa-bookmark"></i>
+            <p style="font-weight:600;">No Saved Posts Yet</p>
         </div>
     </div>
 
@@ -868,148 +902,7 @@
     </div>
 
     <!-- Create Post Modal -->
-    <div class="overlay" id="createPostModal">
-        <div class="modal">
-            <div
-                style="padding:20px; border-bottom:1px solid var(--glass-border); display:flex; justify-content:space-between; align-items:center;">
-                <h3 style="font-size:16px; display:flex; align-items:center; gap:8px;">
-                    <i class="fas fa-plus-circle" style="color:var(--accent);"></i>
-                    Create Content
-                </h3>
-                <button class="nav-btn" onclick="closeM('createPostModal')"
-                    style="background:none; border:none; color:var(--text-secondary); font-size:20px;">&times;</button>
-            </div>
-            <div style="padding:20px;">
-                <form id="createPostForm" th:action="@{/profile/post}" method="post" enctype="multipart/form-data">
-
-                    <!-- Hidden fields for type & category -->
-                    <input type="hidden" name="postType" id="postTypeInput" value="POST">
-                    <input type="hidden" name="category" id="categoryInput" value="">
-
-                    <!-- Post Type Segmented Selector -->
-                    <div class="form-group">
-                        <label style="font-size:12px; color:var(--text-secondary); margin-bottom:8px; display:block;">
-                            <i class="fas fa-layer-group"></i> &nbsp;Select Type
-                        </label>
-                        <div id="typeSelector" style="display:flex; gap:8px; margin-bottom:4px;">
-                            <button type="button" class="type-btn active" data-type="POST"
-                                onclick="selectPostType(this)"
-                                style="flex:1; padding:10px 6px; border-radius:10px; border:2px solid var(--accent); background:rgba(248,68,100,0.15); color:var(--accent); font-weight:600; font-size:13px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; transition:all 0.2s;">
-                                <i class="fas fa-image" style="font-size:18px;"></i>
-                                Post
-                            </button>
-                            <button type="button" class="type-btn" data-type="REEL" onclick="selectPostType(this)"
-                                style="flex:1; padding:10px 6px; border-radius:10px; border:2px solid var(--glass-border); background:transparent; color:var(--text-secondary); font-weight:600; font-size:13px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; transition:all 0.2s;">
-                                <i class="fas fa-film" style="font-size:18px;"></i>
-                                Reel
-                            </button>
-                            <button type="button" class="type-btn" data-type="STORY" onclick="selectPostType(this)"
-                                style="flex:1; padding:10px 6px; border-radius:10px; border:2px solid var(--glass-border); background:transparent; color:var(--text-secondary); font-weight:600; font-size:13px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; transition:all 0.2s;">
-                                <i class="fas fa-circle-notch" style="font-size:18px;"></i>
-                                Story
-                            </button>
-                        </div>
-                        <p id="typeHint"
-                            style="font-size:11px; color:var(--text-secondary); margin:4px 0 0; min-height:14px;">
-                            Share a photo with your followers
-                        </p>
-                    </div>
-
-                    <!-- Caption / Content -->
-                    <div class="form-group" style="position:relative;">
-                        <label style="font-size:12px; color:var(--text-secondary); margin-bottom:6px; display:block;">
-                            <i class="fas fa-pen"></i> &nbsp;Caption
-                        </label>
-                        <textarea id="postContent" name="content" class="form-input" rows="3"
-                            placeholder="What's on your mind? Type @ to mention..."></textarea>
-                        <div class="mdrop" id="mentionDrop"></div>
-                    </div>
-
-                    <!-- Category -->
-                    <div class="form-group">
-                        <label style="font-size:12px; color:var(--text-secondary); margin-bottom:6px; display:block;">
-                            <i class="fas fa-tags"></i> &nbsp;Category
-                        </label>
-                        <div id="categoryGrid" style="display:flex; flex-wrap:wrap; gap:7px;">
-                            <button type="button" class="cat-btn" data-cat="Food" onclick="selectCategory(this)"
-                                style="padding:6px 12px; border-radius:20px; border:1.5px solid var(--glass-border); background:transparent; color:var(--text-secondary); font-size:12px; cursor:pointer; display:flex; align-items:center; gap:5px; transition:all 0.2s;">🍔
-                                Food</button>
-                            <button type="button" class="cat-btn" data-cat="Vlog" onclick="selectCategory(this)"
-                                style="padding:6px 12px; border-radius:20px; border:1.5px solid var(--glass-border); background:transparent; color:var(--text-secondary); font-size:12px; cursor:pointer; display:flex; align-items:center; gap:5px; transition:all 0.2s;">🎥
-                                Vlog</button>
-                            <button type="button" class="cat-btn" data-cat="Blog" onclick="selectCategory(this)"
-                                style="padding:6px 12px; border-radius:20px; border:1.5px solid var(--glass-border); background:transparent; color:var(--text-secondary); font-size:12px; cursor:pointer; display:flex; align-items:center; gap:5px; transition:all 0.2s;">📝
-                                Blog</button>
-                            <button type="button" class="cat-btn" data-cat="Gym" onclick="selectCategory(this)"
-                                style="padding:6px 12px; border-radius:20px; border:1.5px solid var(--glass-border); background:transparent; color:var(--text-secondary); font-size:12px; cursor:pointer; display:flex; align-items:center; gap:5px; transition:all 0.2s;">💪
-                                Gym</button>
-                            <button type="button" class="cat-btn" data-cat="Dance" onclick="selectCategory(this)"
-                                style="padding:6px 12px; border-radius:20px; border:1.5px solid var(--glass-border); background:transparent; color:var(--text-secondary); font-size:12px; cursor:pointer; display:flex; align-items:center; gap:5px; transition:all 0.2s;">💃
-                                Dance</button>
-                            <button type="button" class="cat-btn" data-cat="Singing" onclick="selectCategory(this)"
-                                style="padding:6px 12px; border-radius:20px; border:1.5px solid var(--glass-border); background:transparent; color:var(--text-secondary); font-size:12px; cursor:pointer; display:flex; align-items:center; gap:5px; transition:all 0.2s;">🎤
-                                Singing</button>
-                            <button type="button" class="cat-btn" data-cat="Travel" onclick="selectCategory(this)"
-                                style="padding:6px 12px; border-radius:20px; border:1.5px solid var(--glass-border); background:transparent; color:var(--text-secondary); font-size:12px; cursor:pointer; display:flex; align-items:center; gap:5px; transition:all 0.2s;">✈️
-                                Travel</button>
-                            <button type="button" class="cat-btn" data-cat="Fashion" onclick="selectCategory(this)"
-                                style="padding:6px 12px; border-radius:20px; border:1.5px solid var(--glass-border); background:transparent; color:var(--text-secondary); font-size:12px; cursor:pointer; display:flex; align-items:center; gap:5px; transition:all 0.2s;">👗
-                                Fashion</button>
-                            <button type="button" class="cat-btn" data-cat="Comedy" onclick="selectCategory(this)"
-                                style="padding:6px 12px; border-radius:20px; border:1.5px solid var(--glass-border); background:transparent; color:var(--text-secondary); font-size:12px; cursor:pointer; display:flex; align-items:center; gap:5px; transition:all 0.2s;">😂
-                                Comedy</button>
-                            <button type="button" class="cat-btn" data-cat="Gaming" onclick="selectCategory(this)"
-                                style="padding:6px 12px; border-radius:20px; border:1.5px solid var(--glass-border); background:transparent; color:var(--text-secondary); font-size:12px; cursor:pointer; display:flex; align-items:center; gap:5px; transition:all 0.2s;">🎮
-                                Gaming</button>
-                        </div>
-                    </div>
-
-                    <!-- Media Upload -->
-                    <div class="form-group">
-                        <label style="font-size:12px; color:var(--text-secondary); margin-bottom:6px; display:block;">
-                            <i class="fas fa-paperclip"></i> &nbsp;Media
-                        </label>
-                        <div id="mediaDropZone"
-                            style="border:2px dashed var(--glass-border); border-radius:12px; padding:20px; text-align:center; cursor:pointer; transition:border-color 0.2s; position:relative;"
-                            onclick="document.getElementById('mediaFile').click()"
-                            ondragover="event.preventDefault(); this.style.borderColor='var(--accent)';"
-                            ondragleave="this.style.borderColor='var(--glass-border)';" ondrop="handleFileDrop(event)">
-                            <i class="fas fa-cloud-upload-alt"
-                                style="font-size:28px; color:var(--text-secondary); display:block; margin-bottom:6px;"></i>
-                            <span id="dropZoneLabel" style="font-size:13px; color:var(--text-secondary);">Click or drag
-                                to upload a photo</span>
-                            <input type="file" id="mediaFile" name="file" accept="image/*" style="display:none;"
-                                onchange="previewMedia(this)">
-                        </div>
-                        <div id="mediaPreview" style="display:none; margin-top:10px;"></div>
-                    </div>
-
-                    <!-- Tag Collaborators -->
-                    <div class="form-group">
-                        <label style="font-size:12px; color:var(--text-secondary); margin-bottom:6px; display:block;">
-                            <i class="fas fa-user-tag"></i> &nbsp;Tag Collaborators
-                        </label>
-                        <div class="collab-tags" id="collabTags"></div>
-                        <input type="text" id="collabSearch" class="form-input" placeholder="Search users...">
-                        <div class="mdrop" id="collabDrop"></div>
-                        <input type="hidden" name="collaborators" id="collabHidden">
-                    </div>
-
-                    <!-- Hashtags -->
-                    <div class="form-group">
-                        <label style="font-size:12px; color:var(--text-secondary); margin-bottom:6px; display:block;">
-                            <i class="fas fa-hashtag"></i> &nbsp;Hashtags
-                        </label>
-                        <input type="text" name="hashtags" class="form-input" placeholder="#zentrix #creative">
-                    </div>
-
-                    <button type="submit" class="cta-btn" style="width:100%; margin-top:4px;">
-                        <i class="fas fa-paper-plane"></i> &nbsp;<span id="submitBtnLabel">Share Post</span>
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
+    <div th:replace="~{fragments/modals :: createPostModal}"></div>
 
 
     <!-- Post Detail Modal -->
@@ -1034,8 +927,19 @@
                 </div>
                 <div class="pd-info">
                     <div style="padding:15px; flex:1; overflow-y:auto;">
-                        <p id="pd-text" style="font-size:14px; line-height:1.6;"></p>
-                        <p id="pd-collab" style="font-size:12px; color:var(--accent); margin-top:10px;"></p>
+                        <!-- Caption display or edit -->
+                        <div id="pd-caption-view">
+                            <p id="pd-text" style="font-size:14px; line-height:1.6;"></p>
+                            <p id="pd-collab" style="font-size:12px; color:var(--accent); margin-top:10px;"></p>
+                        </div>
+                        <div id="pd-caption-edit" style="display:none;">
+                            <textarea id="pd-edit-content" class="form-input" rows="3" style="margin-bottom:8px;"></textarea>
+                            <input id="pd-edit-hashtags" class="form-input" style="margin-bottom:8px;" placeholder="#hashtags">
+                            <div style="display:flex;gap:8px;">
+                                <button class="cta-btn" onclick="saveEditPost()" style="flex:1;padding:8px;font-size:12px;">Save</button>
+                                <button class="nav-btn" onclick="cancelEditPost()" style="padding:8px 14px;border:1px solid var(--glass-border);border-radius:8px;font-size:12px;">Cancel</button>
+                            </div>
+                        </div>
                     </div>
                     <div
                         style="padding:10px 15px; border-top:1px solid var(--glass-border); display:flex; gap:15px; align-items:center;">
@@ -1047,12 +951,20 @@
                             style="background:none; border:none; color:var(--text-secondary); display:flex; align-items:center; gap:5px;">
                             <i class="fas fa-comment"></i> <span id="cmtCount">0</span>
                         </button>
+                        <button class="nav-btn" id="saveBtn" onclick="toggleSave()"
+                            style="background:none; border:none; color:var(--text-secondary); display:flex; align-items:center; gap:5px;" title="Save post">
+                            <i class="fas fa-bookmark"></i>
+                        </button>
                         <button class="nav-btn" onclick="openShareModal(currentId)"
                             style="background:none; border:none; color:var(--text-secondary); display:flex; align-items:center; gap:5px;">
                             <i class="fas fa-share"></i>
                         </button>
+                        <button class="nav-btn" id="editBtn" onclick="startEditPost()"
+                            style="display:none; background:none; border:none; color:var(--accent2); margin-left:auto;" title="Edit post">
+                            <i class="fas fa-pencil-alt"></i>
+                        </button>
                         <button class="nav-btn" id="deleteBtn" onclick="deletePost()"
-                            style="display:none; background:none; border:none; color:var(--accent); margin-left:auto;">
+                            style="display:none; background:none; border:none; color:var(--accent);" title="Delete post">
                             <i class="fas fa-trash-alt"></i>
                         </button>
                     </div>
@@ -1134,25 +1046,34 @@
     </div>
 
     <!-- Share Modal -->
-    <div class="overlay" id="shareModal" style="z-index: 2200;">
-        <div class="modal" style="max-width:400px;">
-            <div
-                style="padding:15px; border-bottom:1px solid var(--glass-border); display:flex; justify-content:space-between; align-items:center;">
-                <h3>Share to Chat</h3>
-                <i class="fas fa-times close-modal" onclick="closeM('shareModal')"
-                    style="cursor:pointer; opacity:0.6;"></i>
+    <div class="overlay" id="shareModal" onclick="if(event.target===this)closeShareModal()"
+        style="display:none; position:fixed; inset:0; z-index:9000; background:rgba(0,0,0,0.7); align-items:center; justify-content:center; backdrop-filter:blur(4px);">
+        <div style="background:var(--card-bg,#1e1e2e); border:1px solid var(--glass-border,rgba(255,255,255,0.1)); border-radius:20px; width:100%; max-width:420px; max-height:80vh; display:flex; flex-direction:column; box-shadow:0 25px 60px rgba(0,0,0,0.6); overflow:hidden; text-align:left;">
+            <!-- Header -->
+            <div style="padding:18px 20px; border-bottom:1px solid var(--glass-border,rgba(255,255,255,0.1)); display:flex; justify-content:space-between; align-items:center;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#f84464,#ff6b9d);display:flex;align-items:center;justify-content:center;">
+                        <i class="fas fa-paper-plane" style="color:#fff;font-size:15px;"></i>
+                    </div>
+                    <h3 style="font-size:16px; font-weight:700; color:var(--text-primary,#fff); margin:0;">Share to Chat</h3>
+                </div>
+                <button onclick="closeShareModal()" style="background:rgba(255,255,255,0.08); border:none; color:var(--text-secondary,#aaa); width:32px; height:32px; border-radius:50%; cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center; transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
-            <div style="padding: 15px;">
-                <div style="margin-bottom: 12px;">
-                    <input type="text" id="shareSearchInput" placeholder="Search users to share with..."
-                        onkeyup="filterShareList()"
-                        style="width:100%; padding:10px 14px; border-radius:12px; background:var(--card-bg); border:1px solid var(--glass-border); color:white; outline:none; font-size:14px;">
+            <!-- Search -->
+            <div style="padding:14px 20px 0;">
+                <div style="position:relative;">
+                    <i class="fas fa-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-secondary,#aaa);font-size:13px;"></i>
+                    <input type="text" id="shareSearchInput" placeholder="Search users to share with..." onkeyup="filterShareList()"
+                        style="width:100%; padding:10px 14px 10px 36px; border-radius:12px; background:rgba(255,255,255,0.07); border:1px solid var(--glass-border,rgba(255,255,255,0.1)); color:var(--text-primary,#fff); outline:none; font-size:13px; box-sizing:border-box; transition:border 0.2s;"
+                        onfocus="this.style.borderColor='rgba(248,68,100,0.5)'" onblur="this.style.borderColor='var(--glass-border,rgba(255,255,255,0.1))'">
                 </div>
-                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 10px;">Select to share this
-                    post:</p>
-                <div id="shareConvList" style="max-height: 350px; overflow-y: auto;">
-                    <!-- Followers will be loaded here via JS -->
-                </div>
+                <p style="font-size:12px; color:var(--text-secondary,#aaa); margin:10px 0 6px;">Select someone to share this post with:</p>
+            </div>
+            <!-- User list -->
+            <div id="shareConvList" style="flex:1; overflow-y:auto; padding:0 20px 20px; max-height:380px;">
+                <!-- Followers will be loaded here via JS -->
             </div>
         </div>
     </div>
@@ -1172,26 +1093,33 @@
     </div>
 
     <script th:inline="javascript">
-        const curUser = /*[[${session.user.username}]]*/ 'anonymous';
-        const FB = 'https://ui-avatars.com/api/?name=User&background=666&color=fff';
+        const curUser = /*[[${session.user != null ? session.user.username : 'anonymous'}]]*/ 'anonymous';
+        var FB = FB || 'https://ui-avatars.com/api/?name=User&background=666&color=fff';
 
         function openM(id) {
-            document.getElementById(id).classList.add('open');
+            const el = document.getElementById(id);
+            if (el) {
+                el.classList.add('open');
+                el.style.display = 'flex';
+                const modal = el.querySelector('.modal');
+                if (modal) modal.style.display = 'block';
+            }
             if (id === 'notifModal') {
                 const badge = document.getElementById('notif-badge');
                 if (badge) badge.style.display = 'none';
                 fetch('/profile/notifications/mark-all-read', { method: 'POST' });
             }
         }
-        function closeM(id) { document.getElementById(id).classList.remove('open'); }
+        function closeM(id) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.classList.remove('open');
+                el.style.display = 'none';
+            }
+        }
         function openCreateModal() { openM('createPostModal'); }
 
-        function switchTab(n, b) {
-            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(x => x.classList.remove('active'));
-            document.getElementById('tab-' + n).classList.add('active');
-            b.classList.add('active');
-        }
+
 
         function toast(msg) {
             const t = document.getElementById('toast');
@@ -1205,29 +1133,7 @@
             document.getElementById('editAvatarPrev').src = v || FB;
         }
 
-        function openFollowList(type) {
-            const title = type === 'followers' ? 'Followers' : 'Following';
-            document.getElementById('followTitle').textContent = title;
-            const body = document.getElementById('followBody');
-            body.innerHTML = '';
-            const items = document.querySelectorAll(type === 'followers' ? '.fl-item' : '.fw-item');
-            if (items.length === 0) body.innerHTML = '<p style="text-align:center; opacity:0.5;">No users found</p>';
-            items.forEach(i => {
-                const div = document.createElement('div');
-                div.style.display = 'flex'; div.style.alignItems = 'center'; div.style.gap = '10px'; div.style.marginBottom = '10px';
-                const statusLabel = type === 'following' ? '<span style="font-size: 11px; color: var(--text-secondary); margin-left: 8px;">Following</span>' : '';
-                div.innerHTML = `<img src="${i.dataset.p || FB}" style="width:36px; height:36px; border-radius:50%; object-fit:cover;">
-                                 <div style="flex:1;">
-                                     <a href="/profile/${i.dataset.u}" style="font-weight:600; font-size:14px; color:inherit;">@${i.dataset.u}</a>
-                                     ${statusLabel}
-                                 </div>
-                                 <a href="/messages?u=${i.dataset.u}" class="btn-edit" style="padding: 4px 10px; font-size: 11px; text-decoration: none;">
-                                     <i class="fas fa-comment"></i> Message
-                                 </a>`;
-                body.appendChild(div);
-            });
-            openM('followModal');
-        }
+
 
         let currentId = null;
         function openPostDetail(el) {
@@ -1252,7 +1158,9 @@
                 document.getElementById('pd-body').style.gridTemplateColumns = '1fr';
             }
 
-            document.getElementById('deleteBtn').style.display = el.dataset.username === curUser ? 'block' : 'none';
+            document.getElementById('deleteBtn').style.display = el.dataset.username === curUser ? 'flex' : 'none';
+            const editBtnEl = document.getElementById('editBtn');
+            if (editBtnEl) editBtnEl.style.display = el.dataset.username === curUser ? 'flex' : 'none';
 
             loadStats(currentId);
             loadComments(currentId);
@@ -1263,7 +1171,12 @@
             fetch(`/api/posts/${id}/stats`).then(r => r.json()).then(d => {
                 document.getElementById('likeCount').textContent = d.likes;
                 document.getElementById('cmtCount').textContent = d.comments;
-                document.getElementById('likeBtn').style.color = d.liked ? 'var(--accent)' : 'inherit';
+                document.getElementById('likeBtn').style.color = d.liked ? 'var(--accent)' : 'var(--text-secondary)';
+                const saveBtn = document.getElementById('saveBtn');
+                if (saveBtn) {
+                    saveBtn.style.color = d.saved ? 'var(--accent)' : 'var(--text-secondary)';
+                    saveBtn.querySelector('i').className = d.saved ? 'fas fa-bookmark' : 'far fa-bookmark';
+                }
             });
         }
 
@@ -1300,142 +1213,7 @@
             fetch(`/profile/post/delete/${currentId}`, { method: 'POST' }).then(() => location.reload());
         }
 
-        /* Mention/Collab Autocomplete logic */
-        function fetchU(q, drop, onSel) {
-            fetch('/profile/api/users/search?q=' + encodeURIComponent(q))
-                .then(r => r.json()).then(us => {
-                    drop.innerHTML = '';
-                    if (!us.length) { drop.classList.remove('open'); return; }
-                    us.forEach(u => {
-                        const d = document.createElement('div'); d.className = 'mi';
-                        d.innerHTML = `<img src="${u.profilePhotoUrl || FB}"><span class="mu">@${u.username}</span>`;
-                        d.onmousedown = (e) => { e.preventDefault(); onSel(u.username); };
-                        drop.appendChild(d);
-                    });
-                    drop.classList.add('open');
-                });
-        }
 
-        const postContent = document.getElementById('postContent');
-        const mentionDrop = document.getElementById('mentionDrop');
-        postContent.oninput = () => {
-            const val = postContent.value, pos = postContent.selectionStart;
-            let at = -1;
-            for (let i = pos - 1; i >= 0; i--) { if (val[i] === '@') { at = i; break; } if (/\s/.test(val[i])) break; }
-            if (at === -1) { mentionDrop.classList.remove('open'); return; }
-            const q = val.substring(at + 1, pos);
-            if (!q) { mentionDrop.classList.remove('open'); return; }
-            fetchU(q, mentionDrop, u => {
-                postContent.value = val.substring(0, at) + '@' + u + ' ' + val.substring(pos);
-                mentionDrop.classList.remove('open');
-            });
-        };
-
-        const collabSearch = document.getElementById('collabSearch');
-        const collabDrop = document.getElementById('collabDrop');
-        const collabTags = document.getElementById('collabTags');
-        const collabHidden = document.getElementById('collabHidden');
-        let selCollabs = [];
-        collabSearch.oninput = () => {
-            const q = collabSearch.value.trim();
-            if (!q) { collabDrop.classList.remove('open'); return; }
-            fetchU(q, collabDrop, u => {
-                if (!selCollabs.includes(u)) {
-                    selCollabs.push(u); collabHidden.value = selCollabs.join(',');
-                    const t = document.createElement('div'); t.className = 'ctag';
-                    t.innerHTML = `@${u} <span style="cursor:pointer; font-weight:bold;">&times;</span>`;
-                    t.onclick = () => { selCollabs = selCollabs.filter(x => x !== u); collabHidden.value = selCollabs.join(','); t.remove(); };
-                    collabTags.appendChild(t);
-                }
-                collabSearch.value = ''; collabDrop.classList.remove('open');
-            });
-        };
-
-        function previewMedia(inp) {
-            const wrap = document.getElementById('mediaPreview'); wrap.innerHTML = '';
-            if (!inp.files || !inp.files[0]) { wrap.style.display = 'none'; return; }
-            const f = inp.files[0], url = URL.createObjectURL(f);
-            wrap.style.display = 'block';
-            wrap.innerHTML = f.type.startsWith('video')
-                ? `<video src="${url}" controls style="width:100%; max-height:180px; border-radius:8px;"></video>`
-                : `<img src="${url}" style="width:100%; max-height:180px; border-radius:8px;">`;
-        }
-
-        /* ===== Post Type Selector ===== */
-        const typeConfig = {
-            POST: { accept: 'image/*', hint: 'Share a photo with your followers', label: 'Share Post', zone: 'Click or drag to upload a photo' },
-            REEL: { accept: 'video/*', hint: 'Upload a short video reel 🎬', label: 'Share Reel', zone: 'Click or drag to upload a video' },
-            STORY: { accept: 'image/*,video/*', hint: 'Your story disappears in 24 hours ⏳', label: 'Share Story', zone: 'Click or drag to upload a photo or video' }
-        };
-
-        function selectPostType(btn) {
-            // Update hidden input
-            const type = btn.dataset.type;
-            document.getElementById('postTypeInput').value = type;
-
-            // Reset all type buttons to inactive style
-            document.querySelectorAll('.type-btn').forEach(b => {
-                b.style.border = '2px solid var(--glass-border)';
-                b.style.background = 'transparent';
-                b.style.color = 'var(--text-secondary)';
-            });
-
-            // Activate clicked button
-            btn.style.border = '2px solid var(--accent)';
-            btn.style.background = 'rgba(248,68,100,0.15)';
-            btn.style.color = 'var(--accent)';
-
-            // Update hint, file accept, drop zone label and submit button
-            const cfg = typeConfig[type];
-            document.getElementById('typeHint').textContent = cfg.hint;
-            document.getElementById('mediaFile').accept = cfg.accept;
-            document.getElementById('dropZoneLabel').textContent = cfg.zone;
-            document.getElementById('submitBtnLabel').textContent = cfg.label;
-
-            // Clear preview when type changes
-            const prev = document.getElementById('mediaPreview');
-            prev.innerHTML = ''; prev.style.display = 'none';
-        }
-
-        /* ===== Category Selector ===== */
-        function selectCategory(btn) {
-            const cat = btn.dataset.cat;
-            const hidden = document.getElementById('categoryInput');
-
-            if (hidden.value === cat) {
-                // Deselect if same
-                hidden.value = '';
-                btn.style.borderColor = 'var(--glass-border)';
-                btn.style.background = 'transparent';
-                btn.style.color = 'var(--text-secondary)';
-            } else {
-                // Deselect all
-                document.querySelectorAll('.cat-btn').forEach(b => {
-                    b.style.borderColor = 'var(--glass-border)';
-                    b.style.background = 'transparent';
-                    b.style.color = 'var(--text-secondary)';
-                });
-                // Activate
-                hidden.value = cat;
-                btn.style.borderColor = 'var(--accent)';
-                btn.style.background = 'rgba(248,68,100,0.1)';
-                btn.style.color = 'var(--accent)';
-            }
-        }
-
-        /* ===== Drag-and-drop media ===== */
-        function handleFileDrop(event) {
-            event.preventDefault();
-            document.getElementById('mediaDropZone').style.borderColor = 'var(--glass-border)';
-            const files = event.dataTransfer.files;
-            if (!files || !files[0]) return;
-            const fileInput = document.getElementById('mediaFile');
-            // Transfer dropped file to the hidden input
-            const dt = new DataTransfer();
-            dt.items.add(files[0]);
-            fileInput.files = dt.files;
-            previewMedia(fileInput);
-        }
 
         async function followUserAjax(userId, btn) {
             let btnWrapper = btn ? (btn.tagName === 'BUTTON' ? btn.parentElement : btn) : document.getElementById('follow-wrapper-' + userId);
@@ -1560,12 +1338,13 @@
         let currentStoryIndex = 0;
         let currentStories = [];
         let storyTimer = null;
-        const CURRENT_USER_ID = /*[[${session.user.id}]]*/ null;
+        const CURRENT_USER_ID = /*[[${session.user != null ? session.user.id : null}]]*/ null;
 
         let allFollowers = [];
         async function openShareModal(postId) {
             currentSharePostId = postId;
-            openM('shareModal');
+            const modal = document.getElementById('shareModal');
+            if (modal) { modal.style.display = 'flex'; }
             document.getElementById('shareSearchInput').value = '';
 
             try {
@@ -1579,18 +1358,20 @@
         function renderShareList(list) {
             const container = document.getElementById('shareConvList');
             if (!list || list.length === 0) {
-                container.innerHTML = '<p style="text-align:center; padding:10px; color:var(--text-secondary); font-size:13px;">No users found.</p>';
+                container.innerHTML = '<div style="text-align:center; padding:30px 10px;"><i class="fas fa-user-slash" style="font-size:32px; opacity:0.3; margin-bottom:10px; display:block;"></i><p style="color:var(--text-secondary,#aaa); font-size:13px;">No users found.</p></div>';
                 return;
             }
             container.innerHTML = list.map(u => `
-                <div style="padding: 8px 10px; border-bottom: 1px solid var(--glass-border); display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition: background 0.2s;" 
-                     onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
+                <div style="padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.06); display:flex; justify-content:space-between; align-items:center; transition:background 0.2s;">
                     <div style="display:flex; align-items:center; gap:12px;">
                         <img src="${u.profilePhotoUrl || 'https://ui-avatars.com/api/?name=' + u.username + '&background=F84464&color=fff&size=80'}" 
-                             style="width:40px; height:40px; border-radius:50%; object-fit:cover;">
-                        <span style="font-size:14px; font-weight:600;">${u.username}</span>
+                             style="width:42px; height:42px; border-radius:50%; object-fit:cover; border:2px solid rgba(248,68,100,0.3);">
+                        <div>
+                            <div style="font-size:14px; font-weight:600; color:var(--text-primary,#fff);">${u.username}</div>
+                            <div style="font-size:11px; color:var(--text-secondary,#aaa);">Tap Send to share</div>
+                        </div>
                     </div>
-                    <button class="nav-btn" onclick="shareToUser(${u.id})" style="padding:6px 16px; font-size:12px; border-radius:8px;">Send</button>
+                    <button onclick="shareToUser(${u.id})" style="background:linear-gradient(135deg,#f84464,#ff6b9d); border:none; color:#fff; padding:7px 16px; border-radius:20px; font-size:12px; font-weight:600; cursor:pointer; transition:opacity 0.2s; display:flex; align-items:center; gap:6px;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'"><i class="fas fa-paper-plane" style="font-size:11px;"></i> Send</button>
                 </div>
             `).join('');
         }
@@ -1612,6 +1393,10 @@
                 console.error('Search failed', e);
             }
         }
+        function closeShareModal() {
+            const modal = document.getElementById('shareModal');
+            if (modal) { modal.style.display = 'none'; }
+        }
         async function shareToUser(userId) {
             const res = await fetch('/api/chat/share-post-to-user', {
                 method: 'POST',
@@ -1619,7 +1404,7 @@
                 body: JSON.stringify({ postId: currentSharePostId, recipientId: userId })
             });
             if (res.ok) {
-                closeM('shareModal');
+                closeShareModal();
                 toast('Shared!');
             } else {
                 alert('Failed to share post.');
@@ -1655,7 +1440,163 @@
             clearTimeout(storyTimer);
             const video = document.getElementById('storyVideo');
             if (video) video.pause();
+            
+            const picker = document.getElementById('story-emoji-picker');
+            if (picker) picker.style.display = 'none';
+            isStoryTimerPaused = false;
         }
+
+        function formatRelativeTime(dateStr) {
+            if (!dateStr) return '';
+            const now = new Date();
+            const past = new Date(dateStr);
+            const diffMs = now - past;
+            const diffMins = Math.floor(diffMs / 60000);
+            if (diffMins < 1) return 'just now';
+            if (diffMins < 60) return diffMins + 'm';
+            const diffHours = Math.floor(diffMins / 60);
+            if (diffHours < 24) return diffHours + 'h';
+            const diffDays = Math.floor(diffHours / 24);
+            return diffDays + 'd';
+        }
+
+        let isStoryTimerPaused = false;
+
+        function pauseStoryTimer() {
+            isStoryTimerPaused = true;
+            clearTimeout(storyTimer);
+            const video = document.getElementById('storyVideo');
+            if (video) video.pause();
+        }
+
+        function resumeStoryTimer() {
+            if (!isStoryTimerPaused) return;
+            isStoryTimerPaused = false;
+            const video = document.getElementById('storyVideo');
+            if (video) {
+                video.play();
+            } else {
+                startStoryTimer(5000);
+            }
+        }
+
+        async function sendStoryReaction(emoji) {
+            const story = currentStories[currentStoryIndex];
+            if (!story) return;
+            
+            const selfId = (typeof CURRENT_USER_ID !== 'undefined') ? CURRENT_USER_ID : (typeof FEED_USER_ID !== 'undefined' ? FEED_USER_ID : 0);
+            const authorId = story.userId || (story.user ? story.user.id : null);
+            if (!authorId || authorId == selfId) return;
+
+            try {
+                const res = await fetch('/api/chat/send-direct', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        recipientId: authorId,
+                        content: `Reacted to your story: ${emoji}`
+                    })
+                });
+                if (res.ok) {
+                    toast("Reaction sent! ❤️");
+                }
+            } catch (e) {
+                console.error("Failed to send reaction", e);
+            }
+        }
+
+        async function sendStoryReply() {
+            const input = document.getElementById('storyReplyInput');
+            if (!input || !input.value.trim()) return;
+            const replyText = input.value.trim();
+            input.value = '';
+
+            const story = currentStories[currentStoryIndex];
+            if (!story) return;
+
+            const selfId = (typeof CURRENT_USER_ID !== 'undefined') ? CURRENT_USER_ID : (typeof FEED_USER_ID !== 'undefined' ? FEED_USER_ID : 0);
+            const authorId = story.userId || (story.user ? story.user.id : null);
+            if (!authorId || authorId == selfId) return;
+
+            pauseStoryTimer();
+            try {
+                const res = await fetch('/api/chat/send-direct', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        recipientId: authorId,
+                        content: `Replied to your story: "${replyText}"`
+                    })
+                });
+                if (res.ok) {
+                    toast("Reply sent! ✉️");
+                    input.blur();
+                }
+            } catch (e) {
+                console.error("Failed to send reply", e);
+            } finally {
+                resumeStoryTimer();
+            }
+        }
+
+        function toggleStoryEmojiPicker() {
+            const picker = document.getElementById('story-emoji-picker');
+            if (!picker) return;
+            const isOpen = picker.style.display === 'block';
+            
+            // Close other pickers
+            document.querySelectorAll('.emoji-picker-popup').forEach(p => p.style.display = 'none');
+            
+            if (!isOpen) {
+                picker.style.display = 'block';
+                loadStoryEmojiCategory('smileys');
+                pauseStoryTimer(); // Keep story paused when choosing emoji!
+            } else {
+                picker.style.display = 'none';
+                resumeStoryTimer();
+            }
+        }
+
+        function loadStoryEmojiCategory(category) {
+            const container = document.querySelector(`#story-emoji-picker .emoji-picker-content`);
+            if (!container) return;
+            container.innerHTML = '';
+            
+            const list = EMOJI_CATEGORIES[category] || [];
+            list.forEach(emoji => {
+                const span = document.createElement('span');
+                span.style.cursor = 'pointer';
+                span.style.userSelect = 'none';
+                span.textContent = emoji;
+                span.onclick = (e) => {
+                    e.stopPropagation();
+                    insertStoryEmoji(emoji);
+                };
+                container.appendChild(span);
+            });
+        }
+
+        function switchStoryEmojiCategory(tabEl, category) {
+            event.stopPropagation();
+            tabEl.parentNode.querySelectorAll('span').forEach(s => s.style.color = 'inherit');
+            tabEl.style.color = '#fff';
+            loadStoryEmojiCategory(category);
+        }
+
+        function insertStoryEmoji(emoji) {
+            const input = document.getElementById('storyReplyInput');
+            if (input) {
+                input.value += emoji;
+                input.focus();
+            }
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.emoji-picker-popup') && 
+                !e.target.closest('button[onclick*="toggleStoryEmojiPicker"]')) {
+                document.querySelectorAll('.emoji-picker-popup').forEach(p => p.style.display = 'none');
+            }
+        });
 
         function renderStory() {
             if (currentStoryIndex >= currentStories.length) {
@@ -1669,12 +1610,69 @@
             const story = currentStories[currentStoryIndex];
             const contentDiv = document.getElementById('storyViewerContent');
 
+            // Set story header information
+            const avatarImg = document.getElementById('storyViewerAvatar');
+            const usernameSpan = document.getElementById('storyViewerUsername');
+            const timeSpan = document.getElementById('storyViewerTime');
+
+            if (avatarImg) {
+                avatarImg.src = (story.profilePhotoUrl && story.profilePhotoUrl.trim() !== '') 
+                    ? story.profilePhotoUrl 
+                    : `https://ui-avatars.com/api/?name=${story.username || 'U'}&background=F84464&color=fff&size=80`;
+            }
+            if (usernameSpan) {
+                usernameSpan.textContent = story.username || 'Unknown';
+            }
+            if (timeSpan) {
+                timeSpan.textContent = '• ' + formatRelativeTime(story.createdAt);
+            }
+
+            // Show/hide bottom reply panel or viewers panel based on ownership
+            const bottomPanel = document.getElementById('storyViewerBottom');
+            const statsEl = document.getElementById('storyViewerStats');
+            const selfId = (typeof CURRENT_USER_ID !== 'undefined' && CURRENT_USER_ID !== null) ? CURRENT_USER_ID : (typeof FEED_USER_ID !== 'undefined' ? FEED_USER_ID : 0);
+            const authorId = story.userId || (story.user ? story.user.id : null);
+
+            if (authorId == selfId) {
+                if (bottomPanel) bottomPanel.style.display = 'none';
+                if (statsEl) {
+                    statsEl.style.display = 'flex';
+                    fetch(`/api/stories/${story.id}/viewers`)
+                        .then(r => r.json())
+                        .then(viewers => {
+                            document.getElementById('storyViewerCount').textContent = viewers.length + (viewers.length === 1 ? ' view' : ' views');
+                        }).catch(() => {});
+                }
+            } else {
+                if (statsEl) statsEl.style.display = 'none';
+                if (bottomPanel) bottomPanel.style.display = 'flex';
+                recordStoryView(story.id);
+            }
+
+            // Clear input
+            const input = document.getElementById('storyReplyInput');
+            if (input) input.value = '';
+
             let mediaHtml = '';
             if (story.mediaType === 'IMAGE') {
-                mediaHtml = `<img src="${story.mediaUrl}" style="width: 100%; height: auto; max-height: 80vh; object-fit: contain;">`;
+                mediaHtml = `
+                    <div style="position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 20px;">
+                        <!-- Blurred Background -->
+                        <div style="position: absolute; inset: 0; background-image: url('${story.mediaUrl}'); background-size: cover; background-position: center; filter: blur(28px) brightness(0.5); transform: scale(1.2); z-index: 1;"></div>
+                        <!-- Main Image -->
+                        <img src="${story.mediaUrl}" style="position: relative; z-index: 2; max-width: 100%; max-height: 100%; object-fit: contain; box-shadow: 0 10px 40px rgba(0,0,0,0.6);">
+                    </div>
+                `;
                 startStoryTimer(5000);
             } else if (story.mediaType === 'VIDEO') {
-                mediaHtml = `<video id="storyVideo" src="${story.mediaUrl}" autoplay style="width: 100%; max-height: 80vh; object-fit: contain;" onended="nextStory()"></video>`;
+                mediaHtml = `
+                    <div style="position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 20px;">
+                        <!-- Styled Ambient Vignette -->
+                        <div style="position: absolute; inset: 0; background: radial-gradient(circle, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.85) 100%); z-index: 1;"></div>
+                        <!-- Main Video -->
+                        <video id="storyVideo" src="${story.mediaUrl}" autoplay style="position: relative; z-index: 2; max-width: 100%; max-height: 100%; object-fit: contain;" onended="nextStory()"></video>
+                    </div>
+                `;
                 clearTimeout(storyTimer);
             } else {
                 mediaHtml = `<div style="padding: 20px; color: white; text-align: center; font-size: 20px; font-family: 'DM Sans', sans-serif;">${story.content || 'Text Story'}</div>`;
@@ -1692,6 +1690,59 @@
             } else {
                 deleteBtn.style.display = 'none';
             }
+        }
+
+        async function recordStoryView(storyId) {
+            const selfId = (typeof CURRENT_USER_ID !== 'undefined' && CURRENT_USER_ID !== null) ? CURRENT_USER_ID : (typeof FEED_USER_ID !== 'undefined' ? FEED_USER_ID : 0);
+            if (!selfId) return;
+            try {
+                await fetch('/api/feed/activity', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: selfId,
+                        postId: storyId,
+                        action: 'VIEW'
+                    })
+                });
+            } catch (e) {
+                console.error("Failed to record story view", e);
+            }
+        }
+
+        async function showStoryViewersList() {
+            const story = currentStories[currentStoryIndex];
+            if (!story) return;
+            pauseStoryTimer();
+            const modal = document.getElementById('storyViewersListModal');
+            const listContent = document.getElementById('storyViewersListContent');
+            if (modal) modal.style.display = 'flex';
+            if (listContent) {
+                listContent.innerHTML = '<div style="color: #aaa; text-align: center; padding: 20px;"><i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i>Loading viewers...</div>';
+            }
+            try {
+                const res = await fetch(`/api/stories/${story.id}/viewers`);
+                const viewers = await res.json();
+                if (viewers.length === 0) {
+                    listContent.innerHTML = '<p style="text-align: center; color: #aaa; font-size: 13px; padding: 20px;">No views yet.</p>';
+                    return;
+                }
+                listContent.innerHTML = viewers.map(v => `
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px; text-align: left;">
+                        <img src="${v.profilePhotoUrl || 'https://ui-avatars.com/api/?name=' + v.username + '&background=f84464&color=fff&size=80'}" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;">
+                        <span style="color: #fff; font-size: 14px; font-weight: 600;">@${v.username}</span>
+                    </div>
+                `).join('');
+            } catch (e) {
+                console.error("Failed to load story viewers", e);
+                listContent.innerHTML = '<p style="text-align: center; color: #ff4d4d; font-size: 13px; padding: 20px;">Failed to load viewers.</p>';
+            }
+        }
+
+        function closeStoryViewersList() {
+            const modal = document.getElementById('storyViewersListModal');
+            if (modal) modal.style.display = 'none';
+            resumeStoryTimer();
         }
 
         function startStoryTimer(duration) {
@@ -1793,49 +1844,370 @@
 
     <!-- Story Viewer HTML -->
     <div id="storyViewerModal" class="modal-overlay"
-        style="z-index: 9999; position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: none; align-items: center; justify-content: center;">
+        style="z-index: 9999; position: fixed; inset: 0; background: rgba(0,0,0,0.96); display: none; align-items: center; justify-content: center;">
         <div class="modal-content"
-            style="position: relative; background: #111; box-shadow: 0 20px 60px rgba(0,0,0,0.8); border: none; max-width: 380px; height: 80vh; max-height: 680px; border-radius: 16px; overflow: hidden; padding: 0; width: 100%;">
+            style="position: relative; background: #050508; box-shadow: 0 24px 70px rgba(0,0,0,0.95); border: 1px solid rgba(255,255,255,0.08); max-width: 400px; height: 85vh; max-height: 720px; border-radius: 20px; overflow: hidden; padding: 0; width: 100%; display: flex; flex-direction: column; justify-content: center;">
+
+            <!-- Progress bars container -->
+            <div id="storyProgressBarContainer"
+                style="position: absolute; top: 16px; left: 16px; right: 16px; display: flex; gap: 6px; z-index: 110;">
+            </div>
+
+            <!-- Story Header (Avatar & Username) -->
+            <div id="storyViewerHeader" style="position: absolute; top: 28px; left: 16px; display: flex; align-items: center; gap: 10px; z-index: 110; color: white;">
+                <img id="storyViewerAvatar" src="" style="width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid #fff; object-fit: cover; box-shadow: 0 2px 8px rgba(0,0,0,0.5);">
+                <span id="storyViewerUsername" style="font-weight: 700; font-size: 13.5px; text-shadow: 0 2px 5px rgba(0,0,0,0.95); font-family: 'DM Sans', sans-serif;">Username</span>
+                <span id="storyViewerTime" style="font-size: 11px; color: rgba(255,255,255,0.7); text-shadow: 0 2px 5px rgba(0,0,0,0.95); font-family: 'DM Sans', sans-serif;">• 2h ago</span>
+            </div>
 
             <button
-                style="position: absolute; top: 20px; right: 15px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; color: #fff; background: rgba(0,0,0,0.5); border-radius: 50%; border: none; z-index: 100;"
+                style="position: absolute; top: 28px; right: 16px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: #fff; background: rgba(0,0,0,0.4); border-radius: 50%; border: none; z-index: 120; font-weight: bold; transition: background 0.2s;"
+                onmouseover="this.style.background='rgba(0,0,0,0.7)'"
+                onmouseout="this.style.background='rgba(0,0,0,0.4)'"
                 onclick="closeStoryViewer()">✕</button>
 
             <!-- Delete button (only for owner) -->
             <button id="storyDeleteBtn"
-                style="position: absolute; top: 20px; left: 15px; width: 32px; height: 32px; display: none; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; color: #fff; background: rgba(239,68,68,0.7); border-radius: 50%; border: none; z-index: 100;"
+                style="position: absolute; top: 28px; right: 60px; width: 34px; height: 34px; display: none; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; color: #fff; background: rgba(239,68,68,0.85); border-radius: 50%; border: none; z-index: 120; transition: background 0.2s;"
+                onmouseover="this.style.background='rgba(239,68,68,1)'"
+                onmouseout="this.style.background='rgba(239,68,68,0.85)'"
                 onclick="deleteCurrentStory()">
                 <i class="fas fa-trash"></i>
             </button>
             <input type="hidden" id="storyViewerUserId">
-
-            <!-- Progress bars container -->
-            <div id="storyProgressBarContainer"
-                style="position: absolute; top: 12px; left: 12px; right: 55px; display: flex; gap: 4px; z-index: 10;">
-            </div>
 
             <div id="storyViewerContent"
                 style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #000;">
                 <!-- Content injected via JS -->
             </div>
 
+            <!-- Story Bottom Reply & React Panel -->
+            <div id="storyViewerBottom" onclick="event.stopPropagation()" style="position: absolute; bottom: 0; left: 0; right: 0; padding: 16px; background: linear-gradient(transparent, rgba(0,0,0,0.9)); z-index: 110; display: flex; flex-direction: column; gap: 10px;">
+                <!-- Quick React Emojis -->
+                <div class="story-reactions" style="display: flex; justify-content: space-around; font-size: 22px; user-select: none;">
+                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('❤️')">❤️</span>
+                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('😂')">😂</span>
+                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('😮')">😮</span>
+                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('😢')">😢</span>
+                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('👏')">👏</span>
+                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('🔥')">🔥</span>
+                </div>
+                <!-- Message Input -->
+                <div style="display: flex; gap: 8px; align-items: center; position: relative;">
+                    <div style="position: relative; flex: 1; display: flex; align-items: center;">
+                        <input type="text" id="storyReplyInput" placeholder="Send message..." 
+                               style="flex: 1; padding: 8px 36px 8px 16px; border-radius: 20px; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25); color: #ffffff !important; font-size: 13px; outline: none;"
+                               onfocus="pauseStoryTimer()" onblur="resumeStoryTimer()"
+                               onkeydown="if(event.key === 'Enter') sendStoryReply()">
+                        <button type="button" onclick="event.stopPropagation(); toggleStoryEmojiPicker()" 
+                                style="position: absolute; right: 12px; background: none; border: none; font-size: 16px; cursor: pointer; color: #aaa; outline: none; user-select: none;">😀</button>
+                    </div>
+                    <button onclick="sendStoryReply()" 
+                            style="background: #f84464; border: none; border-radius: 50%; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; flex-shrink: 0;">
+                        <i class="far fa-paper-plane" style="font-size: 13px;"></i>
+                    </button>
+                    
+                    <!-- Story Emoji Picker Popup -->
+                    <div id="story-emoji-picker" class="emoji-picker-popup" 
+                         style="display: none; position: absolute; bottom: 44px; right: 42px; background: #101018; border: 1px solid rgba(255,255,255,0.15); border-radius: 12px; padding: 10px; width: 260px; z-index: 130; box-shadow: 0 10px 30px rgba(0,0,0,0.5);"
+                         onclick="event.stopPropagation()">
+                         <!-- Categories / Tabs -->
+                         <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px; margin-bottom: 8px; font-size: 14px; color: #aaa; font-weight: 700; user-select: none;">
+                             <span style="cursor: pointer; color: #fff;" onclick="switchStoryEmojiCategory(this, 'smileys')">😀</span>
+                             <span style="cursor: pointer;" onclick="switchStoryEmojiCategory(this, 'gestures')">👍</span>
+                             <span style="cursor: pointer;" onclick="switchStoryEmojiCategory(this, 'hearts')">❤️</span>
+                             <span style="cursor: pointer;" onclick="switchStoryEmojiCategory(this, 'animals')">🐱</span>
+                             <span style="cursor: pointer;" onclick="switchStoryEmojiCategory(this, 'food')">🍕</span>
+                             <span style="cursor: pointer;" onclick="switchStoryEmojiCategory(this, 'activities')">⚽</span>
+                         </div>
+                         <!-- Emoji Content Area -->
+                         <div class="emoji-picker-content" style="height: 140px; overflow-y: auto; display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; font-size: 18px; text-align: center;">
+                             <!-- Loaded dynamically via JS -->
+                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Story Bottom Viewers Panel (for Owner) -->
+            <div id="storyViewerStats" onclick="event.stopPropagation(); showStoryViewersList()" style="position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); padding: 10px 22px; background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 30px; z-index: 110; display: none; align-items: center; justify-content: center; cursor: pointer; color: white; gap: 8px; transition: all 0.2s; box-shadow: 0 8px 32px rgba(0,0,0,0.3);" onmouseover="this.style.background='rgba(255,255,255,0.25)'; this.style.transform='translateX(-50%) scale(1.05)';" onmouseout="this.style.background='rgba(255,255,255,0.15)'; this.style.transform='translateX(-50%) scale(1)';">
+                <i class="fas fa-eye" style="font-size: 14px; color: #fff;"></i>
+                <span id="storyViewerCount" style="font-size: 13px; font-weight: 700; font-family: 'DM Sans', sans-serif; letter-spacing: 0.5px;">0 views</span>
+            </div>
+
             <!-- Navigation controls -->
-            <div style="position: absolute; top: 0; bottom: 0; left: 0; width: 40%; cursor: pointer; z-index: 5;"
+            <div style="position: absolute; top: 80px; bottom: 120px; left: 0; width: 40%; cursor: pointer; z-index: 5;"
                 onclick="prevStory()"></div>
-            <div style="position: absolute; top: 0; bottom: 0; right: 0; width: 40%; cursor: pointer; z-index: 5;"
+            <div style="position: absolute; top: 80px; bottom: 120px; right: 0; width: 40%; cursor: pointer; z-index: 5;"
                 onclick="nextStory()"></div>
         </div>
     </div>
 
+    <!-- Story Viewers Modal -->
+    <div id="storyViewersListModal" onclick="if(event.target===this) closeStoryViewersList()"
+        style="display:none; position:fixed; inset:0; z-index:10000; background:rgba(0,0,0,0.85); align-items:center; justify-content:center; backdrop-filter:blur(4px);">
+        <div style="background:#1e1e2e; border:1px solid rgba(255,255,255,0.1); border-radius:20px; width:100%; max-width:360px; max-height:60vh; display:flex; flex-direction:column; box-shadow:0 25px 60px rgba(0,0,0,0.6); overflow:hidden;">
+            <!-- Header -->
+            <div style="padding:16px 20px; border-bottom:1px solid rgba(255,255,255,0.1); display:flex; justify-content:space-between; align-items:center;">
+                <h3 style="font-size:15px; font-weight:700; color:#fff; margin:0;"><i class="fas fa-eye" style="margin-right:8px; color:#f84464;"></i>Viewers</h3>
+                <button onclick="closeStoryViewersList()" style="background:rgba(255,255,255,0.08); border:none; color:#aaa; width:28px; height:28px; border-radius:50%; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'"><i class="fas fa-times"></i></button>
+            </div>
+            <!-- Body -->
+            <div id="storyViewersListContent" style="flex:1; overflow-y:auto; padding:15px 20px;">
+                <!-- Viewers list -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== VERTICAL REEL VIEWER MODAL ===== -->
+    <div id="reelViewerModal" style="display:none; position:fixed; inset:0; z-index:9998; background:rgba(0,0,0,0.97); align-items:center; justify-content:center;" onclick="if(event.target===this)closeReelViewer()">
+        <!-- Close -->
+        <button onclick="closeReelViewer()" style="position:absolute;top:20px;right:20px;background:rgba(255,255,255,0.15);border:none;color:#fff;font-size:20px;width:40px;height:40px;border-radius:50%;cursor:pointer;z-index:10;display:flex;align-items:center;justify-content:center;"><i class="fas fa-times"></i></button>
+        <!-- Prev -->
+        <button id="rvPrev" onclick="navReel(-1)" style="position:absolute;left:20px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.15);border:none;color:#fff;font-size:18px;width:44px;height:44px;border-radius:50%;cursor:pointer;z-index:10;display:flex;align-items:center;justify-content:center;"><i class="fas fa-chevron-left"></i></button>
+        <!-- Next -->
+        <button id="rvNext" onclick="navReel(1)" style="position:absolute;right:20px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.15);border:none;color:#fff;font-size:18px;width:44px;height:44px;border-radius:50%;cursor:pointer;z-index:10;display:flex;align-items:center;justify-content:center;"><i class="fas fa-chevron-right"></i></button>
+
+        <div style="position:relative;max-width:420px;width:100%;height:90vh;border-radius:20px;overflow:hidden;background:#000;">
+            <!-- Video -->
+            <video id="rvVideo" style="width:100%;height:100%;object-fit:cover;" loop playsinline></video>
+            <!-- Image fallback -->
+            <img id="rvImg" style="display:none;width:100%;height:100%;object-fit:cover;">
+
+            <!-- Top info -->
+            <div style="position:absolute;top:0;left:0;right:0;padding:16px;background:linear-gradient(to bottom,rgba(0,0,0,0.7),transparent);display:flex;align-items:center;gap:10px;z-index:5;">
+                <img id="rvAvatar" style="width:38px;height:38px;border-radius:50%;object-fit:cover;border:2px solid #fff;">
+                <div>
+                    <div id="rvUsername" style="color:#fff;font-weight:700;font-size:14px;"></div>
+                    <div id="rvDate" style="color:rgba(255,255,255,0.7);font-size:11px;"></div>
+                </div>
+            </div>
+
+            <!-- Bottom info -->
+            <div style="position:absolute;bottom:0;left:0;right:0;padding:16px 16px 24px;background:linear-gradient(to top,rgba(0,0,0,0.85),transparent);z-index:5;">
+                <p id="rvCaption" style="color:#fff;font-size:14px;line-height:1.5;margin-bottom:12px;"></p>
+                <div style="display:flex;align-items:center;gap:16px;">
+                    <button id="rvLikeBtn" onclick="rvToggleLike()" style="background:none;border:none;color:#fff;display:flex;align-items:center;gap:6px;font-size:14px;cursor:pointer;"><i class="fas fa-heart"></i> <span id="rvLikeCount">0</span></button>
+                    <button onclick="rvFocusComment()" style="background:none;border:none;color:#fff;display:flex;align-items:center;gap:6px;font-size:14px;cursor:pointer;"><i class="fas fa-comment"></i> <span id="rvCmtCount">0</span></button>
+                    <button id="rvSaveBtn" onclick="rvToggleSave()" style="background:none;border:none;color:#fff;display:flex;align-items:center;gap:6px;font-size:14px;cursor:pointer;" title="Save"><i class="fas fa-bookmark"></i></button>
+                    <button id="rvMuteBtn" onclick="rvToggleMute()" style="margin-left:auto;background:rgba(255,255,255,0.2);border:none;color:#fff;width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;"><i class="fas fa-volume-up"></i></button>
+                </div>
+                <!-- comment input -->
+                <div style="display:flex;gap:8px;margin-top:10px;">
+                    <input id="rvCmtInput" class="form-input" placeholder="Add a comment..." style="flex:1;padding:8px;font-size:13px;" onkeydown="if(event.key==='Enter')rvSubmitComment()">
+                    <button class="cta-btn" onclick="rvSubmitComment()" style="padding:8px 12px;font-size:12px;">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <style>
-        @keyframes storyProgress {
-            from {
-                width: 0;
+        /* Reel grid hover preview */
+        .reel-grid-item .reel-thumb-vid { width:100%; height:100%; object-fit:cover; pointer-events:none; }
+        .reel-grid-item:hover .reel-thumb-vid { }
+
+        /* Live stats loading dots on grid */
+        @keyframes dotPulse { 0%,80%,100%{opacity:0} 40%{opacity:1} }
+    </style>
+
+    <script>
+        // ============================================================
+        // LIVE STATS ON GRID (load like/comment counts lazily)
+        // ============================================================
+        function loadGridStats() {
+            document.querySelectorAll('.grid-item[data-id]').forEach(item => {
+                const id = item.dataset.id;
+                const lcEl = item.querySelector('.lc');
+                const ccEl = item.querySelector('.cc');
+                if (!lcEl && !ccEl) return;
+                fetch(`/api/posts/${id}/stats`).then(r => r.json()).then(d => {
+                    if (lcEl) lcEl.textContent = d.likes;
+                    if (ccEl) ccEl.textContent = d.comments;
+                }).catch(() => {});
+            });
+        }
+
+        // Load after first tab switch or immediately if posts tab active
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(loadGridStats, 600);
+
+            // Video hover preview on reel grid items
+            document.querySelectorAll('.reel-grid-item').forEach(item => {
+                const vid = item.querySelector('.reel-thumb-vid');
+                if (!vid) return;
+                item.addEventListener('mouseenter', () => {
+                    vid.currentTime = 0;
+                    vid.play().catch(() => {});
+                });
+                item.addEventListener('mouseleave', () => {
+                    vid.pause();
+                    vid.currentTime = 0;
+                });
+            });
+        });
+
+        // ============================================================
+        // EDIT POST
+        // ============================================================
+        function startEditPost() {
+            document.getElementById('pd-caption-view').style.display = 'none';
+            document.getElementById('pd-caption-edit').style.display = 'block';
+            document.getElementById('pd-edit-content').value = document.getElementById('pd-text').textContent;
+            document.getElementById('pd-edit-hashtags').value = '';
+        }
+        function cancelEditPost() {
+            document.getElementById('pd-caption-edit').style.display = 'none';
+            document.getElementById('pd-caption-view').style.display = 'block';
+        }
+        async function saveEditPost() {
+            const content = document.getElementById('pd-edit-content').value.trim();
+            const hashtags = document.getElementById('pd-edit-hashtags').value.trim();
+            if (!content) return;
+            const params = new URLSearchParams({ content, hashtags });
+            const r = await fetch(`/api/posts/${currentId}/edit`, { method: 'POST', body: params });
+            if (r.ok) {
+                const d = await r.json();
+                document.getElementById('pd-text').textContent = d.content;
+                cancelEditPost();
+            } else { alert('Could not save edit.'); }
+        }
+
+        // ============================================================
+        // SAVE / BOOKMARK
+        // ============================================================
+        async function toggleSave() {
+            const r = await fetch(`/api/posts/${currentId}/save`, { method: 'POST' });
+            if (r.ok) {
+                const d = await r.json();
+                const btn = document.getElementById('saveBtn');
+                btn.style.color = d.saved ? 'var(--accent)' : 'var(--text-secondary)';
+                btn.querySelector('i').className = d.saved ? 'fas fa-bookmark' : 'far fa-bookmark';
+            }
+        }
+
+        // ============================================================
+        // VERTICAL REEL VIEWER
+        // ============================================================
+        let reelItems = [];
+        let rvIndex = 0;
+        let rvMuted = false;
+
+        function openReelViewer(el) {
+            // Collect all reel items
+            reelItems = Array.from(document.querySelectorAll('.reel-grid-item'));
+            rvIndex = reelItems.indexOf(el);
+            document.getElementById('reelViewerModal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+            renderReel();
+        }
+
+        function closeReelViewer() {
+            document.getElementById('reelViewerModal').style.display = 'none';
+            document.body.style.overflow = '';
+            const vid = document.getElementById('rvVideo');
+            vid.pause();
+            vid.src = '';
+        }
+
+        function navReel(dir) {
+            const vid = document.getElementById('rvVideo');
+            vid.pause();
+            rvIndex = Math.max(0, Math.min(reelItems.length - 1, rvIndex + dir));
+            renderReel();
+        }
+
+        function renderReel() {
+            const el = reelItems[rvIndex];
+            const d = el.dataset;
+            const vid = document.getElementById('rvVideo');
+            const img = document.getElementById('rvImg');
+
+            document.getElementById('rvAvatar').src = d.avatar || FB;
+            document.getElementById('rvUsername').textContent = '@' + d.username;
+            document.getElementById('rvDate').textContent = d.date;
+            document.getElementById('rvCaption').textContent = d.content || '';
+
+            if (d.mediatype === 'VIDEO' && d.mediaurl) {
+                vid.style.display = 'block'; img.style.display = 'none';
+                vid.src = d.mediaurl;
+                vid.muted = rvMuted;
+                vid.play().catch(() => {});
+            } else if (d.mediaurl) {
+                img.style.display = 'block'; vid.style.display = 'none';
+                img.src = d.mediaurl;
             }
 
-            to {
-                width: 100%;
+            // Nav button visibility
+            document.getElementById('rvPrev').style.opacity = rvIndex === 0 ? '0.3' : '1';
+            document.getElementById('rvNext').style.opacity = rvIndex === reelItems.length - 1 ? '0.3' : '1';
+
+            // Load stats
+            fetch(`/api/posts/${d.id}/stats`).then(r => r.json()).then(s => {
+                document.getElementById('rvLikeCount').textContent = s.likes;
+                document.getElementById('rvCmtCount').textContent = s.comments;
+                document.getElementById('rvLikeBtn').style.color = s.liked ? '#f84464' : '#fff';
+                document.getElementById('rvSaveBtn').style.color = s.saved ? '#f84464' : '#fff';
+                document.getElementById('rvSaveBtn').querySelector('i').className = s.saved ? 'fas fa-bookmark' : 'far fa-bookmark';
+            }).catch(() => {});
+        }
+
+        function rvToggleMute() {
+            rvMuted = !rvMuted;
+            const vid = document.getElementById('rvVideo');
+            vid.muted = rvMuted;
+            document.getElementById('rvMuteBtn').querySelector('i').className = rvMuted ? 'fas fa-volume-mute' : 'fas fa-volume-up';
+        }
+
+        async function rvToggleLike() {
+            const id = reelItems[rvIndex].dataset.id;
+            const r = await fetch(`/api/posts/${id}/like`, { method: 'POST' });
+            if (r.ok) {
+                const d = await r.json();
+                document.getElementById('rvLikeCount').textContent = d.likeCount;
+                document.getElementById('rvLikeBtn').style.color = d.liked ? '#f84464' : '#fff';
             }
+        }
+
+        async function rvToggleSave() {
+            const id = reelItems[rvIndex].dataset.id;
+            const r = await fetch(`/api/posts/${id}/save`, { method: 'POST' });
+            if (r.ok) {
+                const d = await r.json();
+                const btn = document.getElementById('rvSaveBtn');
+                btn.style.color = d.saved ? '#f84464' : '#fff';
+                btn.querySelector('i').className = d.saved ? 'fas fa-bookmark' : 'far fa-bookmark';
+            }
+        }
+
+        function rvFocusComment() { document.getElementById('rvCmtInput').focus(); }
+
+        async function rvSubmitComment() {
+            const inp = document.getElementById('rvCmtInput');
+            if (!inp.value.trim()) return;
+            const id = reelItems[rvIndex].dataset.id;
+            const params = new URLSearchParams({ content: inp.value });
+            const r = await fetch(`/api/posts/${id}/comment`, { method: 'POST', body: params });
+            if (r.ok) {
+                const d = await r.json();
+                document.getElementById('rvCmtCount').textContent = d.count;
+                inp.value = '';
+            }
+        }
+
+        // Keyboard navigation for reel viewer
+        document.addEventListener('keydown', e => {
+            const modal = document.getElementById('reelViewerModal');
+            if (modal.style.display !== 'flex') return;
+            if (e.key === 'ArrowRight') navReel(1);
+            if (e.key === 'ArrowLeft') navReel(-1);
+            if (e.key === 'Escape') closeReelViewer();
+            if (e.key === 'm' || e.key === 'M') rvToggleMute();
+        });
+    </script>
+
+    <style>
+        @keyframes storyProgress {
+            from { width: 0; }
+            to { width: 100%; }
         }
     </style>
     <!-- Avatar Menu Popup -->
