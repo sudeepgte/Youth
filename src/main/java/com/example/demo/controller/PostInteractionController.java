@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
@@ -23,6 +24,8 @@ public class PostInteractionController {
     private UserRepository userRepository;
     @Autowired
     private NotificationRepository notificationRepository;
+    @Autowired
+    private UserActivityRepository userActivityRepository;
 
     private User getUserFromSession(HttpSession session) {
         Object sessionUser = session.getAttribute("user");
@@ -148,7 +151,7 @@ public class PostInteractionController {
         return ResponseEntity.ok(result);
     }
 
-    // ── Get post stats (likes + comments count + did current user like?) ────
+    // ── Get post stats (likes + comments count + did current user like/save?) ──
     @GetMapping("/{postId}/stats")
     public ResponseEntity<Map<String, Object>> getStats(
             @PathVariable Long postId, HttpSession session) {
@@ -162,10 +165,78 @@ public class PostInteractionController {
         if (post == null)
             return ResponseEntity.notFound().build();
 
+        boolean saved = userActivityRepository
+            .findByUserIdAndPostId(user.getId(), postId)
+            .stream().anyMatch(a -> a.getActivityType() == ActivityType.SAVE);
+
         Map<String, Object> resp = new HashMap<>();
         resp.put("likes", postLikeRepository.countByPost(post));
         resp.put("comments", postCommentRepository.countByPost(post));
         resp.put("liked", postLikeRepository.existsByPostAndUser(post, user));
+        resp.put("saved", saved);
+        return ResponseEntity.ok(resp);
+    }
+
+    // ── Save / Unsave toggle (bookmark) ─────────────────────────────────────
+    @Transactional
+    @PostMapping("/{postId}/save")
+    public ResponseEntity<Map<String, Object>> toggleSave(
+            @PathVariable Long postId, HttpSession session) {
+
+        User user = getUserFromSession(session);
+        if (user == null)
+            return ResponseEntity.status(401).build();
+        user = userRepository.findById(user.getId()).orElse(user);
+
+        Post post = postRepository.findById(postId).orElse(null);
+        if (post == null)
+            return ResponseEntity.notFound().build();
+
+        List<UserActivity> existing = userActivityRepository.findByUserIdAndPostId(user.getId(), postId);
+        Optional<UserActivity> savedAct = existing.stream()
+            .filter(a -> a.getActivityType() == ActivityType.SAVE).findFirst();
+
+        boolean nowSaved;
+        if (savedAct.isPresent()) {
+            userActivityRepository.delete(savedAct.get());
+            nowSaved = false;
+        } else {
+            userActivityRepository.save(new UserActivity(user, post, ActivityType.SAVE));
+            nowSaved = true;
+        }
+
+        Map<String, Object> resp = new HashMap<>();
+        resp.put("saved", nowSaved);
+        return ResponseEntity.ok(resp);
+    }
+
+    // ── Edit post caption / hashtags (owner only) ────────────────────────────
+    @Transactional
+    @PostMapping("/{postId}/edit")
+    public ResponseEntity<Map<String, Object>> editPost(
+            @PathVariable Long postId,
+            @RequestParam String content,
+            @RequestParam(required = false) String hashtags,
+            HttpSession session) {
+
+        User user = getUserFromSession(session);
+        if (user == null)
+            return ResponseEntity.status(401).build();
+
+        Post post = postRepository.findById(postId).orElse(null);
+        if (post == null)
+            return ResponseEntity.notFound().build();
+        if (!post.getUser().getId().equals(user.getId()))
+            return ResponseEntity.status(403).build();
+
+        post.setContent(content.trim());
+        if (hashtags != null) post.setHashtags(hashtags.trim());
+        postRepository.save(post);
+
+        Map<String, Object> resp = new HashMap<>();
+        resp.put("ok", true);
+        resp.put("content", post.getContent());
+        resp.put("hashtags", post.getHashtags());
         return ResponseEntity.ok(resp);
     }
 }

@@ -59,6 +59,39 @@ public class ChatRestController {
     @Autowired
     private org.springframework.messaging.simp.SimpMessageSendingOperations messagingTemplate;
 
+    @Autowired
+    private jakarta.servlet.http.HttpServletRequest httpServletRequest;
+
+    @PostMapping("/send-direct")
+    public ResponseEntity<ChatMessage> sendDirectMessage(@RequestBody Map<String, Object> payload, HttpSession session) {
+        User currentUser = null;
+        Object authUser = httpServletRequest.getAttribute("authenticatedUser");
+        if (authUser instanceof User) {
+            currentUser = (User) authUser;
+        } else {
+            currentUser = getUserFromSession(session);
+        }
+
+        if (currentUser == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        try {
+            Long recipientId = Long.valueOf(payload.get("recipientId").toString());
+            String content = payload.get("content").toString();
+
+            ChatMessage message = chatService.sendMessage(currentUser, recipientId, content, null, null, false, false);
+
+            // Notify recipient and sender via WebSocket
+            messagingTemplate.convertAndSendToUser(recipientId.toString(), "/queue/messages", message);
+            messagingTemplate.convertAndSendToUser(currentUser.getId().toString(), "/queue/messages", message);
+
+            return ResponseEntity.ok(message);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
     @GetMapping("/conversations")
     public ResponseEntity<List<Conversation>> getConversations(HttpSession session) {
         User user = getUserFromSession(session);
