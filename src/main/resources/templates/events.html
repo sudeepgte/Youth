@@ -157,9 +157,16 @@
                         </div>
                         <h3 th:text="${poll.title}" class="poll-title">Event</h3>
                         <p class="poll-subtitle">Help us decide if this should be our next major event!</p>
-                        <form th:action="@{'/events/' + ${poll.id} + '/poll-vote'}" method="POST">
-                            <button type="submit" class="btn btn-primary" style="width:100%;">Vote Now</button>
-                        </form>
+                        <th:block th:if="${votedPollIds != null and votedPollIds.contains(poll.id)}">
+                            <button type="button" class="btn btn-success" disabled style="width:100%; cursor: not-allowed; background: #10b981; border: none;">
+                                <i class="fas fa-check"></i> Voted
+                            </button>
+                        </th:block>
+                        <th:block th:unless="${votedPollIds != null and votedPollIds.contains(poll.id)}">
+                            <form th:action="@{'/events/' + ${poll.id} + '/poll-vote'}" method="POST">
+                                <button type="submit" class="btn btn-primary" style="width:100%;">Vote Now</button>
+                            </form>
+                        </th:block>
                     </div>
                 </div>
             </section>
@@ -183,9 +190,18 @@
             <!-- 📅 All Events Grid -->
             <section>
                 <div class="section-header">
-                    <h2><i class="fas fa-calendar-check" style="color: var(--purple);"></i> All Events</h2>
+                    <h2>
+                        <i class="fas fa-calendar-check" style="color: var(--purple);"></i>
+                        <span th:if="${activeSearch != null and !activeSearch.isEmpty()}" 
+                              th:text="|Search Results for &quot;${#strings.capitalize(activeSearch)}&quot;|">Search Results</span>
+                        <span th:if="${(activeSearch == null or activeSearch.isEmpty()) and activeCategory != null and activeCategory != 'All' and activeCategory != ''}" 
+                              th:text="${#strings.capitalize(activeCategory)} + ' Events'">Category Events</span>
+                        <span th:if="${(activeSearch == null or activeSearch.isEmpty()) and (activeCategory == null or activeCategory == 'All' or activeCategory == '')}" 
+                              th:text="'All Events'">All Events</span>
+                    </h2>
                     <div style="display:flex; gap:10px;">
-                        <a th:href="@{/events(category='All')}" style="font-size:12px; font-weight:700; color:var(--purple);">Show All</a>
+                        <a th:if="${(activeCategory != null and activeCategory != 'All' and activeCategory != '') or (activeSearch != null and !activeSearch.isEmpty())}" th:href="@{/events}" style="font-size:12px; font-weight:700; color:var(--purple);">Show All</a>
+                        <a th:unless="${(activeCategory != null and activeCategory != 'All' and activeCategory != '') or (activeSearch != null and !activeSearch.isEmpty())}" th:href="@{/events(category='All')}" style="font-size:12px; font-weight:700; color:var(--purple);">Show All</a>
                     </div>
                 </div>
 
@@ -208,8 +224,7 @@
                                 <i class="fas fa-map-marker-alt"></i>
                                 <span th:text="${event.venue}">Venue Name</span>
                             </div>
-                            <div class="event-card-footer">
-                                <span class="attendees"><i class="fas fa-users"></i> 24+ Going</span>
+                            <div class="event-card-footer" style="justify-content: flex-end;">
                                 <span class="btn btn-primary" style="padding: 8px 14px; font-size: 13px;"><i class="fas fa-ticket"></i> View</span>
                             </div>
                         </div>

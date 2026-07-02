@@ -28,6 +28,9 @@ public class MainController {
     private HttpServletRequest httpServletRequest;
 
     @Autowired
+    private VoteRepository voteRepository;
+
+    @Autowired
     private JwtUtil jwtUtil;
 
     @Autowired
@@ -461,6 +464,13 @@ public class MainController {
                 .filter(e -> e.getVotingEndDate() == null || e.getVotingEndDate().isAfter(LocalDateTime.now()))
                 .collect(Collectors.toList());
         model.addAttribute("votingPolls", votingPolls);
+
+        java.util.Set<Long> votedPollIds = new java.util.HashSet<>();
+        if (user != null) {
+            java.util.List<com.example.demo.model.Vote> userVotes = voteRepository.findByUserId(user.getId());
+            votedPollIds = userVotes.stream().map(com.example.demo.model.Vote::getPollId).collect(Collectors.toSet());
+        }
+        model.addAttribute("votedPollIds", votedPollIds);
 
         // Ongoing music battles (rooms)
         List<MusicRoom> ongoingBattles = musicRoomRepository.findTop5ByActiveTrueAndPhaseNotOrderByCreatedAtDesc("ENDED");

@@ -157,35 +157,68 @@
             padding: 40px 30px 80px;
         }
 
-        /* ── Info Pills ── */
-        .info-pills {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-bottom: 32px;
+        /* ── Info Grid (Redesigned) ── */
+        .event-details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 16px;
+            margin-bottom: 36px;
         }
 
-        .pill {
+        .detail-card {
+            background: #ffffff;
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+            transition: all 0.25s ease;
+        }
+
+        .detail-card:hover {
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
+            transform: translateY(-3px);
+            border-color: rgba(0, 0, 0, 0.1);
+        }
+
+        .detail-card .icon-wrap {
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
-            gap: 10px;
-            background: #fff;
-            border: 1px solid rgba(0, 0, 0, 0.08);
-            border-radius: 12px;
-            padding: 10px 16px;
-            font-size: 13px;
-            color: var(--text-secondary);
-            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
         }
 
-        .pill i {
-            color: var(--primary);
-            width: 14px;
-            text-align: center;
+        .detail-card:nth-child(1) .icon-wrap { color: #f59e0b; background: rgba(245, 158, 11, 0.1); }
+        .detail-card:nth-child(2) .icon-wrap { color: #8b5cf6; background: rgba(139, 92, 246, 0.1); }
+        .detail-card:nth-child(3) .icon-wrap { color: #ec4899; background: rgba(236, 72, 153, 0.1); }
+        .detail-card:nth-child(4) .icon-wrap { color: #10b981; background: rgba(16, 185, 129, 0.1); }
+        .detail-card:nth-child(5) .icon-wrap { color: #3b82f6; background: rgba(59, 130, 246, 0.1); }
+
+        .detail-card .detail-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
         }
 
-        .pill strong {
-            color: var(--text-primary);
+        .detail-card .detail-info span {
+            font-size: 11px;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 700;
+        }
+
+        .detail-card .detail-info strong {
+            font-size: 14px;
+            color: #111827;
+            font-weight: 800;
+            line-height: 1.2;
         }
 
         /* ── About ── */
@@ -1058,30 +1091,42 @@
                 The selected seat category is currently full. Please try another one.
             </div>
 
-            <!-- Info Pills -->
-            <div class="info-pills">
-                <div class="pill">
-                    <i class="fas fa-calendar-alt"></i>
-                    <strong
-                        th:text="${event.dateTime != null ? #temporals.format(event.dateTime, 'EEE, MMM dd yyyy') : 'TBA'}">Date</strong>
+            <!-- Info Grid -->
+            <div class="event-details-grid">
+                <div class="detail-card">
+                    <div class="icon-wrap"><i class="fas fa-calendar-alt"></i></div>
+                    <div class="detail-info">
+                        <span>Date</span>
+                        <strong th:text="${event.dateTime != null ? #temporals.format(event.dateTime, 'EEE, MMM dd yyyy') : 'TBA'}">Date</strong>
+                    </div>
                 </div>
-                <div class="pill">
-                    <i class="far fa-clock"></i>
-                    <strong
-                        th:text="${event.dateTime != null ? #temporals.format(event.dateTime, 'hh:mm a') : 'TBA'}">Time</strong>
+                <div class="detail-card">
+                    <div class="icon-wrap"><i class="far fa-clock"></i></div>
+                    <div class="detail-info">
+                        <span>Time</span>
+                        <strong th:text="${event.dateTime != null ? #temporals.format(event.dateTime, 'hh:mm a') : 'TBA'}">Time</strong>
+                    </div>
                 </div>
-                <div class="pill">
-                    <i class="fas fa-map-marker-alt"></i>
-                    <strong th:text="${event.venue}">Venue</strong>
+                <div class="detail-card">
+                    <div class="icon-wrap"><i class="fas fa-map-marker-alt"></i></div>
+                    <div class="detail-info">
+                        <span>Venue</span>
+                        <strong th:text="${event.venue}">Venue</strong>
+                    </div>
                 </div>
-                <div class="pill">
-                    <i class="fas fa-users"></i>
-                    <strong th:text="${event.maxParticipants != null ? event.maxParticipants + ' max' : 'Open'}">100
-                        max</strong>
+                <div class="detail-card">
+                    <div class="icon-wrap"><i class="fas fa-users"></i></div>
+                    <div class="detail-info">
+                        <span>Capacity</span>
+                        <strong th:text="${event.maxParticipants != null ? event.maxParticipants + ' max' : 'Open'}">100 max</strong>
+                    </div>
                 </div>
-                <div class="pill">
-                    <i class="fas fa-ticket-alt"></i>
-                    <strong th:text="${event.price != null ? event.price : 'Free'}">Free</strong>
+                <div class="detail-card">
+                    <div class="icon-wrap"><i class="fas fa-ticket-alt"></i></div>
+                    <div class="detail-info">
+                        <span>Price</span>
+                        <strong th:text="${event.price != null ? #strings.replace(event.price, '$', '₹') : 'Free'}">Free</strong>
+                    </div>
                 </div>
             </div>
 
@@ -1213,19 +1258,24 @@
             </div>
 
             <!-- Related Events -->
-            <div class="related-section" th:if="${!#lists.isEmpty(related)}">
+            <div class="related-section">
                 <h2>Related Events</h2>
-                <a th:each="rel : ${related}" th:href="@{'/events/' + ${rel.id}}" class="related-card">
-                    <div class="related-thumb">
-                        <img th:src="${rel.imageUrl}" alt="related"
-                            onerror="this.src='https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=200'">
-                    </div>
-                    <div class="related-info">
-                        <h4 th:text="${rel.title}">Event</h4>
-                        <p th:text="${rel.dateTime != null ? #temporals.format(rel.dateTime, 'MMM dd, yyyy') : 'TBA'}">
-                            Date</p>
-                    </div>
-                </a>
+                <th:block th:if="${!#lists.isEmpty(related)}">
+                    <a th:each="rel : ${related}" th:href="@{'/events/' + ${rel.id}}" class="related-card">
+                        <div class="related-thumb">
+                            <img th:src="${rel.imageUrl}" alt="related"
+                                onerror="this.src='https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=200'">
+                        </div>
+                        <div class="related-info">
+                            <h4 th:text="${rel.title}">Event</h4>
+                            <p th:text="${rel.dateTime != null ? #temporals.format(rel.dateTime, 'MMM dd, yyyy') : 'TBA'}">
+                                Date</p>
+                        </div>
+                    </a>
+                </th:block>
+                <th:block th:if="${#lists.isEmpty(related)}">
+                    <p style="color: var(--text-secondary); font-size: 14px; margin-top: 10px;">No related events found.</p>
+                </th:block>
             </div>
 
         </div><!-- /left -->
@@ -1237,11 +1287,15 @@
                 <!-- Price -->
                 <div class="price-display">
                     <div class="price-label">Entry Fee</div>
-                    <div class="price-tag" th:classappend="${event.entryFeeType == 'Paid'} ? 'paid' : 'free'">
-                        <span th:if="${!#lists.isEmpty(event.seatTiers)}">Starting from ₹<span
-                                th:text="${event.seatTiers[0].price}">100</span></span>
+                    <div class="price-tag" th:classappend="${(event.entryFeeType == 'Paid' or (event.price != null and event.price != 'Free' and event.price != '0'))} ? 'paid' : 'free'">
+                        <th:block th:if="${!#lists.isEmpty(event.seatTiers)}">
+                            <span th:if="${startingPriceFormatted != 'Sold Out'}">Starting from <br>
+                                <span th:text="${startingPriceFormatted}">₹100</span>
+                            </span>
+                            <span th:if="${startingPriceFormatted == 'Sold Out'}">Sold Out</span>
+                        </th:block>
                         <span th:if="${#lists.isEmpty(event.seatTiers)}"
-                            th:text="${event.price != null ? event.price : 'Free'}">Free</span>
+                            th:text="${event.price != null ? #strings.replace(event.price, '$', '₹') : 'Free'}">Free</span>
                     </div>
                 </div>
 
@@ -1284,27 +1338,27 @@
                     </div>
                 </div>
 
-                <!-- Already Registered -->
-                <div th:if="${isRegistered}" class="registered-box">
-                    <i class="fas fa-check-circle"></i>
-                    <h3>You're Registered!</h3>
-                    <p>You have successfully registered for this event.</p>
+                <!-- Booking History -->
+                <div th:if="${isRegistered}" class="registered-box" style="margin-bottom: 20px;">
+                    <i class="fas fa-history" style="color: #3b82f6; font-size: 2rem; margin-bottom: 12px; display: block;"></i>
+                    <h3 style="color: #3b82f6; margin-bottom: 8px;">Your Booking History</h3>
+                    <p style="font-size: 13px; color: #4b5563; margin-bottom: 15px;">You have already booked tickets for this event.</p>
 
-                    <div th:if="${userReg != null}"
-                        style="margin-top: 18px; padding-top: 18px; border-top: 1px dashed rgba(16, 185, 129, 0.4);">
-                        <p style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">
-                            Your Ticket ID</p>
-                        <div style="font-size: 1.4rem; font-weight: 900; letter-spacing: 1.5px; color: #fff; margin-bottom: 12px; font-family: monospace;"
-                            th:text="${userReg.ticketId}">ZTX-XXXXXX</div>
-                        <a th:href="@{'/events/ticket/' + ${userReg.ticketId}}"
-                            style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: #10b981; color: #12122a; text-decoration: none; border-radius: 10px; font-weight: 800; font-size: 14px; transition: transform 0.2s;">
+                    <div th:each="reg : ${userRegs}"
+                        style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(0, 0, 0, 0.1);">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <span style="font-weight: 600; font-size: 14px; color: #1f2937;" th:text="${(reg.quantity != null ? reg.quantity : 1) + 'x ' + (reg.selectedTier != null ? reg.selectedTier : 'Ticket')}">1x VIP</span>
+                            <span style="font-size: 12px; color: #6b7280;" th:text="${#temporals.format(reg.registrationDate, 'dd MMM yyyy')}">05 Jul 2026</span>
+                        </div>
+                        <a th:href="@{'/events/ticket/' + ${reg.ticketId}}"
+                            style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: rgba(59, 130, 246, 0.1); color: #3b82f6; text-decoration: none; border-radius: 6px; font-size: 12px; transition: all 0.2s;">
                             <i class="fas fa-qrcode"></i> View E-Ticket
                         </a>
                     </div>
                 </div>
 
                 <!-- Event Full -->
-                <div th:if="${!isRegistered and spotsLeft == 0 and event.maxParticipants != null}" class="full-box">
+                <div th:if="${spotsLeft == 0 and event.maxParticipants != null}" class="full-box">
                     <i class="fas fa-ban"></i>
                     <p>This event is fully booked. No spots available.</p>
                 </div>
@@ -1340,16 +1394,16 @@
                 </div>
 
                 <div
-                    th:if="${user != null and !isAdmin and !isRegistered and (spotsLeft == null or spotsLeft == -1 or spotsLeft > 0) and event.entryFeeType != 'Paid'}">
+                    th:if="${user != null and !isAdmin and (spotsLeft == null or spotsLeft == -1 or spotsLeft > 0) and (event.entryFeeType != 'Paid' and (event.price == null or event.price == 'Free' or event.price == '0'))}">
                     <button type="button" class="btn-register" onclick="openRegModal('free')">
-                        <i class="fas fa-ticket-alt"></i> Register for Free
+                        <i class="fas fa-ticket-alt"></i> <span th:text="${isRegistered ? 'Book More Tickets' : 'Register for Free'}">Register for Free</span>
                     </button>
                 </div>
 
                 <div
-                    th:if="${user != null and !isAdmin and !isRegistered and (spotsLeft == null or spotsLeft == -1 or spotsLeft > 0) and event.entryFeeType == 'Paid'}">
+                    th:if="${user != null and !isAdmin and (spotsLeft == null or spotsLeft == -1 or spotsLeft > 0) and (event.entryFeeType == 'Paid' or (event.price != null and event.price != 'Free' and event.price != '0'))}">
                     <button type="button" class="btn-register" onclick="openRegModal('paid')">
-                        <i class="fas fa-credit-card"></i> Pay &amp; Register
+                        <i class="fas fa-credit-card"></i> <span th:text="${isRegistered ? 'Book More Tickets' : 'Pay &amp; Register'}">Pay &amp; Register</span>
                     </button>
                 </div>
 
@@ -1387,7 +1441,7 @@
                         <span
                             th:text="${event.dateTime != null ? #temporals.format(event.dateTime, 'MMM dd, yyyy · hh:mm a') : 'TBA'}">Date</span>
                         &nbsp;·&nbsp;
-                        <span id="modalPriceDisplay" th:text="${event.price != null ? event.price : 'Free'}"
+                        <span id="modalPriceDisplay" th:text="${event.price != null ? #strings.replace(event.price, '$', '₹') : 'Free'}"
                             style="color:#10b981; font-weight:700;">Free</span>
                     </p>
                 </div>
@@ -1400,12 +1454,32 @@
                     <label>Select Seat Category <span style="color:#f84464;">*</span></label>
                     <div class="input-wrap">
                         <i class="fas fa-chair"></i>
-                        <select name="selectedTier" id="tierSelect" required onchange="updateModalPrice(this)">
+                        <select name="selectedTier" id="tierSelect" required onchange="updateModalPrice()">
                             <option value="">-- Select Category --</option>
                             <option th:each="tier : ${event.seatTiers}" th:value="${tier.tierName}"
                                 th:text="${tier.tierName + ' (₹' + tier.price + ')'}"
-                                th:disabled="${tier.registeredCount >= tier.capacity}" th:data-price="${tier.price}">
+                                th:disabled="${tier.registeredCount >= tier.capacity}" th:data-price="${tier.price}"
+                                th:data-available="${tier.capacity - tier.registeredCount}">
                             </option>
+                        </select>
+                    </div>
+                </div>
+
+                <div th:if="${event.totalRows == 0}" class="mfield" id="quantityField">
+                    <label>Quantity <span style="color:#f84464;">*</span></label>
+                    <div class="input-wrap">
+                        <i class="fas fa-ticket-alt"></i>
+                        <select name="quantity" id="quantitySelect" required onchange="updateModalPrice()">
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                            <option value="9">9</option>
+                            <option value="10">10</option>
                         </select>
                     </div>
                 </div>
@@ -1606,16 +1680,63 @@
             document.getElementById('regModalOverlay').classList.remove('open');
         }
 
-        function updateModalPrice(select) {
+        function updateModalPrice() {
+            const select = document.getElementById('tierSelect');
+            const qtySelect = document.getElementById('quantitySelect');
             const display = document.getElementById('modalPriceDisplay');
             if (!display) return;
-            const option = select.options[select.selectedIndex];
-            if (option.value) {
-                const price = option.getAttribute('data-price');
-                display.textContent = '₹' + price;
+            
+            let quantity = 1;
+            if (qtySelect) {
+                quantity = parseInt(qtySelect.value) || 1;
+            }
+
+            let price = 0;
+            let isTier = false;
+            let maxAvailable = 10; // Default max
+
+            if (select && select.selectedIndex > 0) {
+                const option = select.options[select.selectedIndex];
+                if (option && option.value) {
+                    price = parseFloat(option.getAttribute('data-price')) || 0;
+                    const available = parseInt(option.getAttribute('data-available'));
+                    if (!isNaN(available)) maxAvailable = Math.min(10, available);
+                    isTier = true;
+                }
+            } else if (!isTier) {
+                const basePriceStr = '[[${event.price}]]';
+                if (basePriceStr && basePriceStr.toLowerCase() !== 'free') {
+                    price = parseFloat(basePriceStr.replace(/[^0-9.]/g, '')) || 0;
+                }
+                const totalSpots = parseInt('[[${spotsLeft != null ? spotsLeft : 10}]]');
+                if (!isNaN(totalSpots) && totalSpots > 0) maxAvailable = Math.min(10, totalSpots);
+            }
+            
+            if (qtySelect) {
+                // Update dropdown options to match maxAvailable
+                let currentVal = parseInt(qtySelect.value) || 1;
+                qtySelect.innerHTML = '';
+                for (let i = 1; i <= Math.max(1, maxAvailable); i++) {
+                    const opt = document.createElement('option');
+                    opt.value = i;
+                    opt.text = i;
+                    if (i === currentVal) opt.selected = true;
+                    qtySelect.appendChild(opt);
+                }
+                
+                // If the selected quantity exceeds the new max, adjust it down
+                if (currentVal > maxAvailable) {
+                    qtySelect.value = maxAvailable;
+                    quantity = maxAvailable;
+                }
+            }
+
+            if (price > 0) {
+                let total = price * quantity;
+                display.textContent = '₹' + total.toLocaleString();
                 display.style.color = '#10b981';
             } else {
-                display.textContent = '[[${event.price != null ? event.price : "Free"}]]';
+                display.textContent = 'Free';
                 display.style.color = '';
             }
         }

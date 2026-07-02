@@ -5,11 +5,13 @@ import com.example.demo.model.EventRegistration;
 import com.example.demo.model.User;
 import com.example.demo.model.EventSeatTier;
 import com.example.demo.model.EventSeat;
+import com.example.demo.model.Vote;
 import com.example.demo.repository.EventSeatRepository;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.repository.EventRepository;
 import com.example.demo.repository.EventRegistrationRepository;
 import com.example.demo.repository.EventSeatTierRepository;
+import com.example.demo.repository.VoteRepository;
 import com.example.demo.service.RewardService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -26,6 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Comparator;
 import java.util.UUID;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.stream.Collectors;
 import java.net.InetAddress;
 
@@ -47,6 +51,9 @@ public class EventController {
 
     @Autowired
     private EventSeatTierRepository eventSeatTierRepository;
+
+    @Autowired
+    private VoteRepository voteRepository;
 
     @Autowired
     private RewardService rewardService;
@@ -149,6 +156,14 @@ public class EventController {
         model.addAttribute("activeSearch", search != null ? search : "");
         model.addAttribute("user", user);
         model.addAttribute("isAdmin", adminViewing);
+        
+        Set<Long> votedPollIds = new HashSet<>();
+        if (user != null) {
+            List<Vote> userVotes = voteRepository.findByUserId(user.getId());
+            votedPollIds = userVotes.stream().map(Vote::getPollId).collect(Collectors.toSet());
+        }
+        model.addAttribute("votedPollIds", votedPollIds);
+
         return "events";
     }
 
@@ -160,30 +175,23 @@ public class EventController {
         Event event = eventRepository.findById(id).orElse(null);
         if (event == null || !"VOTING".equals(event.getStatus())) return "redirect:/events?error=invalid_event";
 
-        User dbUser = userRepository.findById(user.getId()).orElse(user);
-        
-        List<Event> currentPolls = eventRepository.findAll().stream()
-                .filter(e -> "VOTING".equals(e.getStatus()))
-                .collect(Collectors.toList());
-        
-        boolean alreadyVoted = false;
-        for(Event p : currentPolls) {
-            if(dbUser.getVotedEvents().contains(p.getId())) {
-                alreadyVoted = true;
-                break;
-            }
-        }
-
         String referer = request.getHeader("Referer");
         String redirectBase = (referer != null && !referer.contains("/login")) ? referer : "/events";
         if (redirectBase.contains("?")) redirectBase = redirectBase.split("\\?")[0];
 
-        if (alreadyVoted) return "redirect:" + redirectBase + "?alreadyVotedInPoll=true";
+        // Check for duplicate vote using VoteRepository
+        if (voteRepository.existsByUserIdAndPollId(user.getId(), id)) {
+            return "redirect:" + redirectBase + "?alreadyVotedInPoll=true";
+        }
+
+        // Save new vote
+        Vote vote = new Vote(user.getId(), id);
+        voteRepository.save(vote);
 
         event.setPollVotes(event.getPollVotes() + 1);
         eventRepository.save(event);
 
-        dbUser.getVotedEvents().add(id);
+        User dbUser = userRepository.findById(user.getId()).orElse(user);
         rewardService.awardVoting(dbUser); // Award coins for voting 🗳️
         userRepository.save(dbUser);
         
@@ -233,9 +241,6 @@ public class EventController {
         User user = getUserFromSession(session);
         boolean adminViewing = isAdmin(session);
 
-        // Allow guests to view event details
-        // if (user == null && !adminViewing) return "redirect:/login";
-
         if (user != null) {
             user = userRepository.findById(user.getId()).orElse(user);
             session.setAttribute("user", user);
@@ -245,17 +250,19 @@ public class EventController {
         Event event = eventRepository.findById(id).orElse(null);
         if (event == null) return "redirect:/events";
 
-        EventRegistration userReg = null;
+        List<EventRegistration> userRegs = new java.util.ArrayList<>();
         if (user != null) {
-            userReg = eventRegistrationRepository.findByEventAndUser(event, user).orElse(null);
+            userRegs = eventRegistrationRepository.findByEventAndUser(event, user);
             
             // Fix for missing ticket IDs in legacy records
-            if (userReg != null && (userReg.getTicketId() == null || userReg.getTicketId().isBlank())) {
-                userReg.setTicketId(generateTicketId(event));
-                eventRegistrationRepository.save(userReg);
+            for (EventRegistration reg : userRegs) {
+                if (reg.getTicketId() == null || reg.getTicketId().isBlank()) {
+                    reg.setTicketId(UUID.randomUUID().toString().substring(0, 8).toUpperCase());
+                    eventRegistrationRepository.save(reg);
+                }
             }
         }
-        boolean isRegistered = (userReg != null);
+        boolean isRegistered = !userRegs.isEmpty();
         long dbRegistrationCount = eventRegistrationRepository.countByEvent(event);
         long registrationCount = dbRegistrationCount;
         
@@ -270,9 +277,54 @@ public class EventController {
                 ? Math.max(0, totalCapacity - (int) registrationCount) : -1;
         model.addAttribute("totalCapacity", totalCapacity); // For UI display
 
-        // Related events (same category, exclude current)
-        List<Event> related = eventRepository.findByCategory(event.getCategory())
-                .stream().filter(e -> !e.getId().equals(id)).limit(3).collect(Collectors.toList());
+        // Calculate minimum starting price for available seats
+        Double minStartingPrice = null;
+        if (event.getSeatTiers() != null && !event.getSeatTiers().isEmpty()) {
+            for (EventSeatTier tier : event.getSeatTiers()) {
+                int capacity = tier.getCapacity() != null ? tier.getCapacity() : 0;
+                int registered = tier.getRegisteredCount() != null ? tier.getRegisteredCount() : 0;
+                if (capacity - registered > 0 && tier.getPrice() != null) {
+                    if (minStartingPrice == null || tier.getPrice() < minStartingPrice) {
+                        minStartingPrice = tier.getPrice();
+                    }
+                }
+            }
+        }
+        
+        if (minStartingPrice != null) {
+            String formattedPrice = "₹" + String.format("%,.0f", minStartingPrice);
+            model.addAttribute("startingPriceFormatted", formattedPrice);
+        } else {
+            model.addAttribute("startingPriceFormatted", "Sold Out");
+        }
+
+        // Related events (upcoming, same category or venue, exclude current)
+        List<Event> allUpcoming = eventRepository.findAll().stream()
+                .filter(e -> "UPCOMING".equals(e.getStatus()) || e.getStatus() == null)
+                .filter(e -> e.getDateTime() == null || e.getDateTime().isAfter(LocalDateTime.now().minusDays(1)))
+                .filter(e -> !e.getId().equals(id))
+                .collect(Collectors.toList());
+
+        List<Event> candidatesForRelated = allUpcoming.stream()
+                .filter(e -> (e.getCategory() != null && e.getCategory().equalsIgnoreCase(event.getCategory())) ||
+                             (e.getVenue() != null && e.getVenue().equalsIgnoreCase(event.getVenue())))
+                .collect(Collectors.toList());
+
+        candidatesForRelated.sort((e1, e2) -> {
+            boolean e1Cat = e1.getCategory() != null && e1.getCategory().equalsIgnoreCase(event.getCategory());
+            boolean e2Cat = e2.getCategory() != null && e2.getCategory().equalsIgnoreCase(event.getCategory());
+            if (e1Cat && !e2Cat) return -1;
+            if (!e1Cat && e2Cat) return 1;
+
+            LocalDateTime d1 = e1.getDateTime();
+            LocalDateTime d2 = e2.getDateTime();
+            if (d1 == null && d2 == null) return 0;
+            if (d1 == null) return 1;
+            if (d2 == null) return -1;
+            return d1.compareTo(d2);
+        });
+
+        List<Event> related = candidatesForRelated.stream().limit(3).collect(Collectors.toList());
 
         // For Secret Voting System (when event is ONGOING) or Finalist voting (when event is VOTING)
         boolean hasVoted = false;
@@ -301,7 +353,7 @@ public class EventController {
         model.addAttribute("user", user);
         model.addAttribute("isAdmin", adminViewing);
         model.addAttribute("isRegistered", isRegistered);
-        model.addAttribute("userReg", userReg);
+        model.addAttribute("userRegs", userRegs);
         model.addAttribute("registrationCount", registrationCount);
         model.addAttribute("spotsLeft", spotsLeft);
         model.addAttribute("related", related);
@@ -414,6 +466,7 @@ public class EventController {
             @RequestParam(required = false) String yearOfStudy,
             @RequestParam(required = false) String selectedTier,
             @RequestParam(required = false) List<Long> selectedSeatIds,
+            @RequestParam(defaultValue = "1") Integer quantity,
             HttpSession session) {
         User user = getUserFromSession(session);
         if (user == null) return "redirect:/login";
@@ -421,8 +474,9 @@ public class EventController {
         Event event = eventRepository.findById(id).orElse(null);
         if (event == null) return "redirect:/events";
 
-        if (eventRegistrationRepository.findByEventAndUser(event, user).isPresent()) {
-            return "redirect:/events/" + id + "?alreadyRegistered=true";
+        // If seat map is used, quantity is the number of seats selected
+        if (selectedSeatIds != null && !selectedSeatIds.isEmpty()) {
+            quantity = selectedSeatIds.size();
         }
 
         // Store reg info in session temporarily for paid flow
@@ -433,17 +487,18 @@ public class EventController {
         session.setAttribute("regYear", yearOfStudy);
         session.setAttribute("regTier", selectedTier);
         session.setAttribute("regSeatIds", selectedSeatIds);
+        session.setAttribute("regQuantity", quantity);
 
         if ("Paid".equalsIgnoreCase(event.getEntryFeeType()) || (event.getPrice() != null && !event.getPrice().equalsIgnoreCase("Free"))) {
             User dbUser = userRepository.findById(user.getId()).orElse(user);
             if (dbUser.isHasFreeEntry()) {
                 dbUser.setHasFreeEntry(false);
                 userRepository.save(dbUser);
-                return completeRegistration(event, dbUser, "FREE", fullName, email, phone, college, yearOfStudy, selectedTier, selectedSeatIds);
+                return completeRegistration(event, dbUser, "FREE", fullName, email, phone, college, yearOfStudy, selectedTier, selectedSeatIds, quantity);
             }
             return "redirect:/events/" + id + "/payment";
         } else {
-            return completeRegistration(event, user, "FREE", fullName, email, phone, college, yearOfStudy, selectedTier, selectedSeatIds);
+            return completeRegistration(event, user, "FREE", fullName, email, phone, college, yearOfStudy, selectedTier, selectedSeatIds, quantity);
         }
     }
 
@@ -457,28 +512,41 @@ public class EventController {
 
         Event event = eventRepository.findById(id).orElse(null);
         if (event == null) return "redirect:/events";
-
-        if (eventRegistrationRepository.findByEventAndUser(event, user).isPresent()) {
-            return "redirect:/events/" + id + "?alreadyRegistered=true";
-        }
+        
+        Integer quantity = (Integer) session.getAttribute("regQuantity");
+        if (quantity == null) quantity = 1;
+        String selectedTier = (String) session.getAttribute("regTier");
 
         User dbUser = userRepository.findById(user.getId()).orElse(user);
         
         // Calculate discounted price if applicable
         String originalPrice = event.getPrice();
-        double priceVal = parsePrice(originalPrice);
-        double finalPrice = priceVal;
+        double priceVal = 0.0;
+        
+        if (selectedTier != null && !selectedTier.isBlank() && event.getSeatTiers() != null) {
+            for (EventSeatTier tier : event.getSeatTiers()) {
+                if (selectedTier.equalsIgnoreCase(tier.getTierName())) {
+                    priceVal = tier.getPrice() != null ? tier.getPrice() : 0.0;
+                    break;
+                }
+            }
+        } else {
+            priceVal = parsePrice(originalPrice);
+        }
+        
+        double finalPrice = priceVal * quantity;
         boolean isDiscounted = false;
 
         if (dbUser.isHasDiscount()) {
-            finalPrice = priceVal * 0.5;
+            finalPrice = finalPrice * 0.5;
             isDiscounted = true;
         }
 
         model.addAttribute("event", event);
         model.addAttribute("user", dbUser);
         model.addAttribute("isDiscounted", isDiscounted);
-        model.addAttribute("finalPrice", "₹" + (int)finalPrice);
+        model.addAttribute("quantity", quantity);
+        model.addAttribute("finalPrice", "₹" + String.format("%,.0f", finalPrice));
         return "payment";
     }
 
@@ -499,10 +567,6 @@ public class EventController {
         Event event = eventRepository.findById(id).orElse(null);
         if (event == null) return "redirect:/events";
 
-        if (eventRegistrationRepository.findByEventAndUser(event, user).isPresent()) {
-            return "redirect:/events/" + id + "?alreadyRegistered=true";
-        }
-
         // Retrieve registration info stored in session
         String fullName    = (String) session.getAttribute("regFullName");
         String email       = (String) session.getAttribute("regEmail");
@@ -511,6 +575,8 @@ public class EventController {
         String yearOfStudy = (String) session.getAttribute("regYear");
         String selectedTier = (String) session.getAttribute("regTier");
         List<Long> selectedSeatIds = (List<Long>) session.getAttribute("regSeatIds");
+        Integer quantity = (Integer) session.getAttribute("regQuantity");
+        if (quantity == null) quantity = 1;
 
         User dbUser = userRepository.findById(user.getId()).orElse(user);
         String paymentStatus = "PAID";
@@ -520,7 +586,7 @@ public class EventController {
             paymentStatus = "PAID (DISCOUNTED)";
         }
 
-        return completeRegistration(event, dbUser, paymentStatus, fullName, email, phone, college, yearOfStudy, selectedTier, selectedSeatIds);
+        return completeRegistration(event, dbUser, paymentStatus, fullName, email, phone, college, yearOfStudy, selectedTier, selectedSeatIds, quantity);
     }
 
     // ─────────────────────────────────────────────────────────
@@ -847,6 +913,7 @@ public class EventController {
             
             // Explicitly clear voting logs so they don't block deletion (FK)
             userRepository.deleteFromVotedEvents(id);
+            voteRepository.deleteByPollId(id);
             
             eventRepository.delete(event);
         }
@@ -1084,7 +1151,8 @@ public class EventController {
         Event event = eventRepository.findById(id).orElse(null);
         if (event == null) return "redirect:/events";
 
-        EventRegistration reg = eventRegistrationRepository.findByEventAndUser(event, user).orElse(null);
+        List<EventRegistration> regs = eventRegistrationRepository.findByEventAndUser(event, user);
+        EventRegistration reg = regs.isEmpty() ? null : regs.get(0);
         if (reg != null && !reg.isAttendanceMarked()) {
             reg.setAttendanceMarked(true);
             reg.setAttendedAt(LocalDateTime.now());
@@ -1106,31 +1174,35 @@ public class EventController {
     private String completeRegistration(Event event, User user, String paymentStatus,
                                          String fullName, String email, String phone,
                                          String college, String yearOfStudy, String selectedTier,
-                                         List<Long> selectedSeatIds) {
+                                         List<Long> selectedSeatIds, Integer quantity) {
         
+        if (quantity == null || quantity < 1) quantity = 1;
+
         // Enforce seat limit in backend
         if (event.getMaxParticipants() != null && event.getMaxParticipants() > 0) {
             long currentCount = eventRegistrationRepository.countByEvent(event);
-            if (currentCount >= event.getMaxParticipants()) {
+            if (currentCount + quantity > event.getMaxParticipants()) {
                 return "redirect:/events/" + event.getId() + "?error=full";
             }
         }
 
         // Tier-specific check
+        double basePrice = parsePrice(event.getPrice());
         if (selectedTier != null && !selectedTier.isBlank() && event.getSeatTiers() != null) {
             EventSeatTier selectedTierObj = null;
             for (EventSeatTier t : event.getSeatTiers()) {
                 if (selectedTier.equalsIgnoreCase(t.getTierName())) {
                     selectedTierObj = t;
+                    if (t.getPrice() != null) basePrice = t.getPrice();
                     break;
                 }
             }
             
             if (selectedTierObj != null) {
-                if (selectedTierObj.getRegisteredCount() >= selectedTierObj.getCapacity()) {
+                if (selectedTierObj.getRegisteredCount() + quantity > selectedTierObj.getCapacity()) {
                     return "redirect:/events/" + event.getId() + "?error=tier_full";
                 }
-                selectedTierObj.setRegisteredCount(selectedTierObj.getRegisteredCount() + 1);
+                selectedTierObj.setRegisteredCount(selectedTierObj.getRegisteredCount() + quantity);
             }
         }
 
@@ -1142,6 +1214,12 @@ public class EventController {
                 seat.setBookedByUser(user);
             }
             eventSeatRepository.saveAll(seatsToBook);
+            quantity = selectedSeatIds.size(); // Ensure quantity matches seats selected
+        }
+        
+        double totalPrice = basePrice * quantity;
+        if (paymentStatus.contains("DISCOUNTED")) {
+            totalPrice = totalPrice * 0.5;
         }
 
         EventRegistration reg = new EventRegistration();
@@ -1156,9 +1234,10 @@ public class EventController {
         reg.setPhone(phone);
         reg.setCollege(college);
         reg.setYearOfStudy(yearOfStudy);
+        reg.setQuantity(quantity);
+        reg.setTotalPrice(totalPrice);
         eventRegistrationRepository.save(reg);
         eventRepository.save(event); // Save the incremented tier count
-        
         rewardService.awardRegistration(user); // Award coins for registering 🍪
         return "redirect:/events/ticket/" + reg.getTicketId() + "?success=true";
     }
@@ -1199,7 +1278,9 @@ public class EventController {
     private Double parsePrice(String price) {
         if (price == null || price.equalsIgnoreCase("Free")) return 0.0;
         try {
-            return Double.parseDouble(price.replace("₹", "").trim());
+            String clean = price.replaceAll("[^0-9.]", "");
+            if (clean.isEmpty()) return 0.0;
+            return Double.parseDouble(clean);
         } catch (Exception e) {
             return 0.0;
         }
