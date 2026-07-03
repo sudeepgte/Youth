@@ -94,6 +94,14 @@ public class LudoWebSocketController {
         messagingTemplate.convertAndSend("/topic/ludo/" + roomId, (Object) room.toStateMap());
     }
 
+    @MessageMapping("/ludo/{roomId}/skip")
+    public void skipTurn(@DestinationVariable String roomId, Map<String, Object> payload) {
+        LudoRoom room = rooms.get(roomId);
+        if (room == null) return;
+        room.skipTurn();
+        messagingTemplate.convertAndSend("/topic/ludo/" + roomId, (Object) room.toStateMap());
+    }
+
     @MessageMapping("/ludo/{roomId}/chat")
     public void chat(@DestinationVariable String roomId, ChatMessage msg) {
         messagingTemplate.convertAndSend("/topic/ludo/" + roomId + "/chat", msg);
