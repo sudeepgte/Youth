@@ -417,6 +417,7 @@
             <a href="/dashboard" class="sidebar-link" th:classappend="${isReelsPage} ? '' : ' active'"><i class="fas fa-home"></i> Home</a>
             <a href="/explore" class="sidebar-link"><i class="fas fa-compass"></i> Explore</a>
             <a href="/events" class="sidebar-link"><i class="fas fa-calendar-alt"></i> Events</a>
+            <a href="/battles" class="sidebar-link"><i class="fas fa-fire"></i> Battle Arena</a>
             <a href="/achievements" class="sidebar-link"><i class="fas fa-trophy"></i> Achievements</a>
             <a href="/messages" class="sidebar-link"><i class="fas fa-comment-dots"></i> Chat</a>
             <a href="/reels" class="sidebar-link" th:classappend="${isReelsPage} ? ' active' : ''"><i class="fas fa-film"></i> Reels</a>
@@ -819,7 +820,7 @@
     </div>
 
     <!-- Notifications Modal -->
-    <div class="modal" id="notifModal" style="display:none; max-width: 400px;">
+    <div class="modal" id="notifModal" style="display:none; max-width: 400px; flex-direction: column;">
         <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center;">
             <h3>Notifications</h3>
             <div style="display:flex; gap:15px; align-items:center;">

@@ -60,7 +60,8 @@ public class RpsWebSocketController {
         RpsRoom room = rooms.get(roomId);
         if (room == null) return;
 
-        int playerNum = (int) payload.get("playerNum");
+        Object rawNum = payload.get("playerNum");
+        int playerNum = (rawNum instanceof Number) ? ((Number) rawNum).intValue() : Integer.parseInt(rawNum.toString());
         String choice = (String) payload.get("choice");
 
         room.applyChoice(playerNum, choice);
