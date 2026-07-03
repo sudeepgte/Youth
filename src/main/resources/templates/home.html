@@ -11,80 +11,165 @@
 
     <div th:replace="~{fragments/template :: navbar('home')}"></div>
 
-    <!-- Hero Section (Mega Template) -->
-    <section class="hero" aria-label="Zentrix hero slideshow">
-        <div class="hero-slideshow" id="heroSlideshow" aria-hidden="true">
-            <div class="hero-slide is-active"></div>
-            <div class="hero-slide"></div>
-            <div class="hero-slide"></div>
-            <div class="hero-slide"></div>
-            <div class="hero-slide"></div>
-        </div>
-        <div class="hero-overlay" aria-hidden="true"></div>
-        <div class="hero-content">
-            <div class="pill"><i class="fa-solid fa-sparkles"></i> Youth-first experiences, one place</div>
-            <h1 style="margin-top: 14px;">Your Time. Your Space. Your People.</h1>
-            <p>Find your vibe through events, games, music, and community.
-            </p>
-            <div style="margin-top: 18px; display:flex; gap:10px; flex-wrap:wrap;">
-                <span class="pill"><i class="fa-solid fa-shield"></i> Safe community</span>
-                <span class="pill"><i class="fa-solid fa-bolt"></i> Fast sign-up</span>
-                <span class="pill"><i class="fa-solid fa-heart"></i> Personalized feed</span>
+    <!-- Cinematic Promo Video CSS -->
+    <link rel="stylesheet" th:href="@{/css/promo.css}">
+
+    <!-- Hero Section with Integrated 10s Cinematic Video -->
+    <section class="hero" aria-label="Zentrix interactive intro cinematic video">
+        <div class="hero-promo-wrapper">
+            <div class="cinema-container">
+                <!-- HTML5 Canvas for particles & video camera transitions -->
+                <canvas id="promoCanvas" class="promo-canvas"></canvas>
+
+                <!-- Floating Mute/Unmute Overlay on Top-Right -->
+                <button id="promoFloatingAudioBtn" class="promo-audio-toggle" title="Toggle audio sequence">
+                    <i class="fas fa-volume-mute"></i>
+                </button>
+
+                <!-- Cinematic Scene Viewports -->
+                <div class="promo-scenes-viewport">
+                    
+                    <!-- Scene 1: City Intro (0.0s - 1.0s) -->
+                    <div class="promo-scene active" id="scene-1">
+                        <div class="promo-scene-content">
+                            <span class="neon-tag"><i class="fa-solid fa-bolt"></i> Zentrix Intro</span>
+                            <h2 class="promo-title">ZENTRIX</h2>
+                            <p class="promo-subtitle">Your Time. Your Space. Your People.</p>
+                        </div>
+                    </div>
+
+                    <!-- Scene 2: Learn Connect Grow (1.0s - 3.0s) -->
+                    <div class="promo-scene" id="scene-2">
+                        <div class="promo-scene-content">
+                            <span class="neon-tag pink"><i class="fa-solid fa-graduation-cap"></i> Scene 2: Academy</span>
+                            <h2 class="promo-title pink">Learn. Connect. Grow.</h2>
+                            <p class="promo-subtitle">
+                                <span>Hackathons</span> • 
+                                <span>Webinars</span> • 
+                                <span>Workshops</span> • 
+                                <span>Team discussions</span> • 
+                                <span>Coding competitions</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Scene 3: Vote (3.0s - 5.0s) -->
+                    <div class="promo-scene" id="scene-3">
+                        <div class="promo-scene-content">
+                            <span class="neon-tag blue"><i class="fa-solid fa-square-poll-vertical"></i> Scene 3: Voice</span>
+                            <h2 class="promo-title blue">Your Voice Matters.</h2>
+                            <p class="promo-subtitle">Vote for the Next Event.</p>
+                            <!-- Animated Poll Mockup -->
+                            <div class="promo-poll-box">
+                                <div class="promo-poll-option">
+                                    <div class="promo-poll-info"><span>🎵 Music Festival</span><span>88%</span></div>
+                                    <div class="promo-poll-track"><div class="promo-poll-fill"></div></div>
+                                </div>
+                                <div class="promo-poll-option">
+                                    <div class="promo-poll-info"><span>🎮 Gaming Tournament</span><span>76%</span></div>
+                                    <div class="promo-poll-track"><div class="promo-poll-fill pink"></div></div>
+                                </div>
+                                <div class="promo-poll-option">
+                                    <div class="promo-poll-info"><span>🧠 AI Workshop</span><span>92%</span></div>
+                                    <div class="promo-poll-track"><div class="promo-poll-fill"></div></div>
+                                </div>
+                                <div class="promo-poll-option">
+                                    <div class="promo-poll-info"><span>💡 Tech Meetup</span><span>62%</span></div>
+                                    <div class="promo-poll-track"><div class="promo-poll-fill pink"></div></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Scene 4: Gaming Montage (5.0s - 6.0s) -->
+                    <div class="promo-scene" id="scene-4">
+                        <div class="promo-scene-content">
+                            <span class="neon-tag"><i class="fa-solid fa-gamepad"></i> Scene 4: Arcade</span>
+                            <h2 class="promo-title">Play. Compete. Have Fun.</h2>
+                            <p class="promo-subtitle">Ludo • Rock Paper Scissors • Car Racing • Leaderboards</p>
+                        </div>
+                    </div>
+
+                    <!-- Scene 5: Real-world experiences & QR scanning (6.0s - 8.0s) -->
+                    <div class="promo-scene" id="scene-5">
+                        <div class="promo-scene-content">
+                            <span class="neon-tag pink"><i class="fa-solid fa-qrcode"></i> Scene 5: Experience</span>
+                            <h2 class="promo-title pink">Discover Live Events.</h2>
+                            <p class="promo-subtitle">Live concerts • Tech meetups • QR ticket scanning</p>
+                            
+                            <!-- Scanner Overlay -->
+                            <div class="promo-scanner-box">
+                                <i class="fas fa-qrcode promo-qr-code"></i>
+                                <div class="promo-scanner-line"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Scene 6: Rewards Burst (8.0s - 9.0s) -->
+                    <div class="promo-scene" id="scene-6">
+                        <div class="promo-scene-content">
+                            <span class="neon-tag gold"><i class="fa-solid fa-coins"></i> Scene 6: Treasure</span>
+                            <h2 class="promo-title gold">Earn Coins. Unlock Rewards.</h2>
+                            <p class="promo-subtitle">Discount coupons, rewards, badges, and gifts</p>
+                            <div class="promo-rewards-container">
+                                <div class="reward-card"><i class="fas fa-gift"></i> <span>Amazon Voucher</span></div>
+                                <div class="reward-card"><i class="fas fa-ticket-alt"></i> <span>50% Movie Coupon</span></div>
+                                <div class="reward-card"><i class="fas fa-medal"></i> <span>Zen Elite Badge</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Scene 7: Final Reveal (9.0s - 10.0s) -->
+                    <div class="promo-scene" id="scene-7">
+                        <div class="promo-scene-content">
+                            <span class="neon-tag blue"><i class="fa-solid fa-city"></i> Zentrix City Hub</span>
+                            <h2 class="promo-title blue">ZENTRIX</h2>
+                            <p class="promo-subtitle" style="font-weight: 900; color: #fff;">Everything You Need, All In One Place.</p>
+                            <p style="color: rgba(255,255,255,0.7); margin-top: 8px; font-size: 15px;">Join the Future. Explore the nodes below:</p>
+                            
+                            <!-- Interactive Hub Node Connections -->
+                            <div class="city-dashboard-nodes">
+                                <div class="city-node" data-link="/events"><i class="fas fa-calendar-star"></i> 📅 Events</div>
+                                <div class="city-node" data-link="/games"><i class="fas fa-gamepad"></i> 🎮 Games</div>
+                                <div class="city-node" data-link="/dashboard"><i class="fas fa-users"></i> 👥 Community</div>
+                                <div class="city-node" data-link="/achievements"><i class="fas fa-trophy"></i> 🏆 Battles</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Video Controls Overlay -->
+                <div class="promo-controls-overlay">
+                    <div class="promo-controls-row">
+                        <!-- Play/Pause & Volume -->
+                        <div class="promo-controls-left">
+                            <button id="promoPlayPause" class="promo-btn" title="Play/Pause">
+                                <i class="fas fa-pause"></i>
+                            </button>
+                            <button id="promoRestart" class="promo-btn" title="Replay">
+                                <i class="fas fa-redo"></i>
+                            </button>
+                            <button id="promoAudioToggleBtn" class="promo-btn" title="Mute/Unmute audio">
+                                <i class="fas fa-volume-mute"></i>
+                            </button>
+                            <span id="promoTimeDisplay" class="promo-time-display">0:00 / 0:10</span>
+                        </div>
+
+                        <!-- Progress Bar Timeline -->
+                        <div id="promoTimelineWrapper" class="promo-timeline-wrapper">
+                            <div id="promoTimelineProgress" class="promo-timeline-progress">
+                                <div class="promo-timeline-handle"></div>
+                            </div>
+                            <div id="promoTimelineMarkers"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-        <div class="hero-dots" id="heroDots" aria-hidden="true">
-            <span class="hero-dot is-active"></span>
-            <span class="hero-dot"></span>
-            <span class="hero-dot"></span>
-            <span class="hero-dot"></span>
-            <span class="hero-dot"></span>
         </div>
     </section>
 
-    <script>
-        (() => {
-            const urls = [
-                "https://images.openai.com/static-rsc-4/rL5f5uy-W_tMoArfvLaTwSgSWy1EWmA5lm5MLA5O9r4_z8uhOO-BqwFw2TxyzA-cpXnVhh0Zzj-mKj8ToCV5wuch5X7PMUCV6HyJdvlDpELo_SX2cB5TDZIMj36Vn-D8JmX7QFkXNDdSsY0LEWVkoBer_g0Y8hGzIS9lE1qCLR3F_wjyXc0Tdg8lUd-W4CHm?purpose=fullsize",
-                "https://images.openai.com/static-rsc-4/PYRyip9qphv3Eo4ZEak-a4RgjBOSDmmhdujjM6qZTwCgNb1uFwAsitxiCaxWRTnuuZWwvvXR3jnywIbZmwRAKOJeTBV2yJ7kdQQxVI3VL8Ximol6cdMMgrHfPx-u9hHw8ek56gXWy-yQHiVNe5siOvqcOu47cysEQ9ryecA2vveleDB8CSqnwMymnm0Ce1U-?purpose=fullsize",
-                "https://images.openai.com/static-rsc-4/DKD69QC9gd6bGTmnzOqV-obmu0Ipm7AIyATNy2c3zNTTy4w0-KF-jvSWvdSEutT3ZKDm2sbJfdNCzAIc2hjdo7hNjz5XhwT6hM4ecQvo9bLLZgyvpKTjrjsYRvanTzPoE2Y10Y6unhx2ptacO4elIe7KweKk6ndu9_qC0HRmDgwL-uyeXSwnSVSYgsW-fjLM?purpose=fullsize",
-                "https://images.openai.com/static-rsc-4/0NSRQAuMt5ZcwHCgzrSocLLShFdnSKgWFMw9ejK0Qh_hnBgyOXzQU4I1GDQ0qrupJGEyxYNTybDnBFBSUoHR7fpV2FKUCIxS0a7b0cH523t9myhOH_TLGz1lW0_dS0VywsKK6J2vgr-yWOpbJj2Cf-yIYlmQCCEzxSMZjSOxMnrzHbjtQHw4Poxm9TVJDJmk?purpose=fullsize",
-                "https://images.openai.com/static-rsc-4/RcXkr1zDk7oZ_bZKDklwfcG1-tUbhj-WxvSLLdqD1QbJt3LVrKtkT-StC7MtzjART745YBsMV0ymmNKSAvU7iSDXGk_b1Sx3C5kbDojyaPbEYTwg858IOi2Q_kB3cyrjM8x3-MUVUHOOhw1dsmPkIh5pOg-WJyaQx1X7Artfj96rnP7n4MAnRV17NzW6CK3V?purpose=fullsize"
-            ];
-
-            const root = document.getElementById("heroSlideshow");
-            const dotsRoot = document.getElementById("heroDots");
-            if (!root) return;
-
-            const slides = Array.from(root.querySelectorAll(".hero-slide"));
-            const dots = dotsRoot ? Array.from(dotsRoot.querySelectorAll(".hero-dot")) : [];
-
-            // Fill slide backgrounds
-            slides.forEach((el, idx) => {
-                const url = urls[idx % urls.length];
-                el.style.backgroundImage = `url('${url}')`;
-            });
-
-            // Preload
-            urls.forEach((u) => {
-                const img = new Image();
-                img.src = u;
-            });
-
-            let active = 0;
-            const intervalMs = 4500;
-
-            const setActive = (next) => {
-                slides[active]?.classList.remove("is-active");
-                dots[active]?.classList.remove("is-active");
-                active = next;
-                slides[active]?.classList.add("is-active");
-                dots[active]?.classList.add("is-active");
-            };
-
-            // Auto-play
-            setInterval(() => setActive((active + 1) % slides.length), intervalMs);
-        })();
-    </script>
+    <!-- Load the promo JavaScript timeline controller -->
+    <script th:src="@{/js/promo.js}"></script>
 
     <!-- Quick Stats -->
     <section class="container">
