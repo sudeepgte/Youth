@@ -312,25 +312,29 @@
     <div class="mobile-menu-overlay" onclick="document.querySelector('.sidebar').classList.remove('mobile-open'); this.classList.remove('active');"></div>
 
     <nav class="dashboard-navbar">
+
+        <a class="dashboard-logo" href="${pageContext.request.contextPath}/home">Zentrix</a>
+
         <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('mobile-open'); document.querySelector('.mobile-menu-overlay').classList.toggle('active');" style="display:none; background:none; border:none; color:var(--text-primary); font-size:20px; cursor:pointer; margin-right:15px; margin-left: 5px; padding: 0;">
             <i class="fas fa-bars"></i>
         </button>
         <a class="dashboard-logo" href="/home">Zentrix</a>
+
         <div class="dashboard-spacer"></div>
         <div class="dashboard-nav-links">
-            <a href="/dashboard"><i class="fas fa-home"></i></a>
-            <a href="/messages"><i class="fas fa-comment-dots"></i></a>
-            <a href="/explore" class="active"><i class="fas fa-compass"></i></a>
+            <a href="${pageContext.request.contextPath}/dashboard"><i class="fas fa-home"></i></a>
+            <a href="${pageContext.request.contextPath}/messages"><i class="fas fa-comment-dots"></i></a>
+            <a href="${pageContext.request.contextPath}/explore" class="active"><i class="fas fa-compass"></i></a>
             <div class="profile-dropdown">
-                <a href="/profile">
+                <a href="${pageContext.request.contextPath}/profile">
                     <img th:src="${currentUser != null and currentUser.profilePhotoUrl != null ? currentUser.profilePhotoUrl : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=1780&auto=format&fit=crop'}"
                         class="user-avatar" style="width:32px; height:32px; border:none;">
                 </a>
                 <div class="dropdown-menu">
-                    <a href="/profile" class="dropdown-item"><i class="fas fa-user-circle"></i> View Profile</a>
-                    <a href="/settings" class="dropdown-item"><i class="fas fa-cog"></i> Settings</a>
+                    <a href="${pageContext.request.contextPath}/profile" class="dropdown-item"><i class="fas fa-user-circle"></i> View Profile</a>
+                    <a href="${pageContext.request.contextPath}/settings" class="dropdown-item"><i class="fas fa-cog"></i> Settings</a>
                     <div class="dropdown-divider"></div>
-                    <a href="/logout" class="dropdown-item" style="color: #ff4444;"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                    <a href="${pageContext.request.contextPath}/logout" class="dropdown-item" style="color: #ff4444;"><i class="fas fa-sign-out-alt"></i> Logout</a>
                 </div>
             </div>
         </div>
@@ -339,18 +343,18 @@
     <div class="dashboard-container">
         <!-- Left Sidebar -->
         <aside class="sidebar">
-            <a href="/dashboard" class="sidebar-link"><i class="fas fa-home"></i> Home</a>
-            <a href="/explore" class="sidebar-link active"><i class="fas fa-compass"></i> Explore</a>
-            <a href="/events" class="sidebar-link"><i class="fas fa-calendar-alt"></i> Events</a>
-            <a href="/battles" class="sidebar-link"><i class="fas fa-fire"></i> Battle Arena</a>
-            <a href="/achievements" class="sidebar-link"><i class="fas fa-trophy"></i> Achievements</a>
-            <a href="/messages" class="sidebar-link"><i class="fas fa-comment-dots"></i> Chat</a>
-            <a href="/reels" class="sidebar-link"><i class="fas fa-film"></i> Reels</a>
-            <a href="/profile" class="sidebar-link"><i class="fas fa-user"></i> Profile</a>
-            <a href="/games" class="sidebar-link"><i class="fas fa-gamepad"></i> Games</a>
-            <a href="/music" class="sidebar-link"><i class="fas fa-music"></i> Music</a>
+            <a href="${pageContext.request.contextPath}/dashboard" class="sidebar-link"><i class="fas fa-home"></i> Home</a>
+            <a href="${pageContext.request.contextPath}/explore" class="sidebar-link active"><i class="fas fa-compass"></i> Explore</a>
+            <a href="${pageContext.request.contextPath}/events" class="sidebar-link"><i class="fas fa-calendar-alt"></i> Events</a>
+            <a href="${pageContext.request.contextPath}/battles" class="sidebar-link"><i class="fas fa-fire"></i> Battle Arena</a>
+            <a href="${pageContext.request.contextPath}/achievements" class="sidebar-link"><i class="fas fa-trophy"></i> Achievements</a>
+            <a href="${pageContext.request.contextPath}/messages" class="sidebar-link"><i class="fas fa-comment-dots"></i> Chat</a>
+            <a href="${pageContext.request.contextPath}/reels" class="sidebar-link"><i class="fas fa-film"></i> Reels</a>
+            <a href="${pageContext.request.contextPath}/profile" class="sidebar-link"><i class="fas fa-user"></i> Profile</a>
+            <a href="${pageContext.request.contextPath}/games" class="sidebar-link"><i class="fas fa-gamepad"></i> Games</a>
+            <a href="${pageContext.request.contextPath}/music" class="sidebar-link"><i class="fas fa-music"></i> Music</a>
             <a href="javascript:void(0)" class="sidebar-link" onclick="openCreateModal()"><i class="fas fa-plus-circle" style="color: var(--accent);"></i> Create Post</a>
-            <a href="/logout" class="sidebar-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            <a href="${pageContext.request.contextPath}/logout" class="sidebar-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </aside>
 
         <main class="explore-container">
@@ -364,7 +368,7 @@
             </div>
             <div class="fr-grid">
                 <div th:each="fr : ${followRequests}" class="fr-card" th:id="'fr-row-' + ${fr.id}">
-                    <a th:href="@{'/profile/' + ${fr.sender.username}}" class="fr-user-info">
+                    <a th:href="@{'${pageContext.request.contextPath}/profile/' + ${fr.sender.username}}" class="fr-user-info">
                         <img th:src="${fr.sender.profilePhotoUrl != null and !fr.sender.profilePhotoUrl.isEmpty() ? fr.sender.profilePhotoUrl : 'https://ui-avatars.com/api/?name=' + fr.sender.username + '&background=f84464&color=fff'}" class="fr-avatar">
                         <div>
                             <div class="fr-username" th:text="${fr.sender.username}">Username</div>
@@ -423,7 +427,7 @@
                 </div>
 
                 <div class="person-name">
-                    <a th:href="@{'/profile/' + ${u.username}}" th:text="${u.username}">Username</a>
+                    <a th:href="@{'${pageContext.request.contextPath}/profile/' + ${u.username}}" th:text="${u.username}">Username</a>
                 </div>
 
                 <div class="person-college" th:if="${u.collegeName != null and !u.collegeName.isEmpty()}">

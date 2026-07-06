@@ -383,10 +383,14 @@
     <div class="mobile-menu-overlay" onclick="document.querySelector('.sidebar').classList.remove('mobile-open'); this.classList.remove('active');"></div>
 
     <nav class="dashboard-navbar">
+
+        <a class="dashboard-logo" href="${pageContext.request.contextPath}/home">Zentrix</a>
+
         <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('mobile-open'); document.querySelector('.mobile-menu-overlay').classList.toggle('active');" style="display:none; background:none; border:none; color:var(--text-primary); font-size:20px; cursor:pointer; margin-right:15px; margin-left: 5px; padding: 0;">
             <i class="fas fa-bars"></i>
         </button>
         <a class="dashboard-logo" href="/home">Zentrix</a>
+
         <div class="dashboard-spacer"></div>
         <div class="dashboard-nav-links">
             <!-- Zen Coin System -->
@@ -395,10 +399,10 @@
                 <i class="fas fa-coins" style="font-size: 14px;"></i>
                 <span th:text="${user.coins}">0</span>
             </a>
-            <a href="/shop" title="Reward Shop"><i class="fas fa-shopping-bag"></i></a>
+            <a href="${pageContext.request.contextPath}/shop" title="Reward Shop"><i class="fas fa-shopping-bag"></i></a>
 
-            <a href="/dashboard" class="active"><i class="fas fa-home"></i></a>
-            <a href="/messages" style="position: relative;">
+            <a href="${pageContext.request.contextPath}/dashboard" class="active"><i class="fas fa-home"></i></a>
+            <a href="${pageContext.request.contextPath}/messages" style="position: relative;">
                 <i class="fas fa-comment-dots"></i>
                 <span th:if="${unreadMessageCount != null && unreadMessageCount > 0}" id="msg-badge"
                     style="position: absolute; top: -5px; right: -5px; background: red; color: white; border-radius: 50%; padding: 2px 5px; font-size: 10px; font-weight: bold;"
@@ -411,7 +415,7 @@
                     th:text="${unreadNotifCount}"></span>
             </a>
             <div class="profile-dropdown">
-                <a href="/profile" style="position: relative;">
+                <a href="${pageContext.request.contextPath}/profile" style="position: relative;">
                     <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=1780&auto=format&fit=crop"
                         class="user-avatar" style="width: 32px; height: 32px; border: none;">
                     <span th:if="${pendingCount != null && pendingCount > 0}"
@@ -419,14 +423,14 @@
                         th:text="${pendingCount}"></span>
                 </a>
                 <div class="dropdown-menu">
-                    <a href="/profile" class="dropdown-item">
+                    <a href="${pageContext.request.contextPath}/profile" class="dropdown-item">
                         <i class="fas fa-user-circle"></i> View Profile
                     </a>
-                    <a href="/settings" class="dropdown-item">
+                    <a href="${pageContext.request.contextPath}/settings" class="dropdown-item">
                         <i class="fas fa-cog"></i> Settings
                     </a>
                     <div class="dropdown-divider"></div>
-                    <a href="/logout" class="dropdown-item" style="color: #ff4444;">
+                    <a href="${pageContext.request.contextPath}/logout" class="dropdown-item" style="color: #ff4444;">
                         <i class="fas fa-sign-out-alt"></i> Logout
                     </a>
                 </div>
@@ -438,18 +442,18 @@
 
         <!-- Left Sidebar -->
         <aside class="sidebar" th:if="${isReelsPage == null or !isReelsPage}">
-            <a href="/dashboard" class="sidebar-link" th:classappend="${isReelsPage} ? '' : ' active'"><i class="fas fa-home"></i> Home</a>
-            <a href="/explore" class="sidebar-link"><i class="fas fa-compass"></i> Explore</a>
-            <a href="/events" class="sidebar-link"><i class="fas fa-calendar-alt"></i> Events</a>
-            <a href="/battles" class="sidebar-link"><i class="fas fa-fire"></i> Battle Arena</a>
-            <a href="/achievements" class="sidebar-link"><i class="fas fa-trophy"></i> Achievements</a>
-            <a href="/messages" class="sidebar-link"><i class="fas fa-comment-dots"></i> Chat</a>
-            <a href="/reels" class="sidebar-link" th:classappend="${isReelsPage} ? ' active' : ''"><i class="fas fa-film"></i> Reels</a>
-            <a href="/profile" class="sidebar-link"><i class="fas fa-user"></i> Profile</a>
-            <a href="/games" class="sidebar-link"><i class="fas fa-gamepad"></i> Games</a>
-            <a href="/music" class="sidebar-link"><i class="fas fa-music"></i> Music</a>
+            <a href="${pageContext.request.contextPath}/dashboard" class="sidebar-link" th:classappend="${isReelsPage} ? '' : ' active'"><i class="fas fa-home"></i> Home</a>
+            <a href="${pageContext.request.contextPath}/explore" class="sidebar-link"><i class="fas fa-compass"></i> Explore</a>
+            <a href="${pageContext.request.contextPath}/events" class="sidebar-link"><i class="fas fa-calendar-alt"></i> Events</a>
+            <a href="${pageContext.request.contextPath}/battles" class="sidebar-link"><i class="fas fa-fire"></i> Battle Arena</a>
+            <a href="${pageContext.request.contextPath}/achievements" class="sidebar-link"><i class="fas fa-trophy"></i> Achievements</a>
+            <a href="${pageContext.request.contextPath}/messages" class="sidebar-link"><i class="fas fa-comment-dots"></i> Chat</a>
+            <a href="${pageContext.request.contextPath}/reels" class="sidebar-link" th:classappend="${isReelsPage} ? ' active' : ''"><i class="fas fa-film"></i> Reels</a>
+            <a href="${pageContext.request.contextPath}/profile" class="sidebar-link"><i class="fas fa-user"></i> Profile</a>
+            <a href="${pageContext.request.contextPath}/games" class="sidebar-link"><i class="fas fa-gamepad"></i> Games</a>
+            <a href="${pageContext.request.contextPath}/music" class="sidebar-link"><i class="fas fa-music"></i> Music</a>
             <a href="javascript:void(0)" class="sidebar-link" onclick="openCreateModal()"><i class="fas fa-plus-circle" style="color: var(--accent);"></i> Create Post</a>
-            <a href="/logout" class="sidebar-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            <a href="${pageContext.request.contextPath}/logout" class="sidebar-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </aside>
 
         <!-- Center Feed -->
@@ -550,44 +554,44 @@
                         <i class="fas fa-chevron-down" style="opacity:0.7; font-size: 11px;"></i>
                     </button>
                     <div class="filter-menu" id="feedFilterMenu">
-                        <a href="/dashboard" th:classappend="${activeCategory == null} ? ' active' : ''">All</a>
-                        <a th:href="@{/dashboard(category='TRAVEL')}"
+                        <a href="${pageContext.request.contextPath}/dashboard" th:classappend="${activeCategory == null} ? ' active' : ''">All</a>
+                        <a th:href="@{${pageContext.request.contextPath}/dashboard(category='TRAVEL')}"
                             th:classappend="${activeCategory != null and activeCategory.equalsIgnoreCase('TRAVEL')} ? ' active' : ''">
                             Travel
                         </a>
-                        <a th:href="@{/dashboard(category='FOOD')}"
+                        <a th:href="@{${pageContext.request.contextPath}/dashboard(category='FOOD')}"
                             th:classappend="${activeCategory != null and activeCategory.equalsIgnoreCase('FOOD')} ? ' active' : ''">
                             Food
                         </a>
-                        <a th:href="@{/dashboard(category='FITNESS')}"
+                        <a th:href="@{${pageContext.request.contextPath}/dashboard(category='FITNESS')}"
                             th:classappend="${activeCategory != null and activeCategory.equalsIgnoreCase('FITNESS')} ? ' active' : ''">
                             Fitness
                         </a>
-                        <a th:href="@{/dashboard(category='GAMING')}"
+                        <a th:href="@{${pageContext.request.contextPath}/dashboard(category='GAMING')}"
                             th:classappend="${activeCategory != null and activeCategory.equalsIgnoreCase('GAMING')} ? ' active' : ''">
                             Gaming
                         </a>
-                        <a th:href="@{/dashboard(category='TECH')}"
+                        <a th:href="@{${pageContext.request.contextPath}/dashboard(category='TECH')}"
                             th:classappend="${activeCategory != null and activeCategory.equalsIgnoreCase('TECH')} ? ' active' : ''">
                             Tech
                         </a>
-                        <a th:href="@{/dashboard(category='SPORTS')}"
+                        <a th:href="@{${pageContext.request.contextPath}/dashboard(category='SPORTS')}"
                             th:classappend="${activeCategory != null and activeCategory.equalsIgnoreCase('SPORTS')} ? ' active' : ''">
                             Sports
                         </a>
-                        <a th:href="@{/dashboard(category='LIFESTYLE')}"
+                        <a th:href="@{${pageContext.request.contextPath}/dashboard(category='LIFESTYLE')}"
                             th:classappend="${activeCategory != null and activeCategory.equalsIgnoreCase('LIFESTYLE')} ? ' active' : ''">
                             Lifestyle
                         </a>
-                        <a th:href="@{/dashboard(category='MUSIC')}"
+                        <a th:href="@{${pageContext.request.contextPath}/dashboard(category='MUSIC')}"
                             th:classappend="${activeCategory != null and activeCategory.equalsIgnoreCase('MUSIC')} ? ' active' : ''">
                             Music
                         </a>
-                        <a th:href="@{/dashboard(category='ART')}"
+                        <a th:href="@{${pageContext.request.contextPath}/dashboard(category='ART')}"
                             th:classappend="${activeCategory != null and activeCategory.equalsIgnoreCase('ART')} ? ' active' : ''">
                             Art
                         </a>
-                        <a th:href="@{/dashboard(category='OTHER')}"
+                        <a th:href="@{${pageContext.request.contextPath}/dashboard(category='OTHER')}"
                             th:classappend="${activeCategory != null and activeCategory.equalsIgnoreCase('OTHER')} ? ' active' : ''">
                             Other
                         </a>
@@ -596,7 +600,7 @@
 
                 <div th:if="${activeCategory != null}" class="filter-chip">
                     <span th:text="${activeCategory}">TRAVEL</span>
-                    <a href="/dashboard" title="Clear filter">×</a>
+                    <a href="${pageContext.request.contextPath}/dashboard" title="Clear filter">×</a>
                 </div>
             </div>
 
@@ -765,7 +769,7 @@
             <div class="widget-card" th:if="${ongoingMusicBattles != null and !ongoingMusicBattles.isEmpty()}">
                 <div class="widget-header">
                     <h3>Ongoing Music Battles</h3>
-                    <a th:href="@{/music/rooms(auth=${auth})}" class="see-all">Create / Join</a>
+                    <a th:href="@{${pageContext.request.contextPath}/music/rooms(auth=${auth})}" class="see-all">Create / Join</a>
                 </div>
                 <div th:each="r : ${ongoingMusicBattles}"
                      style="display:flex; gap:10px; align-items:center; justify-content:space-between; padding:10px 0; border-bottom: 1px solid rgba(255,255,255,0.06);">
@@ -789,7 +793,7 @@
             <div class="widget-card">
                 <div class="widget-header">
                     <h3>Trending Events</h3>
-                    <a href="/events" class="see-all">See All</a>
+                    <a href="${pageContext.request.contextPath}/events" class="see-all">See All</a>
                 </div>
                 <div style="display: flex; gap: 10px; margin-bottom: 15px;">
                     <img src="https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?q=80&w=1974&auto=format&fit=crop"
@@ -813,13 +817,13 @@
             <div class="widget-card">
                 <div class="widget-header">
                     <h3>Suggested for you</h3>
-                    <a href="/explore" class="see-all">See All</a>
+                    <a href="${pageContext.request.contextPath}/explore" class="see-all">See All</a>
                 </div>
                 <div class="suggestion-item" th:each="suggestedUser : ${suggestions}">
                     <div class="suggestion-user">
                         <img th:src="'https://ui-avatars.com/api/?name=' + ${suggestedUser.username} + '&background=F84464&color=fff&size=80'"
                             class="user-avatar" style="width: 32px; height: 32px;">
-                        <a th:href="@{'/profile/' + ${suggestedUser.username}}">
+                        <a th:href="@{'${pageContext.request.contextPath}/profile/' + ${suggestedUser.username}}">
                             <span style="font-size: 13px; font-weight: 500;"
                                 th:text="${suggestedUser.username}">username</span>
                         </a>
