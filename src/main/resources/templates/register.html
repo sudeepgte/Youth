@@ -6,552 +6,159 @@
     <title>Register | Zentrix</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://unpkg.com/@lottiefiles/dotlottie-wc@latest/dist/dotlottie-wc.js" type="module"></script>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        html, body {
-            height: 100%;
-            overflow: hidden;
-            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
-        }
-
-        /* ── iOS/macOS Sequoia Animated Background ── */
-        .ios-bg {
-            position: fixed;
-            inset: 0;
-            z-index: 0;
-            background: linear-gradient(135deg, #0a1628 0%, #0d2145 30%, #0a3a6e 60%, #0e5490 100%);
-            overflow: hidden;
-        }
-
-        .ios-bg::before {
-            content: '';
-            position: absolute;
-            inset: -50%;
-            background:
-                radial-gradient(ellipse 80% 60% at 20% 30%, rgba(56, 139, 253, 0.55) 0%, transparent 60%),
-                radial-gradient(ellipse 60% 80% at 75% 20%, rgba(14, 165, 233, 0.45) 0%, transparent 55%),
-                radial-gradient(ellipse 70% 50% at 50% 80%, rgba(29, 78, 216, 0.5) 0%, transparent 60%),
-                radial-gradient(ellipse 50% 70% at 85% 65%, rgba(99, 179, 237, 0.35) 0%, transparent 55%);
-            animation: iosBgShift 18s ease-in-out infinite alternate;
-        }
-
-        .ios-bg::after {
-            content: '';
-            position: absolute;
-            inset: -50%;
-            background:
-                radial-gradient(ellipse 55% 65% at 10% 75%, rgba(59, 130, 246, 0.4) 0%, transparent 55%),
-                radial-gradient(ellipse 65% 45% at 90% 40%, rgba(56, 189, 248, 0.3) 0%, transparent 50%),
-                radial-gradient(ellipse 40% 60% at 55% 10%, rgba(96, 165, 250, 0.35) 0%, transparent 50%);
-            animation: iosBgShift2 22s ease-in-out infinite alternate;
-        }
-
-        @keyframes iosBgShift {
-            0%   { transform: translate(0%, 0%) scale(1); }
-            25%  { transform: translate(3%, -4%) scale(1.04); }
-            50%  { transform: translate(-2%, 5%) scale(1.02); }
-            75%  { transform: translate(5%, 2%) scale(1.06); }
-            100% { transform: translate(-3%, -3%) scale(1.03); }
-        }
-
-        @keyframes iosBgShift2 {
-            0%   { transform: translate(0%, 0%) scale(1.05); }
-            30%  { transform: translate(-4%, 3%) scale(1); }
-            60%  { transform: translate(4%, -5%) scale(1.07); }
-            100% { transform: translate(2%, 4%) scale(1.02); }
-        }
-
-        /* Floating orbs */
-        .orb {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(60px);
-            opacity: 0.6;
-            mix-blend-mode: screen;
-            animation: orbFloat linear infinite;
-        }
-        .orb-1 {
-            width: 420px; height: 420px;
-            background: radial-gradient(circle, rgba(96,165,250,0.8), rgba(37,99,235,0.3));
-            top: -10%; left: -5%;
-            animation-duration: 25s;
-            animation-delay: 0s;
-        }
-        .orb-2 {
-            width: 350px; height: 350px;
-            background: radial-gradient(circle, rgba(56,189,248,0.7), rgba(14,116,144,0.2));
-            top: 50%; right: -8%;
-            animation-duration: 30s;
-            animation-delay: -8s;
-        }
-        .orb-3 {
-            width: 280px; height: 280px;
-            background: radial-gradient(circle, rgba(147,197,253,0.6), rgba(59,130,246,0.2));
-            bottom: -5%; left: 30%;
-            animation-duration: 20s;
-            animation-delay: -14s;
-        }
-        .orb-4 {
-            width: 200px; height: 200px;
-            background: radial-gradient(circle, rgba(186,230,253,0.5), rgba(125,211,252,0.1));
-            top: 20%; right: 20%;
-            animation-duration: 35s;
-            animation-delay: -5s;
-        }
-
-        @keyframes orbFloat {
-            0%   { transform: translate(0px, 0px) scale(1); }
-            20%  { transform: translate(30px, -40px) scale(1.05); }
-            40%  { transform: translate(-20px, 20px) scale(0.97); }
-            60%  { transform: translate(40px, 30px) scale(1.08); }
-            80%  { transform: translate(-30px, -20px) scale(0.98); }
-            100% { transform: translate(0px, 0px) scale(1); }
-        }
-
-        /* Shimmer overlay */
-        .ios-shimmer {
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(
-                115deg,
-                transparent 40%,
-                rgba(255,255,255,0.03) 50%,
-                transparent 60%
-            );
-            background-size: 200% 200%;
-            animation: shimmer 8s ease-in-out infinite;
-        }
-
-        @keyframes shimmer {
-            0%, 100% { background-position: 0% 50%; }
-            50%       { background-position: 100% 50%; }
-        }
-
-        /* ── Split Layout ── */
-        .page-wrapper {
-            position: relative;
-            z-index: 10;
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
             display: flex;
-            width: 100%;
+            justify-content: center;
+            align-items: center;
             height: 100vh;
+            margin: 0;
         }
 
-        /* LEFT PANEL – Lottie Animation */
-        .left-panel {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            padding: 40px;
-            border-right: 1px solid rgba(255,255,255,0.08);
-        }
-
-        .left-panel::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: rgba(0,0,0,0.08);
-            backdrop-filter: blur(2px);
-        }
-
-        .lottie-wrapper {
-            position: relative;
-            z-index: 2;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 24px;
-        }
-
-        .lottie-wrapper dotlottie-wc,
-        .lottie-wrapper iframe {
-            width: 420px;
-            height: 420px;
-            border: none;
-            border-radius: 50%;
-            filter: drop-shadow(0 0 60px rgba(96,165,250,0.4));
-            animation: lottieGlow 4s ease-in-out infinite alternate;
-        }
-
-        @keyframes lottieGlow {
-            0%   { filter: drop-shadow(0 0 40px rgba(96,165,250,0.3)); }
-            100% { filter: drop-shadow(0 0 80px rgba(56,189,248,0.6)); }
-        }
-
-        .brand-label {
-            text-align: center;
-            color: #fff;
-        }
-
-        .brand-label h1 {
-            font-size: 38px;
-            font-weight: 800;
-            letter-spacing: -1px;
-            background: linear-gradient(135deg, #fff 0%, #93c5fd 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 8px;
-        }
-
-        .brand-label p {
-            font-size: 15px;
-            color: rgba(255,255,255,0.55);
-            font-weight: 400;
-            letter-spacing: 0.2px;
-        }
-
-        /* RIGHT PANEL – Form */
-        .right-panel {
-            width: 520px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 48px 40px;
-            background: rgba(255,255,255,0.04);
-            backdrop-filter: blur(40px) saturate(200%);
-            -webkit-backdrop-filter: blur(40px) saturate(200%);
-            overflow-y: auto;
-        }
-
-        .form-card {
+        .register-container {
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 2rem;
+            border-radius: 10px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 18px 60px rgba(55, 65, 81, 0.16);
             width: 100%;
-            max-width: 420px;
-            animation: cardAppear 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            max-width: 400px;
         }
 
-        @keyframes cardAppear {
-            from { opacity: 0; transform: translateX(30px); }
-            to   { opacity: 1; transform: translateX(0); }
-        }
-
-        .form-card h2 {
-            color: #ffffff;
-            font-size: 28px;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-            margin-bottom: 6px;
-            text-shadow: 0 1px 8px rgba(0,0,0,0.3);
-        }
-
-        .form-card .subtitle {
-            color: rgba(255,255,255,0.45);
-            font-size: 14px;
-            margin-bottom: 28px;
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
+        .register-container h2 {
+            text-align: center;
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
         }
 
         .form-group {
-            margin-bottom: 16px;
+            margin-bottom: 1rem;
         }
 
         .form-group label {
             display: block;
-            margin-bottom: 7px;
-            color: rgba(255,255,255,0.65);
-            font-size: 12px;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-        }
-
-        .input-icon-wrap {
-            position: relative;
-        }
-
-        .input-icon-wrap i {
-            position: absolute;
-            left: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: rgba(255,255,255,0.35);
-            font-size: 14px;
-            pointer-events: none;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
         }
 
         .form-group input, .form-group select {
             width: 100%;
-            padding: 13px 16px 13px 40px;
-            border: 1.5px solid rgba(255, 255, 255, 0.12);
-            border-radius: 14px;
-            background: rgba(255,255,255,0.07);
-            color: #fff;
-            font-size: 14px;
+            padding: 12px 16px;
+            border: 1.5px solid rgba(59, 130, 246, 0.2);
+            border-radius: 12px;
+            background-color: #fff;
+            color: var(--text-primary);
+            box-sizing: border-box;
+            font-size: 15px;
             transition: all 0.3s ease;
-            appearance: none;
         }
-
-        .form-group input::placeholder { color: rgba(255,255,255,0.3); }
 
         .form-group input:focus, .form-group select:focus {
             outline: none;
-            border-color: rgba(147, 197, 253, 0.6);
-            background: rgba(255,255,255,0.12);
-            box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.15);
-        }
-        
-        .form-group select option {
-            background: #0d2145;
-            color: #fff;
+            border-color: var(--primary);
+            background-color: #fff;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
         }
 
         .btn-register {
             width: 100%;
-            padding: 15px;
-            background: linear-gradient(135deg, rgba(59,130,246,0.95) 0%, rgba(14,165,233,0.95) 100%);
-            color: #fff;
-            border: 1px solid rgba(255,255,255,0.15);
-            border-radius: 14px;
-            font-size: 15px;
+            padding: 12px;
+            background: var(--gradient-1);
+            color: var(--text-primary);
+            border: 1px solid rgba(55, 65, 81, 0.12);
+            border-radius: 5px;
+            font-size: 16px;
             cursor: pointer;
-            font-weight: 700;
-            letter-spacing: 0.3px;
+            font-weight: 800;
             transition: transform 0.2s ease, box-shadow 0.2s ease;
-            margin-top: 6px;
-            box-shadow: 0 8px 28px rgba(37,99,235,0.4);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
+            margin-top: 1rem;
         }
 
         .btn-register:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 14px 36px rgba(37, 99, 235, 0.55);
-        }
-
-        .divider {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin: 20px 0;
-            color: rgba(255,255,255,0.2);
-            font-size: 12px;
-            font-weight: 600;
-        }
-        .divider::before, .divider::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: rgba(255,255,255,0.1);
+            transform: translateY(-1px);
+            box-shadow: 0 14px 40px rgba(55, 65, 81, 0.16);
         }
 
         .login-link {
             text-align: center;
+            margin-top: 1rem;
             font-size: 14px;
-            color: rgba(255,255,255,0.5);
         }
 
         .login-link a {
-            color: rgba(147, 197, 253, 1);
+            color: var(--text-primary);
             text-decoration: none;
-            font-weight: 700;
-            transition: color 0.2s;
+            font-weight: 800;
         }
 
-        .login-link a:hover { color: #fff; }
-
-        /* Alert boxes */
-        .alert {
-            padding: 12px 14px;
-            border-radius: 12px;
-            text-align: center;
-            margin-bottom: 16px;
-            font-weight: 600;
-            font-size: 13px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            justify-content: center;
-        }
-        .alert-error   { color: #f87171; background: rgba(239,68,68,0.1); border: 1px solid rgba(248,113,113,0.4); }
-
-        /* Back button */
-        .back-btn {
-            position: fixed;
-            top: 24px;
-            left: 24px;
-            z-index: 100;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            color: rgba(255,255,255,0.85);
-            text-decoration: none;
-            font-weight: 700;
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(12px);
-            padding: 9px 16px;
-            border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.15);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-            transition: transform 0.2s, background 0.2s;
-            font-size: 13px;
-        }
-        .back-btn:hover { transform: translateY(-2px); background: rgba(255,255,255,0.18); }
-
-        /* Custom Dropdown Arrow */
-        .custom-select {
-            position: relative;
-        }
-        .custom-select::after {
-            content: '\f107';
-            font-family: 'Font Awesome 6 Free';
-            font-weight: 900;
-            position: absolute;
-            right: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: rgba(255,255,255,0.5);
-            pointer-events: none;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .left-panel { display: none; }
-            .right-panel { width: 100%; padding: 32px 24px; }
-            .form-card { max-width: 100%; }
-            .form-row { grid-template-columns: 1fr; gap: 0; }
-        }
-        
-        /* Fix date input styling for webkit */
-        input[type="date"]::-webkit-calendar-picker-indicator {
-            filter: invert(1);
-            opacity: 0.5;
-            cursor: pointer;
+        .login-link a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
-    <!-- iOS/macOS Sequoia Animated Background -->
-    <div class="ios-bg">
-        <div class="orb orb-1"></div>
-        <div class="orb orb-2"></div>
-        <div class="orb orb-3"></div>
-        <div class="orb orb-4"></div>
-        <div class="ios-shimmer"></div>
+    <div style="position: absolute; top: 30px; left: 30px; z-index: 10;">
+        <a href="/home" style="display: inline-flex; align-items: center; gap: 8px; color: var(--text-primary); text-decoration: none; font-weight: 700; background: rgba(255,255,255,0.8); padding: 10px 16px; border-radius: 12px; border: 1px solid var(--glass-border); box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: transform 0.2s;">
+            <i class="fas fa-arrow-left"></i> Back to Website
+        </a>
     </div>
 
-    <!-- Back button -->
-    <a href="/home" class="back-btn">
-        <i class="fas fa-arrow-left"></i> Back to Website
-    </a>
-
-    <div class="page-wrapper">
-
-        <!-- LEFT: Lottie Animation Panel -->
-        <div class="left-panel">
-            <div class="lottie-wrapper">
-                <!-- LottieFiles animation embed -->
-                <dotlottie-wc
-                    src="https://lottie.host/1e3f07c8-ae7f-4e5c-a5e8-b367ffcd656c/animation.lottie"
-                    autoplay
-                    loop
-                    style="width: 420px; height: 420px;"
-                ></dotlottie-wc>
-
-                <div class="brand-label">
-                    <h1>Zentrix</h1>
-                    <p>Your campus universe — events, games, music & more.</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- RIGHT: Register Form -->
-        <div class="right-panel">
-            <div class="form-card">
-                <h2>Create Account ✨</h2>
-                <p class="subtitle">Join Zentrix and start exploring your campus.</p>
-
-                <div th:if="${param.error == 'duplicate'}" class="alert alert-error">
-                    <i class="fas fa-exclamation-circle"></i> Username already exists.
-                </div>
-                <div th:if="${param.error == 'duplicate_email'}" class="alert alert-error">
-                    <i class="fas fa-exclamation-circle"></i> Email address already in use.
-                </div>
-                <div th:if="${param.error == 'future_dob'}" class="alert alert-error">
-                    <i class="fas fa-exclamation-circle"></i> Date of Birth cannot be in the future.
-                </div>
-
-                <form th:action="@{/register}" th:object="${user}" method="post">
-                    
-                    <div class="form-group">
-                        <label for="username">Username</label>
-                        <div class="input-icon-wrap">
-                            <i class="fas fa-user"></i>
-                            <input type="text" id="username" th:field="*{username}" placeholder="Choose a unique username" required>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="email">Email Address</label>
-                        <div class="input-icon-wrap">
-                            <i class="fas fa-envelope"></i>
-                            <input type="email" id="email" th:field="*{email}" placeholder="Enter your email" required>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="password">Password</label>
-                        <div class="input-icon-wrap">
-                            <i class="fas fa-lock"></i>
-                            <input type="password" id="password" th:field="*{password}" placeholder="Create a strong password" required>
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="dob">Date of Birth</label>
-                            <div class="input-icon-wrap">
-                                <i class="fas fa-calendar-day"></i>
-                                <input type="date" id="dob" th:field="*{dob}" required>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="gender">Gender</label>
-                            <div class="input-icon-wrap custom-select">
-                                <i class="fas fa-venus-mars"></i>
-                                <select id="gender" th:field="*{gender}" required>
-                                    <option value="" disabled selected>Select Gender</option>
-                                    <option value="Male">Male</option>
-                                    <option value="Female">Female</option>
-                                    <option value="Other">Other</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="collegeName">College / Institution</label>
-                        <div class="input-icon-wrap">
-                            <i class="fas fa-university"></i>
-                            <input type="text" id="collegeName" th:field="*{collegeName}" placeholder="e.g. IIT Bombay, VTU" required>
-                        </div>
-                    </div>
-
-                    <button type="submit" class="btn-register">
-                        <i class="fas fa-user-plus"></i> Create Account
-                    </button>
-                </form>
-
-                <div class="divider">or</div>
-
-                <div class="login-link">
-                    Already have an account? <a href="/login">Sign In →</a>
-                </div>
-            </div>
-        </div>
+<div class="register-container">
+    <h2>Create Account</h2>
+    <div th:if="${param.error == 'duplicate'}" style="background-color: #fce8e8; border: 1px solid #f5c2c2; color: #a94442; padding: 10px; border-radius: 4px; margin-bottom: 1rem; text-align: center;">
+        Username already exists.
     </div>
+    <div th:if="${param.error == 'duplicate_email'}" style="background-color: #fce8e8; border: 1px solid #f5c2c2; color: #a94442; padding: 10px; border-radius: 4px; margin-bottom: 1rem; text-align: center;">
+        Email address already in use.
+    </div>
+    <div th:if="${param.error == 'future_dob'}" style="background-color: #fce8e8; border: 1px solid #f5c2c2; color: #a94442; padding: 10px; border-radius: 4px; margin-bottom: 1rem; text-align: center;">
+        Date of Birth cannot be in the future.
+    </div>
+    <form th:action="@{/register}" th:object="${user}" method="post">
+        <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" th:field="*{username}" required>
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" th:field="*{email}" required>
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" th:field="*{password}" required>
+        </div>
+
+        <div class="form-group">
+            <label for="dob">Date of Birth</label>
+            <input type="date" id="dob" th:field="*{dob}" required>
+        </div>
+
+        <div class="form-group">
+            <label for="gender">Gender</label>
+            <select id="gender" th:field="*{gender}" required>
+                <option value="" disabled selected>Select Gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="collegeName"><i class="fas fa-university" style="color:var(--primary); margin-right:6px;"></i>College / Institution Name</label>
+            <input type="text" id="collegeName" th:field="*{collegeName}" placeholder="e.g. IIT Bombay, VTU, Christ University" required>
+        </div>
+
+        <button type="submit" class="btn-register">Register</button>
+    </form>
+
+    <div class="login-link">
+        Already have an account? <a href="/login">Sign In</a>
+    </div>
+</div>
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {

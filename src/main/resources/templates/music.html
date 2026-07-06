@@ -33,9 +33,21 @@
             font-weight: 600;
             color: var(--text-muted);
         }
+
+        /* ── Mobile Responsive ── */
+        @media (max-width: 768px) {
+            .music-grid { grid-template-columns: 1fr; }
+            h1 { font-size: 28px !important; }
+        }
     </style>
     <!-- Navbar -->
+    <!-- Mobile Sidebar Overlay -->
+    <div class="mobile-menu-overlay" onclick="document.querySelector('.sidebar').classList.remove('mobile-open'); this.classList.remove('active');"></div>
+
     <nav class="dashboard-navbar">
+        <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('mobile-open'); document.querySelector('.mobile-menu-overlay').classList.toggle('active');" style="display:none; background:none; border:none; color:var(--text-primary); font-size:20px; cursor:pointer; margin-right:15px; margin-left: 5px; padding: 0;">
+            <i class="fas fa-bars"></i>
+        </button>
         <a class="dashboard-logo" href="/home">Zentrix</a>
         <div class="dashboard-spacer"></div>
         <div class="dashboard-nav-links">
