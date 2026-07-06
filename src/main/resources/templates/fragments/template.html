@@ -33,8 +33,8 @@
 
                 <!-- All other public pages -->
                 <th:block th:if="${active} != 'games' and ${active} != 'events' and ${active} != 'event-details'">
-                    <a class="logo" href="/home">Zentrix</a>
                     <div class="nav-links">
+                        <a href="/home" th:classappend="${active} == 'home' ? ' active' : ''">Home</a>
                         <a href="/home#featured-events">Events</a>
                         <a href="/games" th:if="${active} != 'home'" th:classappend="${active} == 'games' ? ' active' : ''">Games</a>
                         <a href="/home#about">About Us</a>
