@@ -1037,7 +1037,7 @@
         <div class="hero-overlay"></div>
 
         <div class="hero-nav">
-            <a href="/events" class="btn-back"><i class="fas fa-arrow-left"></i> Back to Events</a>
+            <a href="${pageContext.request.contextPath}/events" class="btn-back"><i class="fas fa-arrow-left"></i> Back to Events</a>
         </div>
 
         <div class="hero-content">
@@ -1261,7 +1261,7 @@
             <div class="related-section">
                 <h2>Related Events</h2>
                 <th:block th:if="${!#lists.isEmpty(related)}">
-                    <a th:each="rel : ${related}" th:href="@{'/events/' + ${rel.id}}" class="related-card">
+                    <a th:each="rel : ${related}" th:href="@{'${pageContext.request.contextPath}/events/' + ${rel.id}}" class="related-card">
                         <div class="related-thumb">
                             <img th:src="${rel.imageUrl}" alt="related"
                                 onerror="this.src='https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=200'">
@@ -1350,7 +1350,7 @@
                             <span style="font-weight: 600; font-size: 14px; color: #1f2937;" th:text="${(reg.quantity != null ? reg.quantity : 1) + 'x ' + (reg.selectedTier != null ? reg.selectedTier : 'Ticket')}">1x VIP</span>
                             <span style="font-size: 12px; color: #6b7280;" th:text="${#temporals.format(reg.registrationDate, 'dd MMM yyyy')}">05 Jul 2026</span>
                         </div>
-                        <a th:href="@{'/events/ticket/' + ${reg.ticketId}}"
+                        <a th:href="@{'${pageContext.request.contextPath}/events/ticket/' + ${reg.ticketId}}"
                             style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: rgba(59, 130, 246, 0.1); color: #3b82f6; text-decoration: none; border-radius: 6px; font-size: 12px; transition: all 0.2s;">
                             <i class="fas fa-qrcode"></i> View E-Ticket
                         </a>
@@ -1373,11 +1373,11 @@
                         <div style="font-size:12px; color:rgba(255,255,255,0.4);">You're viewing this event as admin.
                         </div>
                     </div>
-                    <a th:href="@{'/events/admin/edit/' + ${event.id}}"
+                    <a th:href="@{'${pageContext.request.contextPath}/events/admin/edit/' + ${event.id}}"
                         style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:13px;background:linear-gradient(135deg,#f84464,#ff6b9d);border-radius:12px;color:#fff;font-weight:800;font-size:14px;text-decoration:none;box-shadow:0 4px 16px rgba(248,68,100,0.4);">
                         <i class="fas fa-edit"></i> Edit This Event
                     </a>
-                    <a href="/events/admin/manage"
+                    <a href="${pageContext.request.contextPath}/events/admin/manage"
                         style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:13px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;color:rgba(255,255,255,0.6);font-weight:700;font-size:14px;text-decoration:none;margin-top:10px;">
                         <i class="fas fa-arrow-left"></i> Back to Manage
                     </a>
@@ -1385,7 +1385,7 @@
 
                 <!-- Guest View: Login to register -->
                 <div th:if="${user == null and !isAdmin}" style="text-align:center;">
-                    <a href="/login" class="btn-register" style="text-decoration:none;">
+                    <a href="${pageContext.request.contextPath}/login" class="btn-register" style="text-decoration:none;">
                         <i class="fas fa-sign-in-alt"></i> Login to Register
                     </a>
                     <p style="margin-top: 12px; font-size: 11px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1px;">

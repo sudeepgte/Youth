@@ -208,13 +208,13 @@
 
         <!-- Event Quick Actions -->
         <div style="display:flex; gap:15px; margin-bottom: 36px; flex-wrap: wrap;">
-            <a href="/events/admin/create" style="display:inline-flex; align-items:center; gap:10px; padding: 14px 28px;
+            <a href="${pageContext.request.contextPath}/events/admin/create" style="display:inline-flex; align-items:center; gap:10px; padding: 14px 28px;
                       background: var(--gradient-1); color: var(--text-primary);
                       border-radius:14px; font-weight:800; text-decoration:none;
                       box-shadow: 0 4px 20px rgba(59,130,246,0.3); font-size:15px;">
                 <i class="fas fa-plus-circle"></i> Create New Event
             </a>
-            <a href="/events/admin/manage" style="display:inline-flex; align-items:center; gap:10px; padding: 14px 28px;
+            <a href="${pageContext.request.contextPath}/events/admin/manage" style="display:inline-flex; align-items:center; gap:10px; padding: 14px 28px;
                       background: rgba(255,255,255,0.6); border: 1px solid var(--glass-border);
                       color: var(--text-primary); border-radius:14px; font-weight:700;
                       text-decoration:none; font-size:15px;">
@@ -238,11 +238,11 @@
                             style="font-size:10px; padding:3px 8px; border-radius:12px; background:rgba(245,158,11,0.15); color:#d97706; font-weight:800; border:1px solid rgba(245,158,11,0.3);">ONGOING</span>
                     </div>
                     <div style="display:flex; gap:10px; margin-top:5px;">
-                        <a th:href="@{'/events/admin/' + ${event.id} + '/attendance?declare=true'}"
+                        <a th:href="@{'${pageContext.request.contextPath}/events/admin/' + ${event.id} + '/attendance?declare=true'}"
                             style="flex:1; padding:10px; background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.3); color:#047857; border-radius:10px; text-decoration:none; font-size:12px; font-weight:700; text-align:center;">
                             <i class="fas fa-trophy"></i> Results
                         </a>
-                        <a th:href="@{'/events/admin/' + ${event.id} + '/attendance'}"
+                        <a th:href="@{'${pageContext.request.contextPath}/events/admin/' + ${event.id} + '/attendance'}"
                             style="flex:1; padding:10px; background:rgba(255,255,255,0.6); border:1px solid var(--glass-border); color: var(--text-primary); border-radius:10px; text-decoration:none; font-size:12px; font-weight:700; text-align:center;">
                             <i class="fas fa-clipboard-check"></i> Attendance
                         </a>
@@ -288,7 +288,7 @@
                             </div>
                         </div>
 
-                        <a th:href="@{'/events/admin/edit/' + ${poll.id}}"
+                        <a th:href="@{'${pageContext.request.contextPath}/events/admin/edit/' + ${poll.id}}"
                             style="display:block; text-align:center; margin-top:12px; font-size:11px; color: var(--text-secondary); text-decoration:none; font-weight:600;">
                             <i class="fas fa-edit"></i> Edit Poll Settings
                         </a>
@@ -313,7 +313,7 @@
                         <span
                             style="font-size:9px; padding:2px 6px; border-radius:8px; background:rgba(16,185,129,0.1); color:#10b981; font-weight:800; border:1px solid rgba(16,185,129,0.2);">COMPLETED</span>
                     </div>
-                    <a th:href="@{'/events/admin/' + ${event.id} + '/attendance'}"
+                    <a th:href="@{'${pageContext.request.contextPath}/events/admin/' + ${event.id} + '/attendance'}"
                         style="display:flex; align-items:center; gap:8px; color:#10b981; text-decoration:none; font-size:12px; font-weight:700;">
                         <i class="fas fa-award"></i> Review Final Standings &amp; XP →
                     </a>

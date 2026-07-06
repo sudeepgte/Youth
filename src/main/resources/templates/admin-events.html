@@ -696,7 +696,7 @@
                     <option value="Cultural">Cultural</option>
                 </select>
             </div>
-            <a href="/events/admin/create" class="btn-nav primary">
+            <a href="${pageContext.request.contextPath}/events/admin/create" class="btn-nav primary">
                 <i class="fas fa-plus"></i> New Event
             </a>
         </div>
@@ -747,23 +747,23 @@
                             th:classappend="${event.entryFeeType == 'Paid'} ? 'badge-paid' : 'badge-free'"
                             th:text="${event.price != null ? event.price : 'Free'}">Free</span>
 
-                        <a th:href="@{'/events/admin/edit/' + ${event.id}}" class="action-btn btn-edit">
+                        <a th:href="@{'${pageContext.request.contextPath}/events/admin/edit/' + ${event.id}}" class="action-btn btn-edit">
                             <i class="fas fa-edit"></i> Edit
                         </a>
 
-                        <a th:href="@{'/events/' + ${event.id}}" target="_blank" class="action-btn btn-view">
+                        <a th:href="@{'${pageContext.request.contextPath}/events/' + ${event.id}}" target="_blank" class="action-btn btn-view">
                             <i class="fas fa-eye"></i> View
                         </a>
 
                         <!-- Attendance Button — highlighted for ONGOING events -->
-                        <a th:href="@{'/events/admin/' + ${event.id} + '/attendance'}" class="action-btn" th:style="${event.status == 'ONGOING'} ?
+                        <a th:href="@{'${pageContext.request.contextPath}/events/admin/' + ${event.id} + '/attendance'}" class="action-btn" th:style="${event.status == 'ONGOING'} ?
                                'background:rgba(245,158,11,0.2);border-color:rgba(245,158,11,0.4);color:#f59e0b;animation:pulse-att 1.5s infinite;' :
                                'background:rgba(99,102,241,0.12);border-color:rgba(99,102,241,0.25);color:#a5b4fc;'">
                             <i class="fas fa-clipboard-check"></i> Attendance
                         </a>
 
                         <!-- Results button - Universal for ALL statuses -->
-                        <a th:href="@{'/events/admin/' + ${event.id} + '/attendance?declare=true'}" class="action-btn"
+                        <a th:href="@{'${pageContext.request.contextPath}/events/admin/' + ${event.id} + '/attendance?declare=true'}" class="action-btn"
                             th:style="${event.status == 'ONGOING'} ? 
                                      'background:rgba(16,185,129,0.15); border-color:rgba(16,185,129,0.3); color:#34d399;' : 
                                      (${event.status == 'COMPLETED'} ? 
@@ -787,7 +787,7 @@
                 <div class="empty-icon"><i class="fas fa-calendar-times"></i></div>
                 <h2>No Events Found</h2>
                 <p>You haven't created any events yet. Get started by publishing your first event!</p>
-                <a href="/events/admin/create" class="btn-nav primary" style="margin: 0 auto; width:fit-content;">
+                <a href="${pageContext.request.contextPath}/events/admin/create" class="btn-nav primary" style="margin: 0 auto; width:fit-content;">
                     <i class="fas fa-plus"></i> Create First Event
                 </a>
             </div>
