@@ -459,12 +459,11 @@ class ZentrixPromoPlayer {
         if (this.isPlaying) {
             this.currentTime += dt;
             if (this.currentTime >= this.duration) {
-                // Loop or stop
-                this.currentTime = this.duration;
-                this.isPlaying = false;
-                if (this.playPauseBtn) this.playPauseBtn.querySelector("i").className = "fas fa-redo";
+                // Loop back to start automatically
+                this.currentTime = 0.0;
+                this.coinBurstTriggered = false;
                 if (this.isVideoLoaded && this.videoBg) {
-                    this.videoBg.pause();
+                    this.videoBg.currentTime = 0;
                 }
             }
             
