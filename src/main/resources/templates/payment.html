@@ -491,7 +491,7 @@
 
             <div class="order-line">
                 <span class="lbl">Base Price (Per Ticket)</span>
-                <span class="val" th:text="${event.price != null ? #strings.replace(event.price, '$', '₹') : '₹0'}">₹1500</span>
+                <span class="val" th:text="${basePrice != null ? basePrice : (event.price != null ? #strings.replace(event.price, '$', '₹') : '₹0')}">₹1500</span>
             </div>
             <div class="order-line" th:if="${isDiscounted}">
                 <span class="lbl">Coin Reward Discount (50%)</span>

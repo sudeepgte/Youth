@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="${title}">Zentrix</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script th:src="@{/js/game-rewards.js}"></script>
 </head>
 <body>
@@ -22,7 +22,7 @@
                 </div>
             </div>
         </div>
-        <nav class="navbar" th:classappend="${active} != 'home' and ${active} != 'games' and ${active} != 'about' and ${active} != 'support' and ${active} != 'events' and ${active} != 'event-details' ? ' has-topbar' : ''">
+        <nav class="navbar" th:classappend="(${active} != 'home' and ${active} != 'games' and ${active} != 'about' and ${active} != 'support' and ${active} != 'events' and ${active} != 'event-details' ? ' has-topbar' : '') + (${active} == 'home' ? ' navbar-home' : '')">
             <div class="nav-shell navbar-inner" style="display: flex; align-items: center; justify-content: space-between; width: 100%; height: 100%; padding: 0;">
                 <!-- Games/Events page: minimal header (Dashboard button only) -->
                 <th:block th:if="${active} == 'games' or ${active} == 'events' or ${active} == 'event-details'">
@@ -100,20 +100,74 @@
     </header>
 
     <footer th:fragment="footer">
-        <div class="footer-content">
-            <div class="footer-col">
-                <h3>Zentrix</h3>
-                <a href="/home#about">About Us</a>
-                <a href="/home#featured-events">Events</a>
-                <a href="/home#organizers">Organizers</a>
+        <div class="footer-content" style="display: grid; grid-template-columns: 1.2fr 0.8fr 0.8fr 1.2fr; gap: 40px; width: 100%; max-width: 1440px; margin: 0 auto; flex-wrap: wrap;">
+            <!-- Column 1: Brand & Description -->
+            <div class="footer-col" style="display: flex; flex-direction: column; gap: 15px;">
+                <h3 style="font-size: 24px; font-weight: 800; color: var(--text-primary); margin-bottom: 5px;">Zentrix</h3>
+                <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.6; margin: 0; max-width: 280px;">
+                    Everything you need, all in one place. Discover events, play games, share music, and build connections.
+                </p>
+                <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px; font-size: 14px;">
+                    <a href="tel:+919876543210" style="display: inline-flex; align-items: center; gap: 10px; color: var(--text-secondary); margin-bottom: 0;">
+                        <i class="fa-solid fa-phone" style="color: var(--primary); font-size: 14px; width: 16px;"></i> +91 98765 43210
+                    </a>
+                    <a href="mailto:support@zentrix.com" style="display: inline-flex; align-items: center; gap: 10px; color: var(--text-secondary); margin-bottom: 0;">
+                        <i class="fa-solid fa-envelope" style="color: var(--primary); font-size: 14px; width: 16px;"></i> support@zentrix.com
+                    </a>
+                </div>
             </div>
+
+            <!-- Column 2: Quick Links -->
             <div class="footer-col">
-                <h3>Help</h3>
-                <a href="/home#contact">Contact Us</a>
-                <a href="/home#faq">FAQs</a>
-                <a href="/home#terms">Terms of Service</a>
-                <a href="/home#privacy">Privacy Policy</a>
+                <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 20px; color: var(--text-primary);">Navigation</h3>
+                <a href="/home#about" style="margin-bottom: 10px; font-size: 14px; color: var(--text-secondary);">About Us</a>
+                <a href="/home#featured-events" style="margin-bottom: 10px; font-size: 14px; color: var(--text-secondary);">Events</a>
+                <a href="/home#organizers" style="margin-bottom: 10px; font-size: 14px; color: var(--text-secondary);">Organizers</a>
+                <a href="/games" style="margin-bottom: 10px; font-size: 14px; color: var(--text-secondary);">Games Arena</a>
             </div>
+
+            <!-- Column 3: Help & Support -->
+            <div class="footer-col">
+                <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 20px; color: var(--text-primary);">Support</h3>
+                <a href="/home#contact" style="margin-bottom: 10px; font-size: 14px; color: var(--text-secondary);">Contact Us</a>
+                <a href="/home#faq" style="margin-bottom: 10px; font-size: 14px; color: var(--text-secondary);">FAQs</a>
+                <a href="/home#terms" style="margin-bottom: 10px; font-size: 14px; color: var(--text-secondary);">Terms of Service</a>
+                <a href="/home#privacy" style="margin-bottom: 10px; font-size: 14px; color: var(--text-secondary);">Privacy Policy</a>
+            </div>
+
+            <!-- Column 4: Social media & CTA -->
+            <div class="footer-col" style="display: flex; flex-direction: column; gap: 15px;">
+                <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 5px; color: var(--text-primary);">Connect With Us</h3>
+                <p style="font-size: 13px; color: var(--text-secondary); margin: 0; line-height: 1.5;">Follow our socials for community updates, hackathon releases, and gaming fests!</p>
+                <div style="display: flex; gap: 12px; margin-top: 5px;">
+                    <a href="https://instagram.com/zentrix" target="_blank" aria-label="Follow Zentrix on Instagram" 
+                       style="display: inline-flex; align-items: center; justify-content: center; width: 42px; height: 42px; border-radius: 50%; background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(0,0,0,0.06); color: #ec4899; font-size: 18px; margin: 0; transition: all 0.3s ease; box-shadow: 0 4px 10px rgba(0,0,0,0.03);"
+                       onmouseover="this.style.background='linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)'; this.style.color='#fff'; this.style.transform='translateY(-3px)'; this.style.boxShadow='0 10px 20px rgba(220, 39, 67, 0.3)'"
+                       onmouseout="this.style.background='rgba(59, 130, 246, 0.05)'; this.style.color='#ec4899'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 10px rgba(0,0,0,0.03)'">
+                        <i class="fa-brands fa-instagram"></i>
+                    </a>
+                    <a href="https://x.com/zentrix" target="_blank" aria-label="Follow Zentrix on Twitter/X" 
+                       style="display: inline-flex; align-items: center; justify-content: center; width: 42px; height: 42px; border-radius: 50%; background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(0,0,0,0.06); color: #111; font-size: 18px; margin: 0; transition: all 0.3s ease; box-shadow: 0 4px 10px rgba(0,0,0,0.03);"
+                       onmouseover="this.style.background='#000'; this.style.color='#fff'; this.style.transform='translateY(-3px)'; this.style.boxShadow='0 10px 20px rgba(0,0,0,0.3)'"
+                       onmouseout="this.style.background='rgba(59, 130, 246, 0.05)'; this.style.color='#111'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 10px rgba(0,0,0,0.03)'">
+                        <i class="fa-brands fa-x-twitter"></i>
+                    </a>
+                    <a href="https://facebook.com/zentrix" target="_blank" aria-label="Follow Zentrix on Facebook" 
+                       style="display: inline-flex; align-items: center; justify-content: center; width: 42px; height: 42px; border-radius: 50%; background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(0,0,0,0.06); color: #1877f2; font-size: 18px; margin: 0; transition: all 0.3s ease; box-shadow: 0 4px 10px rgba(0,0,0,0.03);"
+                       onmouseover="this.style.background='#1877f2'; this.style.color='#fff'; this.style.transform='translateY(-3px)'; this.style.boxShadow='0 10px 20px rgba(24, 119, 242, 0.3)'"
+                       onmouseout="this.style.background='rgba(59, 130, 246, 0.05)'; this.style.color='#1877f2'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 10px rgba(0,0,0,0.03)'">
+                        <i class="fa-brands fa-facebook-f"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Divider & Bottom Branding -->
+        <div class="footer-bottom" style="margin-top: 40px; padding-top: 25px; border-top: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 1440px; margin-left: auto; margin-right: auto; flex-wrap: wrap; gap: 15px; font-size: 13px; color: var(--text-muted);">
+            <p style="margin: 0; font-weight: 600;">&copy; 2026 Zentrix. All rights reserved.</p>
+            <p style="margin: 0; font-weight: 600; display: flex; align-items: center; gap: 6px;">
+                Made with <i class="fa-solid fa-heart" style="color: #ec4899; animation: float 3s ease-in-out infinite;"></i> for youth globally.
+            </p>
         </div>
         <script th:src="@{/js/animations.js}"></script>
     </footer>
