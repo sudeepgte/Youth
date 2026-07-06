@@ -8,14 +8,14 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/admin/reels")
+@RequestMapping(value = "/api/admin/reels", method = RequestMethod.GET)
 public class AdminReelApiController {
 
     @Autowired
     private ReelService reelService;
 
     // 1. Approve Reel
-    @PostMapping("/{id}/approve")
+    @RequestMapping(value = "/{id}/approve", method = RequestMethod.POST)
     public ResponseEntity<?> approveReel(@PathVariable Long id) {
         try {
             Reel approved = reelService.approveReel(id);
@@ -26,7 +26,7 @@ public class AdminReelApiController {
     }
 
     // 2. Delete/Reject Reel
-    @DeleteMapping("/{id}")
+    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
     public ResponseEntity<?> deleteReel(@PathVariable Long id) {
         try {
             reelService.deleteReel(id);
@@ -37,7 +37,7 @@ public class AdminReelApiController {
     }
 
     // 3. Modulate Meta Data Manually
-    @PostMapping("/{id}/metrics")
+    @RequestMapping(value = "/{id}/metrics", method = RequestMethod.POST)
     public ResponseEntity<?> updateMetrics(
             @PathVariable Long id,
             @RequestBody Map<String, Long> metrics) {

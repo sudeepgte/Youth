@@ -15,7 +15,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Controller
-@RequestMapping("/battles")
+@RequestMapping(value = "/battles")
 public class BattleController {
 
     @Autowired private BattleRepository battleRepository;
@@ -86,7 +86,7 @@ public class BattleController {
     }
 
     // ─── View Single Battle ─────────────────────────────────
-    @GetMapping("/{id}")
+    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
     @Transactional
     public String viewBattle(@PathVariable Long id, Model model, HttpSession session) {
         User user = getUserFromSession(session);
@@ -142,7 +142,7 @@ public class BattleController {
     }
 
     // ─── Create Battle ──────────────────────────────────────
-    @PostMapping("/create")
+    @RequestMapping(value = "/create", method = RequestMethod.POST)
     public String createBattle(
             @RequestParam String title,
             @RequestParam String category,
@@ -202,7 +202,7 @@ public class BattleController {
     }
 
     // ─── Join Battle ────────────────────────────────────────
-    @PostMapping("/join")
+    @RequestMapping(value = "/join", method = RequestMethod.POST)
     public String joinBattle(@RequestParam String roomCode, HttpSession session) {
         User user = getUserFromSession(session);
         if (user == null) return "redirect:/login";
@@ -227,7 +227,7 @@ public class BattleController {
         return joinUserToBattle(battle, user);
     }
 
-    @GetMapping("/{id}/pay")
+    @RequestMapping(value = "/{id}/pay", method = RequestMethod.GET)
     public String showPaymentPage(@PathVariable Long id, HttpSession session, Model model) {
         User user = getUserFromSession(session);
         if (user == null) return "redirect:/login";
@@ -244,7 +244,7 @@ public class BattleController {
         return "payment";
     }
 
-    @PostMapping("/{id}/process-payment")
+    @RequestMapping(value = "/{id}/process-payment", method = RequestMethod.POST)
     public String processPayment(@PathVariable Long id, HttpSession session) {
         User user = getUserFromSession(session);
         if (user == null) return "redirect:/login";
@@ -283,7 +283,7 @@ public class BattleController {
     }
 
     // ─── Start Battle (Creator Only) ────────────────────────
-    @PostMapping("/{id}/start")
+    @RequestMapping(value = "/{id}/start", method = RequestMethod.POST)
     public String startBattle(@PathVariable Long id, HttpSession session) {
         User user = getUserFromSession(session);
         if (user == null) return "redirect:/login";
@@ -302,7 +302,7 @@ public class BattleController {
     }
 
     // ─── Register for Offline Battle ────────────────────────
-    @PostMapping("/{id}/register")
+    @RequestMapping(value = "/{id}/register", method = RequestMethod.POST)
     public String registerForOffline(@PathVariable Long id, HttpSession session) {
         User user = getUserFromSession(session);
         if (user == null) return "redirect:/login";
@@ -334,7 +334,7 @@ public class BattleController {
     }
 
     // ─── Mark Attendance / Check-In ─────────────────────────
-    @PostMapping("/{id}/checkin/{participantId}")
+    @RequestMapping(value = "/{id}/checkin/{participantId}", method = RequestMethod.POST)
     public String checkInParticipant(@PathVariable Long id, @PathVariable Long participantId, HttpSession session) {
         User user = getUserFromSession(session);
         if (user == null) return "redirect:/login";
@@ -352,7 +352,7 @@ public class BattleController {
     }
 
     // ─── Submit Judge Scores (Creator Only) ─────────────────
-    @PostMapping("/{id}/submission/{submissionId}/score")
+    @RequestMapping(value = "/{id}/submission/{submissionId}/score", method = RequestMethod.POST)
     public String scoreSubmission(
             @PathVariable Long id,
             @PathVariable Long submissionId,
@@ -384,7 +384,7 @@ public class BattleController {
     }
 
     // ─── Submit Entry ───────────────────────────────────────
-    @PostMapping("/{id}/submit")
+    @RequestMapping(value = "/{id}/submit", method = RequestMethod.POST)
     public String submitEntry(
             @PathVariable Long id,
             @RequestParam String submissionUrl,
@@ -414,7 +414,7 @@ public class BattleController {
     }
 
     // ─── Move to Voting (Creator Only) ──────────────────────
-    @PostMapping("/{id}/start-voting")
+    @RequestMapping(value = "/{id}/start-voting", method = RequestMethod.POST)
     public String startVoting(@PathVariable Long id, HttpSession session) {
         User user = getUserFromSession(session);
         if (user == null) return "redirect:/login";
@@ -431,7 +431,7 @@ public class BattleController {
     }
 
     // ─── Cast Vote ──────────────────────────────────────────
-    @PostMapping("/{id}/vote/{submissionId}")
+    @RequestMapping(value = "/{id}/vote/{submissionId}", method = RequestMethod.POST)
     public String castVote(@PathVariable Long id, @PathVariable Long submissionId, HttpSession session) {
         User user = getUserFromSession(session);
         if (user == null) return "redirect:/login";
@@ -458,7 +458,7 @@ public class BattleController {
     }
 
     // ─── End Battle & Declare Winner (Creator Only) ─────────
-    @PostMapping("/{id}/end")
+    @RequestMapping(value = "/{id}/end", method = RequestMethod.POST)
     @Transactional
     public String endBattle(@PathVariable Long id, HttpSession session) {
         User user = getUserFromSession(session);
@@ -473,7 +473,7 @@ public class BattleController {
     }
 
     // ─── Delete Battle (Creator Only) ────────────────────────
-    @PostMapping("/{id}/delete")
+    @RequestMapping(value = "/{id}/delete", method = RequestMethod.POST)
     @Transactional
     public String deleteBattle(@PathVariable Long id, HttpSession session) {
         User user = getUserFromSession(session);
