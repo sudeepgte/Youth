@@ -37,6 +37,13 @@ public class Event {
     @JsonManagedReference
     private List<EventSeatTier> seatTiers = new ArrayList<>();
 
+    // NEW: Secret Rewards
+    private boolean enableSecretRewards = false;
+
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<SecretRewardPartner> secretRewards = new ArrayList<>();
+
     // NEW: Individual Seat Grid Selection (BMOS Style)
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<EventSeat> seats = new ArrayList<>();
@@ -181,6 +188,22 @@ public class Event {
             this.seatTiers.addAll(seatTiers);
             for (EventSeatTier tier : seatTiers) {
                 tier.setEvent(this);
+            }
+        }
+    }
+
+    public boolean isEnableSecretRewards() { return enableSecretRewards; }
+    public void setEnableSecretRewards(boolean enableSecretRewards) { this.enableSecretRewards = enableSecretRewards; }
+
+    public List<SecretRewardPartner> getSecretRewards() { return secretRewards; }
+    public void setSecretRewards(List<SecretRewardPartner> secretRewards) {
+        if (secretRewards == null) {
+            this.secretRewards.clear();
+        } else {
+            this.secretRewards.clear();
+            this.secretRewards.addAll(secretRewards);
+            for (SecretRewardPartner reward : secretRewards) {
+                reward.setEvent(this);
             }
         }
     }

@@ -185,12 +185,14 @@ header .top-bar.is-hidden {
     justify-content: space-between;
     padding: 0 40px;
     height: 56px;
-    background: #FFFFFF !important;
+    background: rgba(0, 0, 0, 0.65) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
     position: fixed;
     width: 100%;
     top: 0;
     z-index: 1000;
-    border-bottom: 1px solid var(--glass-border);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
     transition: all 0.3s ease;
 }
 
@@ -200,7 +202,7 @@ header .top-bar.is-hidden {
 
 .navbar.scrolled {
     height: 52px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
 /* When top-bar hides, lift navbar up */
@@ -210,12 +212,12 @@ header .top-bar.is-hidden~.navbar {
 
 .navbar.scrolled .logo,
 .navbar.scrolled .nav-links a {
-    color: var(--text-primary) !important;
+    color: #ffffff !important;
 }
 
 .navbar .logo,
 .navbar .nav-links a {
-    color: #000000 !important;
+    color: #ffffff !important;
     transition: color 0.3s ease;
     font-weight: 800;
 }
@@ -342,15 +344,15 @@ header .navbar .btn-outline {
 }
 
 header .navbar.scrolled .nav-links a {
-    color: #000000 !important;
-    background: rgba(15, 23, 42, 0.04);
+    color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.08);
 }
 
 header .navbar.scrolled .nav-links a:hover,
 header .navbar.scrolled .nav-links a.active {
     background: var(--gradient-1);
     color: white !important;
-    box-shadow: 0 10px 20px -5px rgba(147, 51, 234, 0.3);
+    box-shadow: 0 10px 20px -5px rgba(59, 130, 246, 0.3);
 }
 
 header .navbar .btn {
@@ -364,8 +366,14 @@ header .navbar .btn {
 
 header .navbar .btn-outline {
     background: transparent;
-    border: 1.5px solid var(--primary);
-    color: var(--primary) !important;
+    border: 1.5px solid #ffffff;
+    color: #ffffff !important;
+}
+
+header .navbar .btn-outline:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: #ffffff !important;
+    transform: translateY(-2px);
 }
 
 header .navbar .btn-primary {
@@ -377,8 +385,10 @@ header .navbar .btn-primary {
 
 /* Home page specific navbar custom overrides */
 header .navbar.navbar-home {
-    background: transparent !important;
-    border-bottom: 1px solid transparent !important;
+    background: rgba(0, 0, 0, 0.65) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
     box-shadow: none !important;
 }
 
@@ -417,18 +427,18 @@ header .navbar.navbar-home .btn-primary:hover {
     transform: translateY(-2px);
 }
 
-/* Scrolled Home Page Navbar - transitions to sleek blurred white/glass */
+/* Scrolled Home Page Navbar - transitions to sleek blurred dark/glass */
 header .navbar.navbar-home.scrolled {
-    background: rgba(255, 255, 255, 0.85) !important;
+    background: rgba(0, 0, 0, 0.95) !important;
     backdrop-filter: blur(12px) !important;
     -webkit-backdrop-filter: blur(12px) !important;
-    border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
-    box-shadow: 0 4px 30px rgba(15, 23, 42, 0.03) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4) !important;
 }
 
 header .navbar.navbar-home.scrolled .logo,
 header .navbar.navbar-home.scrolled .nav-links a {
-    color: #000000 !important;
+    color: #ffffff !important;
     text-shadow: none !important;
 }
 
@@ -444,14 +454,14 @@ header .navbar.navbar-home.scrolled .nav-links a.active {
 }
 
 header .navbar.navbar-home.scrolled .btn-outline {
-    border-color: var(--primary) !important;
-    color: var(--primary) !important;
+    border-color: #ffffff !important;
+    color: #ffffff !important;
     background: transparent !important;
     backdrop-filter: none;
 }
 
 header .navbar.navbar-home.scrolled .btn-outline:hover {
-    background: rgba(59, 130, 246, 0.05) !important;
+    background: rgba(255, 255, 255, 0.1) !important;
     transform: translateY(-2px);
 }
 

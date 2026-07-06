@@ -7,6 +7,8 @@ import com.example.demo.repository.PostRepository;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.service.RewardService;
 import jakarta.servlet.http.HttpSession;
+import com.example.demo.model.UserReward;
+import com.example.demo.repository.UserRewardRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -70,6 +72,9 @@ public class ProfileController {
 
     @Autowired
     private NotificationRepository notificationRepository;
+
+    @Autowired
+    private UserRewardRepository userRewardRepository;
 
     @Autowired
     private FollowRequestRepository followRequestRepository;
@@ -168,6 +173,10 @@ public class ProfileController {
                     .distinct()
                     .collect(java.util.stream.Collectors.toList());
             model.addAttribute("savedPosts", savedPosts);
+
+            // Fetch user rewards
+            List<UserReward> userRewards = userRewardRepository.findByUserOrderByIssueDateDesc(currentUser);
+            model.addAttribute("userRewards", userRewards);
         }
 
         return "profile";
@@ -711,7 +720,7 @@ public class ProfileController {
         if (user == null) {
             return org.springframework.http.ResponseEntity.status(401).build();
         }
-
+  
         List<Notification> notifications = notificationRepository.findByUserOrderByCreatedAtDesc(user);
         notificationRepository.deleteAll(notifications);
         return org.springframework.http.ResponseEntity.ok().build();
