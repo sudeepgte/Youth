@@ -16,18 +16,39 @@
         }
 
         :root {
-            --bg-gradient: linear-gradient(180deg, #050508 0%, #0a0a0f 100%);
-            --text-primary: #ffffff;
-            --text-secondary: #94a3b8;
-            --card-bg: rgba(255, 255, 255, 0.04);
-            --glass-border: rgba(255, 255, 255, 0.1);
+            --bg-gradient: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+            --text-primary: #0f172a;
+            --text-secondary: #334155;
+            --card-bg: rgba(255, 255, 255, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.5);
         }
 
         body {
-            background: #050508 !important;
-            color: #ffffff !important;
+            background: var(--bg-gradient) !important;
+            color: var(--text-primary) !important;
             min-height: 100vh;
         }
+
+        h1, h2, h3, h4, h5, h6, .stat-num, .event-title, .search-box input, .filter-select {
+            color: var(--text-primary) !important;
+        }
+        
+        span, p, .stat-lbl, .meta-row, .btn-view, .btn-nav.secondary, .empty-state p, .modal-box p {
+            color: var(--text-secondary) !important;
+        }
+        
+        .btn-view:hover, .btn-nav.secondary:hover {
+            color: var(--text-primary) !important;
+        }
+
+        /* Prevent overrides on specific colorful elements */
+        .btn-nav.primary, .status-dot.upcoming, .status-dot.completed, .badge-free {
+            color: #fff !important; 
+        }
+        .badge-paid { color: var(--primary) !important; }
+        .status-dot.ongoing { color: #000 !important; }
+        .action-btn.btn-edit { color: #1e3a8a !important; }
+        .action-btn.btn-delete { color: #991b1b !important; }
 
         .admin-navbar {
             position: fixed;
