@@ -13,6 +13,11 @@ import com.example.demo.repository.EventRegistrationRepository;
 import com.example.demo.repository.EventSeatTierRepository;
 import com.example.demo.repository.VoteRepository;
 import com.example.demo.service.RewardService;
+import com.example.demo.service.SecretRewardService;
+import com.example.demo.repository.UserRewardRepository;
+import com.example.demo.model.SecretRewardPartner;
+import com.example.demo.model.UserReward;
+import com.example.demo.repository.UserRewardRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -26,6 +31,12 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import org.springframework.web.multipart.MultipartFile;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Comparator;
 import java.util.UUID;
 import java.util.Set;
@@ -57,6 +68,12 @@ public class EventController {
 
     @Autowired
     private RewardService rewardService;
+
+    @Autowired
+    private SecretRewardService secretRewardService;
+
+    @Autowired
+    private UserRewardRepository userRewardRepository;
 
     @Autowired
     private HttpServletRequest httpServletRequest;
@@ -648,6 +665,11 @@ public class EventController {
         model.addAttribute("registration", reg);
         model.addAttribute("event", reg.getEvent());
         
+        if (reg.getEvent().isEnableSecretRewards() && reg.getUser() != null) {
+            userRewardRepository.findByUserAndEvent(reg.getUser(), reg.getEvent())
+                    .ifPresent(reward -> model.addAttribute("userReward", reward));
+        }
+
         boolean canSeePII = adminViewing || (user != null && reg.getUser() != null && reg.getUser().getId().equals(user.getId()));
         model.addAttribute("canSeePII", canSeePII);
         
@@ -682,17 +704,18 @@ public class EventController {
 
     @PostMapping("/admin/create")
     public String createEvent(
+            @ModelAttribute("formEvent") Event formEvent,
             @RequestParam String title,
             @RequestParam String category,
             @RequestParam String description,
             @RequestParam String dateTime,
-            @RequestParam String venue,
+            @RequestParam(required = false) String venue,
             @RequestParam String entryFeeType,
             @RequestParam(required = false) String price,
             @RequestParam Integer maxParticipants,
             @RequestParam(required = false, defaultValue = "Offline") String eventMode,
             @RequestParam(required = false) String meetingLink,
-            @RequestParam(required = false) String imageUrl,
+            @RequestParam(required = false) MultipartFile imageFile,
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String votingStartDate,
             @RequestParam(required = false) String votingEndDate,
@@ -720,6 +743,18 @@ public class EventController {
         event.setMeetingLink(meetingLink);
         event.setFinalVotingEnabled(finalVotingEnabled);
 
+        // Secret Rewards Binding
+        event.setEnableSecretRewards(formEvent.isEnableSecretRewards());
+        if (formEvent.isEnableSecretRewards() && formEvent.getSecretRewards() != null) {
+            for (SecretRewardPartner partner : formEvent.getSecretRewards()) {
+                if (partner.getBusinessName() != null && !partner.getBusinessName().isBlank()) {
+                    partner.setRemainingQuantity(partner.getQuantity());
+                    partner.setEvent(event);
+                    event.getSecretRewards().add(partner);
+                }
+            }
+        }
+
         if ("Free".equals(entryFeeType)) {
             event.setPrice("Free");
         } else {
@@ -730,9 +765,25 @@ public class EventController {
             event.setDateTime(LocalDateTime.parse(dateTime, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm")));
         } catch (Exception ignored) {}
 
-        // Use provided URL or fallback
-        if (imageUrl != null && !imageUrl.isBlank()) {
-            event.setImageUrl(imageUrl);
+        // Handle File Upload
+        if (imageFile != null && !imageFile.isEmpty()) {
+            try {
+                String originalFilename = imageFile.getOriginalFilename();
+                String extension = "";
+                if(originalFilename != null && originalFilename.contains(".")) {
+                    extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+                }
+                String newFilename = UUID.randomUUID().toString() + extension;
+                Path uploadDir = Paths.get("src/main/resources/static/uploads");
+                if (!Files.exists(uploadDir)) {
+                    Files.createDirectories(uploadDir);
+                }
+                Path filePath = uploadDir.resolve(newFilename);
+                Files.copy(imageFile.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+                event.setImageUrl("/uploads/" + newFilename);
+            } catch (IOException e) {
+                event.setImageUrl(getDefaultImage(category));
+            }
         } else {
             event.setImageUrl(getDefaultImage(category));
         }
@@ -794,14 +845,14 @@ public class EventController {
             @RequestParam String category,
             @RequestParam String description,
             @RequestParam String dateTime,
-            @RequestParam String venue,
+            @RequestParam(required = false) String venue,
             @RequestParam String entryFeeType,
             @RequestParam(required = false) String price,
             @RequestParam Integer maxParticipants,
             @RequestParam(required = false, defaultValue = "Offline") String eventMode,
             @RequestParam(required = false) String meetingLink,
             @RequestParam String status,
-            @RequestParam(required = false) String imageUrl,
+            @RequestParam(required = false) MultipartFile imageFile,
             @RequestParam(required = false) String votingStartDate,
             @RequestParam(required = false) String votingEndDate,
             @RequestParam(required = false, defaultValue = "0") Integer totalRows,
@@ -846,11 +897,26 @@ public class EventController {
             event.setDateTime(LocalDateTime.parse(dateTime, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm")));
         } catch (Exception ignored) {}
 
-        // Update imageUrl if a new one is provided
-        if (imageUrl != null && !imageUrl.isBlank()) {
-            event.setImageUrl(imageUrl);
+        // Handle File Upload for edit
+        if (imageFile != null && !imageFile.isEmpty()) {
+            try {
+                String originalFilename = imageFile.getOriginalFilename();
+                String extension = "";
+                if(originalFilename != null && originalFilename.contains(".")) {
+                    extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+                }
+                String newFilename = UUID.randomUUID().toString() + extension;
+                Path uploadDir = Paths.get("src/main/resources/static/uploads");
+                if (!Files.exists(uploadDir)) {
+                    Files.createDirectories(uploadDir);
+                }
+                Path filePath = uploadDir.resolve(newFilename);
+                Files.copy(imageFile.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+                event.setImageUrl("/uploads/" + newFilename);
+            } catch (IOException e) {
+                // Keep existing
+            }
         }
-        // else keep existing imageUrl unchanged
 
         // Update Seat Grid Configuration
         boolean reGenGrid = false;
@@ -1114,6 +1180,7 @@ public class EventController {
         reg.setAttendedAt(LocalDateTime.now());
         eventRegistrationRepository.save(reg);
         
+        secretRewardService.assignReward(reg);
         rewardService.awardAttendance(reg.getUser()); // award coins for attending 🪙
         return "redirect:/events/admin/" + id + "/attendance?marked=" + ticketId;
     }
@@ -1131,6 +1198,7 @@ public class EventController {
                 if (!reg.isAttendanceMarked()) {
                     reg.setAttendanceMarked(true);
                     reg.setAttendedAt(LocalDateTime.now());
+                    secretRewardService.assignReward(reg);
                     rewardService.awardAttendance(reg.getUser()); // Coins for attending 🪙
                 }
             }
@@ -1158,6 +1226,7 @@ public class EventController {
             reg.setAttendanceMarked(true);
             reg.setAttendedAt(LocalDateTime.now());
             eventRegistrationRepository.save(reg);
+            secretRewardService.assignReward(reg);
             rewardService.awardAttendance(user); // Zen Coins for joining 🪙
         }
 

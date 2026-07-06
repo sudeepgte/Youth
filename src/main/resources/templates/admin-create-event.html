@@ -656,7 +656,7 @@
 
         <!-- Form -->
         <form th:action="${event.id != null} ? @{'/events/admin/edit/' + ${event.id}} : @{/events/admin/create}"
-            method="POST" onsubmit="return validateForm()">
+            method="POST" enctype="multipart/form-data" onsubmit="return validateForm()">
 
             <div class="form-grid">
 
@@ -669,14 +669,15 @@
                     <div class="field-group" style="margin-bottom: 20px;">
                         <label>Event Name <span class="required">*</span></label>
                         <input type="text" name="title" id="titleInput" th:value="${event.title}"
-                            placeholder="e.g. Zentrix Gaming Championship 2025" required maxlength="120">
+                            placeholder="e.g. Zentrix Gaming Championship 2025" required maxlength="120"
+                            oninput="this.value = this.value.replace(/^[^a-zA-Z]+/, '')">
                     </div>
 
                     <div class="field-group">
                         <label>Description <span class="required">*</span></label>
                         <textarea name="description" id="descInput" th:text="${event.description}"
                             placeholder="Tell participants what this event is about, what to expect, prizes, and highlights..."
-                            required></textarea>
+                            required oninput="this.value = this.value.replace(/^[^a-zA-Z]+/, '')"></textarea>
                     </div>
                 </div>
 
@@ -818,14 +819,14 @@
                             <div id="paidAmountField">
                                 <input type="number" name="price" id="priceInput"
                                     th:value="${event.price != null and !event.price.startsWith('F') ? event.price.replace('₹','') : ''}"
-                                    placeholder="Enter amount in ₹" min="1">
+                                    placeholder="Enter amount in ₹" min="1" onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();">
                             </div>
                         </div>
 
                         <div class="field-group">
                             <label>Max Participants <span class="required">*</span></label>
                             <input type="number" name="maxParticipants" id="maxInput"
-                                th:value="${event.maxParticipants}" placeholder="e.g. 100" min="1" max="10000" required>
+                                th:value="${event.maxParticipants}" placeholder="e.g. 100" min="1" max="10000" required onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();">
                         </div>
 
 
@@ -842,13 +843,13 @@
                         style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px;">
                         <div class="field-group">
                             <label>Total Rows (A, B, C...)</label>
-                            <input type="number" name="totalRows" th:value="${event.totalRows}" placeholder="e.g. 5"
-                                min="0" max="26" required>
+                            <input type="number" name="totalRows" id="rowsInput" th:value="${event.totalRows}" placeholder="e.g. 5"
+                                min="0" max="26" required onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();" oninput="calculateMaxParticipants()">
                         </div>
                         <div class="field-group">
                             <label>Seats Per Row</label>
-                            <input type="number" name="seatsPerRow" th:value="${event.seatsPerRow}" placeholder="e.g. 5"
-                                min="0" max="50" required>
+                            <input type="number" name="seatsPerRow" id="seatsPerRowInput" th:value="${event.seatsPerRow}" placeholder="e.g. 5"
+                                min="0" max="50" required onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();" oninput="calculateMaxParticipants()">
                         </div>
                     </div>
 
@@ -862,17 +863,17 @@
                             <div class="field-group">
                                 <label>VIP Seats Count</label>
                                 <input type="number" name="vipSeatCount" th:value="${event.vipSeatCount}"
-                                    placeholder="e.g. 10" min="0">
+                                    placeholder="e.g. 10" min="0" onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();">
                             </div>
                             <div class="field-group">
                                 <label>VIP Seat Price (₹)</label>
                                 <input type="number" name="vipPrice" th:value="${event.vipPrice}" placeholder="500"
-                                    min="0">
+                                    min="0" onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();">
                             </div>
                             <div class="field-group">
                                 <label>Regular Seat Price (₹)</label>
                                 <input type="number" name="regularPrice" th:value="${event.regularPrice}"
-                                    placeholder="200" min="0">
+                                    placeholder="200" min="0" onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();">
                             </div>
                         </div>
                         <p style="font-size: 12px; color: #334155; margin-top: 15px;">
@@ -980,6 +981,29 @@
                     </div>
                 </div>
 
+                <!-- SECTION 5.5: Secret Rewards -->
+                <div class="form-card">
+                    <div class="section-label">
+                        <i class="fas fa-gift"></i> 🎁 Secret Reward Partner (Optional)
+                    </div>
+                    
+                    <div class="field-group">
+                        <label class="radio-label" style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                            <input type="checkbox" id="enableSecretRewards" name="enableSecretRewards" value="true" onchange="toggleSecretRewards()">
+                            <span style="font-size:16px; font-weight:600; color:#fff;">Enable Secret Rewards</span>
+                        </label>
+                    </div>
+
+                    <div id="secretRewardsContainer" style="display:none; margin-top: 20px;">
+                        <div id="rewardPartnersList">
+                            <!-- Rewards will be added here dynamically -->
+                        </div>
+                        <button type="button" class="btn-submit" onclick="addRewardPartner()" style="width:auto; margin-top: 15px; background: rgba(255,255,255,0.1); border: 1px dashed rgba(255,255,255,0.3); color: #fff;">
+                            <i class="fas fa-plus"></i> Add Partner
+                        </button>
+                    </div>
+                </div>
+
                 <!-- SECTION 6: Poster URL -->
                 <div class="form-card">
                     <div class="section-label">
@@ -987,15 +1011,15 @@
                     </div>
 
                     <div class="field-group">
-                        <label>Poster Image URL</label>
+                        <label>Poster Image Upload</label>
                         <div style="position:relative;">
-                            <input type="url" name="imageUrl" id="imageUrlInput" th:value="${event.imageUrl}"
-                                oninput="previewUrlPoster(this.value)" placeholder="https://example.com/poster.jpg"
-                                style="width:100%; padding:12px; background:rgba(255,255,255,0.8); border:1px solid rgba(255,255,255,0.5); border-radius:10px; color:#0f172a;">
+                            <input type="file" name="imageFile" id="imageFileInput" accept="image/png, image/jpeg"
+                                onchange="previewImageFile(this)"
+                                style="width:100%; padding:12px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1); border-radius:10px; color:#fff;">
                         </div>
                         <p style="font-size:12px; color:#334155; margin-top:6px;">
                             <i class="fas fa-info-circle" style="color:#f84464;"></i>
-                            Paste a direct link to an image (JPG, PNG). If left blank, a default image based on the
+                            Upload a direct image (JPG, PNG). If left blank, a default image based on the
                             category will be used.
                         </p>
                     </div>
@@ -1045,12 +1069,103 @@
             const mode = document.getElementById('modeSelect').value;
             const group = document.getElementById('meetingLinkGroup');
             const input = document.getElementById('linkInput');
+            const venueInput = document.getElementById('venueInput');
+            
             if (mode === 'Online') {
                 group.style.display = 'flex';
                 input.required = true;
+                if(venueInput) {
+                    venueInput.disabled = true;
+                    venueInput.required = false;
+                    venueInput.value = ''; // clear venue for online
+                }
             } else {
                 group.style.display = 'none';
                 input.required = false;
+                if(venueInput) {
+                    venueInput.disabled = false;
+                    venueInput.required = true;
+                }
+            }
+            
+            // Re-evaluate secret reward partners redemption logic when mode changes
+            if (typeof rewardIndex !== 'undefined') {
+                for (let i = 0; i < rewardIndex; i++) {
+                    if (document.getElementById('rewardPartner_' + i)) {
+                        toggleRewardRedemptionFields(i);
+                    }
+                }
+            }
+        }
+
+        function toggleRewardRedemptionFields(index) {
+            const mode = document.getElementById('modeSelect').value;
+            const catSelect = document.getElementById('rewardCat_' + index);
+            if (!catSelect) return;
+            const category = catSelect.value;
+            
+            const stallGroup = document.getElementById('stallGroup_' + index);
+            const storeGroup = document.getElementById('storeGroup_' + index);
+            const onlineDeliveryGroup = document.getElementById('onlineDeliveryGroup_' + index);
+            
+            const stallInput = document.getElementById('stallInput_' + index);
+            const storeNameInput = document.getElementById('storeName_' + index);
+            const storeAddressInput = document.getElementById('storeAddress_' + index);
+            const storeCouponInput = document.getElementById('storeCoupon_' + index);
+            
+            const deliveryMethodInput = document.getElementById('deliveryMethod_' + index);
+            const estimatedDeliveryInput = document.getElementById('estimatedDelivery_' + index);
+            const deliveryTypeInput = document.getElementById('deliveryType_' + index);
+            
+            if (mode === 'Online') {
+                if(stallGroup) stallGroup.style.display = 'none';
+                if(storeGroup) storeGroup.style.display = 'none';
+                if(onlineDeliveryGroup) onlineDeliveryGroup.style.display = 'block';
+                
+                if(stallInput) { stallInput.required = false; stallInput.disabled = true; }
+                if(storeNameInput) { storeNameInput.required = false; storeNameInput.disabled = true; }
+                if(storeAddressInput) { storeAddressInput.required = false; storeAddressInput.disabled = true; }
+                if(storeCouponInput) { storeCouponInput.required = false; storeCouponInput.disabled = true; }
+                
+                if (deliveryMethodInput) { deliveryMethodInput.value = 'Home Delivery'; deliveryMethodInput.disabled = false; }
+                
+                if (category === 'Restaurant' || category === 'Cafe') {
+                    if (estimatedDeliveryInput) { estimatedDeliveryInput.value = 'Within 1 Hour'; estimatedDeliveryInput.disabled = false; }
+                    if (deliveryTypeInput) { deliveryTypeInput.value = 'Instant Food Delivery'; deliveryTypeInput.disabled = false; }
+                } else {
+                    if (estimatedDeliveryInput) { estimatedDeliveryInput.value = '3-5 Business Days'; estimatedDeliveryInput.disabled = false; }
+                    if (deliveryTypeInput) { deliveryTypeInput.value = 'Courier Delivery'; deliveryTypeInput.disabled = false; }
+                }
+                
+            } else {
+                if(onlineDeliveryGroup) onlineDeliveryGroup.style.display = 'none';
+                if(deliveryMethodInput) deliveryMethodInput.disabled = true;
+                if(estimatedDeliveryInput) estimatedDeliveryInput.disabled = true;
+                if(deliveryTypeInput) deliveryTypeInput.disabled = true;
+                
+                if (category === 'Restaurant' || category === 'Cafe') {
+                    if(stallGroup) stallGroup.style.display = 'block';
+                    if(storeGroup) storeGroup.style.display = 'none';
+                    if(stallInput) { stallInput.required = true; stallInput.disabled = false; }
+                    if(storeNameInput) { storeNameInput.required = false; storeNameInput.disabled = true; }
+                    if(storeAddressInput) { storeAddressInput.required = false; storeAddressInput.disabled = true; }
+                    if(storeCouponInput) { storeCouponInput.required = false; storeCouponInput.disabled = true; }
+                } else if (category === 'Clothing Store' || category === 'Gaming Zone' || category === 'Sports Shop' || category === 'Book Store' || category === 'Merchandise') {
+                    if(stallGroup) stallGroup.style.display = 'none';
+                    if(storeGroup) storeGroup.style.display = 'block';
+                    if(stallInput) { stallInput.required = false; stallInput.disabled = true; }
+                    if(storeNameInput) { storeNameInput.required = true; storeNameInput.disabled = false; }
+                    if(storeAddressInput) { storeAddressInput.required = true; storeAddressInput.disabled = false; }
+                    if(storeCouponInput) { storeCouponInput.required = true; storeCouponInput.disabled = false; }
+                } else {
+                    // Default for Other
+                    if(stallGroup) stallGroup.style.display = 'none';
+                    if(storeGroup) storeGroup.style.display = 'none';
+                    if(stallInput) { stallInput.required = false; stallInput.disabled = true; }
+                    if(storeNameInput) { storeNameInput.required = false; storeNameInput.disabled = true; }
+                    if(storeAddressInput) { storeAddressInput.required = false; storeAddressInput.disabled = true; }
+                    if(storeCouponInput) { storeCouponInput.required = false; storeCouponInput.disabled = true; }
+                }
             }
         }
 
@@ -1063,18 +1178,53 @@
             } else {
                 field.style.display = 'none';
             }
+            toggleModeFields();
+            
+            // Prevent selecting past dates
+            const dtInput = document.getElementById('dateTimeInput');
+            if (dtInput) {
+                const now = new Date();
+                now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+                dtInput.min = now.toISOString().slice(0,16);
+            }
+            
+            // Initial calculation for Max Participants
+            calculateMaxParticipants();
         });
 
-        // ── Poster URL live preview ──
-        function previewUrlPoster(url) {
+        function calculateMaxParticipants() {
+            const rows = document.getElementById('rowsInput');
+            const seats = document.getElementById('seatsPerRowInput');
+            const maxInput = document.getElementById('maxInput');
+            
+            if (rows && seats && maxInput) {
+                const r = parseInt(rows.value) || 0;
+                const s = parseInt(seats.value) || 0;
+                
+                if (r > 0 && s > 0) {
+                    maxInput.value = r * s;
+                    maxInput.readOnly = true;
+                    maxInput.style.background = 'rgba(255,255,255,0.02)';
+                } else {
+                    maxInput.value = 0;
+                    maxInput.readOnly = false;
+                    maxInput.style.background = 'rgba(255,255,255,0.05)';
+                }
+            }
+        }
+
+        // ── Poster file live preview ──
+        function previewImageFile(input) {
             const preview = document.getElementById('posterPreview');
             const img = document.getElementById('posterImg');
-            if (url && url.trim() !== '') {
-                img.src = url;
-                preview.style.display = 'block';
-                img.onerror = function () {
-                    preview.style.display = 'none';
+            
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    img.src = e.target.result;
+                    preview.style.display = 'block';
                 };
+                reader.readAsDataURL(input.files[0]);
             } else {
                 preview.style.display = 'none';
             }
@@ -1115,6 +1265,140 @@
             btn.style.opacity = '0.7';
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Publishing...';
         });
+        
+        // Secret Rewards Logic
+        let rewardIndex = 0;
+        
+        function toggleSecretRewards() {
+            const isEnabled = document.getElementById('enableSecretRewards').checked;
+            const container = document.getElementById('secretRewardsContainer');
+            container.style.display = isEnabled ? 'block' : 'none';
+            
+            if (isEnabled && rewardIndex === 0) {
+                addRewardPartner(); // Add first one automatically
+            }
+        }
+        
+        function addRewardPartner() {
+            const list = document.getElementById('rewardPartnersList');
+            const html = `
+                <div class="reward-partner-item" id="rewardPartner_${rewardIndex}" style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:20px; margin-bottom:15px; position:relative;">
+                    <button type="button" onclick="removeRewardPartner(${rewardIndex})" style="position:absolute; top:15px; right:15px; background:none; border:none; color:#ff4444; cursor:pointer; font-size:18px;"><i class="fas fa-trash"></i></button>
+                    
+                    <h4 style="color:#f84464; margin-bottom:15px; font-weight:600;"><i class="fas fa-store"></i> Partner ${rewardIndex + 1}</h4>
+                    
+                    <div class="form-grid">
+                        <div class="field-group">
+                            <label>Partner Business Name *</label>
+                            <input type="text" name="secretRewards[${rewardIndex}].businessName" class="form-control" placeholder="e.g. Burger House" required oninput="this.value = this.value.replace(/^[^a-zA-Z]+/, '')">
+                        </div>
+                        <div class="field-group">
+                            <label>Reward Category *</label>
+                            <select name="secretRewards[${rewardIndex}].category" id="rewardCat_${rewardIndex}" class="form-control" required onchange="toggleRewardRedemptionFields(${rewardIndex})">
+                                <option value="Restaurant">Restaurant</option>
+                                <option value="Cafe">Cafe</option>
+                                <option value="Clothing Store">Clothing Store</option>
+                                <option value="Gaming Zone">Gaming Zone</option>
+                                <option value="Sports Shop">Sports Shop</option>
+                                <option value="Book Store">Book Store</option>
+                                <option value="Merchandise">Merchandise</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-grid">
+                        <div class="field-group">
+                            <label>Reward Name *</label>
+                            <input type="text" name="secretRewards[${rewardIndex}].rewardName" class="form-control" placeholder="e.g. Free Burger" required oninput="this.value = this.value.replace(/^[^a-zA-Z]+/, '')">
+                        </div>
+                        <div class="field-group">
+                            <label>Reward Quantity *</label>
+                            <input type="number" name="secretRewards[${rewardIndex}].quantity" class="form-control" placeholder="e.g. 100" min="1" required onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();">
+                            <!-- we can also just set remainingQuantity to quantity on backend -->
+                        </div>
+                    </div>
+                    
+                    <div class="form-grid">
+                        <div class="field-group">
+                            <label>Reward Validity (Days) *</label>
+                            <input type="number" name="secretRewards[${rewardIndex}].validityDays" class="form-control" placeholder="e.g. 30" min="1" required onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();">
+                        </div>
+                        <div class="field-group">
+                            <label>Sponsor Logo URL (Optional)</label>
+                            <input type="url" name="secretRewards[${rewardIndex}].sponsorLogoUrl" class="form-control" placeholder="https://...">
+                        </div>
+                    </div>
+                    
+                    <div class="field-group">
+                        <label>Reward Description (Optional)</label>
+                        <input type="text" name="secretRewards[${rewardIndex}].description" class="form-control" placeholder="Short description of the reward" oninput="this.value = this.value.replace(/^[^a-zA-Z]+/, '')">
+                    </div>
+                    
+                    <div id="stallGroup_${rewardIndex}" style="display:none; background:rgba(255,215,0,0.05); padding:15px; border-radius:8px; margin-bottom:15px; border:1px solid rgba(255,215,0,0.2);">
+                        <div class="field-group" style="margin:0;">
+                            <label style="color:#ffd700;">Redeem Stall Number *</label>
+                            <input type="text" name="secretRewards[${rewardIndex}].redeemStallNumber" id="stallInput_${rewardIndex}" class="form-control" placeholder="e.g. A1, Food Court A5">
+                        </div>
+                    </div>
+                    
+                    <div id="storeGroup_${rewardIndex}" style="display:none; background:rgba(16,185,129,0.05); padding:15px; border-radius:8px; margin-bottom:15px; border:1px solid rgba(16,185,129,0.2);">
+                        <div class="form-grid" style="margin-bottom:15px;">
+                            <div class="field-group" style="margin:0;">
+                                <label style="color:#10b981;">Store Name *</label>
+                                <input type="text" name="secretRewards[${rewardIndex}].storeName" id="storeName_${rewardIndex}" class="form-control" placeholder="e.g. Trendz Clothing">
+                            </div>
+                            <div class="field-group" style="margin:0;">
+                                <label style="color:#10b981;">Coupon Code *</label>
+                                <input type="text" name="secretRewards[${rewardIndex}].couponCode" id="storeCoupon_${rewardIndex}" class="form-control" placeholder="e.g. TSHIRT100">
+                            </div>
+                        </div>
+                        <div class="field-group" style="margin-bottom:15px;">
+                            <label style="color:#10b981;">Store Address *</label>
+                            <input type="text" name="secretRewards[${rewardIndex}].storeAddress" id="storeAddress_${rewardIndex}" class="form-control" placeholder="123 Main St, City">
+                        </div>
+                        <div class="field-group" style="margin:0;">
+                            <label style="color:#10b981;">Store Contact Number (Optional)</label>
+                            <input type="text" name="secretRewards[${rewardIndex}].storeContact" class="form-control" placeholder="e.g. +1 234 567 890">
+                        </div>
+                    </div>
+                    
+                    <div id="onlineDeliveryGroup_${rewardIndex}" style="display:none; background:rgba(59,130,246,0.05); padding:15px; border-radius:8px; margin-bottom:15px; border:1px solid rgba(59,130,246,0.2);">
+                        <h5 style="color:#3b82f6; margin-bottom:10px; font-size:14px;"><i class="fas fa-truck"></i> Reward Delivery</h5>
+                        <div class="form-grid" style="margin-bottom:15px;">
+                            <div class="field-group" style="margin:0;">
+                                <label style="color:#3b82f6;">Delivery Method</label>
+                                <select name="secretRewards[${rewardIndex}].deliveryMethod" id="deliveryMethod_${rewardIndex}" class="form-control" readonly style="pointer-events:none; background:rgba(0,0,0,0.2);">
+                                    <option value="Home Delivery">Home Delivery</option>
+                                </select>
+                            </div>
+                            <div class="field-group" style="margin:0;">
+                                <label style="color:#3b82f6;">Estimated Delivery</label>
+                                <input type="text" name="secretRewards[${rewardIndex}].estimatedDelivery" id="estimatedDelivery_${rewardIndex}" class="form-control" readonly style="background:rgba(0,0,0,0.2);">
+                            </div>
+                        </div>
+                        <div class="field-group" style="margin:0;">
+                            <label style="color:#3b82f6;">Delivery Type</label>
+                            <input type="text" name="secretRewards[${rewardIndex}].deliveryType" id="deliveryType_${rewardIndex}" class="form-control" readonly style="background:rgba(0,0,0,0.2);">
+                        </div>
+                    </div>
+                    
+                    <div class="field-group">
+                        <label>Terms & Conditions (Optional)</label>
+                        <textarea name="secretRewards[${rewardIndex}].terms" class="form-control" rows="2" placeholder="e.g. Valid only once per person" oninput="this.value = this.value.replace(/^[^a-zA-Z]+/, '')"></textarea>
+                    </div>
+                </div>
+            `;
+            list.insertAdjacentHTML('beforeend', html);
+            toggleRewardRedemptionFields(rewardIndex);
+            rewardIndex++;
+        }
+        
+        function removeRewardPartner(index) {
+            const item = document.getElementById(`rewardPartner_${index}`);
+            if (item) item.remove();
+        }
+
     </script>
 </body>
 

@@ -1249,26 +1249,22 @@
             display: block;
         }
 
-        /* Media Queries for Responsive Design */
         @media (max-width: 768px) {
-            .sidebar {
-                width: 80px;
+            .app-container { position: relative; }
+            .chat-sidebar { width: 100% !important; border-right: none; }
+            
+            .chat-main { 
+                display: none !important; 
+                position: absolute; 
+                top: 0; left: 0; right: 0; bottom: 0; 
+                z-index: 20; 
+                background: var(--bg-color); 
             }
-
-            .chat-sidebar-header h1,
-            .search-container,
-            .conv-info {
-                display: none;
-            }
-
-            .conv-item {
-                justify-content: center;
-                padding: 15px 0;
-            }
-
-            .avatar-container {
-                margin-right: 0;
-            }
+            
+            .app-container.mobile-chat-active .chat-sidebar { display: none !important; }
+            .app-container.mobile-chat-active .chat-main { display: flex !important; width: 100% !important; }
+            
+            .mobile-back-btn { display: flex !important; }
         }
 
         /* Modern Scrollbar */
@@ -1736,7 +1732,13 @@
 </head>
 <body style="overflow: hidden; height: 100vh; margin: 0;">
     <!-- Navbar -->
+    <!-- Mobile Sidebar Overlay -->
+    <div class="mobile-menu-overlay" onclick="document.querySelector('.sidebar').classList.remove('mobile-open'); this.classList.remove('active');"></div>
+
     <nav class="dashboard-navbar">
+        <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('mobile-open'); document.querySelector('.mobile-menu-overlay').classList.toggle('active');" style="display:none; background:none; border:none; color:var(--text-primary); font-size:20px; cursor:pointer; margin-right:15px; margin-left: 5px; padding: 0;">
+            <i class="fas fa-bars"></i>
+        </button>
         <a class="dashboard-logo" href="/home">Zentrix</a>
         <div class="dashboard-spacer"></div>
         <div class="dashboard-nav-links">
@@ -1874,6 +1876,9 @@
                     </div>
                 </div>
                 <div class="chat-header">
+                    <div class="header-icon mobile-back-btn" onclick="closeMobileChat()" style="display:none; margin-right: 10px; cursor: pointer;">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                    </div>
                     <div class="header-avatar" id="activeAvatar">U</div>
                     <div class="header-info">
                         <h2 id="activeUserName">Username</h2>
@@ -2619,8 +2624,21 @@
             renderConversationList(filtered);
         }
 
+        function closeMobileChat() {
+            const container = document.querySelector('.app-container');
+            if (container) {
+                container.classList.remove('mobile-chat-active');
+            }
+        }
+
         async function selectConversation(conv, partner) {
             try {
+                // For mobile responsiveness
+                const container = document.querySelector('.app-container');
+                if (container) {
+                    container.classList.add('mobile-chat-active');
+                }
+                
                 console.log('[DEBUG] selectConversation called for conv:', conv.id, 'partner:', partner ? partner.username : 'none');
                 activeConversationId = conv.id;
                 activeRecipientId = partner ? partner.id : null; // null for groups

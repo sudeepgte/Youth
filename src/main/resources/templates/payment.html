@@ -1,699 +1,196 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payment | Zentrix</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
-        rel="stylesheet">
+    <title>Secure Payment - Join Battle</title>
+    <!-- Same font and font awesome as layout -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * {
-            font-family: 'Inter', sans-serif;
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
+        :root {
+            --bg-color: #F8FAFC;
+            --surface-color: #FFFFFF;
+            --text-primary: #0F172A;
+            --text-secondary: #475569;
+            --primary-color: #3B82F6;
+            --success-color: #10B981;
+            --border-color: #E2E8F0;
         }
 
         body {
-            background: #0a0a0f;
-            min-height: 100vh;
-            color: #fff;
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
             padding: 20px;
         }
 
-        /* ── Top bar ── */
-        .topbar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 60px;
-            background: rgba(10, 10, 20, 0.95);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 30px;
-            z-index: 100;
-        }
-
-        .topbar .brand {
-            font-weight: 900;
-            font-size: 1.2rem;
-            background: linear-gradient(135deg, #f84464, #ff6b9d);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .secure-tag {
-            display: flex;
-            align-items: center;
-            gap: 7px;
-            font-size: 12px;
-            color: #10b981;
-            font-weight: 600;
-        }
-
-        /* ── Main Grid ── */
-        .pay-grid {
-            display: grid;
-            grid-template-columns: 1fr 420px;
-            gap: 28px;
-            max-width: 900px;
+        .payment-card {
+            background: var(--surface-color);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+            max-width: 480px;
             width: 100%;
-            margin-top: 70px;
-        }
-
-        /* ── Order Summary ── */
-        .order-card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 20px;
-            padding: 28px;
-        }
-
-        .order-card h2 {
-            font-size: 16px;
-            font-weight: 700;
-            margin-bottom: 20px;
-            color: rgba(255, 255, 255, 0.6);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .event-preview {
-            display: flex;
-            gap: 16px;
-            align-items: center;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.07);
-            border-radius: 14px;
-            padding: 14px;
-            margin-bottom: 24px;
-        }
-
-        .event-preview img {
-            width: 80px;
-            height: 70px;
-            border-radius: 10px;
-            object-fit: cover;
-            flex-shrink: 0;
-        }
-
-        .event-preview-info h3 {
-            font-size: 15px;
-            font-weight: 700;
-            margin-bottom: 5px;
-        }
-
-        .event-preview-info p {
-            font-size: 12px;
-            color: rgba(255, 255, 255, 0.4);
-        }
-
-        .order-line {
-            display: flex;
-            justify-content: space-between;
-            font-size: 14px;
-            padding: 10px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .order-line:last-child {
-            border-bottom: none;
-        }
-
-        .order-line .lbl {
-            color: rgba(255, 255, 255, 0.45);
-        }
-
-        .order-line .val {
-            font-weight: 600;
-        }
-
-        .total-line {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 0 0;
-            margin-top: 10px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .total-lbl {
-            font-size: 15px;
-            font-weight: 700;
-        }
-
-        .total-val {
-            font-size: 1.8rem;
-            font-weight: 900;
-            color: #f84464;
-        }
-
-        /* ── Payment Form ── */
-        .pay-card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 20px;
-            padding: 28px;
-        }
-
-        .pay-card h2 {
-            font-size: 1.2rem;
-            font-weight: 800;
-            margin-bottom: 24px;
-        }
-
-        /* Method tabs */
-        .pay-methods {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 24px;
-        }
-
-        .method-btn {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 6px;
-            padding: 13px;
-            border-radius: 12px;
-            cursor: pointer;
-            border: 1.5px solid rgba(255, 255, 255, 0.1);
-            background: rgba(255, 255, 255, 0.02);
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 12px;
-            font-weight: 600;
-            transition: all 0.2s;
-        }
-
-        .method-btn.active {
-            border-color: #f84464;
-            background: rgba(248, 68, 100, 0.1);
-            color: #f84464;
-        }
-
-        .method-btn i {
-            font-size: 20px;
-        }
-
-        .method-btn:hover {
-            border-color: rgba(248, 68, 100, 0.4);
-        }
-
-        /* Card form */
-        .field-grp {
-            margin-bottom: 16px;
-        }
-
-        .field-grp label {
-            display: block;
-            font-size: 12px;
-            font-weight: 600;
-            color: rgba(255, 255, 255, 0.5);
-            margin-bottom: 7px;
-        }
-
-        .pay-input {
-            width: 100%;
-            padding: 13px 16px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 11px;
-            color: #fff;
-            font-size: 14px;
-            font-family: 'Inter', sans-serif;
-            outline: none;
-            transition: all 0.2s;
-        }
-
-        .pay-input:focus {
-            border-color: #f84464;
-            background: rgba(248, 68, 100, 0.06);
-        }
-
-        .two-col {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 14px;
-        }
-
-        /* Card visual */
-        .card-visual {
-            background: linear-gradient(135deg, #1a1a30, #2d1b4e);
-            border-radius: 16px;
-            padding: 22px;
-            margin-bottom: 22px;
-            position: relative;
-            overflow: hidden;
-            height: 140px;
-            border: 1px solid rgba(248, 68, 100, 0.2);
-        }
-
-        .card-visual::before {
-            content: '';
-            position: absolute;
-            right: -30px;
-            top: -30px;
-            width: 140px;
-            height: 140px;
-            border-radius: 50%;
-            background: rgba(248, 68, 100, 0.12);
-        }
-
-        .card-visual::after {
-            content: '';
-            position: absolute;
-            right: 30px;
-            top: 20px;
-            width: 90px;
-            height: 90px;
-            border-radius: 50%;
-            background: rgba(248, 68, 100, 0.07);
-        }
-
-        .card-chip {
-            width: 36px;
-            height: 26px;
-            border-radius: 5px;
-            background: linear-gradient(135deg, #ffd700, #ffaa00);
-            margin-bottom: 20px;
-        }
-
-        .card-number-display {
-            font-size: 15px;
-            font-weight: 700;
-            letter-spacing: 3px;
-            color: rgba(255, 255, 255, 0.8);
-            margin-bottom: 16px;
-            font-family: monospace;
-        }
-
-        .card-footer-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-        }
-
-        .card-holder {
-            font-size: 11px;
-            color: rgba(255, 255, 255, 0.5);
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-        }
-
-        .card-expiry {
-            font-size: 11px;
-            color: rgba(255, 255, 255, 0.5);
-            text-align: right;
-        }
-
-        .zentrix-logo-card {
-            position: absolute;
-            top: 18px;
-            right: 18px;
-            font-size: 18px;
-            font-weight: 900;
-            background: linear-gradient(135deg, #f84464, #ff6b9d);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        /* UPI section */
-        .upi-section {
-            display: none;
             text-align: center;
-            padding: 20px 0;
+            border: 1px solid var(--border-color);
         }
 
-        .upi-section.visible {
-            display: block;
-        }
-
-        .upi-qr {
-            width: 160px;
-            height: 160px;
-            margin: 0 auto 16px;
-            background: #fff;
-            border-radius: 12px;
-            padding: 12px;
+        .icon-container {
+            width: 80px;
+            height: 80px;
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-size: 36px;
+            margin: 0 auto 24px;
         }
 
-        /* Pay button */
-        .btn-pay {
-            width: 100%;
-            padding: 16px;
-            background: linear-gradient(135deg, #f84464, #ff6b9d);
-            border: none;
-            border-radius: 13px;
-            color: #fff;
-            font-size: 16px;
+        h1 {
+            font-size: 28px;
             font-weight: 800;
+            margin: 0 0 8px;
+        }
+
+        p.subtitle {
+            color: var(--text-secondary);
+            margin: 0 0 32px;
+            font-size: 15px;
+        }
+
+        .battle-summary {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 32px;
+            text-align: left;
+        }
+
+        .battle-summary .title {
+            font-weight: 700;
+            font-size: 18px;
+            margin-bottom: 12px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .summary-row:last-child {
+            margin-bottom: 0;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px dashed var(--border-color);
+            font-weight: 800;
+            color: var(--text-primary);
+            font-size: 18px;
+        }
+
+        .btn-pay {
+            background: var(--success-color);
+            color: white;
+            border: none;
+            padding: 16px 24px;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 700;
+            width: 100%;
             cursor: pointer;
-            margin-top: 6px;
+            transition: all 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
-            transition: all 0.25s;
-            box-shadow: 0 4px 20px rgba(248, 68, 100, 0.45);
         }
 
         .btn-pay:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 28px rgba(248, 68, 100, 0.6);
+            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.2);
         }
 
-        .secure-note {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 7px;
+        .btn-cancel {
+            background: transparent;
+            color: var(--text-secondary);
+            border: none;
+            padding: 16px 24px;
+            font-size: 15px;
+            font-weight: 600;
+            width: 100%;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: color 0.3s ease;
+        }
+
+        .btn-cancel:hover {
+            color: var(--text-primary);
+        }
+
+        .secure-badge {
+            margin-top: 24px;
             font-size: 12px;
-            color: rgba(255, 255, 255, 0.3);
-            margin-top: 14px;
-        }
-
-        /* Processing overlay */
-        .processing-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(10, 10, 20, 0.92);
-            backdrop-filter: blur(15px);
-            z-index: 9999;
-            flex-direction: column;
+            color: var(--text-secondary);
+            display: flex;
             align-items: center;
             justify-content: center;
-            gap: 20px;
-        }
-
-        .processing-overlay.show {
-            display: flex;
-        }
-
-        .spinner {
-            width: 64px;
-            height: 64px;
-            border-radius: 50%;
-            border: 4px solid rgba(248, 68, 100, 0.2);
-            border-top-color: #f84464;
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        .processing-text {
-            font-size: 1.2rem;
-            font-weight: 700;
-        }
-
-        .processing-sub {
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.4);
-        }
-
-        @media (max-width: 700px) {
-            .pay-grid {
-                grid-template-columns: 1fr;
-            }
+            gap: 6px;
         }
     </style>
 </head>
-
 <body>
-    <!-- Top bar -->
-    <div class="topbar">
-        <div class="brand">⚡ Zentrix Pay</div>
-        <div class="secure-tag"><i class="fas fa-lock"></i> 256-bit SSL Secured</div>
-    </div>
 
-    <!-- Processing Overlay -->
-    <div class="processing-overlay" id="processingOverlay">
-        <div class="spinner"></div>
-        <div class="processing-text">Processing Payment...</div>
-        <div class="processing-sub">Please don't close this window</div>
-    </div>
+    <div class="payment-card">
+        <div class="icon-container">
+            <i class="fas fa-credit-card"></i>
+        </div>
+        
+        <h1>Join Battle</h1>
+        <p class="subtitle">Complete your payment to enter the arena</p>
 
-    <div class="pay-grid">
-
-        <!-- ── Order Summary ── -->
-        <div class="order-card">
-            <h2>Order Summary</h2>
-
-            <div class="event-preview">
-                <img th:src="${event.imageUrl}" alt="event"
-                    onerror="this.src='https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=200'">
-                <div class="event-preview-info">
-                    <h3 th:text="${event.title}">Event Title</h3>
-                    <p><i class="fas fa-calendar-alt" style="color:#f84464;"></i>
-                        <span
-                            th:text="${event.dateTime != null ? #temporals.format(event.dateTime, 'MMM dd, yyyy · hh:mm a') : 'TBA'}">Date</span>
-                    </p>
-                    <p style="margin-top:4px;"><i class="fas fa-map-marker-alt" style="color:#f84464;"></i>
-                        <span th:text="${event.venue}">Venue</span>
-                    </p>
-                </div>
+        <div class="battle-summary">
+            <div class="title" th:text="${battle.title}">Battle Title</div>
+            
+            <div class="summary-row">
+                <span>Room Code</span>
+                <span th:text="${battle.roomCode}" style="font-weight:600;">ABC123</span>
             </div>
-
-            <div class="order-line">
-                <span class="lbl">Event</span>
-                <span class="val" th:text="${event.title}">Event Title</span>
+            <div class="summary-row">
+                <span>Mode</span>
+                <span th:text="${battle.mode}">ONLINE</span>
             </div>
             
-            <div class="order-line" th:if="${session.regTier != null and !session.regTier.isBlank()}">
-                <span class="lbl">Category</span>
-                <span class="val" th:text="${session.regTier}">General</span>
-            </div>
-
-            <div class="order-line">
-                <span class="lbl">Quantity</span>
-                <span class="val" th:text="${quantity != null ? quantity : 1}">1</span>
-            </div>
-
-            <div class="order-line">
-                <span class="lbl">Base Price (Per Ticket)</span>
-                <span class="val" th:text="${basePrice != null ? basePrice : (event.price != null ? #strings.replace(event.price, '$', '₹') : '₹0')}">₹1500</span>
-            </div>
-            <div class="order-line" th:if="${isDiscounted}">
-                <span class="lbl">Coin Reward Discount (50%)</span>
-                <span class="val" style="color:#10b981;">- 50%</span>
-            </div>
-            <div class="order-line">
-                <span class="lbl">Platform Fee</span>
-                <span class="val" style="color:#10b981;">FREE</span>
-            </div>
-            <div class="order-line">
-                <span class="lbl">Registering as</span>
-                <span class="val" th:text="${user.username}">username</span>
-            </div>
-
-            <div class="total-line">
-                <div class="total-lbl">Total</div>
-                <div class="total-val" th:text="${finalPrice != null ? finalPrice : event.price}">₹1500</div>
+            <div class="summary-row">
+                <span>Entry Fee</span>
+                <span th:text="'₹' + ${battle.entryFee}">₹50.00</span>
             </div>
         </div>
 
-        <!-- ── Payment Card ── -->
-        <div class="pay-card">
-            <h2>💳 Complete Payment</h2>
+        <form th:action="@{/battles/{id}/process-payment(id=${battle.id})}" method="POST">
+            <button type="submit" class="btn-pay">
+                Pay ₹<span th:text="${battle.entryFee}">50.00</span> &amp; Join
+            </button>
+        </form>
+        
+        <a th:href="@{/dashboard}" style="text-decoration: none;">
+            <button class="btn-cancel">Cancel &amp; Return</button>
+        </a>
 
-            <!-- Method Tabs -->
-            <div class="pay-methods">
-                <div class="method-btn active" id="btnCard" onclick="setMethod('card')">
-                    <i class="fas fa-credit-card"></i> Card
-                </div>
-                <div class="method-btn" id="btnUpi" onclick="setMethod('upi')">
-                    <i class="fas fa-qrcode"></i> UPI
-                </div>
-                <div class="method-btn" id="btnWallet" onclick="setMethod('wallet')">
-                    <i class="fas fa-wallet"></i> Wallet
-                </div>
-            </div>
+        <div class="secure-badge">
+            <i class="fas fa-lock"></i> Mock Payment Gateway for Demonstration
+        </div>
+    </div>
 
-            <!-- Card Method -->
-            <div id="cardSection">
-                <!-- Visual Card -->
-                <div class="card-visual">
-                    <div class="zentrix-logo-card">Z</div>
-                    <div class="card-chip"></div>
-                    <div class="card-number-display" id="cardNumDisplay">•••• •••• •••• ••••</div>
-                    <div class="card-footer-row">
-                        <div>
-                            <div class="card-holder" id="cardHolderDisplay">YOUR NAME</div>
-                        </div>
-                        <div class="card-expiry" id="cardExpiryDisplay">MM/YY</div>
-                    </div>
-                </div>
-
-                <form th:action="@{'/events/' + ${event.id} + '/payment/confirm'}" method="POST" id="paymentForm"
-                    onsubmit="processPayment(event)">
-
-                    <div class="field-grp">
-                        <label>Card Number</label>
-                        <input class="pay-input" type="text" name="cardNumber" id="cardNumber"
-                            placeholder="1234 5678 9012 3456" maxlength="19" oninput="formatCard(this)"
-                            onkeyup="updateCardDisplay()">
-                    </div>
-                    <div class="field-grp">
-                        <label>Cardholder Name</label>
-                        <input class="pay-input" type="text" name="cardName" id="cardName" placeholder="As on card"
-                            oninput="updateCardDisplay()">
-                    </div>
-                    <div class="two-col">
-                        <div class="field-grp">
-                            <label>Expiry Date</label>
-                            <input class="pay-input" type="text" placeholder="MM/YY" maxlength="5"
-                                oninput="formatExpiry(this)" onkeyup="updateCardDisplay()">
-                        </div>
-                        <div class="field-grp">
-                            <label>CVV</label>
-                            <input class="pay-input" type="password" placeholder="•••" maxlength="3">
-                        </div>
-                    </div>
-
-                    <button type="submit" class="btn-pay">
-                        <i class="fas fa-lock"></i>
-                        Pay <span th:text="${finalPrice != null ? finalPrice : (event.price != null ? #strings.replace(event.price, '$', '₹') : '₹0')}">₹1500</span> Securely
-                    </button>
-                </form>
-            </div>
-
-            <!-- UPI Section -->
-            <div class="upi-section" id="upiSection">
-                <div class="upi-qr">
-                    <!-- QR Pattern (simulated) -->
-                    <svg width="136" height="136" viewBox="0 0 136 136">
-                        <rect width="136" height="136" fill="white" />
-                        <rect x="10" y="10" width="50" height="50" fill="black" />
-                        <rect x="15" y="15" width="40" height="40" fill="white" />
-                        <rect x="20" y="20" width="30" height="30" fill="black" />
-                        <rect x="76" y="10" width="50" height="50" fill="black" />
-                        <rect x="81" y="15" width="40" height="40" fill="white" />
-                        <rect x="86" y="20" width="30" height="30" fill="black" />
-                        <rect x="10" y="76" width="50" height="50" fill="black" />
-                        <rect x="15" y="81" width="40" height="40" fill="white" />
-                        <rect x="20" y="86" width="30" height="30" fill="black" />
-                        <!-- Data dots -->
-                        <rect x="76" y="76" width="8" height="8" fill="black" />
-                        <rect x="88" y="76" width="8" height="8" fill="black" />
-                        <rect x="100" y="76" width="8" height="8" fill="black" />
-                        <rect x="112" y="76" width="8" height="8" fill="black" />
-                        <rect x="76" y="88" width="8" height="8" fill="black" />
-                        <rect x="100" y="88" width="8" height="8" fill="black" />
-                        <rect x="76" y="100" width="8" height="8" fill="black" />
-                        <rect x="88" y="100" width="8" height="8" fill="black" />
-                        <rect x="112" y="100" width="8" height="8" fill="black" />
-                        <rect x="76" y="112" width="8" height="8" fill="black" />
-                        <rect x="100" y="112" width="8" height="8" fill="black" />
-                    </svg>
-                </div>
-                <p style="color:rgba(255,255,255,0.5); font-size:13px; margin-bottom:6px;">Scan with any UPI app</p>
-                <p style="font-weight:700; color:#f84464; font-size:14px;">zentrix@upi</p>
-
-                <form th:action="@{'/events/' + ${event.id} + '/payment/confirm'}" method="POST"
-                    style="margin-top:20px;" onsubmit="processPayment(event)">
-                    <button type="submit" class="btn-pay">
-                        <i class="fas fa-check-circle"></i> I've Paid via UPI
-                    </button>
-                </form>
-            </div>
-
-            <!-- Wallet Section -->
-            <div id="walletSection" style="display:none; text-align:center; padding:20px 0;">
-                <i class="fas fa-wallet" style="font-size:40px; color:#f84464; margin-bottom:14px; display:block;"></i>
-                <p style="color:rgba(255,255,255,0.5); margin-bottom:20px;">Pay using Zentrix Wallet balance</p>
-                <div
-                    style="background:rgba(248,68,100,0.1); border:1px solid rgba(248,68,100,0.2); border-radius:12px; padding:16px; margin-bottom:20px;">
-                    <div style="font-size:12px; color:rgba(255,255,255,0.4);">Wallet Balance</div>
-                    <div style="font-size:2rem; font-weight:900; color:#10b981;">₹2,500</div>
-                </div>
-                <form th:action="@{'/events/' + ${event.id} + '/payment/confirm'}" method="POST"
-                    onsubmit="processPayment(event)">
-                    <button type="submit" class="btn-pay">
-                        <i class="fas fa-wallet"></i> Pay from Wallet
-                    </button>
-                </form>
-            </div>
-
-            <div class="secure-note">
-                <i class="fas fa-shield-alt"></i> Payment 100% secure · Powered by Zentrix Pay
-            </div>
-        </div><!-- /pay-card -->
-
-    </div><!-- /pay-grid -->
-
-    <script>
-        // ── Payment Method Toggle ──
-        function setMethod(method) {
-            document.getElementById('cardSection').style.display = method === 'card' ? '' : 'none';
-            document.getElementById('upiSection').className = method === 'upi' ? 'upi-section visible' : 'upi-section';
-            document.getElementById('walletSection').style.display = method === 'wallet' ? '' : 'none';
-
-            ['card', 'upi', 'wallet'].forEach(m => {
-                const btn = document.getElementById('btn' + m.charAt(0).toUpperCase() + m.slice(1));
-                btn.className = 'method-btn' + (m === method ? ' active' : '');
-            });
-        }
-
-        // ── Card Number Format ──
-        function formatCard(input) {
-            let v = input.value.replace(/\D/g, '').slice(0, 16);
-            input.value = v.replace(/(.{4})/g, '$1 ').trim();
-        }
-
-        function formatExpiry(input) {
-            let v = input.value.replace(/\D/g, '').slice(0, 4);
-            if (v.length >= 2) v = v.slice(0, 2) + '/' + v.slice(2);
-            input.value = v;
-        }
-
-        // ── Live Card Display ──
-        function updateCardDisplay() {
-            const num = document.getElementById('cardNumber').value || '';
-            const name = document.getElementById('cardName').value || '';
-            const exp = document.querySelector('.pay-input[placeholder="MM/YY"]')?.value || '';
-
-            let displayNum = num.replace(/\s/g, '');
-            let masked = '';
-            for (let i = 0; i < 16; i++) {
-                if (i > 0 && i % 4 === 0) masked += ' ';
-                masked += displayNum[i] || '•';
-            }
-
-            document.getElementById('cardNumDisplay').textContent = masked;
-            document.getElementById('cardHolderDisplay').textContent = name.toUpperCase() || 'YOUR NAME';
-            document.getElementById('cardExpiryDisplay').textContent = exp || 'MM/YY';
-        }
-
-        // ── Processing Animation ──
-        function processPayment(e) {
-            e.preventDefault();
-            document.getElementById('processingOverlay').classList.add('show');
-            // Submit form after animation
-            setTimeout(() => {
-                e.target.submit();
-            }, 2000);
-        }
-    </script>
 </body>
-
 </html>

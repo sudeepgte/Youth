@@ -1036,9 +1036,13 @@
             onerror="this.src='https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1400'">
         <div class="hero-overlay"></div>
 
+
         <div class="hero-nav">
             <a href="${pageContext.request.contextPath}/events" class="btn-back"><i class="fas fa-arrow-left"></i> Back to Events</a>
         </div>
+
+
+
 
         <div class="hero-content">
             <div class="hero-cat">
@@ -1136,6 +1140,16 @@
                 <div class="about-text" th:text="${event.description}">Description...</div>
             </div>
 
+            <div class="about-section" th:if="${event.enableSecretRewards}" style="margin-top:20px; background: rgba(255, 215, 0, 0.08); border: 1px solid rgba(255, 215, 0, 0.3); border-radius: 16px; padding: 20px;">
+                <h2 style="color: #d97706; margin-bottom:10px;"><i class="fas fa-gift"></i> Secret Reward Available</h2>
+                <p style="color: #4b5563; font-size: 14px; margin-bottom: 15px;">Register and attend this event to unlock an exclusive reward from our official partners.</p>
+                <div style="background: rgba(0,0,0,0.05); padding: 12px 16px; border-radius: 12px; display:inline-block;">
+                    <span style="color: #6b7280; font-size: 13px; font-weight: 600; text-transform: uppercase;">Reward Status</span>
+                    <div th:if="${!isRegistered}" style="color: #374151; font-size: 15px; font-weight: 700; margin-top: 4px;"><i class="fas fa-lock" style="color:#ef4444;"></i> Locked</div>
+                    <div th:if="${isRegistered and not #lists.isEmpty(userRegs)}" style="color: #374151; font-size: 15px; font-weight: 700; margin-top: 4px;"><i class="fas fa-ticket-alt" style="color:#10b981;"></i> <a th:href="@{'/events/ticket/' + ${userRegs[0].ticketId}}" style="color:#10b981; text-decoration:none;">Check Ticket to Reveal</a></div>
+                </div>
+            </div>
+
             <!-- BMOS Seat Map -->
             <div th:if="${event.totalRows > 0}" class="seat-map-container" id="seatMapSection">
                 <div class="section-label" style="text-align:left; margin-bottom: 20px;">
@@ -1177,7 +1191,7 @@
                             th:if="${seat.rowLabel == T(java.lang.Character).toString(65 + rowLabel)}">
                             <div class="seat"
                                 th:classappend="${seat.status == 'BOOKED' ? 'booked' : (seat.status == 'HOLD' ? 'hold' : 'available')} + ' ' + ${#strings.toLowerCase(seat.seatType)}"
-                                th:attr="data-id=${seat.id}, data-price=${seat.price}, data-label=${seat.seatIdentifier}"
+                                th:attr="data-id=${seat.id}, data-price=${seat.price}, data-label=${seat.seatIdentifier}, data-tier=${seat.seatType}"
                                 onclick="toggleSeatSelection(this)"
                                 th:title="${seat.seatIdentifier} + ' - ₹' + ${seat.price} + ' (' + ${seat.seatType} + ')'"
                                 th:text="${seat.seatNumber}">
@@ -1394,14 +1408,14 @@
                 </div>
 
                 <div
-                    th:if="${user != null and !isAdmin and (spotsLeft == null or spotsLeft == -1 or spotsLeft > 0) and (event.entryFeeType != 'Paid' and (event.price == null or event.price == 'Free' or event.price == '0'))}">
+                    th:if="${user != null and !isAdmin and (spotsLeft == null or spotsLeft == -1 or spotsLeft > 0) and (event.totalRows == null or event.totalRows == 0) and (event.entryFeeType != 'Paid' and (event.price == null or event.price == 'Free' or event.price == '0'))}">
                     <button type="button" class="btn-register" onclick="openRegModal('free')">
                         <i class="fas fa-ticket-alt"></i> <span th:text="${isRegistered ? 'Book More Tickets' : 'Register for Free'}">Register for Free</span>
                     </button>
                 </div>
 
                 <div
-                    th:if="${user != null and !isAdmin and (spotsLeft == null or spotsLeft == -1 or spotsLeft > 0) and (event.entryFeeType == 'Paid' or (event.price != null and event.price != 'Free' and event.price != '0'))}">
+                    th:if="${user != null and !isAdmin and (spotsLeft == null or spotsLeft == -1 or spotsLeft > 0) and (event.totalRows == null or event.totalRows == 0) and (event.entryFeeType == 'Paid' or (event.price != null and event.price != 'Free' and event.price != '0'))}">
                     <button type="button" class="btn-register" onclick="openRegModal('paid')">
                         <i class="fas fa-credit-card"></i> <span th:text="${isRegistered ? 'Book More Tickets' : 'Pay &amp; Register'}">Pay &amp; Register</span>
                     </button>
@@ -1450,7 +1464,7 @@
             <!-- Registration Form -->
             <form th:action="@{'/events/' + ${event.id} + '/register'}" method="POST" id="regForm">
 
-                <div th:if="${!#lists.isEmpty(event.seatTiers)}" class="mfield">
+                <div th:if="${!#lists.isEmpty(event.seatTiers) and event.totalRows == 0}" class="mfield">
                     <label>Select Seat Category <span style="color:#f84464;">*</span></label>
                     <div class="input-wrap">
                         <i class="fas fa-chair"></i>
@@ -1462,6 +1476,13 @@
                                 th:data-available="${tier.capacity - tier.registeredCount}">
                             </option>
                         </select>
+                    </div>
+                </div>
+
+                <div th:if="${event.totalRows > 0}" id="bookingSummary" style="margin-bottom: 20px; padding: 15px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff;">
+                    <h4 style="font-size: 1.1rem; color: #f84464; margin-bottom: 10px; font-weight: 600;"><i class="fas fa-receipt"></i> Booking Summary</h4>
+                    <div id="bookingSummaryContent" style="font-size: 0.95rem; line-height: 1.6;">
+                        <!-- Summary injected via JS -->
                     </div>
                 </div>
 
@@ -1584,6 +1605,7 @@
             const seatId = seatEl.getAttribute('data-id');
             const price = parseFloat(seatEl.getAttribute('data-price'));
             const label = seatEl.getAttribute('data-label');
+            const tier = seatEl.getAttribute('data-tier');
 
             if (seatEl.classList.contains('selected')) {
                 // Deselect
@@ -1593,7 +1615,7 @@
             } else {
                 // Select
                 seatEl.classList.add('selected');
-                selectedSeats.push({ id: seatId, price: price, label: label });
+                selectedSeats.push({ id: seatId, price: price, label: label, tier: tier });
                 totalPrice += price;
             }
 
@@ -1617,7 +1639,20 @@
         }
 
         function showRegModalWithSeats() {
-            // First hit the backend to HOLD these seats
+            // Immediately open the modal so it feels fast
+            openRegModal('paid');
+            
+            // Show a loading spinner in the booking summary content
+            const summaryDiv = document.getElementById('bookingSummaryContent');
+            if (summaryDiv) {
+                summaryDiv.innerHTML = '<div style="text-align:center; padding: 20px;"><i class="fas fa-spinner fa-spin fa-2x" style="color:#10b981;"></i><p style="margin-top:10px; color:rgba(255,255,255,0.7);">Reserving your seats...</p></div>';
+            }
+            
+            // Disable the Pay Now button while processing
+            const payBtn = document.getElementById('modalSubmitBtn');
+            if (payBtn) payBtn.disabled = true;
+
+            // Now hit the backend to HOLD these seats
             const eventId = "[[${event.id}]]";
             const seatIds = selectedSeats.map(s => s.id);
 
@@ -1629,13 +1664,15 @@
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
-                        openRegModal('paid');
                         // Add seats info to modal
                         const modalNote = document.querySelector('.modal-note');
                         if (modalNote) {
-                            modalNote.innerHTML = `<i class="fas fa-clock"></i> Seats held for 5 minutes. <br> Selected: ${selectedSeats.map(s => s.label).join(', ')}`;
+                            modalNote.innerHTML = `<i class="fas fa-clock"></i> Seats held for 5 minutes.`;
                         }
-                        // Update modal price
+                        
+                        // Update modal price and booking summary
+                        updateBookingSummaryUI();
+                        
                         const disp = document.getElementById('modalPriceDisplay');
                         if (disp) disp.innerText = '₹' + totalPrice.toFixed(2);
 
@@ -1651,10 +1688,17 @@
                             input.value = id;
                             form.appendChild(input);
                         });
+                        
+                        // Re-enable the Pay Now button
+                        if (payBtn) payBtn.disabled = false;
                     } else {
                         alert('Error: ' + data.message);
                         location.reload(); // Refresh to see updated availability
                     }
+                })
+                .catch(err => {
+                    alert('Network error. Please try again.');
+                    closeRegModal();
                 });
         }
 
@@ -1680,12 +1724,60 @@
             document.getElementById('regModalOverlay').classList.remove('open');
         }
 
+        function updateBookingSummaryUI() {
+            const summaryDiv = document.getElementById('bookingSummaryContent');
+            if (!summaryDiv) return;
+            
+            if (!selectedSeats || selectedSeats.length === 0) {
+                summaryDiv.innerHTML = '<span style="color:rgba(255,255,255,0.5);">No seats selected.</span>';
+                return;
+            }
+            
+            // Group seats by tier
+            const grouped = {};
+            selectedSeats.forEach(seat => {
+                const tier = seat.tier || 'REGULAR';
+                if (!grouped[tier]) grouped[tier] = { seats: [] };
+                grouped[tier].seats.push({ label: seat.label, price: seat.price });
+            });
+            
+            let html = '<div style="margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px dashed rgba(255,255,255,0.2);">';
+            
+            for (const [tier, data] of Object.entries(grouped)) {
+                html += `
+                    <div style="margin-bottom: 10px;">
+                        <span style="font-weight: 700; color: #fff;">${tier} Seats:</span><br>
+                `;
+                data.seats.forEach(s => {
+                    html += `<span style="color: rgba(255,255,255,0.7); display: block; padding-left: 10px;">&bull; ${s.label} (₹${s.price})</span>`;
+                });
+                html += `</div>`;
+            }
+            
+            html += `
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 1.1rem; font-weight: 700; color: #10b981;">
+                    <span>Amount Paid:</span>
+                    <span>₹${totalPrice.toFixed(2)}</span>
+                </div>
+            `;
+            
+            summaryDiv.innerHTML = html;
+        }
+
         function updateModalPrice() {
             const select = document.getElementById('tierSelect');
             const qtySelect = document.getElementById('quantitySelect');
             const display = document.getElementById('modalPriceDisplay');
             if (!display) return;
             
+            // If seat layout is active, display calculated price from layout
+            if (selectedSeats && selectedSeats.length > 0) {
+                display.innerText = '₹' + totalPrice.toFixed(2);
+                updateBookingSummaryUI();
+                return;
+            }
+
             let quantity = 1;
             if (qtySelect) {
                 quantity = parseInt(qtySelect.value) || 1;

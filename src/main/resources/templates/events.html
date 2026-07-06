@@ -10,8 +10,17 @@
 
 <body class="events-page">
     <!-- Navbar -->
+    <!-- Mobile Sidebar Overlay -->
+    <div class="mobile-menu-overlay" onclick="document.querySelector('.sidebar').classList.remove('mobile-open'); this.classList.remove('active');"></div>
+
     <nav class="dashboard-navbar">
         <a class="dashboard-logo" href="${pageContext.request.contextPath}/home">Zentrix</a>
+
+        <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('mobile-open'); document.querySelector('.mobile-menu-overlay').classList.toggle('active');" style="display:none; background:none; border:none; color:var(--text-primary); font-size:20px; cursor:pointer; margin-right:15px; margin-left: 5px; padding: 0;">
+            <i class="fas fa-bars"></i>
+        </button>
+        <a class="dashboard-logo" href="/home">Zentrix</a>
+
         <div class="dashboard-spacer"></div>
         <div class="dashboard-nav-links">
             <a href="${pageContext.request.contextPath}/dashboard"><i class="fas fa-home"></i></a>
@@ -35,6 +44,7 @@
     <div class="dashboard-container">
         <!-- Sidebar Navigation -->
         <aside class="sidebar">
+
             <a href="${pageContext.request.contextPath}/dashboard" class="sidebar-link"><i class="fas fa-home"></i> Home</a>
             <a href="${pageContext.request.contextPath}/explore" class="sidebar-link"><i class="fas fa-compass"></i> Explore</a>
             <a href="${pageContext.request.contextPath}/events" class="sidebar-link active"><i class="fas fa-calendar-alt"></i> Events</a>
@@ -45,6 +55,17 @@
             <a href="${pageContext.request.contextPath}/profile" class="sidebar-link"><i class="fas fa-user"></i> Profile</a>
             <a href="${pageContext.request.contextPath}/games" class="sidebar-link"><i class="fas fa-gamepad"></i> Games</a>
             <a href="${pageContext.request.contextPath}/music" class="sidebar-link"><i class="fas fa-music"></i> Music</a>
+
+            <a href="/dashboard" class="sidebar-link"><i class="fas fa-home"></i> Home</a>
+            <a href="/explore" class="sidebar-link"><i class="fas fa-compass"></i> Explore</a>
+            <a href="/events" class="sidebar-link active"><i class="fas fa-calendar-alt"></i> Events</a>
+            <a href="/achievements" class="sidebar-link"><i class="fas fa-trophy"></i> Achievements</a>
+            <a href="/messages" class="sidebar-link"><i class="fas fa-comment-dots"></i> Chat</a>
+            <a href="/reels" class="sidebar-link"><i class="fas fa-film"></i> Reels</a>
+            <a href="/profile" class="sidebar-link"><i class="fas fa-user"></i> Profile</a>
+            <a href="/games" class="sidebar-link"><i class="fas fa-gamepad"></i> Games</a>
+            <a href="/music" class="sidebar-link"><i class="fas fa-music"></i> Music</a>
+
             <a href="javascript:void(0)" class="sidebar-link" onclick="openCreateModal()"><i class="fas fa-plus-circle" style="color: var(--accent);"></i> Create Post</a>
             <a href="${pageContext.request.contextPath}/logout" class="sidebar-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </aside>
@@ -225,7 +246,8 @@
                                 <i class="fas fa-map-marker-alt"></i>
                                 <span th:text="${event.venue}">Venue Name</span>
                             </div>
-                            <div class="event-card-footer" style="justify-content: flex-end;">
+                            <div class="event-card-footer">
+                                <span class="attendees"><i class="fas fa-users"></i> 24+ Going</span>
                                 <span class="btn btn-primary" style="padding: 8px 14px; font-size: 13px;"><i class="fas fa-ticket"></i> View</span>
                             </div>
                         </div>

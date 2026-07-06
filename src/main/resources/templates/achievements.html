@@ -39,6 +39,7 @@
             padding: 32px 42px;
             max-width: 1100px;
             margin: 0 auto;
+            min-width: 0;
         }
 
         .content-area p {
@@ -487,13 +488,36 @@
             background: rgba(255, 255, 255, 0.05);
             border-color: rgba(255, 255, 255, 0.1);
         }
+
+        /* ── Responsive ── */
+        @media (max-width: 768px) {
+            .dashboard-container { grid-template-columns: 1fr; padding: 0 10px; gap: 15px; }
+            .content-area { padding: 15px 10px; }
+            .lb-header h1 { font-size: 1.4rem; }
+            .my-stats-card, .mystery-card { flex-direction: column; text-align: center; gap: 12px; }
+            .xp-pill { margin-left: 0; }
+            .achievements-grid { grid-template-columns: 1fr; }
+            /* Make table scrollable on mobile */
+            .lb-table { display: block; overflow-x: auto; white-space: nowrap; }
+            .badges-row { justify-content: center; }
+        }
     </style>
 </head>
 
 <body>
     <!-- Navbar -->
+    <!-- Mobile Sidebar Overlay -->
+    <div class="mobile-menu-overlay" onclick="document.querySelector('.sidebar').classList.remove('mobile-open'); this.classList.remove('active');"></div>
+
     <nav class="dashboard-navbar">
+
         <a class="dashboard-logo" href="${pageContext.request.contextPath}/home">Zentrix</a>
+
+        <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('mobile-open'); document.querySelector('.mobile-menu-overlay').classList.toggle('active');" style="display:none; background:none; border:none; color:var(--text-primary); font-size:20px; cursor:pointer; margin-right:15px; margin-left: 5px; padding: 0;">
+            <i class="fas fa-bars"></i>
+        </button>
+        <a class="dashboard-logo" href="/home">Zentrix</a>
+
         <div class="dashboard-spacer"></div>
         <div class="dashboard-nav-links">
             <a href="${pageContext.request.contextPath}/dashboard"><i class="fas fa-home"></i></a>
