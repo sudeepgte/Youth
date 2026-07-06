@@ -178,6 +178,36 @@
                 transform: translate(-50%, -20px);
             }
         }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .games-grid {
+                grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+                padding: 20px 10px;
+                gap: 16px;
+            }
+
+            .about-hero h1 {
+                font-size: 32px !important;
+            }
+
+            .join-room-container {
+                flex-direction: column;
+            }
+
+            .join-room-container button {
+                width: 100%;
+                flex: none !important;
+            }
+
+            .modal-selection-grid {
+                grid-template-columns: 1fr !important;
+            }
+            
+            .game-actions {
+                flex-direction: column;
+            }
+        }
     </style>
 
     <div th:replace="~{fragments/template :: navbar('games')}"></div>
@@ -422,7 +452,7 @@
                 <h2 style="font-size: 24px; font-weight: 800; margin-bottom: 5px;">Have a Room Code?</h2>
                 <p style="opacity: 0.6; font-size: 14px;">Enter the 6-character code to join your friend's game.</p>
             </div>
-            <div style="display: flex; gap: 12px; width: 100%; max-width: 400px;">
+            <div class="join-room-container" style="display: flex; gap: 12px; width: 100%; max-width: 400px;">
                 <input type="text" id="join-room-code" placeholder="ENTER CODE" maxlength="6"
                     style="flex: 1; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px 20px; color: #fff; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; text-align: center;">
                 <button onclick="handleJoinWithCode()" class="btn-game btn-play"
@@ -448,7 +478,7 @@
 
                 <!-- Main Lobby Selection -->
                 <div id="lobby-selection-state">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                    <div class="modal-selection-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
                         <button onclick="showCreateSettings()" class="btn-game btn-play"
                             style="flex-direction: column; height: 120px; gap: 10px;">
                             <i class="fas fa-plus-circle" style="font-size: 20px;"></i>

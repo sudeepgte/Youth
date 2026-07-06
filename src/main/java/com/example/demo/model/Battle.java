@@ -44,7 +44,26 @@ public class Battle {
     @JoinColumn(name = "winner_id")
     private User winner;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "winner2_id")
+    private User winner2;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "winner3_id")
+    private User winner3;
+
     private Integer winnerXp = 500;
+
+    private String mode = "ONLINE"; // ONLINE or OFFLINE
+    private String venue;
+    private String eventDate;
+    private String eventTime;
+    private Double entryFee = 0.0;
+    private Double prize1 = 0.0;
+    private Double prize2 = 0.0;
+    private Double prize3 = 0.0;
+    private Double judgeWeight = 70.0;
+    private Double audienceWeight = 30.0;
 
     @JsonIgnore
     @OneToMany(mappedBy = "battle", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -122,4 +141,40 @@ public class Battle {
 
     public List<BattleVote> getVotes() { return votes; }
     public void setVotes(List<BattleVote> votes) { this.votes = votes; }
+
+    public String getMode() { return mode; }
+    public void setMode(String mode) { this.mode = mode; }
+
+    public String getVenue() { return venue; }
+    public void setVenue(String venue) { this.venue = venue; }
+
+    public String getEventDate() { return eventDate; }
+    public void setEventDate(String eventDate) { this.eventDate = eventDate; }
+
+    public String getEventTime() { return eventTime; }
+    public void setEventTime(String eventTime) { this.eventTime = eventTime; }
+
+    public Double getEntryFee() { return entryFee; }
+    public void setEntryFee(Double entryFee) { this.entryFee = entryFee; }
+
+    public Double getJudgeWeight() { return judgeWeight; }
+    public void setJudgeWeight(Double judgeWeight) { this.judgeWeight = judgeWeight; }
+
+    public Double getAudienceWeight() { return audienceWeight; }
+    public void setAudienceWeight(Double audienceWeight) { this.audienceWeight = audienceWeight; }
+
+    public User getWinner2() { return winner2; }
+    public void setWinner2(User winner2) { this.winner2 = winner2; }
+
+    public User getWinner3() { return winner3; }
+    public void setWinner3(User winner3) { this.winner3 = winner3; }
+
+    public Double getPrize1() { return prize1; }
+    public void setPrize1(Double prize1) { this.prize1 = prize1; }
+
+    public Double getPrize2() { return prize2; }
+    public void setPrize2(Double prize2) { this.prize2 = prize2; }
+
+    public Double getPrize3() { return prize3; }
+    public void setPrize3(Double prize3) { this.prize3 = prize3; }
 }

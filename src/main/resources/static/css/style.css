@@ -36,6 +36,10 @@
     box-sizing: border-box;
 }
 
+html {
+    overflow-x: hidden;
+}
+
 body {
     font-family: 'Outfit', sans-serif;
     background: var(--bg-gradient) !important;
@@ -1460,6 +1464,67 @@ input[type="file"].form-input::file-selector-button:hover {
     }
 }
 
+@media (max-width: 768px) {
+    .dashboard-container {
+        grid-template-columns: 1fr;
+        padding: 0 10px;
+        gap: 15px;
+    }
+
+    .sidebar {
+        position: fixed !important;
+        top: 0;
+        left: -280px;
+        width: 260px;
+        height: 100vh !important;
+        background: var(--bg-color);
+        z-index: 1000;
+        transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 4px 0 25px rgba(0,0,0,0.5);
+        padding-top: calc(var(--dashboard-nav-height) + 20px) !important;
+        padding-left: 15px !important;
+        padding-right: 15px !important;
+        flex-direction: column !important;
+        overflow-y: auto !important;
+    }
+    .sidebar.mobile-open {
+        left: 0;
+    }
+    .mobile-menu-btn {
+        display: block !important;
+    }
+    .mobile-menu-overlay {
+        display: none;
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.6);
+        backdrop-filter: blur(4px);
+        z-index: 999;
+    }
+    .mobile-menu-overlay.active {
+        display: block;
+    }
+
+    .sidebar-link {
+        flex: 0 0 auto;
+        padding: 8px 14px !important;
+        border-radius: 20px !important;
+    }
+
+    .dashboard-navbar {
+        padding: 0 8px;
+        gap: 6px;
+    }
+
+    .dashboard-nav-links {
+        gap: 6px;
+    }
+    
+    .dashboard-logo {
+        font-size: 18px;
+    }
+}
+
 /* Sidebar */
 .sidebar {
     position: sticky;
@@ -1508,6 +1573,7 @@ input[type="file"].form-input::file-selector-button:hover {
     max-width: 600px;
     margin: 0 auto;
     width: 100%;
+    min-width: 0;
 }
 
 .post-card {
@@ -1795,8 +1861,17 @@ input[type="file"].form-input::file-selector-button:hover {
     padding: 20px 40px 0;
 }
 
+@media (max-width: 768px) {
+    .events-page .dashboard-container {
+        grid-template-columns: 1fr;
+        padding: 0 10px;
+        gap: 15px;
+    }
+}
+
 .events-page .content-main {
     width: 100%;
+    min-width: 0;
 }
 
 .events-page .badge {
@@ -2021,12 +2096,14 @@ input[type="file"].form-input::file-selector-button:hover {
         grid-template-columns: 1fr;
     }
 
-    .events-page .sidebar {
-        display: none;
-    }
-
     .events-page .events-hero {
         padding: 84px 20px 46px;
+    }
+}
+
+@media (max-width: 500px) {
+    .events-page .events-cards {
+        grid-template-columns: 1fr;
     }
 }
 
@@ -2426,6 +2503,10 @@ input[type="file"].form-input::file-selector-button:hover {
 
     .search-btn i {
         font-size: 15px;
+    }
+
+    .search-input {
+        min-width: 0;
     }
 
     .category-filter-pills {

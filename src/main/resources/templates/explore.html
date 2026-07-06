@@ -236,8 +236,13 @@
         @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
         @media (max-width: 640px) {
-            .explore-search-panel { flex-direction: column; }
-            .explore-search-field { min-width: 100%; }
+            .explore-search-panel { flex-direction: column; align-items: stretch; }
+            .explore-search-field { min-width: 100%; width: 100%; }
+            .explore-search-btn, .explore-clear-btn { width: 100%; justify-content: center; }
+            .people-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+            .fr-grid { grid-template-columns: 1fr; }
+            .person-card { padding: 20px 12px 16px; }
+            .explore-header h1 { font-size: 20px; }
         }
 
         /* ── Follow Requests Section ── */
@@ -303,7 +308,13 @@
 
 <body>
     <!-- Navbar -->
+    <!-- Mobile Sidebar Overlay -->
+    <div class="mobile-menu-overlay" onclick="document.querySelector('.sidebar').classList.remove('mobile-open'); this.classList.remove('active');"></div>
+
     <nav class="dashboard-navbar">
+        <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('mobile-open'); document.querySelector('.mobile-menu-overlay').classList.toggle('active');" style="display:none; background:none; border:none; color:var(--text-primary); font-size:20px; cursor:pointer; margin-right:15px; margin-left: 5px; padding: 0;">
+            <i class="fas fa-bars"></i>
+        </button>
         <a class="dashboard-logo" href="/home">Zentrix</a>
         <div class="dashboard-spacer"></div>
         <div class="dashboard-nav-links">
