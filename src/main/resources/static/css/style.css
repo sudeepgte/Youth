@@ -68,11 +68,11 @@ small,
 }
 
 /* Links: blue by default (except header buttons/nav links) */
-a:not(.btn):not(.nav-btn):not(.logo):not(.nav-links a):not(.top-links a) {
+a:not(.btn):not(.nav-btn):not(.logo):not(.nav-links a):not(.top-links a):not(.sidebar-link):not(.dropdown-item) {
     color: var(--primary);
 }
 
-a:not(.btn):not(.nav-btn):not(.logo):not(.nav-links a):not(.top-links a):hover {
+a:not(.btn):not(.nav-btn):not(.logo):not(.nav-links a):not(.top-links a):not(.sidebar-link):not(.dropdown-item):hover {
     color: var(--accent-hover);
 }
 
@@ -85,12 +85,13 @@ a:not(.btn):not(.nav-btn):not(.logo):not(.nav-links a):not(.top-links a):hover {
 }
 
 /* Force legacy inline dark styles into the new theme */
-[style*="color: white"],
-[style*="color:white"],
-[style*="color: #fff"],
-[style*="color:#fff"] {
+[style*="color: white"]:not(.hero *):not(.cinema-container *):not(.music-navbar *):not(.admin-header *):not(.admin-navbar *),
+[style*="color:white"]:not(.hero *):not(.cinema-container *):not(.music-navbar *):not(.admin-header *):not(.admin-navbar *),
+[style*="color: #fff"]:not(.hero *):not(.cinema-container *):not(.music-navbar *):not(.admin-header *):not(.admin-navbar *),
+[style*="color:#fff"]:not(.hero *):not(.cinema-container *):not(.music-navbar *):not(.admin-header *):not(.admin-navbar *) {
     color: var(--text-primary) !important;
 }
+
 
 [style*="background-color: #333"],
 [style*="background:#333"],
@@ -369,6 +370,87 @@ header .navbar .btn-primary {
     color: #FFFFFF !important;
     box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);
 }
+
+/* Home page specific navbar custom overrides */
+header .navbar.navbar-home {
+    background: transparent !important;
+    border-bottom: 1px solid transparent !important;
+    box-shadow: none !important;
+}
+
+header .navbar.navbar-home .logo,
+header .navbar.navbar-home .nav-links a {
+    color: #ffffff !important;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+
+header .navbar.navbar-home .nav-links a:hover {
+    color: var(--accent) !important;
+    text-shadow: 0 0 8px rgba(34, 211, 238, 0.6);
+}
+
+header .navbar.navbar-home .btn-outline {
+    border-color: rgba(255, 255, 255, 0.5) !important;
+    color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    backdrop-filter: blur(4px);
+}
+
+header .navbar.navbar-home .btn-outline:hover {
+    border-color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.2) !important;
+    transform: translateY(-2px);
+}
+
+header .navbar.navbar-home .btn-primary {
+    background: var(--gradient-1) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4) !important;
+}
+
+header .navbar.navbar-home .btn-primary:hover {
+    box-shadow: 0 6px 24px rgba(59, 130, 246, 0.6) !important;
+    transform: translateY(-2px);
+}
+
+/* Scrolled Home Page Navbar - transitions to sleek blurred white/glass */
+header .navbar.navbar-home.scrolled {
+    background: rgba(255, 255, 255, 0.85) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
+    box-shadow: 0 4px 30px rgba(15, 23, 42, 0.03) !important;
+}
+
+header .navbar.navbar-home.scrolled .logo,
+header .navbar.navbar-home.scrolled .nav-links a {
+    color: #000000 !important;
+    text-shadow: none !important;
+}
+
+header .navbar.navbar-home.scrolled .nav-links a {
+    background: transparent !important;
+}
+
+header .navbar.navbar-home.scrolled .nav-links a:hover,
+header .navbar.navbar-home.scrolled .nav-links a.active {
+    background: var(--gradient-1) !important;
+    color: #ffffff !important;
+    box-shadow: 0 8px 16px -4px rgba(59, 130, 246, 0.3) !important;
+}
+
+header .navbar.navbar-home.scrolled .btn-outline {
+    border-color: var(--primary) !important;
+    color: var(--primary) !important;
+    background: transparent !important;
+    backdrop-filter: none;
+}
+
+header .navbar.navbar-home.scrolled .btn-outline:hover {
+    background: rgba(59, 130, 246, 0.05) !important;
+    transform: translateY(-2px);
+}
+
 
 /* Hero Section */
 .hero {
@@ -1299,9 +1381,11 @@ input[type="file"].form-input::file-selector-button:hover {
     right: 0;
     height: var(--dashboard-nav-height);
     z-index: 1100;
-    background: rgba(255, 255, 255, 0.92);
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid var(--glass-border);
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 4px 30px rgba(15, 23, 42, 0.05);
     display: flex;
     align-items: center;
     gap: 18px;
@@ -1397,17 +1481,21 @@ input[type="file"].form-input::file-selector-button:hover {
 .sidebar-link {
     display: flex;
     align-items: center;
-    padding: 12px 20px;
+    padding: 14px 20px;
     color: var(--text-secondary);
-    border-radius: 8px;
-    font-weight: 500;
-    transition: all 0.3s;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
 }
 
 .sidebar-link:hover,
 .sidebar-link.active {
-    background: var(--card-bg);
-    color: var(--accent);
+    background: var(--gradient-1);
+    color: #ffffff;
+    box-shadow: 0 8px 20px -6px rgba(59, 130, 246, 0.4);
+    transform: translateX(4px);
 }
 
 .sidebar-link i {
@@ -1423,11 +1511,19 @@ input[type="file"].form-input::file-selector-button:hover {
 }
 
 .post-card {
-    background: var(--card-bg);
-    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(12px);
+    border-radius: 20px;
     border: 1px solid var(--glass-border);
     margin-bottom: 30px;
     overflow: hidden;
+    box-shadow: var(--shadow-premium);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.post-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-hover);
 }
 
 .post-header {
@@ -1507,11 +1603,19 @@ input[type="file"].form-input::file-selector-button:hover {
 }
 
 .widget-card {
-    background: var(--card-bg);
-    border-radius: 12px;
-    padding: 20px;
+    background: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(12px);
+    border-radius: 20px;
+    padding: 24px;
     border: 1px solid var(--glass-border);
-    margin-bottom: 20px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow-premium);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.widget-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-hover);
 }
 
 .widget-header {
