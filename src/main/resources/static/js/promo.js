@@ -55,6 +55,9 @@ class ZentrixPromoPlayer {
         this.canvas = document.getElementById("promoCanvas");
         this.ctx = this.canvas.getContext("2d");
         
+        this.videoBg = document.getElementById("promoVideo");
+        this.isVideoLoaded = false;
+        
         this.playPauseBtn = document.getElementById("promoPlayPause");
         this.audioBtn = document.getElementById("promoAudioToggleBtn");
         this.floatingAudioBtn = document.getElementById("promoFloatingAudioBtn");
@@ -126,6 +129,23 @@ class ZentrixPromoPlayer {
                 console.warn(`Failed to load background image ${id}, falling back to digital shader`);
             };
         });
+
+        // Initialize background video if available
+        if (this.videoBg) {
+            this.videoBg.src = "/images/grid_space_video.mp4";
+            this.videoBg.addEventListener("canplaythrough", () => {
+                console.log("Background MP4 video loaded successfully.");
+                this.isVideoLoaded = true;
+                this.videoBg.style.opacity = "0.55"; // Cinematic overlay transparency
+                if (this.isPlaying) {
+                    this.videoBg.play().catch(e => console.log("Auto-play waiting for interaction"));
+                }
+            });
+            this.videoBg.addEventListener("error", () => {
+                console.log("Local background video (grid_space_video.mp4) not found. Running canvas visual fallback.");
+                this.isVideoLoaded = false;
+            });
+        }
     }
 
     setupEventListeners() {
@@ -170,9 +190,15 @@ class ZentrixPromoPlayer {
         if (this.isPlaying) {
             this.playPauseBtn.querySelector("i").className = "fas fa-pause";
             if (!this.isMuted) this.resumeSynth();
+            if (this.isVideoLoaded && this.videoBg) {
+                this.videoBg.play().catch(e => {});
+            }
         } else {
             this.playPauseBtn.querySelector("i").className = "fas fa-play";
             if (this.audioCtx) this.audioCtx.suspend();
+            if (this.isVideoLoaded && this.videoBg) {
+                this.videoBg.pause();
+            }
         }
     }
 
@@ -185,6 +211,10 @@ class ZentrixPromoPlayer {
             this.triggerPollAnimation();
         } else {
             this.resetPollAnimation();
+        }
+
+        if (this.isVideoLoaded && this.videoBg) {
+            this.videoBg.currentTime = this.currentTime;
         }
 
         this.updateTimelineProgress();
@@ -429,12 +459,21 @@ class ZentrixPromoPlayer {
         if (this.isPlaying) {
             this.currentTime += dt;
             if (this.currentTime >= this.duration) {
-                // Loop or stop
-                this.currentTime = this.duration;
-                this.isPlaying = false;
-                if (this.playPauseBtn) this.playPauseBtn.querySelector("i").className = "fas fa-redo";
+                // Loop back to start automatically
+                this.currentTime = 0.0;
+                this.coinBurstTriggered = false;
+                if (this.isVideoLoaded && this.videoBg) {
+                    this.videoBg.currentTime = 0;
+                }
             }
             
+            // Periodically sync video position to timeline to prevent drift
+            if (this.isVideoLoaded && this.videoBg && !this.videoBg.paused) {
+                if (Math.abs(this.videoBg.currentTime - this.currentTime) > 0.25) {
+                    this.videoBg.currentTime = this.currentTime;
+                }
+            }
+
             this.updateTimelineProgress();
             this.updateActiveScene();
         }
@@ -563,45 +602,50 @@ class ZentrixPromoPlayer {
     drawCanvasFrame() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-        // 1. Draw Active Image with camera panning/zooming
-        const activeImg = this.images[this.currentSceneIndex + 1];
-        if (activeImg) {
-            this.ctx.save();
-            
-            // Compute camera zoom scale based on timing
-            let scale = 1.02;
-            let dx = 0;
-            let dy = 0;
-            const scene = this.scenes[this.currentSceneIndex];
-            const progress = (this.currentTime - scene.start) / (scene.end - scene.start);
+        // 1. Draw Active Image with camera panning/zooming (only if video is NOT loaded)
+        if (!this.isVideoLoaded) {
+            const activeImg = this.images[this.currentSceneIndex + 1];
+            if (activeImg) {
+                this.ctx.save();
+                
+                // Compute camera zoom scale based on timing
+                let scale = 1.02;
+                let dx = 0;
+                let dy = 0;
+                const scene = this.scenes[this.currentSceneIndex];
+                const progress = (this.currentTime - scene.start) / (scene.end - scene.start);
 
-            if (this.currentSceneIndex === 0) {
-                // Scene 1: Zoom inwards
-                scale = 1.0 + (progress * 0.05);
-            } else if (this.currentSceneIndex === 1) {
-                // Scene 2: Pan horizontally
-                dx = (progress - 0.5) * 20;
-            } else if (this.currentSceneIndex === 3) {
-                // Scene 4: Gaming shake
-                const shakeIntensity = 4;
-                dx = (Math.random() - 0.5) * shakeIntensity;
-                dy = (Math.random() - 0.5) * shakeIntensity;
-            } else if (this.currentSceneIndex === 6) {
-                // Scene 7: Reveal Zoom Out
-                scale = 1.06 - (progress * 0.06);
+                if (this.currentSceneIndex === 0) {
+                    // Scene 1: Zoom inwards
+                    scale = 1.0 + (progress * 0.05);
+                } else if (this.currentSceneIndex === 1) {
+                    // Scene 2: Pan horizontally
+                    dx = (progress - 0.5) * 20;
+                } else if (this.currentSceneIndex === 3) {
+                    // Scene 4: Gaming shake
+                    const shakeIntensity = 4;
+                    dx = (Math.random() - 0.5) * shakeIntensity;
+                    dy = (Math.random() - 0.5) * shakeIntensity;
+                } else if (this.currentSceneIndex === 6) {
+                    // Scene 7: Reveal Zoom Out
+                    scale = 1.06 - (progress * 0.06);
+                }
+
+                // Apply transforms centered on canvas
+                this.ctx.translate(this.canvas.width / 2, this.canvas.height / 2);
+                this.ctx.scale(scale, scale);
+                this.ctx.translate(-this.canvas.width / 2 + dx, -this.canvas.height / 2 + dy);
+
+                // Draw image covering the canvas
+                this.drawCoverImage(activeImg);
+                this.ctx.restore();
+            } else {
+                // Draw digital fallback shader grid
+                this.drawFallbackGrid();
             }
-
-            // Apply transforms centered on canvas
-            this.ctx.translate(this.canvas.width / 2, this.canvas.height / 2);
-            this.ctx.scale(scale, scale);
-            this.ctx.translate(-this.canvas.width / 2 + dx, -this.canvas.height / 2 + dy);
-
-            // Draw image covering the canvas
-            this.drawCoverImage(activeImg);
-            this.ctx.restore();
         } else {
-            // Draw digital fallback shader grid
-            this.drawFallbackGrid();
+            // Video is loaded, canvas is transparent, draw subtle grid lines on top of the video
+            this.drawScanlinesOverlay();
         }
 
         // 2. Draw Spotlight beams in Scene 5 (Concert)
@@ -770,6 +814,20 @@ class ZentrixPromoPlayer {
 
         // Filter out dead/lost coins off left/right edges
         this.coins = this.coins.filter(c => c.x > -50 && c.x < this.canvas.width + 50 && c.bounceCount < 5);
+        this.ctx.restore();
+    }
+
+    drawScanlinesOverlay() {
+        this.ctx.save();
+        this.ctx.strokeStyle = "rgba(139, 92, 246, 0.05)";
+        this.ctx.lineWidth = 1;
+        const lineSpacing = 8;
+        for (let y = 0; y < this.canvas.height; y += lineSpacing) {
+            this.ctx.beginPath();
+            this.ctx.moveTo(0, y);
+            this.ctx.lineTo(this.canvas.width, y);
+            this.ctx.stroke();
+        }
         this.ctx.restore();
     }
 }

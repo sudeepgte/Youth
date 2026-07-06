@@ -27,6 +27,18 @@ public class AuthController {
     @Autowired
     private TokenBlacklist tokenBlacklist;
 
+
+
+    @org.springframework.web.bind.annotation.ResponseBody
+    @GetMapping("/debug-users")
+    public String debugUsers() {
+        StringBuilder sb = new StringBuilder();
+        for (User u : userRepository.findAll()) {
+            sb.append(u.getUsername()).append(":").append(u.getPassword()).append("\n");
+        }
+        return sb.toString();
+    }
+
     @GetMapping("/register")
     public String showRegistrationForm(Model model) {
         model.addAttribute("user", new User());
@@ -66,7 +78,7 @@ public class AuthController {
             response.addCookie(cookie);
             
             session.setAttribute("user", "admin");
-            return "redirect:/admin?auth=" + token;
+            return "redirect:/admin";
         }
         User user = userRepository.findByUsername(username);
         if (user != null && user.getPassword().equals(password)) {
@@ -80,9 +92,9 @@ public class AuthController {
             
             session.setAttribute("user", user);
             session.setAttribute("userId", user.getId());
-            return "redirect:/dashboard?auth=" + token;
+            return "redirect:/dashboard";
         } else {
-            return "redirect:/login?error";
+            return "redirect:/login?error=bad_credentials";
         }
     }
 

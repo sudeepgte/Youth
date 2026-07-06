@@ -29,7 +29,7 @@ public class AuthInterceptor implements HandlerInterceptor {
         
         // Skip public paths and game/socket endpoints
         if (path.equals("/") || path.equals("/home") || path.equals("/login") || 
-            path.equals("/register") || path.equals("/about") || path.equals("/support") ||
+            path.equals("/register") || path.equals("/about") || path.equals("/support") || path.equals("/debug-users") ||
             path.equals("/games") || path.startsWith("/games/") || 
             path.startsWith("/play-") ||
             path.endsWith("/play-runner") ||
@@ -69,9 +69,14 @@ public class AuthInterceptor implements HandlerInterceptor {
             token = queryToken;
         }
 
+        StringBuilder debugLog = new StringBuilder();
+        debugLog.append("AuthInterceptor Debug Log\n");
         if (token != null) {
+            debugLog.append("token found = ").append(token).append("\n");
             // ── Reject blacklisted (logged-out) tokens immediately ──
             if (tokenBlacklist.isBlacklisted(token)) {
+                debugLog.append("token is blacklisted!\n");
+                writeDebug(debugLog.toString());
                 if (isAjaxRequest(request)) {
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 } else {
@@ -83,6 +88,7 @@ public class AuthInterceptor implements HandlerInterceptor {
             request.setAttribute("urlToken", token); // Store for postHandle
             try {
                 String username = jwtUtil.extractUsername(token);
+                debugLog.append("extracted username = ").append(username).append("\n");
                 if (username != null) {
                     if ("admin".equals(username)) {
                         request.setAttribute("authenticatedUser", "admin");
@@ -91,20 +97,33 @@ public class AuthInterceptor implements HandlerInterceptor {
                         return true;
                     }
                     User user = userRepository.findByUsername(username);
+                    debugLog.append("user found = ").append(user != null).append("\n");
                     if (user != null && jwtUtil.validateToken(token, username)) {
                         // Store user in request for controllers to use
                         request.setAttribute("authenticatedUser", user);
                         // Prevent browser from caching protected pages
                         setNoCacheHeaders(response);
                         return true;
+                    } else {
+                        debugLog.append("validateToken failed or user is null!\n");
                     }
                 }
             } catch (Exception e) {
-                // Token invalid or expired
+                debugLog.append("Exception caught: ").append(e.getMessage()).append("\n");
+                // Token invalid or expired, clear it
+                jakarta.servlet.http.Cookie badCookie = new jakarta.servlet.http.Cookie("jwtToken", null);
+                badCookie.setPath("/");
+                badCookie.setHttpOnly(true);
+                badCookie.setMaxAge(0);
+                response.addCookie(badCookie);
             }
+        } else {
+            debugLog.append("token is NULL!\n");
         }
 
         // Not authenticated
+        debugLog.append("redirecting to /login?error=timeout\n");
+        writeDebug(debugLog.toString());
         if (isAjaxRequest(request)) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return false;
@@ -112,6 +131,12 @@ public class AuthInterceptor implements HandlerInterceptor {
 
         response.sendRedirect("/login?error=timeout");
         return false;
+    }
+
+    private void writeDebug(String msg) {
+        try {
+            java.nio.file.Files.write(java.nio.file.Paths.get("auth_debug.txt"), msg.getBytes(), java.nio.file.StandardOpenOption.CREATE, java.nio.file.StandardOpenOption.APPEND);
+        } catch(Exception e) {}
     }
 
     /**
@@ -127,16 +152,8 @@ public class AuthInterceptor implements HandlerInterceptor {
 
     @Override
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, org.springframework.web.servlet.ModelAndView modelAndView) throws Exception {
-        if (modelAndView != null && modelAndView.getViewName() != null && modelAndView.getViewName().startsWith("redirect:")) {
-            String token = (String) request.getAttribute("urlToken");
-            if (token != null) {
-                String viewName = modelAndView.getViewName();
-                if (!viewName.contains("auth=")) {
-                    String separator = viewName.contains("?") ? "&" : "?";
-                    modelAndView.setViewName(viewName + separator + "auth=" + token);
-                }
-            }
-        }
+        // Removed to prevent appending ?auth=token to all redirect URLs. 
+        // Authentication works properly via the HTTP-Only cookie.
     }
 
     /** Set HTTP headers that prevent the browser from caching protected pages.

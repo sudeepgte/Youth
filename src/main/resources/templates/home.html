@@ -21,10 +21,9 @@
                 <!-- HTML5 Canvas for particles & video camera transitions -->
                 <canvas id="promoCanvas" class="promo-canvas"></canvas>
 
-                <!-- Floating Mute/Unmute Overlay on Top-Right -->
-                <button id="promoFloatingAudioBtn" class="promo-audio-toggle" title="Toggle audio sequence">
-                    <i class="fas fa-volume-mute"></i>
-                </button>
+                <!-- HTML5 Video element for real video background loops -->
+                <video id="promoVideo" class="promo-video" loop muted playsinline style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; opacity: 0; transition: opacity 1.5s ease; pointer-events: none;"></video>
+
 
                 <!-- Cinematic Scene Viewports -->
                 <div class="promo-scenes-viewport">
@@ -138,32 +137,7 @@
                     </div>
                 </div>
 
-                <!-- Video Controls Overlay -->
-                <div class="promo-controls-overlay">
-                    <div class="promo-controls-row">
-                        <!-- Play/Pause & Volume -->
-                        <div class="promo-controls-left">
-                            <button id="promoPlayPause" class="promo-btn" title="Play/Pause">
-                                <i class="fas fa-pause"></i>
-                            </button>
-                            <button id="promoRestart" class="promo-btn" title="Replay">
-                                <i class="fas fa-redo"></i>
-                            </button>
-                            <button id="promoAudioToggleBtn" class="promo-btn" title="Mute/Unmute audio">
-                                <i class="fas fa-volume-mute"></i>
-                            </button>
-                            <span id="promoTimeDisplay" class="promo-time-display">0:00 / 0:10</span>
-                        </div>
 
-                        <!-- Progress Bar Timeline -->
-                        <div id="promoTimelineWrapper" class="promo-timeline-wrapper">
-                            <div id="promoTimelineProgress" class="promo-timeline-progress">
-                                <div class="promo-timeline-handle"></div>
-                            </div>
-                            <div id="promoTimelineMarkers"></div>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </section>
@@ -200,7 +174,7 @@
         style="background: linear-gradient(180deg, transparent, rgba(6, 182, 212, 0.05), transparent);">
         <div class="section-header">
             <div>
-                <h2 style="font-size: 32px;">Platform Features</h2>
+                <h2 style="font-size: 32px; font-weight: 900;">Platform <span style="background: var(--gradient-1); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Features</span></h2>
                 <p style="color: var(--text-secondary); margin-top: 4px;">Everything you need to thrive in the Zentrix
                     community.</p>
             </div>
@@ -308,7 +282,7 @@
     <section class="container" id="featured-events">
         <div class="section-header">
             <div>
-                <h2 style="font-size: 32px;">Featured Events</h2>
+                <h2 style="font-size: 32px; font-weight: 900;">Featured <span style="background: var(--gradient-1); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Events</span></h2>
                 <p style="color: var(--text-secondary); margin-top: 4px;">Created by our community and administrators.
                 </p>
             </div>
@@ -373,7 +347,7 @@
         style="background: linear-gradient(0deg, transparent, rgba(59, 130, 246, 0.03), transparent);">
         <div class="section-header">
             <div>
-                <h2 style="font-size: 32px;">Browse by Category</h2>
+                <h2 style="font-size: 32px; font-weight: 900;">Browse by <span style="background: var(--gradient-1); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Category</span></h2>
                 <p style="color: var(--text-secondary); margin-top: 4px;">Find exactly what you're looking for with our
                     curated interest groups.</p>
             </div>
@@ -429,7 +403,7 @@
     <!-- Testimonials + CTA -->
     <section class="container section-muted" style="border-radius: 18px;">
         <div class="section-header">
-            <h2>What Students Say</h2>
+            <h2 style="font-size: 32px; font-weight: 900;">What Students <span style="background: var(--gradient-1); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Say</span></h2>
             <a href="/register" class="see-all">Join Now ›</a>
         </div>
 

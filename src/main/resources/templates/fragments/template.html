@@ -22,7 +22,7 @@
                 </div>
             </div>
         </div>
-        <nav class="navbar" th:classappend="${active} != 'home' and ${active} != 'games' and ${active} != 'about' and ${active} != 'support' and ${active} != 'events' and ${active} != 'event-details' ? ' has-topbar' : ''">
+        <nav class="navbar" th:classappend="(${active} != 'home' and ${active} != 'games' and ${active} != 'about' and ${active} != 'support' and ${active} != 'events' and ${active} != 'event-details' ? ' has-topbar' : '') + (${active} == 'home' ? ' navbar-home' : '')">
             <div class="nav-shell navbar-inner" style="display: flex; align-items: center; justify-content: space-between; width: 100%; height: 100%; padding: 0;">
                 <!-- Games/Events page: minimal header (Dashboard button only) -->
                 <th:block th:if="${active} == 'games' or ${active} == 'events' or ${active} == 'event-details'">
