@@ -8,19 +8,41 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
-            --bg-gradient: linear-gradient(180deg, #050508 0%, #0a0a0f 100%);
-            --text-primary: #ffffff;
-            --text-secondary: #94a3b8;
-            --card-bg: rgba(255, 255, 255, 0.04);
-            --glass-border: rgba(255, 255, 255, 0.1);
+            --bg-gradient: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+            --text-primary: #0f172a;
+            --text-secondary: #334155;
+            --card-bg: rgba(255, 255, 255, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.5);
         }
 
         body {
-            background: #050508 !important;
-            color: #ffffff !important;
+            background: var(--bg-gradient) !important;
+            color: var(--text-primary) !important;
             min-height: 100vh;
         }
-        .card { background: var(--card-bg); border: 1px solid var(--glass-border); border-radius: 18px; padding: 16px; }
+
+        .navbar {
+            background: rgba(255, 255, 255, 0.8) !important;
+            border-bottom: 1px solid var(--glass-border) !important;
+        }
+
+        .navbar .logo, .navbar .nav-links a {
+            color: #0284c7 !important;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--text-primary) !important;
+        }
+        
+        span, p, div {
+            color: var(--text-secondary);
+        }
+        
+        .card div {
+            color: inherit;
+        }
+
+        .card { background: var(--card-bg); border: 1px solid var(--glass-border); border-radius: 18px; padding: 16px; color: var(--text-primary); }
         .grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 18px; }
     </style>
 </head>
@@ -29,7 +51,7 @@
 
 <div class="container" style="margin-top: 80px;">
     <h1 style="margin-bottom: 10px;">Pending track approvals</h1>
-    <div style="color: rgba(255,255,255,0.55); font-size: 13px; margin-bottom: 18px;">
+    <div style="color: var(--text-secondary); font-size: 13px; margin-bottom: 18px;">
         Approve only if the uploader owns rights / uses a valid license.
     </div>
 
@@ -38,12 +60,12 @@
             <div style="display:flex; justify-content:space-between; gap: 12px; align-items:flex-start;">
                 <div>
                     <div style="font-weight: 900; font-size: 16px;" th:text="${t.title}">Title</div>
-                    <div style="color: rgba(255,255,255,0.6); font-size: 12px;">
+                    <div style="color: var(--text-secondary); font-size: 12px;">
                         <span th:text="${t.artistName}">Artist</span>
                         <span style="opacity:0.6;"> • </span>
                         <span th:text="${t.licenseName}">License</span>
                     </div>
-                    <div style="color: rgba(255,255,255,0.45); font-size: 12px; margin-top: 6px;">
+                    <div style="color: var(--text-secondary); font-size: 12px; margin-top: 6px;">
                         Uploader:
                         <span th:text="${t.uploader != null ? t.uploader.username : 'Unknown'}">uploader</span>
                     </div>
@@ -61,12 +83,12 @@
 
             <div style="display:flex; gap: 10px; margin-top: 12px;">
                 <form th:action="@{'/admin/music/' + ${t.id} + '/approve'}" method="post" style="flex:1;">
-                    <button class="nav-btn" type="submit" style="width:100%; background: rgba(16,185,129,0.18); border:1px solid rgba(16,185,129,0.35);">
+                    <button class="nav-btn" type="submit" style="width:100%; background: rgba(16,185,129,0.18); border:1px solid rgba(16,185,129,0.35); color: #047857;">
                         <i class="fas fa-check"></i> Approve
                     </button>
                 </form>
                 <form th:action="@{'/admin/music/' + ${t.id} + '/reject'}" method="post" style="flex:1;">
-                    <button class="nav-btn" type="submit" style="width:100%; background: rgba(231,76,60,0.16); border:1px solid rgba(231,76,60,0.35);">
+                    <button class="nav-btn" type="submit" style="width:100%; background: rgba(231,76,60,0.16); border:1px solid rgba(231,76,60,0.35); color: #b91c1c;">
                         <i class="fas fa-times"></i> Reject
                     </button>
                 </form>
@@ -74,7 +96,7 @@
         </div>
 
         <div th:if="${pendingTracks == null or pendingTracks.isEmpty()}" class="card" style="grid-column: 1 / -1;">
-            <div style="color: rgba(255,255,255,0.6); text-align:center; padding: 10px;">
+            <div style="color: var(--text-secondary); text-align:center; padding: 10px;">
                 No pending uploads right now.
             </div>
         </div>

@@ -720,7 +720,7 @@ public class ProfileController {
         if (user == null) {
             return org.springframework.http.ResponseEntity.status(401).build();
         }
-
+  
         List<Notification> notifications = notificationRepository.findByUserOrderByCreatedAtDesc(user);
         notificationRepository.deleteAll(notifications);
         return org.springframework.http.ResponseEntity.ok().build();

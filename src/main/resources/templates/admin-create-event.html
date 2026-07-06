@@ -17,16 +17,16 @@
         }
 
         :root {
-            --bg-gradient: linear-gradient(180deg, #050508 0%, #0a0a0f 100%);
-            --text-primary: #ffffff;
-            --text-secondary: #94a3b8;
-            --card-bg: rgba(255, 255, 255, 0.04);
-            --glass-border: rgba(255, 255, 255, 0.1);
+            --bg-gradient: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+            --text-primary: #0f172a;
+            --text-secondary: #334155;
+            --card-bg: rgba(255, 255, 255, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.5);
         }
 
         body {
-            background: #050508 !important;
-            color: #ffffff !important;
+            background: var(--bg-gradient) !important;
+            color: var(--text-primary) !important;
             min-height: 100vh;
         }
 
@@ -581,6 +581,46 @@
             transform: translateX(4px) translateY(-4px);
         }
 
+        input[type="text"],
+        input[type="number"],
+        input[type="datetime-local"],
+        select,
+        textarea {
+            color: var(--text-primary) !important;
+            background: rgba(255, 255, 255, 0.8) !important;
+            border-color: var(--glass-border) !important;
+        }
+
+        label, .section-label, .cat-name, .fee-text, .upload-zone p, .status-label, .btn-back, .page-header p, .btn-cancel, .tier-item {
+            color: var(--text-secondary) !important;
+        }
+        
+        .cat-label, .fee-label, .status-label, .upload-zone, .form-card, .tier-item {
+            background: rgba(255, 255, 255, 0.6) !important;
+            border-color: var(--glass-border) !important;
+        }
+
+        .cat-btn input:checked+.cat-label, .fee-option input:checked+.fee-label {
+            background: rgba(248, 68, 100, 0.15) !important;
+        }
+        
+        .page-header h1, .upload-zone h3 {
+            color: var(--text-primary) !important;
+            background: none !important;
+            -webkit-text-fill-color: initial !important;
+        }
+
+        .admin-navbar {
+            background: rgba(255, 255, 255, 0.8) !important;
+            border-bottom: 1px solid var(--glass-border) !important;
+        }
+
+        .admin-navbar .brand {
+            color: #0284c7 !important;
+            background: none !important;
+            -webkit-text-fill-color: initial !important;
+        }
+
         @media (max-width: 768px) {
 
             .two-col,
@@ -836,7 +876,7 @@
                                     placeholder="200" min="0" onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();">
                             </div>
                         </div>
-                        <p style="font-size: 12px; color: rgba(255,255,255,0.4); margin-top: 15px;">
+                        <p style="font-size: 12px; color: #334155; margin-top: 15px;">
                             <i class="fas fa-magic"></i> System will automatically assign the first seats (nearest to
                             stage) as VIP.
                         </p>
@@ -911,7 +951,7 @@
                                         th:value="${event.votingEndDate != null ? #temporals.format(event.votingEndDate, 'yyyy-MM-dd') + 'T' + #temporals.format(event.votingEndDate, 'HH:mm') : ''}">
                                 </div>
                             </div>
-                            <p style="font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 12px;">
+                            <p style="font-size: 11px; color: #334155; margin-top: 12px;">
                                 * When the deadline passes, the system will check if this event has the most votes in
                                 its category.
                             </p>
@@ -922,7 +962,7 @@
                     <div
                         style="margin-top: 25px; background: rgba(16, 185, 129, 0.05); border: 1px dashed rgba(16, 185, 129, 0.3); border-radius: 14px; padding: 20px;">
                         <h4
-                            style="font-size: 14px; color: #34d399; margin-bottom: 10px; display:flex; align-items:center; gap:8px;">
+                            style="font-size: 14px; color: #047857; margin-bottom: 10px; display:flex; align-items:center; gap:8px;">
                             <i class="fas fa-trophy"></i> Finalist Top 3 / Final Voting Phase
                         </h4>
                         <div style="display: flex; align-items: flex-start; gap: 10px;">
@@ -931,9 +971,9 @@
                                 style="margin-top: 4px; accent-color: #34d399; width: 16px; height: 16px; cursor: pointer;">
                             <label for="finalVotingEnabled" style="cursor: pointer;">
                                 <div
-                                    style="font-size: 13px; color: rgba(255,255,255,0.7); font-weight: 600; margin-bottom: 3px;">
+                                    style="font-size: 13px; color: #0f172a; font-weight: 600; margin-bottom: 3px;">
                                     Enable Finalist Voting (Top 3)</div>
-                                <div style="font-size: 11px; color: rgba(255,255,255,0.4);">If enabled, you can select
+                                <div style="font-size: 11px; color: #334155;">If enabled, you can select
                                     Top 3 participants later and users can vote for the final winner based on 50% Judge
                                     & 50% Public score.</div>
                             </label>
@@ -973,11 +1013,17 @@
                     <div class="field-group">
                         <label>Poster Image Upload</label>
                         <div style="position:relative;">
+<<<<<<< HEAD
                             <input type="file" name="imageFile" id="imageFileInput" accept="image/png, image/jpeg"
                                 onchange="previewImageFile(this)"
                                 style="width:100%; padding:12px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1); border-radius:10px; color:#fff;">
+=======
+                            <input type="url" name="imageUrl" id="imageUrlInput" th:value="${event.imageUrl}"
+                                oninput="previewUrlPoster(this.value)" placeholder="https://example.com/poster.jpg"
+                                style="width:100%; padding:12px; background:rgba(255,255,255,0.8); border:1px solid rgba(255,255,255,0.5); border-radius:10px; color:#0f172a;">
+>>>>>>> d9701997387483b45377a4fd9ab68719135e581f
                         </div>
-                        <p style="font-size:12px; color:rgba(255,255,255,0.35); margin-top:6px;">
+                        <p style="font-size:12px; color:#334155; margin-top:6px;">
                             <i class="fas fa-info-circle" style="color:#f84464;"></i>
                             Upload a direct image (JPG, PNG). If left blank, a default image based on the
                             category will be used.
@@ -990,7 +1036,7 @@
                         <img id="posterImg" th:src="${event.imageUrl}"
                             style="width:100%; height:220px; object-fit:cover; border-radius:12px;" alt="Preview"
                             onerror="this.parentElement.style.display='none'">
-                        <p style="font-size:12px; color:rgba(255,255,255,0.4); margin-top:8px; text-align:center;">Image
+                        <p style="font-size:12px; color:#334155; margin-top:8px; text-align:center;">Image
                             preview</p>
                     </div>
                 </div>
