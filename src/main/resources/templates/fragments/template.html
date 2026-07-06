@@ -75,26 +75,26 @@
     </header>
 
     <header th:fragment="adminNavbar(active)" class="admin-header">
-        <nav class="navbar" style="background: rgba(5, 5, 8, 0.95) !important; border-bottom: 2px solid rgba(255, 255, 255, 0.1) !important;">
-            <a class="logo" href="/admin" style="color: #fff !important;">Zentrix<span>Admin</span></a>
+        <nav class="navbar" style="background: rgba(255, 255, 255, 0.85) !important; border-bottom: 1px solid rgba(255, 255, 255, 0.5) !important; backdrop-filter: blur(20px); position: sticky; top: 0; z-index: 1000;">
+            <a class="logo" href="/admin" style="color: #0284c7 !important; font-weight: 900; font-size: 1.3rem; text-decoration: none;">Zentrix<span style="color: #0f172a !important; font-weight: 400; font-size: 0.9rem; margin-left: 4px;">Admin</span></a>
             
             <div class="nav-links">
-                <a href="/events/admin/manage" th:classappend="${active} == 'manage' ? ' active' : ''">
+                <a href="/events/admin/manage" th:classappend="${active} == 'manage' ? ' active' : ''" style="color: #334155 !important; text-decoration: none; font-size: 14px;">
                     <i class="fas fa-calendar-alt"></i> Manage Events
                 </a>
-                <a href="/admin/music" th:classappend="${active} == 'music' ? ' active' : ''">
+                <a href="/admin/music" th:classappend="${active} == 'music' ? ' active' : ''" style="color: #334155 !important; text-decoration: none; font-size: 14px;">
                     <i class="fas fa-music"></i> Music
                 </a>
-                <a href="/events/admin/create" th:classappend="${active} == 'create' ? ' active' : ''">
+                <a href="/events/admin/create" th:classappend="${active} == 'create' ? ' active' : ''" style="color: #334155 !important; text-decoration: none; font-size: 14px;">
                     <i class="fas fa-plus"></i> Create
                 </a>
             </div>
 
             <div class="nav-actions">
-                <a href="/dashboard" class="btn btn-outline" style="border-color: rgba(255,255,255,0.4); color: #fff !important;">
+                <a href="/dashboard" class="btn btn-outline" style="border: 1px solid rgba(2, 132, 199, 0.4); color: #0284c7 !important; border-radius: 10px; padding: 8px 16px; text-decoration: none; font-size: 13px; font-weight: 600;">
                     <i class="fas fa-arrow-left"></i> App
                 </a>
-                <a href="/logout" class="btn btn-primary">Logout</a>
+                <a href="/logout" class="btn btn-primary" style="background: linear-gradient(135deg, #f84464, #ff6b9d); color: #fff !important; border-radius: 10px; padding: 8px 18px; text-decoration: none; font-size: 13px; font-weight: 700;">Logout</a>
             </div>
         </nav>
     </header>

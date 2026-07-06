@@ -1036,9 +1036,7 @@
             onerror="this.src='https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1400'">
         <div class="hero-overlay"></div>
 
-        <div class="hero-nav">
-            <a href="/events" class="btn-back"><i class="fas fa-arrow-left"></i> Back to Events</a>
-        </div>
+
 
         <div class="hero-content">
             <div class="hero-cat">
@@ -1134,6 +1132,16 @@
             <div class="about-section">
                 <h2>About this Event</h2>
                 <div class="about-text" th:text="${event.description}">Description...</div>
+            </div>
+
+            <div class="about-section" th:if="${event.enableSecretRewards}" style="margin-top:20px; background: rgba(255, 215, 0, 0.08); border: 1px solid rgba(255, 215, 0, 0.3); border-radius: 16px; padding: 20px;">
+                <h2 style="color: #d97706; margin-bottom:10px;"><i class="fas fa-gift"></i> Secret Reward Available</h2>
+                <p style="color: #4b5563; font-size: 14px; margin-bottom: 15px;">Register and attend this event to unlock an exclusive reward from our official partners.</p>
+                <div style="background: rgba(0,0,0,0.05); padding: 12px 16px; border-radius: 12px; display:inline-block;">
+                    <span style="color: #6b7280; font-size: 13px; font-weight: 600; text-transform: uppercase;">Reward Status</span>
+                    <div th:if="${!isRegistered}" style="color: #374151; font-size: 15px; font-weight: 700; margin-top: 4px;"><i class="fas fa-lock" style="color:#ef4444;"></i> Locked</div>
+                    <div th:if="${isRegistered and not #lists.isEmpty(userRegs)}" style="color: #374151; font-size: 15px; font-weight: 700; margin-top: 4px;"><i class="fas fa-ticket-alt" style="color:#10b981;"></i> <a th:href="@{'/events/ticket/' + ${userRegs[0].ticketId}}" style="color:#10b981; text-decoration:none;">Check Ticket to Reveal</a></div>
+                </div>
             </div>
 
             <!-- BMOS Seat Map -->

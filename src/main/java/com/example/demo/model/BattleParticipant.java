@@ -21,9 +21,15 @@ public class BattleParticipant {
 
     private LocalDateTime joinedAt;
 
+    private Boolean checkedIn = false;
+    private String participantNumber;
+    private String seatNumber;
+    private String qrPassCode;
+
     @PrePersist
     public void prePersist() {
         if (joinedAt == null) joinedAt = LocalDateTime.now();
+        if (qrPassCode == null) qrPassCode = java.util.UUID.randomUUID().toString();
     }
 
     // Getters & Setters
@@ -38,4 +44,16 @@ public class BattleParticipant {
 
     public LocalDateTime getJoinedAt() { return joinedAt; }
     public void setJoinedAt(LocalDateTime joinedAt) { this.joinedAt = joinedAt; }
+
+    public Boolean getCheckedIn() { return checkedIn != null ? checkedIn : false; }
+    public void setCheckedIn(Boolean checkedIn) { this.checkedIn = checkedIn; }
+
+    public String getParticipantNumber() { return participantNumber; }
+    public void setParticipantNumber(String participantNumber) { this.participantNumber = participantNumber; }
+
+    public String getSeatNumber() { return seatNumber; }
+    public void setSeatNumber(String seatNumber) { this.seatNumber = seatNumber; }
+
+    public String getQrPassCode() { return qrPassCode; }
+    public void setQrPassCode(String qrPassCode) { this.qrPassCode = qrPassCode; }
 }
