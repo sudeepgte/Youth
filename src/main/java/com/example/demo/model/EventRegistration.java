@@ -47,6 +47,9 @@ public class EventRegistration {
     private boolean attendanceMarked = false;
     private LocalDateTime attendedAt;
 
+    // Secret Rewards tracking
+    private boolean rewardRevealed = false;
+
     // Results & Ranking
     private String position; // "Winner", "Runner", "Participant"
     private Integer pointsEarned = 0;
@@ -109,6 +112,9 @@ public class EventRegistration {
 
     public boolean isAttendanceMarked() { return attendanceMarked; }
     public void setAttendanceMarked(boolean attendanceMarked) { this.attendanceMarked = attendanceMarked; }
+
+    public boolean isRewardRevealed() { return rewardRevealed; }
+    public void setRewardRevealed(boolean rewardRevealed) { this.rewardRevealed = rewardRevealed; }
 
     public LocalDateTime getAttendedAt() { return attendedAt; }
     public void setAttendedAt(LocalDateTime attendedAt) { this.attendedAt = attendedAt; }

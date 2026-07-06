@@ -667,6 +667,7 @@
         <button class="tab-btn" onclick="switchTab('followers',this)"><i class="fas fa-users"></i> Followers</button>
         <button class="tab-btn" onclick="switchTab('following',this)"><i class="fas fa-user-friends"></i> Following</button>
         <button class="tab-btn" th:if="${isOwnProfile}" onclick="switchTab('saved',this)"><i class="fas fa-bookmark"></i> Saved</button>
+        <button class="tab-btn" th:if="${isOwnProfile}" onclick="switchTab('rewards',this)"><i class="fas fa-gift"></i> My Rewards</button>
         <button class="tab-btn" th:if="${isOwnProfile}" onclick="switchTab('settings',this)"><i class="fas fa-cog"></i> Settings</button>
     </div>
 
@@ -827,9 +828,41 @@
                 </div>
             </div>
         </div>
-        <div th:if="${savedPosts == null or #lists.isEmpty(savedPosts)}" class="empty-state">
-            <i class="far fa-bookmark"></i>
-            <p style="font-weight:600;">No Saved Posts Yet</p>
+         <div class="empty-state" th:if="${savedPosts == null or #lists.isEmpty(savedPosts)}">
+            <i class="fas fa-bookmark" style="font-size:3rem; color:var(--text-muted); margin-bottom:15px;"></i>
+            <h3>No saved posts yet</h3>
+            <p>Posts you save will appear here</p>
+        </div>
+    </div>
+    
+    <!-- My Rewards Tab -->
+    <div class="tab-panel" id="tab-rewards" th:if="${isOwnProfile}">
+        <div style="max-width:800px; margin: 0 auto;">
+            <div th:if="${userRewards != null and not #lists.isEmpty(userRewards)}" style="display:flex; flex-direction:column; gap:15px;">
+                <div th:each="reward : ${userRewards}" style="background:var(--surface); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:20px; display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <h4 style="color:#ffd700; margin-bottom:5px; font-weight:700;" th:text="${reward.secretReward.rewardName}">Reward Name</h4>
+                        <p style="font-size:14px; color:rgba(255,255,255,0.7); margin-bottom:10px;">Sponsored by <strong th:text="${reward.secretReward.businessName}">Business</strong></p>
+                        
+                        <div style="display:flex; gap:10px; font-size:12px;">
+                            <span style="background:rgba(255,255,255,0.1); padding:4px 8px; border-radius:4px;"><i class="far fa-calendar-alt"></i> Valid till <span th:text="${#temporals.format(reward.expiryDate, 'dd MMM yyyy')}">Date</span></span>
+                            <span th:if="${reward.status == 'AVAILABLE'}" style="background:rgba(16,185,129,0.2); color:#10b981; padding:4px 8px; border-radius:4px;"><i class="fas fa-check-circle"></i> Available</span>
+                            <span th:if="${reward.status == 'REDEEMED'}" style="background:rgba(255,255,255,0.1); color:#aaa; padding:4px 8px; border-radius:4px;"><i class="fas fa-check-double"></i> Redeemed</span>
+                        </div>
+                    </div>
+                    
+                    <div th:if="${reward.status == 'AVAILABLE'}" style="text-align:center;">
+                        <img th:src="@{/api/qrcode/generate(text='http://localhost:8080/rewards/redeem/' + ${reward.rewardCode})}" style="width:100px; height:100px; border-radius:8px; border:2px solid #fff;" alt="QR Code" />
+                        <p style="font-size:10px; margin-top:5px; color:#aaa;" th:text="${reward.rewardCode}">CODE</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="empty-state" th:if="${userRewards == null or #lists.isEmpty(userRewards)}">
+                <i class="fas fa-gift" style="font-size:3rem; color:var(--text-muted); margin-bottom:15px;"></i>
+                <h3>No rewards yet</h3>
+                <p>Attend events with secret rewards to unlock them!</p>
+            </div>
         </div>
     </div>
 
