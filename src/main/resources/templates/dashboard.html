@@ -207,6 +207,12 @@
             grid-template-columns: 1fr;
             max-width: 600px;
         }
+
+        @media (min-width: 769px) {
+            body:has(.reels-container) .sidebar {
+                display: none !important;
+            }
+        }
         
         .reels-container {
             height: calc(100vh - var(--dashboard-nav-height) - 40px);
@@ -360,7 +366,7 @@
             color: #bbb !important;
         }
 
-        /* â”€â”€ Mobile Responsive â”€â”€ */
+        /* ── Mobile Responsive ── */
         @media (max-width: 768px) {
             .feed-toolbar { flex-wrap: wrap; }
             .dashboard-vote-section { padding: 16px; margin-bottom: 20px; }
@@ -438,7 +444,7 @@
     <div class="dashboard-container">
 
         <!-- Left Sidebar -->
-        <aside class="sidebar" th:if="${isReelsPage == null or !isReelsPage}">
+        <aside class="sidebar">
             <a th:href="@{/dashboard}" class="sidebar-link" th:classappend="${isReelsPage} ? '' : ' active'"><i class="fas fa-home"></i> Home</a>
             <a th:href="@{/explore}" class="sidebar-link"><i class="fas fa-compass"></i> Explore</a>
             <a th:href="@{/events}" class="sidebar-link"><i class="fas fa-calendar-alt"></i> Events</a>
@@ -459,7 +465,7 @@
             <!-- Alerts -->
             <div th:if="${param.voteSuccess}"
                 style="background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.3); color:#10b981; padding:15px; border-radius:12px; margin-bottom:20px; font-size:14px;">
-                <i class="fas fa-check-circle"></i> Your vote has been recorded! ðŸ—³ï¸
+                <i class="fas fa-check-circle"></i> Your vote has been recorded! 🗳️
             </div>
             <div th:if="${param.alreadyVotedInPoll}"
                 style="background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.3); color:#f59e0b; padding:15px; border-radius:12px; margin-bottom:20px; font-size:14px;">
@@ -526,7 +532,7 @@
                 </div>
             </div>
 
-            <!-- ðŸ’¬ Share Your Thought Banner -->
+            <!-- 💬 Share Your Thought Banner -->
             <div th:if="${isReelsPage == null or !isReelsPage}" style="background: rgba(255, 255, 255, 0.65); backdrop-filter: blur(12px); border: 1px solid var(--glass-border); box-shadow: var(--shadow-premium); border-radius: 20px; padding: 22px 26px; margin-bottom: 30px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; transition: transform 0.3s ease, box-shadow 0.3s ease;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='var(--shadow-hover)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='var(--shadow-premium)';">
                 <div style="display: flex; align-items: center; gap: 16px;">
                     <div style="width: 48px; height: 48px; background: var(--gradient-1); border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 8px 16px -4px rgba(59, 130, 246, 0.4);">
@@ -709,16 +715,16 @@
                     </div>
                     <!-- Emoji Selection Bar -->
                     <div class="emoji-bar" style="display:flex; gap:12px; margin-bottom:8px; overflow-x:auto; padding:4px 2px; scrollbar-width:none; -ms-overflow-style:none;">
-                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'â¤ï¸\')'">â¤ï¸</span>
-                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'ðŸ˜‚\')'">ðŸ˜‚</span>
-                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'ðŸ”¥\')'">ðŸ”¥</span>
-                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'ðŸ˜\')'">ðŸ˜</span>
-                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'ðŸ‘\')'">ðŸ‘</span>
-                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'ðŸ™Œ\')'">ðŸ™Œ</span>
-                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'ðŸ˜¢\')'">ðŸ˜¢</span>
-                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'ðŸ˜®\')'">ðŸ˜®</span>
-                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'ðŸŽ‰\')'">ðŸŽ‰</span>
-                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'ðŸ’¯\')'">ðŸ’¯</span>
+                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'❤️\')'">❤️</span>
+                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'😂\')'">😂</span>
+                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'🔥\')'">🔥</span>
+                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'😍\')'">😍</span>
+                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'👏\')'">👏</span>
+                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'🙌\')'">🙌</span>
+                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'😢\')'">😢</span>
+                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'😮\')'">😮</span>
+                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'🎉\')'">🎉</span>
+                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'💯\')'">💯</span>
                     </div>
                     <style>
                         .emoji-bar::-webkit-scrollbar { display:none; }
@@ -728,7 +734,7 @@
                             <input type="text" th:id="'comment-input-' + ${post.id}" placeholder="Write a comment..."
                                 style="flex:1; padding:8px 36px 8px 12px; border-radius:20px; background:var(--card-bg); border:1px solid var(--glass-border); color:var(--text-primary); font-size:13px; outline:none;">
                             <button type="button" th:attr="onclick='toggleEmojiPicker(' + ${post.id} + ')'" 
-                                    style="position:absolute; right:12px; background:none; border:none; font-size:16px; cursor:pointer; color:#aaa; outline:none; user-select:none;">ðŸ˜€</button>
+                                    style="position:absolute; right:12px; background:none; border:none; font-size:16px; cursor:pointer; color:#aaa; outline:none; user-select:none;">😀</button>
                         </div>
                         <button th:onclick="'postComment(' + ${post.id} + ')'"
                             style="background:var(--accent); color:white; border:none; border-radius:20px; padding:8px 16px; font-size:13px; cursor:pointer; font-weight:600; flex-shrink:0;">Post</button>
@@ -738,12 +744,12 @@
                              style="display:none; position:absolute; bottom:42px; right:10px; background:#101018; border:1px solid rgba(255,255,255,0.15); border-radius:12px; padding:10px; width:260px; z-index:100; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
                              <!-- Categories / Tabs -->
                              <div style="display:flex; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:6px; margin-bottom:8px; font-size:14px; color:#aaa; font-weight:700; user-select:none;">
-                                 <span style="cursor:pointer; color:#fff;" onclick="switchEmojiCategory(this, 'smileys')">ðŸ˜€</span>
-                                 <span style="cursor:pointer;" onclick="switchEmojiCategory(this, 'gestures')">ðŸ‘</span>
-                                 <span style="cursor:pointer;" onclick="switchEmojiCategory(this, 'hearts')">â¤ï¸</span>
-                                 <span style="cursor:pointer;" onclick="switchEmojiCategory(this, 'animals')">ðŸ±</span>
-                                 <span style="cursor:pointer;" onclick="switchEmojiCategory(this, 'food')">ðŸ•</span>
-                                 <span style="cursor:pointer;" onclick="switchEmojiCategory(this, 'activities')">âš½</span>
+                                 <span style="cursor:pointer; color:#fff;" onclick="switchEmojiCategory(this, 'smileys')">😀</span>
+                                 <span style="cursor:pointer;" onclick="switchEmojiCategory(this, 'gestures')">👍</span>
+                                 <span style="cursor:pointer;" onclick="switchEmojiCategory(this, 'hearts')">❤️</span>
+                                 <span style="cursor:pointer;" onclick="switchEmojiCategory(this, 'animals')">🐱</span>
+                                 <span style="cursor:pointer;" onclick="switchEmojiCategory(this, 'food')">🍕</span>
+                                 <span style="cursor:pointer;" onclick="switchEmojiCategory(this, 'activities')">⚽</span>
                              </div>
                              <!-- Emoji Content Area -->
                              <div class="emoji-picker-content" style="height:140px; overflow-y:auto; display:grid; grid-template-columns:repeat(7, 1fr); gap:6px; font-size:18px; text-align:center;">
@@ -1001,7 +1007,7 @@
         let currentSharePostId = null;
         const FEED_USER_ID = /*[[${user != null ? user.id : 0}]]*/ 0;
 
-        // â”€â”€ Feed Filter Dropdown â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ── Feed Filter Dropdown ─────────────────────────────
         function toggleFeedFilterMenu() {
             const menu = document.getElementById('feedFilterMenu');
             if (!menu) return;
@@ -1014,7 +1020,7 @@
             if (!within) menu.style.display = 'none';
         });
 
-        // â”€â”€ Create Post Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ── Create Post Modal ──────────────────────────────
         function openThoughtModal() {
             openCreateModal();
             const btn = document.querySelector('.type-btn[data-type="THOUGHT"]');
@@ -1024,14 +1030,14 @@
         }
         function showFileName(input) {
             const span = document.getElementById('selectedFileName');
-            span.textContent = input.files.length > 0 ? 'ðŸ“Ž ' + input.files[0].name : '';
+            span.textContent = input.files.length > 0 ? '📎 ' + input.files[0].name : '';
         }
         document.getElementById('overlay').addEventListener('click', function () {
             closeCreateModal();
             closeShareModal && closeShareModal();
         });
 
-        // â”€â”€ Like Toggle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ── Like Toggle ─────────────────────────────────────
         async function toggleLike(postId) {
             const btn = document.getElementById('like-btn-' + postId);
             const icon = btn ? btn.querySelector('i') : null;
@@ -1082,13 +1088,13 @@
                 icon.className = isSaved ? 'far fa-bookmark' : 'fas fa-bookmark';
                 if (!isSaved) {
                     recordFeedActivity(postId, 'SAVE');
-                    showToast("Saved successfully! ðŸ”–");
+                    showToast("Saved successfully! 🔖");
                 } else {
                     showToast("Removed from saved");
                 }
             } else {
                 recordFeedActivity(postId, 'SAVE');
-                showToast("Saved successfully! ðŸ”–");
+                showToast("Saved successfully! 🔖");
             }
         }
 
@@ -1199,12 +1205,12 @@
         }
 
         const EMOJI_CATEGORIES = {
-            smileys: ['ðŸ˜€','ðŸ˜ƒ','ðŸ˜„','ðŸ˜','ðŸ˜†','ðŸ˜…','ðŸ˜‚','ðŸ¤£','ðŸ˜Š','ðŸ˜‡','ðŸ™‚','ðŸ™ƒ','ðŸ˜‰','ðŸ˜Œ','ðŸ˜','ðŸ¥°','ðŸ˜˜','ðŸ˜—','ðŸ˜™','ðŸ˜š','ðŸ˜‹','ðŸ˜›','ðŸ˜','ðŸ˜œ','ðŸ¤ª','ðŸ¤¨','ðŸ§','ðŸ¤“','ðŸ˜Ž','ðŸ¤©','ðŸ¥³','ðŸ˜','ðŸ˜’','ðŸ˜ž','ðŸ˜”','ðŸ˜Ÿ','ðŸ˜•','ðŸ™','â˜¹ï¸','ðŸ˜£','ðŸ˜–','ðŸ˜«','ðŸ˜©','ðŸ¥º','ðŸ˜¢','ðŸ˜­','ðŸ˜¤','ðŸ˜ ','ðŸ˜¡','ðŸ¤¬','ðŸ¤¯','ðŸ˜³','ðŸ¥µ','ðŸ¥¶','ðŸ˜±','ðŸ˜¨','ðŸ˜°','ðŸ˜¥','ðŸ˜“','ðŸ¤—','ðŸ¤”','ðŸ¤­','ðŸ¤«','ðŸ¤¥','ðŸ˜¶','ðŸ˜','ðŸ˜‘','ðŸ˜¬','ðŸ™„','ðŸ˜¯','ðŸ˜¦','ðŸ˜§','ðŸ˜®','ðŸ˜²','ðŸ¥±','ðŸ˜´','ðŸ¤¤','ðŸ˜ª','ðŸ˜µ','ðŸ¤','ðŸ¥´','ðŸ¤¢','ðŸ¤®','ðŸ¤§','ðŸ˜·','ðŸ¤’','ðŸ¤•'],
-            gestures: ['ðŸ‘‹','ðŸ¤š','ðŸ–ï¸','âœ‹','ðŸ––','ðŸ‘Œ','ðŸ’¥','âœŒï¸','ðŸ¤ž','ðŸ¤Ÿ','ðŸ¤˜','ðŸ¤™','ðŸ‘ˆ','ðŸ‘‰','ðŸ‘†','ðŸ–•','ðŸ‘‡','â˜ï¸','ðŸ‘','ðŸ‘Ž','âœŠ','ðŸ‘Š','ðŸ¤›','ðŸ¤œ','ðŸ‘','ðŸ™Œ','ðŸ‘','ðŸ¤²','ðŸ¤','ðŸ™','âœï¸','ðŸ’…','ðŸ¤³','ðŸ’ª','ðŸ¦¾','ðŸ‘‚','ðŸ‘ƒ','ðŸ§ ','ðŸ¦·','ðŸ¦´','ðŸ‘€','ðŸ‘ï¸'],
-            hearts: ['â¤ï¸','ðŸ§¡','ðŸ’›','ðŸ’š','ðŸ’™','ðŸ’œ','ðŸ–¤','ðŸ¤','ðŸ¤Ž','ðŸ’”','ðŸ’•','ðŸ’ž','ðŸ’“','ðŸ’—','ðŸ’–','ðŸ’˜','ðŸ’','ðŸ’Ÿ'],
-            animals: ['ðŸ¶','ðŸ±','ðŸ­','ðŸ¹','ðŸ°','ðŸ¦Š','ðŸ»','ðŸ¼','ðŸ¨','ðŸ¯','ðŸ¦','ðŸ®','ðŸ·','ðŸ½','ðŸ¸','ðŸµ','ðŸ™ˆ','ðŸ™‰','ðŸ™Š','ðŸ’','ðŸ”','ðŸ§','ðŸ¦','ðŸ¤','ðŸ£','ðŸ¥','ðŸ¦†','ðŸ¦…','ðŸ¦‰','ðŸ¦‡','ðŸº','ðŸ—','ðŸ´','ðŸ¦„','ðŸ','ðŸ›','ðŸ¦‹','ðŸŒ','ðŸž','ðŸœ','ðŸ•·ï¸','ðŸ•¸ï¸','ðŸ¢','ðŸ','ðŸ¦Ž','ðŸ™','ðŸ¦‘','ðŸ¦ž','ðŸ¦€','ðŸ¡','ðŸ ','ðŸŸ','ðŸ¬','ðŸ³','ðŸ‹','ðŸ¦ˆ','ðŸŠ'],
-            food: ['ðŸ','ðŸŽ','ðŸ','ðŸŠ','ðŸ‹','ðŸŒ','ðŸ‰','ðŸ‡','ðŸ“','ðŸ’','ðŸ‘','ðŸ¥­','ðŸ','ðŸ¥¥','ðŸ¥','ðŸ…','èŒ„','ðŸ¥‘','ðŸ¥¦','ðŸ¥¬','ðŸ¥’','ðŸŒ¶ï¸','ðŸŒ½','ðŸ¥•','ðŸ¥”','ðŸ¥–','ðŸ§€','ðŸ—','ðŸ¥©','ðŸ¥“','ðŸ”','ðŸŸ','ðŸ•','ðŸŒ­','ðŸ¥ª','ðŸŒ®','ðŸŒ¯','ðŸ³','ðŸ¥˜','ðŸ²','ðŸ¥£','ðŸ¥—','ðŸ¿','ðŸ±','ðŸ£','ðŸ¤','ðŸ¥Ÿ','ðŸ¦','ðŸ§','ðŸ¨','ðŸ©','ðŸª','ðŸŽ‚','ðŸ°','ðŸ«','ðŸ¬','ðŸ­','ðŸ®','ðŸ¯','â˜•','ðŸµ','ðŸ¶','ðŸ·','ðŸ¸','ðŸ¹','ðŸº','ðŸ»'],
-            activities: ['âš½','ðŸ€','ðŸˆ','âš¾','ðŸ¥Ž','ðŸŽ¾','ðŸ','ðŸ‰','ðŸŽ±','ðŸ“','ðŸ¸','ðŸ’','ðŸ‘','ðŸ¥','ðŸ¥…','â›³','ðŸ¹','ðŸŽ£','ðŸ¥Š','ðŸ¥‹','ðŸ›¹','ðŸ›¼','ðŸŽ¯','ðŸŽ®','ðŸ•¹ï¸','ðŸŽ°','ðŸŽ³','ðŸŽ¸','ðŸŽº','ðŸŽ»','ðŸŽ¨','ðŸŽ¬','ðŸŽ¤']
+            smileys: ['😀','😃','😄','😁','😆','😅','😂','🤣','😊','😇','🙂','🙃','😉','😌','😍','🥰','😘','😗','😙','😚','😋','😛','😝','😜','🤪','🤨','🧐','🤓','😎','🤩','🥳','😏','😒','😞','😔','😟','😕','🙁','☹️','😣','😖','😫','😩','🥺','😢','😭','😤','😠','😡','🤬','🤯','😳','🥵','🥶','😱','😨','😰','😥','😓','🤗','🤔','🤭','🤫','🤥','😶','😐','😑','😬','🙄','😯','😦','😧','😮','😲','🥱','😴','🤤','😪','😵','🤐','🥴','🤢','🤮','🤧','😷','🤒','🤕'],
+            gestures: ['👋','🤚','🖐️','✋','🖖','👌','💥','✌️','🤞','🤟','🤘','🤙','👈','👉','👆','🖕','👇','☝️','👍','👎','✊','👊','🤛','🤜','👏','🙌','👐','🤲','🤝','🙏','✍️','💅','🤳','💪','🦾','👂','👃','🧠','🦷','🦴','👀','👁️'],
+            hearts: ['❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','💕','💞','💓','💗','💖','💘','💝','💟'],
+            animals: ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐽','🐸','🐵','🙈','🙉','🙊','🐒','🐔','🐧','🐦','🐤','🐣','🐥','🦆','🦅','🦉','🦇','🐺','🐗','🐴','🦄','🐝','🐛','🦋','🐌','🐞','🐜','🕷️','🕸️','🐢','🐍','🦎','🐙','🦑','🦞','🦀','🐡','🐠','🐟','🐬','🐳','🐋','🦈','🐊'],
+            food: ['🍏','🍎','🍐','🍊','🍋','🍌','🍉','🍇','🍓','🍒','🍑','🥭','🍍','🥥','🥝','🍅','èŒ„','🥑','🥦','🥬','🥒','🌶️','🌽','🥕','🥔','🥖','🧀','🍗','🥩','🥓','🍔','🍟','🍕','🌭','🥪','🌮','🌯','🍳','🥘','🍲','🥣','🥗','🍿','🍱','🍣','🍤','🥟','🍦','🍧','🍨','🍩','🍪','🎂','🍰','🍫','🍬','🍭','🍮','🍯','☕','🍵','🍶','🍷','🍸','🍹','🍺','🍻'],
+            activities: ['⚽','🏀','🏈','⚾','🥎','🎾','🏐','🏉','🎱','🏓','🏸','🏒','🏑','🥍','🥅','⛳','🏹','🎣','🥊','🥋','🛹','🛼','🎯','🎮','🕹️','🎰','🎳','🎸','🎺','🎻','🎨','🎬','🎤']
         };
 
         function toggleEmojiPicker(postId) {
@@ -1270,14 +1276,14 @@
             }
         }
 
-        // â”€â”€ Comments Toggle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ── Comments Toggle ──────────────────────────────────
         function toggleComments(postId) {
             const panel = document.getElementById('comments-panel-' + postId);
             if (!panel) return;
             panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
         }
 
-        // â”€â”€ Post Comment â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ── Post Comment ─────────────────────────────────────
         async function postComment(postId) {
             const input = document.getElementById('comment-input-' + postId);
             if (!input || !input.value.trim()) return;
@@ -1625,7 +1631,7 @@
                     })
                 });
                 if (res.ok) {
-                    showToast("Reaction sent! â¤ï¸");
+                    showToast("Reaction sent! ❤️");
                 }
             } catch (e) {
                 console.error("Failed to send reaction", e);
@@ -1656,7 +1662,7 @@
                     })
                 });
                 if (res.ok) {
-                    showToast("Reply sent! âœ‰ï¸");
+                    showToast("Reply sent! ✉️");
                     input.blur();
                 }
             } catch (e) {
@@ -1952,7 +1958,7 @@
                 style="position: absolute; top: 28px; right: 16px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: #fff; background: rgba(0,0,0,0.4); border-radius: 50%; border: none; z-index: 120; font-weight: bold; transition: background 0.2s;"
                 onmouseover="this.style.background='rgba(0,0,0,0.7)'"
                 onmouseout="this.style.background='rgba(0,0,0,0.4)'"
-                onclick="closeStoryViewer()">âœ•</button>
+                onclick="closeStoryViewer()">✕</button>
 
             <div id="storyViewerContent"
                 style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #000;">
@@ -1963,12 +1969,12 @@
             <div id="storyViewerBottom" onclick="event.stopPropagation()" style="position: absolute; bottom: 0; left: 0; right: 0; padding: 16px; background: linear-gradient(transparent, rgba(0,0,0,0.9)); z-index: 110; display: flex; flex-direction: column; gap: 10px;">
                 <!-- Quick React Emojis -->
                 <div class="story-reactions" style="display: flex; justify-content: space-around; font-size: 22px; user-select: none;">
-                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('â¤ï¸')">â¤ï¸</span>
-                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('ðŸ˜‚')">ðŸ˜‚</span>
-                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('ðŸ˜®')">ðŸ˜®</span>
-                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('ðŸ˜¢')">ðŸ˜¢</span>
-                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('ðŸ‘')">ðŸ‘</span>
-                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('ðŸ”¥')">ðŸ”¥</span>
+                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('❤️')">❤️</span>
+                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('😂')">😂</span>
+                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('😮')">😮</span>
+                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('😢')">😢</span>
+                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('👏')">👏</span>
+                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('🔥')">🔥</span>
                 </div>
                 <!-- Message Input -->
                 <div style="display: flex; gap: 8px; align-items: center; position: relative;">
@@ -1978,7 +1984,7 @@
                                onfocus="pauseStoryTimer()" onblur="resumeStoryTimer()"
                                onkeydown="if(event.key === 'Enter') sendStoryReply()">
                         <button type="button" onclick="event.stopPropagation(); toggleStoryEmojiPicker()" 
-                                style="position: absolute; right: 12px; background: none; border: none; font-size: 16px; cursor: pointer; color: #aaa; outline: none; user-select: none;">ðŸ˜€</button>
+                                style="position: absolute; right: 12px; background: none; border: none; font-size: 16px; cursor: pointer; color: #aaa; outline: none; user-select: none;">😀</button>
                     </div>
                     <button onclick="sendStoryReply()" 
                             style="background: #f84464; border: none; border-radius: 50%; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; flex-shrink: 0;">
@@ -1991,12 +1997,12 @@
                          onclick="event.stopPropagation()">
                          <!-- Categories / Tabs -->
                          <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px; margin-bottom: 8px; font-size: 14px; color: #aaa; font-weight: 700; user-select: none;">
-                             <span style="cursor: pointer; color: #fff;" onclick="switchStoryEmojiCategory(this, 'smileys')">ðŸ˜€</span>
-                             <span style="cursor: pointer;" onclick="switchStoryEmojiCategory(this, 'gestures')">ðŸ‘</span>
-                             <span style="cursor: pointer;" onclick="switchStoryEmojiCategory(this, 'hearts')">â¤ï¸</span>
-                             <span style="cursor: pointer;" onclick="switchStoryEmojiCategory(this, 'animals')">ðŸ±</span>
-                             <span style="cursor: pointer;" onclick="switchStoryEmojiCategory(this, 'food')">ðŸ•</span>
-                             <span style="cursor: pointer;" onclick="switchStoryEmojiCategory(this, 'activities')">âš½</span>
+                             <span style="cursor: pointer; color: #fff;" onclick="switchStoryEmojiCategory(this, 'smileys')">😀</span>
+                             <span style="cursor: pointer;" onclick="switchStoryEmojiCategory(this, 'gestures')">👍</span>
+                             <span style="cursor: pointer;" onclick="switchStoryEmojiCategory(this, 'hearts')">❤️</span>
+                             <span style="cursor: pointer;" onclick="switchStoryEmojiCategory(this, 'animals')">🐱</span>
+                             <span style="cursor: pointer;" onclick="switchStoryEmojiCategory(this, 'food')">🍕</span>
+                             <span style="cursor: pointer;" onclick="switchStoryEmojiCategory(this, 'activities')">⚽</span>
                          </div>
                          <!-- Emoji Content Area -->
                          <div class="emoji-picker-content" style="height: 140px; overflow-y: auto; display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; font-size: 18px; text-align: center;">

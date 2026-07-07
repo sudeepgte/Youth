@@ -1135,7 +1135,7 @@
         }
 
         .chat-area.vanish-active .messages-area::before {
-            content: "ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤«";
+            content: "🤫 🤫 🤫 🤫 🤫 🤫 🤫 🤫 🤫 🤫 🤫 🤫 🤫 🤫 🤫 🤫 🤫 🤫 🤫 🤫 🤫 🤫 🤫 🤫";
             position: absolute;
             top: 0;
             left: 0;
@@ -1250,7 +1250,17 @@
         }
 
         @media (max-width: 768px) {
-            .app-container { position: relative; }
+            body .dashboard-container {
+                grid-template-columns: 1fr;
+                margin-top: calc(var(--dashboard-nav-height));
+                padding: 0;
+                gap: 0;
+            }
+            body .content-main {
+                border-right: none !important;
+                height: calc(100vh - var(--dashboard-nav-height)) !important;
+            }
+            .app-container { position: relative; border-left: none; border-right: none; }
             .chat-sidebar { width: 100% !important; border-right: none; }
             
             .chat-main { 
@@ -1901,7 +1911,7 @@
                         </div>
                         <div class="header-icon" id="vanishToggle" title="Toggle Vanish Mode"
                             onclick="toggleVanishMode()">
-                            <span id="vanishHeaderIcon" style="font-size: 20px;">ðŸ¤«</span>
+                            <span id="vanishHeaderIcon" style="font-size: 20px;">🤫</span>
                         </div>
                         <div class="header-icon" title="Search messages" onclick="toggleMessageSearch()">
                             <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor"
@@ -1948,7 +1958,7 @@
 
                 <div class="messages-area" id="messagesArea">
                     <div class="vanish-indicator">
-                        ðŸ¤« Vanish Mode<br>
+                        🤫 Vanish Mode<br>
                         Messages will disappear when you close the chat.
                     </div>
                     <!-- Messages will be injected here -->
@@ -2016,12 +2026,12 @@
                         <input type="file" id="fileInput" style="display: none;" accept="image/*,video/*"
                             onchange="handleFileUpload(this)">
                         <div class="header-icon" title="Emoji" onclick="toggleEmojiPicker()" style="margin: 0 4px;">
-                            <span style="font-size:20px; line-height:1;">ðŸ˜Š</span>
+                            <span style="font-size:20px; line-height:1;">😊</span>
                         </div>
                         <div class="header-icon" title="Stickers" onclick="toggleStickerPicker()" style="margin: 0 4px;">
-                            <span style="font-size:20px; line-height:1;">ðŸ§©</span>
+                            <span style="font-size:20px; line-height:1;">🧩</span>
                         </div>
-                        <input type="text" id="chatInput" placeholder="Message..." onkeypress="handleKeyStroke(event)">
+                        <input type="text" id="chatInput" placeholder="Message..." onkeypress="handleKeyStroke(event)" oninput="toggleSendButton()">
                         <div class="header-icon" id="voiceBtn" title="Record voice message" onclick="startRecording()"
                             style="margin: 0 5px;">
                             <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor"
@@ -2032,7 +2042,12 @@
                                 <line x1="8" y1="23" x2="16" y2="23"></line>
                             </svg>
                         </div>
-                        <div class="btn-send" onclick="sendChatMessage()">Send</div>
+                        <div class="header-icon" id="sendBtn" title="Send message" onclick="sendChatMessage()"
+                            style="margin: 0 5px; display: none; color: var(--primary-accent);">
+                            <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
+                            </svg>
+                        </div>
 
                         <div class="picker-panel" id="emojiPicker">
                             <div class="picker-grid" id="emojiGrid"></div>
@@ -2202,7 +2217,7 @@
         let manageGroupState = { creatorId: null, participants: [], isAdmin: false };
 
         // Emoji + Sticker pickers
-        const EMOJIS = ['ðŸ˜€', 'ðŸ˜', 'ðŸ˜‚', 'ðŸ¤£', 'ðŸ˜Š', 'ðŸ˜', 'ðŸ˜˜', 'ðŸ˜Ž', 'ðŸ¥³', 'ðŸ˜‡', 'ðŸ¤”', 'ðŸ˜…', 'ðŸ˜­', 'ðŸ˜¡', 'ðŸ‘', 'ðŸ‘Ž', 'ðŸ™', 'ðŸ”¥', 'ðŸŽ‰', 'ðŸ’¯', 'â¤ï¸', 'âœ¨', 'ðŸŒŸ', 'ðŸ˜´', 'ðŸ¤', 'ðŸ™Œ', 'ðŸ˜®', 'ðŸ˜¬', 'ðŸ¤©', 'ðŸ˜œ', 'ðŸ¤—', 'ðŸ’¡'];
+        const EMOJIS = ['😀', '😁', '😂', '🤣', '😊', '😍', '😘', '😎', '🥳', '😇', '🤔', '😅', '😭', '😡', '👍', '👎', '🙏', '🔥', '🎉', '💯', '❤️', '✨', '🌟', '😴', '🤝', '🙌', '😮', '😬', '🤩', '😜', '🤗', '💡'];
         const STICKERS = [
             '/stickers/sticker-hello.svg',
             '/stickers/sticker-lol.svg',
@@ -2244,6 +2259,7 @@
             const pos = start + emoji.length;
             input.setSelectionRange(pos, pos);
             input.focus();
+            toggleSendButton();
         }
 
         function sendSticker(stickerUrl) {
@@ -2285,7 +2301,7 @@
                 <div class="search-result-item" onclick="toggleGroupUserSelection(${u.id}, '${u.username}')">
                     <div class="result-avatar">${u.username.charAt(0)}</div>
                     <div>${u.username}</div>
-                    <div style="margin-left:auto;">${selectedGroupUsers.some(su => su.id === u.id) ? 'âœ…' : '+'}</div>
+                    <div style="margin-left:auto;">${selectedGroupUsers.some(su => su.id === u.id) ? '✅' : '+'}</div>
                 </div>
             `).join('');
         }
@@ -2874,7 +2890,7 @@
                 // Re-add top vanish indicator
                 const topInd = document.createElement('div');
                 topInd.className = 'vanish-indicator';
-                topInd.innerHTML = 'ðŸ¤« Vanish Mode<br>Messages will disappear when you close the chat.';
+                topInd.innerHTML = '🤫 Vanish Mode<br>Messages will disappear when you close the chat.';
                 container.appendChild(topInd);
 
                 history.forEach(m => appendMessageToUI(m));
@@ -3000,7 +3016,7 @@
             let reactionsHtml = '';
             if (msg.reactions) {
                 Object.values(msg.reactions).forEach(r => {
-                    if (r === 'heart') reactionsHtml += 'â¤ï¸';
+                    if (r === 'heart') reactionsHtml += '❤️';
                 });
             }
 
@@ -3140,7 +3156,22 @@
             console.log('Sending message:', payload);
             stompClient.send("/app/chat.send", {}, JSON.stringify(payload));
             input.value = '';
+            toggleSendButton();
             cancelReply();
+        }
+
+        function toggleSendButton() {
+            const input = document.getElementById('chatInput');
+            const voiceBtn = document.getElementById('voiceBtn');
+            const sendBtn = document.getElementById('sendBtn');
+            
+            if (input && input.value.trim().length > 0) {
+                if (voiceBtn) voiceBtn.style.display = 'none';
+                if (sendBtn) sendBtn.style.display = 'flex';
+            } else {
+                if (voiceBtn) voiceBtn.style.display = 'flex';
+                if (sendBtn) sendBtn.style.display = 'none';
+            }
         }
 
         function onNewMessage(msg) {
@@ -3178,7 +3209,7 @@
                 if (msg.reactions) {
                     // msg.reactions is a map of User -> String
                     Object.values(msg.reactions).forEach(r => {
-                        if (r === 'heart') reactionsHtml += 'â¤ï¸';
+                        if (r === 'heart') reactionsHtml += '❤️';
                     });
                 }
                 badge.innerText = reactionsHtml;
@@ -3910,7 +3941,7 @@
             wrapper.className = 'vanish-pattern-wrapper';
             wrapper.style.cssText = 'position:absolute; top:0; left:0; width:100%; height:100%; display:flex; flex-wrap:wrap; justify-content:space-around; align-content:space-around; font-size:40px; opacity:0.03; pointer-events:none; z-index:0; padding:20px; line-height:80px; overflow:hidden;';
             
-            const emojis = ["ðŸ¤«", "ðŸ¤«", "ðŸ¤«", "ðŸ¤«", "ðŸ¤«", "ðŸ¤«", "ðŸ¤«", "ðŸ¤«"];
+            const emojis = ["🤫", "🤫", "🤫", "🤫", "🤫", "🤫", "🤫", "🤫"];
             for (let i = 0; i < 50; i++) {
                 const span = document.createElement('span');
                 span.innerText = emojis[Math.floor(Math.random() * emojis.length)];

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 
 <head>
@@ -110,19 +110,19 @@
     <div class="login-container">
         <h2>Welcome Back</h2>
 
-        <!-- âœ… Logged out successfully -->
+        <!-- ✅ Logged out successfully -->
         <div th:if="${param.loggedOut}"
              style="color: #15803d; background: rgba(21,128,61,0.08); border: 1.5px solid #86efac; padding: 12px 14px; border-radius: 10px; text-align: center; margin-bottom: 1rem; font-weight: 600; font-size: 14px; display:flex; align-items:center; gap:8px; justify-content:center;">
             <i class="fas fa-check-circle"></i> You've been logged out successfully. Please sign in again.
         </div>
 
-        <!-- âš ï¸ Session expired / token revoked -->
+        <!-- ⚠️ Session expired / token revoked -->
         <div th:if="${param.expired}"
              style="color: #92400e; background: rgba(245,158,11,0.08); border: 1.5px solid #fcd34d; padding: 12px 14px; border-radius: 10px; text-align: center; margin-bottom: 1rem; font-weight: 600; font-size: 14px; display:flex; align-items:center; gap:8px; justify-content:center;">
             <i class="fas fa-clock"></i> Your session has expired. Please log in again to continue.
         </div>
 
-        <!-- âŒ Wrong credentials -->
+        <!-- ❌ Wrong credentials -->
         <div th:if="${param.error}"
             style="color: #ff4444; background-color: rgba(255, 68, 68, 0.1); border: 1px solid #ff4444; padding: 10px; border-radius: 5px; text-align: center; margin-bottom: 1rem;">
             Invalid username or password.

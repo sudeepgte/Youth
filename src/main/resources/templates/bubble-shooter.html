@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 
 <head>
@@ -370,7 +370,7 @@
     <div id="cabinet">
         <div class="led-strip" style="width:490px;border-radius:12px 12px 0 0;"></div>
         <div class="wood-top">
-            <h1>âœ¦ BUBBLE SHOT âœ¦</h1>
+            <h1>✦ BUBBLE SHOT ✦</h1>
         </div>
         <div class="metal-bar" style="width:490px;"></div>
 
@@ -421,9 +421,9 @@
 
     <script th:inline="none">
         /*<![CDATA[*/
-        // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+        // ═══════════════════════════════════════════════════
         //  BUBBLE SHOT â€” Hyper-Realistic Renderer + Game Logic
-        // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+        // ═══════════════════════════════════════════════════
 
         const C = document.getElementById('c');
         const ctx = C.getContext('2d');
@@ -450,7 +450,7 @@
         let particles = [], sparkles = [], state = 'idle';
         let ripples = [];
 
-        // â”€â”€ Grid helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ── Grid helpers ──────────────────────────────────────────────────
         function rowOff(r) { return r % 2 === 0 ? 0 : R; }
         function g2xy(r, c) { return { x: R + c * R * 2 + rowOff(r) + 1, y: TOP + r * ROW_H + R }; }
         function xy2g(x, y) {
@@ -608,7 +608,7 @@
             document.getElementById('play-btn').textContent = btn;
         }
 
-        // â”€â”€ Particles update + draw â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ── Particles update + draw ───────────────────────────────────────
         function spawnPop(x, y, pal) {
             // Shards
             for (let i = 0; i < 16; i++) {
@@ -651,7 +651,7 @@
             document.getElementById('shots-el').textContent = shots;
         }
 
-        // â”€â”€ Main Game Loop â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ── Main Game Loop ────────────────────────────────────────────────
         function loop(ts) {
             requestAnimationFrame(loop);
             ctx.clearRect(0, 0, W, H);
@@ -805,7 +805,7 @@
             ctx.restore();
         }
 
-        // â”€â”€ Input â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ── Input ─────────────────────────────────────────────────────────
         C.onmousemove = e => {
             const rect = C.getBoundingClientRect();
             const mx = (e.clientX - rect.left) * (W / rect.width);

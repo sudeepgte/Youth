@@ -24,7 +24,7 @@
 
         /* Header is handled by shared .dashboard-navbar styles in style.css */
 
-        /* â”€â”€ Main Layout â”€â”€ */
+        /* ── Main Layout ── */
         .dashboard-container {
             display: grid;
             grid-template-columns: 250px 1fr;
@@ -53,7 +53,7 @@
             color: var(--text-primary);
         }
 
-        /* â”€â”€ Leaderboard Core â”€â”€ */
+        /* ── Leaderboard Core ── */
         .lb-header {
             display: flex;
             align-items: center;
@@ -259,7 +259,7 @@
             color: #38bdf8;
         }
 
-        /* â”€â”€ Achievements Grid â”€â”€ */
+        /* ── Achievements Grid ── */
         .achievements-section {
             margin-bottom: 40px;
         }
@@ -359,7 +359,7 @@
             opacity: 0.2;
         }
 
-        /* â”€â”€ Leaderboard Table â”€â”€ */
+        /* ── Leaderboard Table ── */
         .lb-table {
             width: 100%;
             border-collapse: collapse;
@@ -489,17 +489,133 @@
             border-color: rgba(255, 255, 255, 0.1);
         }
 
-        /* â”€â”€ Responsive â”€â”€ */
+        /* ── Responsive ── */
         @media (max-width: 768px) {
-            .dashboard-container { grid-template-columns: 1fr; padding: 0 10px; gap: 15px; }
-            .content-area { padding: 15px 10px; }
-            .lb-header h1 { font-size: 1.4rem; }
-            .my-stats-card, .mystery-card { flex-direction: column; text-align: center; gap: 12px; }
-            .xp-pill { margin-left: 0; }
-            .achievements-grid { grid-template-columns: 1fr; }
-            /* Make table scrollable on mobile */
-            .lb-table { display: block; overflow-x: auto; white-space: nowrap; }
-            .badges-row { justify-content: center; }
+            .dashboard-container {
+                grid-template-columns: 1fr;
+                padding: 0 12px;
+                gap: 15px;
+                margin-top: calc(var(--dashboard-nav-height) + 10px);
+            }
+            .content-area {
+                padding: 15px 12px;
+            }
+            .lb-header {
+                margin-bottom: 20px;
+            }
+            .lb-header h1 {
+                font-size: 1.5rem;
+            }
+            .my-stats-card, .mystery-card {
+                padding: 18px 15px;
+                gap: 15px;
+                align-items: flex-start;
+            }
+            .my-stats-card {
+                flex-direction: row;
+                align-items: center;
+            }
+            .my-stats-card img {
+                width: 50px;
+                height: 50px;
+            }
+            .my-stats-info h3 {
+                font-size: 1rem;
+            }
+            .xp-pill {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+            .mystery-card {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+            .mystery-icon {
+                width: 50px;
+                height: 50px;
+                font-size: 22px;
+                margin-bottom: -5px;
+            }
+            .mystery-info h3 {
+                justify-content: center;
+                font-size: 1.05rem;
+            }
+            .achievements-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            .achievement-card {
+                padding: 18px 15px;
+                gap: 15px;
+            }
+            .award-icon {
+                width: 46px;
+                height: 46px;
+                font-size: 20px;
+            }
+            .award-info h4 {
+                font-size: 14px;
+            }
+            .lb-table th, .lb-table td {
+                padding: 12px 10px;
+            }
+            .lb-table th:nth-child(3), .lb-table td:nth-child(3) {
+                display: none; /* Hide Tier column on small mobile devices to save space */
+            }
+            .u-flex {
+                gap: 8px;
+            }
+            .u-flex img {
+                width: 30px;
+                height: 30px;
+            }
+            .u-flex div div {
+                font-size: 13px;
+            }
+            .rank {
+                width: 30px;
+                font-size: 14px;
+            }
+            .rank-1 {
+                font-size: 18px;
+            }
+            .rank-2, .rank-3 {
+                font-size: 16px;
+            }
+            .xp-score {
+                font-size: 13px;
+            }
+            #redeemSection {
+                flex-direction: column;
+                width: 100%;
+            }
+            #redeemSection input, #redeemSection button {
+                width: 100%;
+            }
+            .achievements-section h2 {
+                font-size: 1.15rem;
+            }
+            .empty-achievements {
+                padding: 30px 20px;
+            }
+            .empty-achievements i {
+                font-size: 32px;
+            }
+            .badges-row {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+            .tier {
+                padding: 10px;
+            }
+            .tier i {
+                font-size: 20px;
+            }
+            .tier .t-name {
+                font-size: 12px;
+            }
         }
     </style>
 </head>

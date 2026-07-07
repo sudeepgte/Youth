@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 
 <head>
@@ -615,7 +615,7 @@
             }
         }
     </style>
-    <h1>ðŸŽ² LUDO KING</h1>
+    <h1>🎲 LUDO KING</h1>
 
     <!-- Toast -->
     <div id="toast"></div>
@@ -624,12 +624,12 @@
     <div id="overlay">
         <!-- Start Modal -->
         <div class="game-modal" id="startModal">
-            <h2>ðŸŽ² Ludo King</h2>
+            <h2>🎲 Ludo King</h2>
             <p>Set up your game and let's play!</p>
             <div class="section-label">Game Mode</div>
             <div class="option-group" id="modeSelect">
-                <button class="opt-btn sel" data-mode="pvp">ðŸ‘¥ Human vs Human</button>
-                <button class="opt-btn" data-mode="pvc">ðŸ¤– vs Computer</button>
+                <button class="opt-btn sel" data-mode="pvp">👥 Human vs Human</button>
+                <button class="opt-btn" data-mode="pvc">🤖 vs Computer</button>
             </div>
             <div class="section-label">Number of Players</div>
             <div class="option-group" id="playerCountSelect">
@@ -637,19 +637,19 @@
                 <button class="opt-btn" data-n="3">3 Players</button>
                 <button class="opt-btn" data-n="4">4 Players</button>
             </div>
-            <button class="start-btn" id="startBtn">ðŸš€ Start Game</button>
+            <button class="start-btn" id="startBtn">🚀 Start Game</button>
             <div style="margin-top:14px;">
-                <a th:href="@{/games}" class="exit-btn">â† Exit to Games</a>
+                <a th:href="@{/games}" class="exit-btn">← Exit to Games</a>
             </div>
         </div>
         <!-- Win Modal -->
         <div class="game-modal" id="winModal">
-            <div id="winnerBadge">ðŸ†</div>
+            <div id="winnerBadge">🏆</div>
             <div id="winnerText">RED WINS!</div>
             <p class="win-msg">Congratulations! All pieces reached home!</p>
-            <button class="start-btn" onclick="location.reload()">ðŸŽ² Play Again</button>
+            <button class="start-btn" onclick="location.reload()">🎲 Play Again</button>
             <div style="margin-top:14px;">
-                <a th:href="@{/games}" class="exit-btn">â† Exit to Games</a>
+                <a th:href="@{/games}" class="exit-btn">← Exit to Games</a>
             </div>
         </div>
     </div>
@@ -663,12 +663,12 @@
             <div id="diceSection">
                 <div id="currentPlayerLabel">Red's Turn</div>
                 <div class="dice-wrapper">
-                    <div id="dice" onclick="if(!diceDisabled)rollDice()">âš€</div>
+                    <div id="dice" onclick="if(!diceDisabled)rollDice()">⚀</div>
                 </div>
                 <button id="rollBtn" onclick="rollDice()" disabled>Roll Dice</button>
                 <div id="status" class="good">Ready to roll</div>
             </div>
-            <a th:href="@{/games}" class="exit-btn">â† Exit Game</a>
+            <a th:href="@{/games}" class="exit-btn">← Exit Game</a>
         </div>
     </div>
 
@@ -716,12 +716,12 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
 
         const COLORS = ['#e63946', '#1d7bcf', '#2dc653', '#f7b731'];
         const NAMES = ['Red', 'Blue', 'Green', 'Yellow'];
-        const FACES = ['âš€', 'âš', 'âš‚', 'âšƒ', 'âš„', 'âš…'];
+        const FACES = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
 
         // ---- CORRECTED TRACK: 52 cells ----
         // Each element is [col, row]
         const TRACK = [
-            // Red start column going up: col=6, rows 14â†’9
+            // Red start column going up: col=6, rows 14→9
             [6, 14], [6, 13], [6, 12], [6, 11], [6, 10], [6, 9],
             // Left arm: row=8 going left
             [5, 8], [4, 8], [3, 8], [2, 8], [1, 8], [0, 8],
@@ -746,7 +746,7 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
             // Bottom: row 14
             [7, 14]
         ];
-        // 52 cells total âœ“
+        // 52 cells total ✓
 
         // Home straights (6 cells each, excluding center)
         function getHomeStraight(pi, step) {
@@ -942,7 +942,7 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
             // Fallback: Ensure dice face matches state if not currently animating
             const diceEl = document.getElementById('dice');
             if (state.diceRolled && !diceEl.classList.contains('rolling')) {
-                diceEl.textContent = FACES[state.diceValue - 1] || 'âš€';
+                diceEl.textContent = FACES[state.diceValue - 1] || '⚀';
             }
 
             buildPlayerCards();
@@ -978,13 +978,13 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
             drawBaseZone(3, 9, COLORS[3]);      // Yellow: col9-14, row9-14
 
             // Actually let's draw all 4 correctly:
-            // Red: bottom-left â†’ col 0-5, row 9-14
+            // Red: bottom-left → col 0-5, row 9-14
             fillZone(0, 9, 6, 6, COLORS[0]);
-            // Blue: top-left â†’ col 0-5, row 0-5
+            // Blue: top-left → col 0-5, row 0-5
             fillZone(0, 0, 6, 6, COLORS[1]);
-            // Green: top-right â†’ col 9-14, row 0-5
+            // Green: top-right → col 9-14, row 0-5
             fillZone(9, 0, 6, 6, COLORS[2]);
-            // Yellow: bottom-right â†’ col 9-14, row 9-14
+            // Yellow: bottom-right → col 9-14, row 9-14
             fillZone(9, 9, 6, 6, COLORS[3]);
 
             // White inner squares in each base
@@ -1025,14 +1025,14 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
                     ctx.font = `${C * 0.55}px serif`;
                     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
                     ctx.fillStyle = 'rgba(80,60,0,0.5)';
-                    ctx.fillText('â˜…', col * C + C / 2, row * C + C / 2);
+                    ctx.fillText('★', col * C + C / 2, row * C + C / 2);
                 }
                 // Start square arrow
                 if (si !== -1) {
                     ctx.font = `${C * 0.55}px serif`;
                     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
                     ctx.fillStyle = COLORS[si];
-                    const arrows = ['â†‘', 'â†’', 'â†“', 'â†'];
+                    const arrows = ['↑', '→', '↓', '←'];
                     ctx.fillText(arrows[si], col * C + C / 2, row * C + C / 2);
                 }
             });
@@ -1065,7 +1065,7 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
             ctx.font = `${C * 1.2}px serif`;
             ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
             ctx.fillStyle = 'rgba(255,255,255,0.85)';
-            ctx.fillText('â˜…', cx, cy);
+            ctx.fillText('★', cx, cy);
 
             // Board border
             ctx.strokeStyle = 'rgba(0,0,0,0.3)';
@@ -1287,7 +1287,7 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
                 d.id = 'pc' + slot;
                 d.style.setProperty('--pc', COLORS[slot]);
                 const isHuman = state.playerTypes[slot] === 'human';
-                const tag = (state.mode === 'pvc') ? (isHuman ? ' ðŸ‘¤' : ' ðŸ¤–') : '';
+                const tag = (state.mode === 'pvc') ? (isHuman ? ' 👤' : ' 🤖') : '';
                 d.innerHTML = `<div class="pc-dot"></div>
       <div class="pc-info">
         <div class="pc-name">${NAMES[slot]}${tag}</div>
@@ -1453,7 +1453,7 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
                                 if (og === globalIdx) {
                                     op2.pos = -1;
                                     captured = true;
-                                    showToast(`ðŸ’¥ ${NAMES[pi]} captured ${NAMES[op]}!`, COLORS[pi]);
+                                    showToast(`💥 ${NAMES[pi]} captured ${NAMES[op]}!`, COLORS[pi]);
                                     setStatus('Captured!', 'capture');
                                 }
                             }
@@ -1464,8 +1464,8 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
             }
 
             if (piece.pos === 57) {
-                setStatus('ðŸ  Piece reached home!', 'good');
-                showToast(`ðŸ  ${NAMES[pi]}'s piece is home!`, COLORS[pi]);
+                setStatus('🏠 Piece reached home!', 'good');
+                showToast(`🏠 ${NAMES[pi]}'s piece is home!`, COLORS[pi]);
             }
 
             setTimeout(() => {
@@ -1474,7 +1474,7 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
                 if (!state.isGameOver) {
                     if (val === 6) {
                         state.diceRolled = false;
-                        setStatus('ðŸŽ² Rolled 6 â€” roll again!', 'rollAgain');
+                        setStatus('🎲 Rolled 6 â€” roll again!', 'rollAgain');
                         showToast(`${NAMES[pi]} rolled 6 â€” roll again!`, COLORS[pi]);
                         updateTurnUI();
                         if (state.playerTypes[state.currentPlayer] === 'computer') setTimeout(doComputerTurn, 1100);
@@ -1550,7 +1550,7 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
                     wb.style.boxShadow = `0 0 30px ${COLORS[pi]}`;
                     const wt = document.getElementById('winnerText');
                     const isHuman = state.playerTypes[pi] === 'human';
-                    wt.textContent = NAMES[pi] + (isHuman ? '' : ' (CPU)') + ' WINS! ðŸŽ‰';
+                    wt.textContent = NAMES[pi] + (isHuman ? '' : ' (CPU)') + ' WINS! 🎉';
                     wt.style.color = COLORS[pi];
                 }, 400);
             }

@@ -152,6 +152,13 @@ public class ProfileController {
         }
         posts.sort((p1, p2) -> p2.getCreatedAt().compareTo(p1.getCreatedAt()));
 
+        // Initialize lazy collaborations for posts
+        for (Post post : posts) {
+            if (post.getCollaborations() != null) {
+                post.getCollaborations().size();
+            }
+        }
+
         model.addAttribute("posts", posts);
         model.addAttribute("postsCount", posts.size());
 
@@ -183,10 +190,23 @@ public class ProfileController {
                     .map(UserActivity::getPost)
                     .distinct()
                     .collect(java.util.stream.Collectors.toList());
+
+            // Initialize lazy collaborations for saved posts
+            for (Post post : savedPosts) {
+                if (post.getCollaborations() != null) {
+                    post.getCollaborations().size();
+                }
+            }
             model.addAttribute("savedPosts", savedPosts);
 
             // Fetch user rewards
             List<UserReward> userRewards = userRewardRepository.findByUserOrderByIssueDateDesc(currentUser);
+            // Initialize lazy secretReward for rewards
+            for (UserReward reward : userRewards) {
+                if (reward.getSecretReward() != null) {
+                    reward.getSecretReward().getId(); // Triggers loading the lazy relationship
+                }
+            }
             model.addAttribute("userRewards", userRewards);
         } else {
             model.addAttribute("pendingRequests", new java.util.ArrayList<>());
