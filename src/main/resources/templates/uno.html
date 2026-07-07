@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 
 <head>
@@ -59,7 +59,7 @@
             yellow: { main: "#e9b000", light: "#ffd166", dark: "#a67700", text: "#1a1a1a" },
             wild: { main: "#1a1a2e", light: "#9b5de5", dark: "#0a0a18", text: "#fff" },
         };
-        const SYMBOL = { Skip: "⊘", Reverse: "↺", "Draw Two": "+2", Wild: "★", "Wild Draw Four": "★+4" };
+        const SYMBOL = { Skip: "âŠ˜", Reverse: "â†º", "Draw Two": "+2", Wild: "â˜…", "Wild Draw Four": "â˜…+4" };
 
         /* --- UI Components (SVG/ColorPicker/Toast) --- */
         function CardFace({ card, width = 72, height = 108 }) {
@@ -140,7 +140,7 @@
                         <input className="lobby-input" type="text" placeholder="Table Code" value={roomCode} onChange={e => setRoomCode(e.target.value)} style={{ width: "100%", padding: 14, borderRadius: 12, background: "#111", border: "1px solid #333", color: "#fff", marginBottom: 20 }} />
                         <button onClick={() => onStart("join", { name, roomCode })} style={{ width: "100%", padding: 14, borderRadius: 12, background: "#1d3557", border: "none", color: "#fff", fontWeight: 900, cursor: "pointer" }}>JOIN TABLE</button>
                     </div>
-                    <a href="/games" style={{ marginTop: 20, color: "#666", textDecoration: "none" }}>← Back to Games</a>
+                    <a th:href="@{/games}" style={{ marginTop: 20, color: "#666", textDecoration: "none" }}>â† Back to Games</a>
                 </div>
             );
         }

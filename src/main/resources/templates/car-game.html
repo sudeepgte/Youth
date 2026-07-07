@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 
 <head>
@@ -78,7 +78,7 @@
 </head>
 
 <body>
-    <a href="${pageContext.request.contextPath}/games" class="back-link" id="back-link">
+    <a th:href="@{/games}" class="back-link" id="back-link">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
         GARAGE
     </a>
@@ -103,7 +103,7 @@
     </div>
 
     <div class="nitro-wrap" id="nitro-wrap" style="display:none">
-        <div class="nitro-label">⚡ NITRO</div>
+        <div class="nitro-label">âš¡ NITRO</div>
         <div class="nitro-outer"><div class="nitro-inner" id="nitro-bar" style="width:100%"></div></div>
     </div>
 
@@ -114,9 +114,9 @@
             <div class="game-subtitle">High-Fidelity 3D Survival Racing</div>
             <button class="game-btn" onclick="startCountdown()">START ENGINE</button>
             <div class="controls-hint">
-                <div class="key-hint"><span class="key-box">↑</span> Accelerate</div>
-                <div class="key-hint"><span class="key-box">↓</span> Brake</div>
-                <div class="key-hint"><span class="key-box">← →</span> Steer</div>
+                <div class="key-hint"><span class="key-box">â†‘</span> Accelerate</div>
+                <div class="key-hint"><span class="key-box">â†“</span> Brake</div>
+                <div class="key-hint"><span class="key-box">â† â†’</span> Steer</div>
                 <div class="key-hint"><span class="key-box">SHIFT</span> Nitro</div>
             </div>
         </div>
@@ -143,20 +143,20 @@
 
     <div class="mobile-controls" id="mobile-controls">
         <div class="mobile-row">
-            <button class="mobile-btn" id="mb-left">◀</button>
-            <button class="mobile-btn mobile-btn-nitro" id="mb-nitro">N₂O</button>
-            <button class="mobile-btn" id="mb-right">▶</button>
+            <button class="mobile-btn" id="mb-left">â—€</button>
+            <button class="mobile-btn mobile-btn-nitro" id="mb-nitro">Nâ‚‚O</button>
+            <button class="mobile-btn" id="mb-right">â–¶</button>
         </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script th:inline="none">
-    /* ═══════════════════════════════════════════
-       ZENTRIX RACING — OPTIMIZED 3D ENGINE
+    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+       ZENTRIX RACING â€” OPTIMIZED 3D ENGINE
        Zero point-lights, pooled objects, merged geos
-       ═══════════════════════════════════════════ */
+       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
-    // ── CONFIG ──
+    // â”€â”€ CONFIG â”€â”€
     const C = {
         lanes: [7.5, 0, -7.5],
         laneSmooth: 0.12,
@@ -220,7 +220,7 @@
         animate();
     }
 
-    // ── SHARED ASSETS (built once) ──
+    // â”€â”€ SHARED ASSETS (built once) â”€â”€
     function buildSharedAssets() {
         // Wheel
         geos.wheel = new THREE.CylinderBufferGeometry(0.48, 0.48, 0.35, 12);
@@ -241,7 +241,7 @@
         geos.light = new THREE.BoxBufferGeometry(0.5, 0.18, 0.08);
     }
 
-    // ── LIGHTS (minimal — no point lights) ──
+    // â”€â”€ LIGHTS (minimal â€” no point lights) â”€â”€
     function setupLights() {
         scene.add(new THREE.AmbientLight(0x445566, 0.7));
 
@@ -260,7 +260,7 @@
         scene.add(sun.target);
     }
 
-    // ── ENVIRONMENT ──
+    // â”€â”€ ENVIRONMENT â”€â”€
     function buildEnv() {
         envGrp = new THREE.Group();
         scene.add(envGrp);
@@ -275,7 +275,7 @@
         gnd.receiveShadow = true;
         envGrp.add(gnd);
 
-        // Mountains (static, far away — won't scroll)
+        // Mountains (static, far away â€” won't scroll)
         for (let side = -1; side <= 1; side += 2) {
             for (let i = 0; i < 8; i++) {
                 const h = 30 + Math.random() * 50;
@@ -323,7 +323,7 @@
         scenery.push(t);
     }
 
-    // ── ROAD ──
+    // â”€â”€ ROAD â”€â”€
     function buildRoad() {
         roadGrp = new THREE.Group();
         scene.add(roadGrp);
@@ -372,7 +372,7 @@
             roadGrp.add(rail);
         });
 
-        // Road studs (glowing markers — only every 30 units)
+        // Road studs (glowing markers â€” only every 30 units)
         const studMat = new THREE.MeshBasicMaterial({ color: 0x00ccdd });
         const studGeo = new THREE.BoxBufferGeometry(0.2, 0.06, 0.2);
         for (let z = -C.roadLen / 2; z < C.roadLen / 2; z += 30) {
@@ -384,7 +384,7 @@
         }
     }
 
-    // ── CAR BUILDER (realistic sports car from box geometries) ──
+    // â”€â”€ CAR BUILDER (realistic sports car from box geometries) â”€â”€
     function buildCar(color, isEnemy) {
         const car = new THREE.Group();
         const paint = new THREE.MeshLambertMaterial({ color: color });
@@ -392,13 +392,13 @@
         const glassMat = new THREE.MeshLambertMaterial({ color: 0x223344, transparent: true, opacity: 0.55 });
         const chromeMat = new THREE.MeshLambertMaterial({ color: 0xaaaaaa });
 
-        // ── Lower body (wide base)
+        // â”€â”€ Lower body (wide base)
         const base = new THREE.Mesh(new THREE.BoxBufferGeometry(4.2, 0.7, 5.8), paint);
         base.position.y = 0.75;
         base.castShadow = true;
         car.add(base);
 
-        // ── Side skirts (thin dark strips along bottom)
+        // â”€â”€ Side skirts (thin dark strips along bottom)
         const skirtGeo = new THREE.BoxBufferGeometry(0.15, 0.35, 5.4);
         [-2.1, 2.1].forEach(x => {
             const sk = new THREE.Mesh(skirtGeo, darkPaint);
@@ -406,38 +406,38 @@
             car.add(sk);
         });
 
-        // ── Hood (sloped front) 
+        // â”€â”€ Hood (sloped front) 
         const hood = new THREE.Mesh(new THREE.BoxBufferGeometry(3.8, 0.18, 1.8), paint);
         hood.position.set(0, 1.15, 1.8);
         hood.rotation.x = -0.08;
         hood.castShadow = true;
         car.add(hood);
 
-        // ── Hood scoop / intake
+        // â”€â”€ Hood scoop / intake
         const scoop = new THREE.Mesh(new THREE.BoxBufferGeometry(0.8, 0.12, 0.6), darkPaint);
         scoop.position.set(0, 1.25, 1.5);
         car.add(scoop);
 
-        // ── Cabin / greenhouse
+        // â”€â”€ Cabin / greenhouse
         const cabinBase = new THREE.Mesh(new THREE.BoxBufferGeometry(3.4, 0.65, 2.2), paint);
         cabinBase.position.set(0, 1.42, -0.1);
         cabinBase.castShadow = true;
         car.add(cabinBase);
 
-        // ── Windshield (angled glass)
+        // â”€â”€ Windshield (angled glass)
         const wsGeo = new THREE.BoxBufferGeometry(3.0, 0.8, 0.08);
         const ws = new THREE.Mesh(wsGeo, glassMat);
         ws.position.set(0, 1.65, 0.85);
         ws.rotation.x = -0.45;
         car.add(ws);
 
-        // ── Rear window
+        // â”€â”€ Rear window
         const rw = new THREE.Mesh(wsGeo, glassMat);
         rw.position.set(0, 1.65, -1.05);
         rw.rotation.x = 0.4;
         car.add(rw);
 
-        // ── Side windows
+        // â”€â”€ Side windows
         const swGeo = new THREE.BoxBufferGeometry(0.06, 0.5, 1.4);
         [-1.72, 1.72].forEach(x => {
             const sw = new THREE.Mesh(swGeo, glassMat);
@@ -445,40 +445,40 @@
             car.add(sw);
         });
 
-        // ── Roof
+        // â”€â”€ Roof
         const roof = new THREE.Mesh(new THREE.BoxBufferGeometry(3.0, 0.12, 1.4), paint);
         roof.position.set(0, 1.92, -0.2);
         roof.castShadow = true;
         car.add(roof);
 
-        // ── Trunk (rear deck)
+        // â”€â”€ Trunk (rear deck)
         const trunk = new THREE.Mesh(new THREE.BoxBufferGeometry(3.8, 0.16, 1.2), paint);
         trunk.position.set(0, 1.15, -1.9);
         trunk.rotation.x = 0.06;
         trunk.castShadow = true;
         car.add(trunk);
 
-        // ── Front bumper
+        // â”€â”€ Front bumper
         const fBumper = new THREE.Mesh(new THREE.BoxBufferGeometry(4.4, 0.45, 0.5), darkPaint);
         fBumper.position.set(0, 0.6, 2.9);
         car.add(fBumper);
 
-        // ── Front grille
+        // â”€â”€ Front grille
         const grille = new THREE.Mesh(new THREE.BoxBufferGeometry(2.8, 0.3, 0.06), darkPaint);
         grille.position.set(0, 0.75, 3.12);
         car.add(grille);
 
-        // ── Rear bumper
+        // â”€â”€ Rear bumper
         const rBumper = new THREE.Mesh(new THREE.BoxBufferGeometry(4.4, 0.45, 0.4), darkPaint);
         rBumper.position.set(0, 0.6, -2.9);
         car.add(rBumper);
 
-        // ── Rear diffuser
+        // â”€â”€ Rear diffuser
         const diff = new THREE.Mesh(new THREE.BoxBufferGeometry(2.5, 0.2, 0.15), chromeMat);
         diff.position.set(0, 0.42, -3.05);
         car.add(diff);
 
-        // ── Exhaust pipes
+        // â”€â”€ Exhaust pipes
         const exGeo = new THREE.CylinderBufferGeometry(0.12, 0.12, 0.3, 6);
         const exMat = new THREE.MeshLambertMaterial({ color: 0x666666 });
         [-0.7, 0.7].forEach(x => {
@@ -488,7 +488,7 @@
             car.add(ex);
         });
 
-        // ── Side mirrors
+        // â”€â”€ Side mirrors
         const mirGeo = new THREE.BoxBufferGeometry(0.25, 0.15, 0.3);
         [-2.2, 2.2].forEach(x => {
             const mir = new THREE.Mesh(mirGeo, paint);
@@ -496,7 +496,7 @@
             car.add(mir);
         });
 
-        // ── Wheels with tire detail
+        // â”€â”€ Wheels with tire detail
         const wPositions = [
             [-1.85, 0.48, 1.6], [1.85, 0.48, 1.6],
             [-1.85, 0.48, -1.6], [1.85, 0.48, -1.6]
@@ -523,7 +523,7 @@
             car.userData.wheels.push(wGrp);
         });
 
-        // ── Headlights
+        // â”€â”€ Headlights
         const hlMat = new THREE.MeshBasicMaterial({ color: isEnemy ? 0xff4444 : 0xffffee });
         const hlGeo = geos.light;
         [[-1.5, 0.85, 3.14], [1.5, 0.85, 3.14]].forEach(pos => {
@@ -532,7 +532,7 @@
             car.add(hl);
         });
 
-        // ── DRL strips (thin bright line under headlights)
+        // â”€â”€ DRL strips (thin bright line under headlights)
         const drlGeo = new THREE.BoxBufferGeometry(0.6, 0.06, 0.06);
         const drlMat = new THREE.MeshBasicMaterial({ color: isEnemy ? 0xff2222 : 0xccddff });
         [[-1.5, 0.7, 3.14], [1.5, 0.7, 3.14]].forEach(pos => {
@@ -541,7 +541,7 @@
             car.add(drl);
         });
 
-        // ── Taillights (LED strip style)
+        // â”€â”€ Taillights (LED strip style)
         const tlMat = new THREE.MeshBasicMaterial({ color: 0xff1122 });
         const tlGeo = new THREE.BoxBufferGeometry(0.7, 0.12, 0.06);
         [[-1.3, 0.95, -3.02], [1.3, 0.95, -3.02]].forEach(pos => {
@@ -550,7 +550,7 @@
             car.add(tl);
         });
 
-        // ── Tail light bar (connecting strip)
+        // â”€â”€ Tail light bar (connecting strip)
         const tlBar = new THREE.Mesh(
             new THREE.BoxBufferGeometry(3.2, 0.04, 0.05),
             new THREE.MeshBasicMaterial({ color: 0x660011 })
@@ -558,7 +558,7 @@
         tlBar.position.set(0, 0.95, -3.02);
         car.add(tlBar);
 
-        // ── Spoiler (enemy cars or random)
+        // â”€â”€ Spoiler (enemy cars or random)
         if (isEnemy && Math.random() > 0.35) {
             const spMat = new THREE.MeshLambertMaterial({ color: color });
             const sp = new THREE.Mesh(new THREE.BoxBufferGeometry(3.4, 0.08, 0.5), spMat);
@@ -571,7 +571,7 @@
             });
         }
 
-        // ── Player-only: front splitter accent
+        // â”€â”€ Player-only: front splitter accent
         if (!isEnemy) {
             const splitter = new THREE.Mesh(
                 new THREE.BoxBufferGeometry(4.0, 0.06, 0.6),
@@ -581,7 +581,7 @@
             car.add(splitter);
         }
 
-        // ── Underglow (just an emissive plane — NO point light)
+        // â”€â”€ Underglow (just an emissive plane â€” NO point light)
         const glowCol = isEnemy ? 0xff0033 : 0x00ccdd;
         const glow = new THREE.Mesh(
             new THREE.PlaneBufferGeometry(3, 4.5),
@@ -594,7 +594,7 @@
         return car;
     }
 
-    // ── TRAFFIC ──
+    // â”€â”€ TRAFFIC â”€â”€
     function spawnTraffic() {
         if (traffic.length >= C.maxTraffic) return;
         if (Math.random() > C.trafficRate * (1 + spd * 0.5)) return;
@@ -610,7 +610,7 @@
         traffic.push(e);
     }
 
-    // ── PARTICLES (capped) ──
+    // â”€â”€ PARTICLES (capped) â”€â”€
     function spawnParts(pos, col, n) {
         for (let i = 0; i < n && parts.length < C.maxParticles; i++) {
             const p = new THREE.Mesh(geos.particle, new THREE.MeshBasicMaterial({ color: col }));
@@ -622,7 +622,7 @@
         }
     }
 
-    // ── INPUT ──
+    // â”€â”€ INPUT â”€â”€
     function setupInput() {
         addEventListener('keydown', e => { keys[e.code] = true; if (e.code === 'Space') e.preventDefault(); });
         addEventListener('keyup', e => keys[e.code] = false);
@@ -644,7 +644,7 @@
         if ('ontouchstart' in window) keys['ArrowUp'] = true;
     }
 
-    // ── COUNTDOWN ──
+    // â”€â”€ COUNTDOWN â”€â”€
     function startCountdown() {
         document.getElementById('start-screen').style.display = 'none';
         document.getElementById('countdown-screen').style.display = 'flex';
@@ -695,7 +695,7 @@
         }, 700);
     }
 
-    // ── UPDATE ──
+    // â”€â”€ UPDATE â”€â”€
     function update(dt) {
         // Particles always
         for (let i = parts.length - 1; i >= 0; i--) {

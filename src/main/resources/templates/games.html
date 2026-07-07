@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 
 <head th:replace="~{fragments/template :: head('Games & Sports | Zentrix')}">
@@ -339,7 +339,7 @@
                         <span style="color: #00bcd4; font-weight: 700; font-size: 12px; text-transform: uppercase;">Solo
                             Adventure</span>
                         <div class="game-actions">
-                            <a href="/play-mario" class="btn-game btn-play">Play Now</a>
+                            <a th:href="@{/play-mario}" class="btn-game btn-play">Play Now</a>
                         </div>
                     </div>
                 </div>
@@ -357,7 +357,7 @@
                     <div class="game-footer">
                         <span style="color: #00bcd4; font-weight: 700; font-size: 12px; text-transform: uppercase;">Mind Training</span>
                         <div class="game-actions">
-                            <a href="/play-memory" class="btn-game btn-play">Play Now</a>
+                            <a th:href="@{/play-memory}" class="btn-game btn-play">Play Now</a>
                         </div>
                     </div>
                 </div>
@@ -376,7 +376,7 @@
                             style="color: #00bcd4; font-weight: 700; font-size: 12px; text-transform: uppercase;">Arcade
                             Fun</span>
                         <div class="game-actions">
-                            <a href="/play-bubble-shooter" class="btn-game btn-play">Play Now</a>
+                            <a th:href="@{/play-bubble-shooter}" class="btn-game btn-play">Play Now</a>
                         </div>
                     </div>
                 </div>
@@ -395,7 +395,7 @@
                             style="color: #00bcd4; font-weight: 700; font-size: 12px; text-transform: uppercase;">Sugar
                             Rush</span>
                         <div class="game-actions">
-                            <a href="/play-candy-crush" class="btn-game btn-play">Play Now</a>
+                            <a th:href="@{/play-candy-crush}" class="btn-game btn-play">Play Now</a>
                         </div>
                     </div>
                 </div>
@@ -414,7 +414,7 @@
                             style="color: #00bcd4; font-weight: 700; font-size: 12px; text-transform: uppercase;">Speed
                             Run</span>
                         <div class="game-actions">
-                            <a href="/play-runner" class="btn-game btn-play">Play Now</a>
+                            <a th:href="@{/play-runner}" class="btn-game btn-play">Play Now</a>
                         </div>
                     </div>
                 </div>
@@ -435,7 +435,7 @@
                             style="color: #00bcd4; font-weight: 700; font-size: 12px; text-transform: uppercase;">Turbo
                             Drive</span>
                         <div class="game-actions">
-                            <a href="/play-car-game" class="btn-game btn-play">Play Now</a>
+                            <a th:href="@{/play-car-game}" class="btn-game btn-play">Play Now</a>
                         </div>
                     </div>
                 </div>

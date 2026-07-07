@@ -115,7 +115,7 @@
             }
         }
         
-        @media (max-width: 768px) {
+        @media (max-width: 980px) {
             .hero-title {
                 font-size: 36px;
                 letter-spacing: -0.5px;
@@ -128,6 +128,183 @@
             .hero-description {
                 font-size: 16px;
                 margin-top: 16px;
+            }
+            .split-layout {
+                grid-template-columns: 1fr !important;
+                gap: 40px !important;
+            }
+            .media-side {
+                order: -1;
+            }
+            .media-side img {
+                height: 300px !important;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 40px 16px !important;
+            }
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start !important;
+                gap: 12px;
+            }
+            .see-all {
+                margin-top: 4px;
+            }
+            .legal-grid {
+                grid-template-columns: 1fr !important;
+                gap: 20px !important;
+            }
+            .contact-form-row {
+                grid-template-columns: 1fr !important;
+                gap: 15px !important;
+            }
+            .form-actions-row {
+                flex-direction: column;
+                align-items: stretch !important;
+                gap: 12px;
+            }
+            .form-actions-row button {
+                width: 100%;
+                justify-content: center;
+            }
+            .about-btns-row {
+                flex-direction: column;
+                width: 100%;
+            }
+            .about-btns-row a {
+                width: 100%;
+                text-align: center;
+            }
+            .organizers-list {
+                grid-template-columns: 1fr !important;
+            }
+            .feature-item {
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: stretch !important;
+                text-align: center !important;
+                padding: 20px !important;
+            }
+            .feature-media {
+                width: 100% !important;
+                height: 180px !important;
+                margin: 0 auto 16px !important;
+                border-radius: 16px !important;
+            }
+            .feature-media img {
+                width: 100% !important;
+                height: 100% !important;
+                object-fit: cover !important;
+            }
+            .feature-text {
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+            }
+            .feature-text .pill {
+                margin: 0 auto 12px !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .category-card {
+                grid-template-columns: 1fr !important;
+                text-align: center;
+                padding: 20px !important;
+            }
+            .category-icon {
+                margin: 0 auto;
+                width: 140px !important;
+                height: 140px !important;
+            }
+            .feature-media {
+                height: 150px !important;
+            }
+        }
+
+        .mobile-nav-drawer {
+            display: none;
+        }
+        .mobile-nav-backdrop {
+            display: none;
+        }
+
+        /* Mobile Hamburger & Drawer Styles */
+        @media (max-width: 768px) {
+            .nav-hamburger {
+                display: block !important;
+            }
+            .navbar-inner .nav-links,
+            .navbar-inner .nav-actions {
+                display: none !important;
+            }
+            .mobile-nav-drawer {
+                position: fixed;
+                top: 0;
+                right: -280px;
+                width: 280px;
+                height: 100vh;
+                background: #090e1a; /* Sleek dark aesthetic */
+                border-left: 1px solid rgba(255, 255, 255, 0.1);
+                box-shadow: -10px 0 40px rgba(0, 0, 0, 0.5);
+                z-index: 1005;
+                display: flex !important;
+                flex-direction: column;
+                padding: 100px 24px 40px;
+                gap: 30px;
+                transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                box-sizing: border-box;
+            }
+            .mobile-nav-drawer.open {
+                right: 0;
+            }
+            .mobile-nav-drawer .nav-links {
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 20px !important;
+                align-items: flex-start !important;
+                width: 100% !important;
+            }
+            .mobile-nav-drawer .nav-links a {
+                font-size: 16px !important;
+                font-weight: 700 !important;
+                color: #ffffff !important;
+                width: 100% !important;
+                padding: 10px 0 !important;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+                display: block;
+                font-family: 'Outfit', sans-serif;
+            }
+            .mobile-nav-drawer .nav-actions {
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 12px !important;
+                width: 100% !important;
+                margin-top: auto;
+            }
+            .mobile-nav-drawer .nav-actions a {
+                width: 100% !important;
+                padding: 12px !important;
+                justify-content: center !important;
+                box-sizing: border-box;
+            }
+            .mobile-nav-backdrop {
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.5);
+                backdrop-filter: blur(4px);
+                z-index: 1002;
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 0.3s ease;
+                display: block !important;
+            }
+            .mobile-nav-backdrop.open {
+                opacity: 1;
+                pointer-events: all;
             }
         }
     </style>
@@ -181,10 +358,10 @@
                 <p style="color: var(--text-secondary); margin-top: 4px;">Everything you need to thrive in the Zentrix
                     community.</p>
             </div>
-            <a href="/features" class="see-all">See All Features ›</a>
+            <a th:href="@{/features}" class="see-all">See All Features â€º</a>
         </div>
         <div class="feature-grid">
-            <a class="feature-item reveal" href="/messages">
+            <a class="feature-item reveal" th:href="@{/messages}">
                 <div class="feature-media">
                     <img src="https://images.openai.com/static-rsc-4/8f5hqzs1t1WYBdG1_Qh2J9hf4rpwZcjV-2dsnlHCqPRQ8CpeB9QCyGYLUWrlalbsvZBcMYNixaLW2VVWxtJtBy9FhP7UPyuxdYr8lb70QnGxC2oYVM9KjX7QKJIDyBzbjfWS4C5we5XcDwd78boKd75QItf8oIagKepnamSDpLQdxWlUGSeypNfPeksqQEMr?purpose=fullsize"
                         alt="Real-time chat">
@@ -199,7 +376,7 @@
                             class="fa-solid fa-circle-arrow-right"></i> Open Messages</span>
                 </div>
             </a>
-            <a class="feature-item reveal" href="/dashboard">
+            <a class="feature-item reveal" th:href="@{/dashboard}">
                 <div class="feature-media">
                     <img src="https://images.openai.com/static-rsc-4/I2yVlMtcIKk4BAdQBKnkmCJA7yxYhCYrHQDtMyN4d_00YE_Y8iOpmV0e6U1R_OcMcj5LGKASruMRDgrU08RQosTJamwcjVFPlYTilt3HdW0DHphHwOtCqZkkrkJCgpjRpg6TM9utFk_FkM6t3k7stdwhXXQhEBGuINrrGCNF5igWAXCqv_2zAW3iOgK66lLC?purpose=fullsize"
                         alt="Discovery Feed">
@@ -214,7 +391,7 @@
                             class="fa-solid fa-circle-arrow-right"></i> Explore Feed</span>
                 </div>
             </a>
-            <a class="feature-item reveal" href="/reels">
+            <a class="feature-item reveal" th:href="@{/reels}">
                 <div class="feature-media">
                     <img src="https://images.openai.com/static-rsc-4/9AJw0q6urbrbCbdwHdnLA3z9FSezNyKiYI8Bn8e9y1pBjquKHxfTgILbCGcizmMG7mv3PenxlbZcLxOEeb0a655_E6DK_k39UGJiWNXjdUNgzkdKYQtVJao8kkbyuFFQ3QZoikkwwpMNT2_U35MCUPab9akPduI56kgPglW2t-PmlXf7Kv9D_t18fUxw67TH?purpose=fullsize"
                         alt="Reels">
@@ -229,7 +406,7 @@
                             class="fa-solid fa-circle-arrow-right"></i> Watch Now</span>
                 </div>
             </a>
-            <a class="feature-item reveal" href="/events">
+            <a class="feature-item reveal" th:href="@{/events}">
                 <div class="feature-media">
                     <img src="https://images.openai.com/static-rsc-4/HOqgBWLRRLbZCig4wBt5a1cmHTovXHqkkC665h4a6O804b4vYiZIH0O38tx6spX_1h1hQk7rn3rSJ7_1-ah8ZOU-ndUWS0nu9BBcgwwHGHsXGqeeExRmdgYs2bz6roIle9zalkDc_xCY3tpuRTKxKgHkDtBUBU8R9wK1WggwShTfwwaNxWRyyUIb9-npXR9z?purpose=fullsize"
                         alt="Local events">
@@ -239,14 +416,14 @@
                         Campus Life</div>
                     <h3 style="font-size: 32px; font-weight: 800;">Local Events</h3>
                     <p style="font-size: 17px; margin-top: 12px; color: var(--text-secondary);">Your calendar for campus
-                        life—from underground jam sessions to global tech summits.</p>
+                        lifeâ€”from underground jam sessions to global tech summits.</p>
                     <span class="feature-link"
                         style="margin-top: 24px; color: var(--accent-hover); font-weight: 700;"><i
                             class="fa-solid fa-circle-arrow-right"></i> View Calendar</span>
                 </div>
             </a>
             <!-- New Features -->
-            <a class="feature-item reveal" href="/achievements">
+            <a class="feature-item reveal" th:href="@{/achievements}">
                 <div class="feature-media">
                     <img src="https://images.openai.com/static-rsc-4/Tba901diyp0WM3Wg2kgGwyzRwgHfQ3kMp4NvdS1HyXG_MaggLsi7VEu5rJ0-AfNJWGJqkR_o60C-F4IAUbrItcQdkC2HiIHp-GCJ7TOFodjlO-hCoDBXlvm9FwCkrr_Y992uLa1O4jX8306mpl3CaUMScpaKbGiYBZOyn6b5wLr8qb2GMjOCBiP14c3pcQr0?purpose=fullsize"
                         alt="Elite badges">
@@ -262,7 +439,7 @@
                             class="fa-solid fa-circle-arrow-right"></i> My Achievements</span>
                 </div>
             </a>
-            <a class="feature-item reveal" href="/games">
+            <a class="feature-item reveal" th:href="@{/games}">
                 <div class="feature-media">
                     <img src="https://images.openai.com/static-rsc-4/OFPJGQFNps-xfB2336F_aEY-VXXAEFs8fTZ2SpniKDuhhHUUMA5BIWHYVxXL1PiDpANA8Ro7WeTrvkHyoeNPtMbOjyzOzWqZ0_ySf6PPWEEKI-NddJw5euRuwfVx1RZmJn4HzUUEAr8IOkfVgY-sWWZriXRtC7O6_NGa9J1bjgzTJkLJZl2irr6WNwSznGLt?purpose=fullsize"
                         alt="Global arenas">
@@ -289,7 +466,7 @@
                 <p style="color: var(--text-secondary); margin-top: 4px;">Created by our community and administrators.
                 </p>
             </div>
-            <a href="/events" class="see-all">Explore All Events ›</a>
+            <a th:href="@{/events}" class="see-all">Explore All Events â€º</a>
         </div>
         <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; max-width: 1200px;">
             <th:block th:each="event : ${events}" th:if="${eventStat.index < 3}">
@@ -356,7 +533,7 @@
             </div>
         </div>
         <div class="category-tiles">
-            <a href="/events" class="category-card cat-pink">
+            <a th:href="@{/events}" class="category-card cat-pink">
                 <div class="category-icon">
                     <img src="https://images.unsplash.com/photo-1511379938547-c1f69419868d?q=80&w=800&auto=format&fit=crop"
                         alt="Music category">
@@ -364,10 +541,10 @@
                 <div class="category-info">
                     <h3>Music</h3>
                     <p>Concerts, jam sessions, open mics, and music battles.</p>
-                    <div class="category-meta"><i class="fa-solid fa-music"></i> Live • Rooms • Playlists</div>
+                    <div class="category-meta"><i class="fa-solid fa-music"></i> Live â€¢ Rooms â€¢ Playlists</div>
                 </div>
             </a>
-            <a href="/events" class="category-card cat-blue">
+            <a th:href="@{/events}" class="category-card cat-blue">
                 <div class="category-icon">
                     <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=800&auto=format&fit=crop"
                         alt="Tech category">
@@ -375,10 +552,10 @@
                 <div class="category-info">
                     <h3>Tech</h3>
                     <p>Hack nights, workshops, talks, and creator meetups.</p>
-                    <div class="category-meta"><i class="fa-solid fa-microchip"></i> Build • Learn • Ship</div>
+                    <div class="category-meta"><i class="fa-solid fa-microchip"></i> Build â€¢ Learn â€¢ Ship</div>
                 </div>
             </a>
-            <a href="/events" class="category-card cat-yellow">
+            <a th:href="@{/events}" class="category-card cat-yellow">
                 <div class="category-icon">
                     <img src="https://images.openai.com/static-rsc-4/7vJOijI2a89kUbkkKGPE1civqgvqnF-D_w13F4AHwlfKmMTxi-A_i4ejlU66hYVhgT1juw-DIWDZ3X3xgaBx-iGqApFRFkBKauFlli5PpyHYPDuAJjbH2xIPkzbFki3iYukgMsVDBSE5RXf9I1SzoD39VDXjb20YPoYhQ4B0Fp_joULvx53arGpUO164Ft6e?purpose=fullsize"
                         alt="Comedy category">
@@ -386,10 +563,10 @@
                 <div class="category-info">
                     <h3>Comedy</h3>
                     <p>Standup shows, improv nights, and fun community gigs.</p>
-                    <div class="category-meta"><i class="fa-solid fa-face-laugh"></i> Laugh • Meet • Chill</div>
+                    <div class="category-meta"><i class="fa-solid fa-face-laugh"></i> Laugh â€¢ Meet â€¢ Chill</div>
                 </div>
             </a>
-            <a href="/events" class="category-card cat-purple">
+            <a th:href="@{/events}" class="category-card cat-purple">
                 <div class="category-icon">
                     <img src="https://images.unsplash.com/photo-1521412644187-c49fa049e84d?q=80&w=800&auto=format&fit=crop"
                         alt="Sports category">
@@ -397,7 +574,7 @@
                 <div class="category-info">
                     <h3>Sports</h3>
                     <p>Tournaments, watch parties, and friendly challenges.</p>
-                    <div class="category-meta"><i class="fa-solid fa-trophy"></i> Compete • Team up</div>
+                    <div class="category-meta"><i class="fa-solid fa-trophy"></i> Compete â€¢ Team up</div>
                 </div>
             </a>
         </div>
@@ -407,7 +584,7 @@
     <section class="container section-muted" style="border-radius: 18px;">
         <div class="section-header">
             <h2 style="font-size: 32px; font-weight: 900;">What Students <span style="background: var(--gradient-1); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Say</span></h2>
-            <a href="/register" class="see-all">Join Now ›</a>
+            <a th:href="@{/register}" class="see-all">Join Now â€º</a>
         </div>
 
         <!-- Success toast -->
@@ -430,17 +607,17 @@
                     </div>
                 </div>
                 <textarea name="content" required rows="3"
-                    placeholder="Share your experience with Zentrix — what do you love most? What have you achieved here?..."
+                    placeholder="Share your experience with Zentrix â€” what do you love most? What have you achieved here?..."
                     style="width: 100%; border: 1.5px solid rgba(59,130,246,0.2); border-radius: 14px; padding: 14px 16px; font-size: 14px; color: #0F172A; background: #F8FAFC; outline: none; resize: vertical; font-family: inherit; box-sizing: border-box; line-height: 1.6;"></textarea>
-                <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; flex-wrap: wrap;">
+                <div class="form-actions-row" style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; flex-wrap: wrap;">
                     <select name="category"
                         style="padding: 9px 14px; border-radius: 10px; border: 1.5px solid rgba(59,130,246,0.18); background: #F8FAFC; color: #334155; font-size: 13px; font-weight: 600; outline: none;">
-                        <option value="Community">💬 Community</option>
-                        <option value="Events">🎉 Events</option>
-                        <option value="Gaming">🎮 Gaming</option>
-                        <option value="Music">🎵 Music</option>
-                        <option value="Achievements">🏆 Achievements</option>
-                        <option value="General">✨ General</option>
+                        <option value="Community">ðŸ’¬ Community</option>
+                        <option value="Events">ðŸŽ‰ Events</option>
+                        <option value="Gaming">ðŸŽ® Gaming</option>
+                        <option value="Music">ðŸŽµ Music</option>
+                        <option value="Achievements">ðŸ† Achievements</option>
+                        <option value="General">âœ¨ General</option>
                     </select>
                     <button type="submit"
                         style="background: linear-gradient(135deg, #3B82F6, #22D3EE); color: #fff; border: none; border-radius: 12px; padding: 10px 24px; font-weight: 800; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
@@ -455,8 +632,8 @@
                 <div class="surface reveal" style="padding: 22px;">
                     <div class="pill pill-pink"><i class="fa-solid fa-quote-left"></i> <span
                             th:text="${thought.category != null ? thought.category : 'Community'}">Category</span></div>
-                    <p style="margin-top: 12px; color: var(--text-secondary);" th:text="'“' + ${thought.content} + '”'">
-                        “Thoughts content”</p>
+                    <p style="margin-top: 12px; color: var(--text-secondary);" th:text="'â€œ' + ${thought.content} + 'â€'">
+                        â€œThoughts contentâ€</p>
                     <div style="margin-top: 14px; font-weight: 800;"
                         th:text="${thought.user != null ? thought.user.username : 'Anonymous'}">Aanya</div>
                 </div>
@@ -465,8 +642,8 @@
             <th:block th:if="${#lists.isEmpty(thoughts)}">
                 <div class="surface" style="padding: 22px;">
                     <div class="pill pill-pink"><i class="fa-solid fa-quote-left"></i> Community</div>
-                    <p style="margin-top: 12px; color: var(--text-secondary);">“I met my project teammates here and now
-                        we attend events together.”</p>
+                    <p style="margin-top: 12px; color: var(--text-secondary);">â€œI met my project teammates here and now
+                        we attend events together.â€</p>
                     <div style="margin-top: 14px; font-weight: 800;">Aanya</div>
                 </div>
             </th:block>
@@ -478,8 +655,8 @@
                 <p style="color: var(--text-secondary);">Create an account and personalize your feed.</p>
             </div>
             <div style="display:flex; gap:12px; flex-wrap:wrap;">
-                <a href="/register" class="btn btn-primary"><i class="fa-solid fa-user-plus"></i> Create account</a>
-                <a href="/login" class="btn btn-outline"><i class="fa-solid fa-right-to-bracket"></i> Sign in</a>
+                <a th:href="@{/register}" class="btn btn-primary"><i class="fa-solid fa-user-plus"></i> Create account</a>
+                <a th:href="@{/login}" class="btn btn-outline"><i class="fa-solid fa-right-to-bracket"></i> Sign in</a>
             </div>
         </div>
     </section>
@@ -494,8 +671,8 @@
                     <p>Zentrix is a modern, feature-rich web application designed to bring people together through communication, entertainment, and interactive experiences.</p>
                     <p>Our mission is to build a dynamic platform that enhances digital interaction while maintaining simplicity and innovation. From real-time chat to global gaming arenas, we're building the future of campus life.</p>
                 </div>
-                <div style="margin-top: 40px; display: flex; gap: 16px;">
-                    <a href="/register" class="btn btn-primary" style="padding: 14px 28px; border-radius: 14px;">Join Zentrix Now</a>
+                <div class="about-btns-row" style="margin-top: 40px; display: flex; gap: 16px;">
+                    <a th:href="@{/register}" class="btn btn-primary" style="padding: 14px 28px; border-radius: 14px;">Join Zentrix Now</a>
                     <a href="#contact" class="btn btn-outline" style="padding: 14px 28px; border-radius: 14px;">Contact Community</a>
                 </div>
             </div>
@@ -518,7 +695,7 @@
                     <p style="color: var(--text-secondary); font-size: 16px; line-height: 1.8; margin-bottom: 24px;">
                         Are you a campus leader or event creator? Zentrix provides the tools you need to reach thousands of students and manage events seamlessly.
                     </p>
-                    <ul style="list-style: none; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 30px;">
+                    <ul class="organizers-list" style="list-style: none; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 30px;">
                         <li style="display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 14px;"><i class="fa-solid fa-check-circle" style="color: var(--primary);"></i> Event Management</li>
                         <li style="display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 14px;"><i class="fa-solid fa-check-circle" style="color: var(--primary);"></i> Digital Ticketing</li>
                         <li style="display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 14px;"><i class="fa-solid fa-check-circle" style="color: var(--primary);"></i> Real-time Analytics</li>
@@ -562,7 +739,7 @@
             </div>
             <div class="surface" style="padding: 40px; border-radius: 24px; border: 1px solid rgba(0,0,0,0.05); box-shadow: var(--shadow-premium);">
                 <form style="display: grid; gap: 20px;">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="contact-form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                         <input type="text" placeholder="Full Name" style="width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #e2e8f0; background: #f8fafc;">
                         <input type="email" placeholder="Email Address" style="width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #e2e8f0; background: #f8fafc;">
                     </div>
@@ -587,7 +764,7 @@
                 <p style="color: var(--text-secondary); margin-top: 4px;">Transparency and safety are our top priorities.</p>
             </div>
         </div>
-        <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 24px;">
+        <div class="grid legal-grid" style="grid-template-columns: 1fr 1fr; gap: 24px;">
             <div class="surface" id="terms" style="padding: 32px; border-radius: 24px; border: 1px solid rgba(0,0,0,0.05);">
                 <h3 style="font-size: 20px; font-weight: 800; margin-bottom: 16px;"><i class="fa-solid fa-file-contract" style="color: var(--primary);"></i> Terms of Service</h3>
                 <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.6; display: flex; flex-direction: column; gap: 12px;">
@@ -616,7 +793,7 @@
                 <h2 style="font-size: 32px;">Frequently Asked Questions</h2>
                 <p style="color: var(--text-secondary); margin-top: 4px;">Quick answers to common questions about the Zentrix platform.</p>
             </div>
-            <a href="/faq" class="see-all">View All FAQs ›</a>
+            <a th:href="@{/faq}" class="see-all">View All FAQs â€º</a>
         </div>
 
         <div style="max-width: 900px; margin: 0 auto;">

@@ -85,6 +85,7 @@ public class ProfileController {
     @Autowired
     private com.example.demo.repository.UserActivityRepository userActivityRepository;
 
+
     @Transactional(readOnly = true)
     @RequestMapping(value = "/{username}", method = RequestMethod.GET)
     public String showPublicProfile(@PathVariable String username, HttpSession session, Model model) {
@@ -106,13 +107,23 @@ public class ProfileController {
         long eventsJoined = eventRegistrationRepository.countByUser(targetUser);
         long eventsWon = eventRegistrationRepository.countByUserAndPosition(targetUser, "Winner");
 
-        // Calculate Rank (simplistic query-based approach: all users with XP >
-        // targetUser's XP + 1)
-        long higherXpCount = userRepository.findAll().stream()
-                .filter(u -> (u.getXp() != null ? u.getXp() : 0) > (targetUser.getXp() != null ? targetUser.getXp()
-                        : 0))
-                .count();
-        long rank = higherXpCount + 1;
+        // Calculate Rank with XP descending and ID ascending as a tie-breaker
+        long rank = 1;
+        List<User> allUsers = userRepository.findAll();
+        allUsers.sort((u1, u2) -> {
+            int xp1 = u1.getXp() != null ? u1.getXp() : 0;
+            int xp2 = u2.getXp() != null ? u2.getXp() : 0;
+            if (xp1 != xp2) {
+                return Integer.compare(xp2, xp1);
+            }
+            return Long.compare(u1.getId(), u2.getId());
+        });
+        for (int i = 0; i < allUsers.size(); i++) {
+            if (allUsers.get(i).getId().equals(targetUser.getId())) {
+                rank = i + 1;
+                break;
+            }
+        }
 
         String badge = targetUser.getLevel() != null ? targetUser.getLevel() : "Novice";
 
@@ -177,6 +188,14 @@ public class ProfileController {
             // Fetch user rewards
             List<UserReward> userRewards = userRewardRepository.findByUserOrderByIssueDateDesc(currentUser);
             model.addAttribute("userRewards", userRewards);
+        } else {
+            model.addAttribute("pendingRequests", new java.util.ArrayList<>());
+            model.addAttribute("notifications", new java.util.ArrayList<>());
+            model.addAttribute("unreadNotifCount", 0);
+            model.addAttribute("followRequests", new java.util.ArrayList<>());
+            model.addAttribute("followingUserIds", new java.util.HashSet<>());
+            model.addAttribute("savedPosts", new java.util.ArrayList<>());
+            model.addAttribute("userRewards", new java.util.ArrayList<>());
         }
 
         return "profile";
@@ -188,7 +207,7 @@ public class ProfileController {
         if (user == null) {
             return "redirect:/login";
         }
-        return showPublicProfile(user.getUsername(), session, model);
+        return "redirect:/profile/" + user.getUsername();
     }
 
     @Transactional

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 
 <head>
@@ -24,7 +24,7 @@
             flex-direction: column;
         }
 
-        /* ── Navbar ── */
+        /* â”€â”€ Navbar â”€â”€ */
         nav {
             padding: 20px 5%;
             display: flex;
@@ -59,7 +59,7 @@
             color: #ffd700;
         }
 
-        /* ── Hero ── */
+        /* â”€â”€ Hero â”€â”€ */
         .hero {
             text-align: center;
             padding: 60px 20px;
@@ -77,7 +77,7 @@
             font-size: 1.1rem;
         }
 
-        /* ── Shop Grid ── */
+        /* â”€â”€ Shop Grid â”€â”€ */
         .shop-container {
             max-width: 1200px;
             margin: 0 auto 60px;
@@ -166,7 +166,7 @@
             cursor: not-allowed;
         }
 
-        /* ── Alerts ── */
+        /* â”€â”€ Alerts â”€â”€ */
         .alert {
             padding: 15px 25px;
             border-radius: 12px;
@@ -254,7 +254,7 @@
 
 <body>
     <nav>
-        <a href="/dashboard" class="logo">ZENTRIX</a>
+        <a th:href="@{/dashboard}" class="logo">ZENTRIX</a>
         <div class="coin-balance" onclick="GameRewards.showHistory()" style="cursor: pointer;">
             <i class="fas fa-coins text-warning"></i>
             <span th:text="${user.coins}">0</span> Coins
@@ -263,7 +263,7 @@
 
     <div class="hero">
         <div style="max-width: 800px; margin: 0 auto; text-align: left; padding: 0 20px;">
-            <a href="/dashboard" class="back-link"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+            <a th:href="@{/dashboard}" class="back-link"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
         </div>
         <h1>Reward Shop</h1>
         <p>Spend your Zentrix Coins to unlock exclusive benefits and premium features.</p>

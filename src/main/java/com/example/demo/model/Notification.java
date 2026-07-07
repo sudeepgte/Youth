@@ -23,6 +23,7 @@ public class Notification {
     private String type; // e.g., "FOLLOW", "LIKE", "COMMENT", "COLLAB"
     private boolean isRead = false;
     private LocalDateTime createdAt = LocalDateTime.now();
+    private Long postId;
 
     public Notification() {
     }
@@ -33,6 +34,23 @@ public class Notification {
         this.message = message;
         this.type = type;
         this.createdAt = LocalDateTime.now();
+    }
+
+    public Notification(User user, User actor, String message, String type, Long postId) {
+        this.user = user;
+        this.actor = actor;
+        this.message = message;
+        this.type = type;
+        this.postId = postId;
+        this.createdAt = LocalDateTime.now();
+    }
+
+    public Long getPostId() {
+        return postId;
+    }
+
+    public void setPostId(Long postId) {
+        this.postId = postId;
     }
 
     public Long getId() {

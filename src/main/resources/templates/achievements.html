@@ -24,7 +24,7 @@
 
         /* Header is handled by shared .dashboard-navbar styles in style.css */
 
-        /* ── Main Layout ── */
+        /* â”€â”€ Main Layout â”€â”€ */
         .dashboard-container {
             display: grid;
             grid-template-columns: 250px 1fr;
@@ -53,7 +53,7 @@
             color: var(--text-primary);
         }
 
-        /* ── Leaderboard Core ── */
+        /* â”€â”€ Leaderboard Core â”€â”€ */
         .lb-header {
             display: flex;
             align-items: center;
@@ -259,7 +259,7 @@
             color: #38bdf8;
         }
 
-        /* ── Achievements Grid ── */
+        /* â”€â”€ Achievements Grid â”€â”€ */
         .achievements-section {
             margin-bottom: 40px;
         }
@@ -359,7 +359,7 @@
             opacity: 0.2;
         }
 
-        /* ── Leaderboard Table ── */
+        /* â”€â”€ Leaderboard Table â”€â”€ */
         .lb-table {
             width: 100%;
             border-collapse: collapse;
@@ -489,7 +489,7 @@
             border-color: rgba(255, 255, 255, 0.1);
         }
 
-        /* ── Responsive ── */
+        /* â”€â”€ Responsive â”€â”€ */
         @media (max-width: 768px) {
             .dashboard-container { grid-template-columns: 1fr; padding: 0 10px; gap: 15px; }
             .content-area { padding: 15px 10px; }
@@ -511,28 +511,26 @@
 
     <nav class="dashboard-navbar">
 
-        <a class="dashboard-logo" href="${pageContext.request.contextPath}/home">Zentrix</a>
-
-        <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('mobile-open'); document.querySelector('.mobile-menu-overlay').classList.toggle('active');" style="display:none; background:none; border:none; color:var(--text-primary); font-size:20px; cursor:pointer; margin-right:15px; margin-left: 5px; padding: 0;">
+        <button class="mobile-menu-btn" onclick="const s=document.querySelector('.sidebar');if(s)s.classList.toggle('mobile-open'); const o=document.querySelector('.mobile-menu-overlay');if(o)o.classList.toggle('active');" style="display:none; background:none; border:none; color:var(--text-primary); font-size:20px; cursor:pointer; margin-right:15px; margin-left: 5px; padding: 0;">
             <i class="fas fa-bars"></i>
         </button>
-        <a class="dashboard-logo" href="/home">Zentrix</a>
+        <a class="dashboard-logo" th:href="@{/home}">Zentrix</a>
 
         <div class="dashboard-spacer"></div>
         <div class="dashboard-nav-links">
-            <a href="${pageContext.request.contextPath}/dashboard"><i class="fas fa-home"></i></a>
-            <a href="${pageContext.request.contextPath}/messages"><i class="fas fa-comment-dots"></i></a>
-            <a href="${pageContext.request.contextPath}/explore"><i class="fas fa-compass"></i></a>
+            <a th:href="@{/dashboard}"><i class="fas fa-home"></i></a>
+            <a th:href="@{/messages}"><i class="fas fa-comment-dots"></i></a>
+            <a th:href="@{/explore}"><i class="fas fa-compass"></i></a>
             <div class="profile-dropdown">
-                <a href="${pageContext.request.contextPath}/profile">
+                <a th:href="@{/profile}">
                     <img th:src="${user != null and user.profilePhotoUrl != null ? user.profilePhotoUrl : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=1780&auto=format&fit=crop'}"
                         class="user-avatar" style="width:32px; height:32px; border:none;">
                 </a>
                 <div class="dropdown-menu">
-                    <a href="${pageContext.request.contextPath}/profile" class="dropdown-item"><i class="fas fa-user-circle"></i> View Profile</a>
-                    <a href="${pageContext.request.contextPath}/settings" class="dropdown-item"><i class="fas fa-cog"></i> Settings</a>
+                    <a th:href="@{/profile}" class="dropdown-item"><i class="fas fa-user-circle"></i> View Profile</a>
+                    <a th:href="@{/settings}" class="dropdown-item"><i class="fas fa-cog"></i> Settings</a>
                     <div class="dropdown-divider"></div>
-                    <a href="${pageContext.request.contextPath}/logout" class="dropdown-item" style="color: #ff4444;"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                    <a th:href="@{/logout}" class="dropdown-item" style="color: #ff4444;"><i class="fas fa-sign-out-alt"></i> Logout</a>
                 </div>
             </div>
         </div>
@@ -542,18 +540,18 @@
     <div class="dashboard-container">
         <!-- Sidebar -->
         <aside class="sidebar">
-            <a href="${pageContext.request.contextPath}/dashboard" class="sidebar-link"><i class="fas fa-home"></i> Home</a>
-            <a href="${pageContext.request.contextPath}/explore" class="sidebar-link"><i class="fas fa-compass"></i> Explore</a>
-            <a href="${pageContext.request.contextPath}/events" class="sidebar-link"><i class="fas fa-calendar-alt"></i> Events</a>
-            <a href="${pageContext.request.contextPath}/battles" class="sidebar-link"><i class="fas fa-fire"></i> Battle Arena</a>
-            <a href="${pageContext.request.contextPath}/achievements" class="sidebar-link active"><i class="fas fa-trophy"></i> Achievements</a>
-            <a href="${pageContext.request.contextPath}/messages" class="sidebar-link"><i class="fas fa-comment-dots"></i> Chat</a>
-            <a href="${pageContext.request.contextPath}/reels" class="sidebar-link"><i class="fas fa-film"></i> Reels</a>
-            <a href="${pageContext.request.contextPath}/profile" class="sidebar-link"><i class="fas fa-user"></i> Profile</a>
-            <a href="${pageContext.request.contextPath}/games" class="sidebar-link"><i class="fas fa-gamepad"></i> Games</a>
-            <a href="${pageContext.request.contextPath}/music" class="sidebar-link"><i class="fas fa-music"></i> Music</a>
+            <a th:href="@{/dashboard}" class="sidebar-link"><i class="fas fa-home"></i> Home</a>
+            <a th:href="@{/explore}" class="sidebar-link"><i class="fas fa-compass"></i> Explore</a>
+            <a th:href="@{/events}" class="sidebar-link"><i class="fas fa-calendar-alt"></i> Events</a>
+            <a th:href="@{/battles}" class="sidebar-link"><i class="fas fa-fire"></i> Battle Arena</a>
+            <a th:href="@{/achievements}" class="sidebar-link active"><i class="fas fa-trophy"></i> Achievements</a>
+            <a th:href="@{/messages}" class="sidebar-link"><i class="fas fa-comment-dots"></i> Chat</a>
+            <a th:href="@{/reels}" class="sidebar-link"><i class="fas fa-film"></i> Reels</a>
+            <a th:href="@{/profile}" class="sidebar-link"><i class="fas fa-user"></i> Profile</a>
+            <a th:href="@{/games}" class="sidebar-link"><i class="fas fa-gamepad"></i> Games</a>
+            <a th:href="@{/music}" class="sidebar-link"><i class="fas fa-music"></i> Music</a>
             <a href="javascript:void(0)" class="sidebar-link" onclick="openCreateModal()"><i class="fas fa-plus-circle" style="color: var(--accent);"></i> Create Post</a>
-            <a href="${pageContext.request.contextPath}/logout" class="sidebar-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            <a th:href="@{/logout}" class="sidebar-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </aside>
 
         <!-- Content -->
@@ -624,8 +622,8 @@
                             <i th:class="${ach.position == 'Winner'} ? 'fas fa-trophy' : 'fas fa-medal'"></i>
                         </div>
                         <div class="award-info">
-                            <p th:text="${ach.position} + ' • ' + ${#temporals.format(ach.event.dateTime, 'MMM yyyy')}">
-                                WINNER • MAR 2025</p>
+                            <p th:text="${ach.position} + ' â€¢ ' + ${#temporals.format(ach.event.dateTime, 'MMM yyyy')}">
+                                WINNER â€¢ MAR 2025</p>
                             <h4 th:text="${ach.event.title}">Event Title</h4>
                             <div class="award-xp">
                                 <i class="fas fa-bolt"></i>
@@ -728,3 +726,4 @@
 </body>
 
 </html>
+

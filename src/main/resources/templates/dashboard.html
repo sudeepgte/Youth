@@ -360,7 +360,7 @@
             color: #bbb !important;
         }
 
-        /* ── Mobile Responsive ── */
+        /* â”€â”€ Mobile Responsive â”€â”€ */
         @media (max-width: 768px) {
             .feed-toolbar { flex-wrap: wrap; }
             .dashboard-vote-section { padding: 16px; margin-bottom: 20px; }
@@ -383,13 +383,10 @@
     <div class="mobile-menu-overlay" onclick="document.querySelector('.sidebar').classList.remove('mobile-open'); this.classList.remove('active');"></div>
 
     <nav class="dashboard-navbar">
-
-        <a class="dashboard-logo" href="${pageContext.request.contextPath}/home">Zentrix</a>
-
-        <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('mobile-open'); document.querySelector('.mobile-menu-overlay').classList.toggle('active');" style="display:none; background:none; border:none; color:var(--text-primary); font-size:20px; cursor:pointer; margin-right:15px; margin-left: 5px; padding: 0;">
+        <button class="mobile-menu-btn" onclick="const s=document.querySelector('.sidebar');if(s)s.classList.toggle('mobile-open'); const o=document.querySelector('.mobile-menu-overlay');if(o)o.classList.toggle('active');" style="display:none; background:none; border:none; color:var(--text-primary); font-size:20px; cursor:pointer; margin-right:15px; margin-left: 5px; padding: 0;">
             <i class="fas fa-bars"></i>
         </button>
-        <a class="dashboard-logo" href="/home">Zentrix</a>
+        <a class="dashboard-logo" th:href="@{/home}">Zentrix</a>
 
         <div class="dashboard-spacer"></div>
         <div class="dashboard-nav-links">
@@ -399,10 +396,10 @@
                 <i class="fas fa-coins" style="font-size: 14px;"></i>
                 <span th:text="${user.coins}">0</span>
             </a>
-            <a href="${pageContext.request.contextPath}/shop" title="Reward Shop"><i class="fas fa-shopping-bag"></i></a>
+            <a th:href="@{/shop}" title="Reward Shop"><i class="fas fa-shopping-bag"></i></a>
 
-            <a href="${pageContext.request.contextPath}/dashboard" class="active"><i class="fas fa-home"></i></a>
-            <a href="${pageContext.request.contextPath}/messages" style="position: relative;">
+            <a th:href="@{/dashboard}" class="active"><i class="fas fa-home"></i></a>
+            <a th:href="@{/messages}" style="position: relative;">
                 <i class="fas fa-comment-dots"></i>
                 <span th:if="${unreadMessageCount != null && unreadMessageCount > 0}" id="msg-badge"
                     style="position: absolute; top: -5px; right: -5px; background: red; color: white; border-radius: 50%; padding: 2px 5px; font-size: 10px; font-weight: bold;"
@@ -415,7 +412,7 @@
                     th:text="${unreadNotifCount}"></span>
             </a>
             <div class="profile-dropdown">
-                <a href="${pageContext.request.contextPath}/profile" style="position: relative;">
+                <a th:href="@{/profile}" style="position: relative;">
                     <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=1780&auto=format&fit=crop"
                         class="user-avatar" style="width: 32px; height: 32px; border: none;">
                     <span th:if="${pendingCount != null && pendingCount > 0}"
@@ -423,14 +420,14 @@
                         th:text="${pendingCount}"></span>
                 </a>
                 <div class="dropdown-menu">
-                    <a href="${pageContext.request.contextPath}/profile" class="dropdown-item">
+                    <a th:href="@{/profile}" class="dropdown-item">
                         <i class="fas fa-user-circle"></i> View Profile
                     </a>
-                    <a href="${pageContext.request.contextPath}/settings" class="dropdown-item">
+                    <a th:href="@{/settings}" class="dropdown-item">
                         <i class="fas fa-cog"></i> Settings
                     </a>
                     <div class="dropdown-divider"></div>
-                    <a href="${pageContext.request.contextPath}/logout" class="dropdown-item" style="color: #ff4444;">
+                    <a th:href="@{/logout}" class="dropdown-item" style="color: #ff4444;">
                         <i class="fas fa-sign-out-alt"></i> Logout
                     </a>
                 </div>
@@ -442,18 +439,18 @@
 
         <!-- Left Sidebar -->
         <aside class="sidebar" th:if="${isReelsPage == null or !isReelsPage}">
-            <a href="${pageContext.request.contextPath}/dashboard" class="sidebar-link" th:classappend="${isReelsPage} ? '' : ' active'"><i class="fas fa-home"></i> Home</a>
-            <a href="${pageContext.request.contextPath}/explore" class="sidebar-link"><i class="fas fa-compass"></i> Explore</a>
-            <a href="${pageContext.request.contextPath}/events" class="sidebar-link"><i class="fas fa-calendar-alt"></i> Events</a>
-            <a href="${pageContext.request.contextPath}/battles" class="sidebar-link"><i class="fas fa-fire"></i> Battle Arena</a>
-            <a href="${pageContext.request.contextPath}/achievements" class="sidebar-link"><i class="fas fa-trophy"></i> Achievements</a>
-            <a href="${pageContext.request.contextPath}/messages" class="sidebar-link"><i class="fas fa-comment-dots"></i> Chat</a>
-            <a href="${pageContext.request.contextPath}/reels" class="sidebar-link" th:classappend="${isReelsPage} ? ' active' : ''"><i class="fas fa-film"></i> Reels</a>
-            <a href="${pageContext.request.contextPath}/profile" class="sidebar-link"><i class="fas fa-user"></i> Profile</a>
-            <a href="${pageContext.request.contextPath}/games" class="sidebar-link"><i class="fas fa-gamepad"></i> Games</a>
-            <a href="${pageContext.request.contextPath}/music" class="sidebar-link"><i class="fas fa-music"></i> Music</a>
+            <a th:href="@{/dashboard}" class="sidebar-link" th:classappend="${isReelsPage} ? '' : ' active'"><i class="fas fa-home"></i> Home</a>
+            <a th:href="@{/explore}" class="sidebar-link"><i class="fas fa-compass"></i> Explore</a>
+            <a th:href="@{/events}" class="sidebar-link"><i class="fas fa-calendar-alt"></i> Events</a>
+            <a th:href="@{/battles}" class="sidebar-link"><i class="fas fa-fire"></i> Battle Arena</a>
+            <a th:href="@{/achievements}" class="sidebar-link"><i class="fas fa-trophy"></i> Achievements</a>
+            <a th:href="@{/messages}" class="sidebar-link"><i class="fas fa-comment-dots"></i> Chat</a>
+            <a th:href="@{/reels}" class="sidebar-link" th:classappend="${isReelsPage} ? ' active' : ''"><i class="fas fa-film"></i> Reels</a>
+            <a th:href="@{/profile}" class="sidebar-link"><i class="fas fa-user"></i> Profile</a>
+            <a th:href="@{/games}" class="sidebar-link"><i class="fas fa-gamepad"></i> Games</a>
+            <a th:href="@{/music}" class="sidebar-link"><i class="fas fa-music"></i> Music</a>
             <a href="javascript:void(0)" class="sidebar-link" onclick="openCreateModal()"><i class="fas fa-plus-circle" style="color: var(--accent);"></i> Create Post</a>
-            <a href="${pageContext.request.contextPath}/logout" class="sidebar-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            <a th:href="@{/logout}" class="sidebar-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </aside>
 
         <!-- Center Feed -->
@@ -462,7 +459,7 @@
             <!-- Alerts -->
             <div th:if="${param.voteSuccess}"
                 style="background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.3); color:#10b981; padding:15px; border-radius:12px; margin-bottom:20px; font-size:14px;">
-                <i class="fas fa-check-circle"></i> Your vote has been recorded! 🗳️
+                <i class="fas fa-check-circle"></i> Your vote has been recorded! ðŸ—³ï¸
             </div>
             <div th:if="${param.alreadyVotedInPoll}"
                 style="background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.3); color:#f59e0b; padding:15px; border-radius:12px; margin-bottom:20px; font-size:14px;">
@@ -500,7 +497,7 @@
             <!-- 🗳️ Voting Polls -->
             <div th:if="${(isReelsPage == null or !isReelsPage) and not #lists.isEmpty(votingPolls)}" class="dashboard-vote-section">
                 <div style="margin-bottom: 15px;">
-                    <h3 style="font-size: 14px; font-weight: 800; color: #111;">Vote for Next Event! 🗳️
+                    <h3 style="font-size: 14px; font-weight: 800; color: #111;">Vote for Next Event! 🗳️ 
                     </h3>
                     <p style="font-size: 11px; color: rgba(0,0,0,0.5);">Your vote shapes our platform.
                     </p>
@@ -529,7 +526,7 @@
                 </div>
             </div>
 
-            <!-- 💬 Share Your Thought Banner -->
+            <!-- ðŸ’¬ Share Your Thought Banner -->
             <div th:if="${isReelsPage == null or !isReelsPage}" style="background: rgba(255, 255, 255, 0.65); backdrop-filter: blur(12px); border: 1px solid var(--glass-border); box-shadow: var(--shadow-premium); border-radius: 20px; padding: 22px 26px; margin-bottom: 30px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; transition: transform 0.3s ease, box-shadow 0.3s ease;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='var(--shadow-hover)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='var(--shadow-premium)';">
                 <div style="display: flex; align-items: center; gap: 16px;">
                     <div style="width: 48px; height: 48px; background: var(--gradient-1); border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 8px 16px -4px rgba(59, 130, 246, 0.4);">
@@ -554,44 +551,44 @@
                         <i class="fas fa-chevron-down" style="opacity:0.7; font-size: 11px;"></i>
                     </button>
                     <div class="filter-menu" id="feedFilterMenu">
-                        <a href="${pageContext.request.contextPath}/dashboard" th:classappend="${activeCategory == null} ? ' active' : ''">All</a>
-                        <a th:href="@{${pageContext.request.contextPath}/dashboard(category='TRAVEL')}"
+                        <a th:href="@{/dashboard}" th:classappend="${activeCategory == null} ? ' active' : ''">All</a>
+                        <a th:href="@{/dashboard(category='TRAVEL')}"
                             th:classappend="${activeCategory != null and activeCategory.equalsIgnoreCase('TRAVEL')} ? ' active' : ''">
                             Travel
                         </a>
-                        <a th:href="@{${pageContext.request.contextPath}/dashboard(category='FOOD')}"
+                        <a th:href="@{/dashboard(category='FOOD')}"
                             th:classappend="${activeCategory != null and activeCategory.equalsIgnoreCase('FOOD')} ? ' active' : ''">
                             Food
                         </a>
-                        <a th:href="@{${pageContext.request.contextPath}/dashboard(category='FITNESS')}"
+                        <a th:href="@{/dashboard(category='FITNESS')}"
                             th:classappend="${activeCategory != null and activeCategory.equalsIgnoreCase('FITNESS')} ? ' active' : ''">
                             Fitness
                         </a>
-                        <a th:href="@{${pageContext.request.contextPath}/dashboard(category='GAMING')}"
+                        <a th:href="@{/dashboard(category='GAMING')}"
                             th:classappend="${activeCategory != null and activeCategory.equalsIgnoreCase('GAMING')} ? ' active' : ''">
                             Gaming
                         </a>
-                        <a th:href="@{${pageContext.request.contextPath}/dashboard(category='TECH')}"
+                        <a th:href="@{/dashboard(category='TECH')}"
                             th:classappend="${activeCategory != null and activeCategory.equalsIgnoreCase('TECH')} ? ' active' : ''">
                             Tech
                         </a>
-                        <a th:href="@{${pageContext.request.contextPath}/dashboard(category='SPORTS')}"
+                        <a th:href="@{/dashboard(category='SPORTS')}"
                             th:classappend="${activeCategory != null and activeCategory.equalsIgnoreCase('SPORTS')} ? ' active' : ''">
                             Sports
                         </a>
-                        <a th:href="@{${pageContext.request.contextPath}/dashboard(category='LIFESTYLE')}"
+                        <a th:href="@{/dashboard(category='LIFESTYLE')}"
                             th:classappend="${activeCategory != null and activeCategory.equalsIgnoreCase('LIFESTYLE')} ? ' active' : ''">
                             Lifestyle
                         </a>
-                        <a th:href="@{${pageContext.request.contextPath}/dashboard(category='MUSIC')}"
+                        <a th:href="@{/dashboard(category='MUSIC')}"
                             th:classappend="${activeCategory != null and activeCategory.equalsIgnoreCase('MUSIC')} ? ' active' : ''">
                             Music
                         </a>
-                        <a th:href="@{${pageContext.request.contextPath}/dashboard(category='ART')}"
+                        <a th:href="@{/dashboard(category='ART')}"
                             th:classappend="${activeCategory != null and activeCategory.equalsIgnoreCase('ART')} ? ' active' : ''">
                             Art
                         </a>
-                        <a th:href="@{${pageContext.request.contextPath}/dashboard(category='OTHER')}"
+                        <a th:href="@{/dashboard(category='OTHER')}"
                             th:classappend="${activeCategory != null and activeCategory.equalsIgnoreCase('OTHER')} ? ' active' : ''">
                             Other
                         </a>
@@ -600,30 +597,33 @@
 
                 <div th:if="${activeCategory != null}" class="filter-chip">
                     <span th:text="${activeCategory}">TRAVEL</span>
-                    <a href="${pageContext.request.contextPath}/dashboard" title="Clear filter">×</a>
+                    <a th:href="@{/dashboard}" title="Clear filter">Ã—</a>
                 </div>
             </div>
 
             <!-- Posts -->
             <div th:class="${isReelsPage} ? 'reels-container' : 'posts-feed'">
-                <div th:each="post : ${posts}" th:class="${isReelsPage} ? 'post-card reel-card' : 'post-card'" th:attr="data-post-id=${post.id}">
+                <div th:if="${posts == null or posts.isEmpty()}" style="text-align:center; padding:60px 40px; color:var(--text-primary); width: 100%; max-width: 500px; margin: 40px auto; background: rgba(255,255,255,0.7); border: 1px solid var(--glass-border); border-radius: 24px; backdrop-filter: blur(10px); box-shadow: var(--shadow-premium); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;">
+                    <div style="width: 80px; height: 80px; border-radius: 50%; background: rgba(248, 68, 100, 0.1); display: flex; align-items: center; justify-content: center; margin-bottom: 8px;">
+                        <i th:class="${isReelsPage} ? 'fas fa-film' : 'fas fa-image'" style="font-size:32px; color: var(--accent);"></i>
+                    </div>
+                    <h3 th:text="${isReelsPage} ? 'No reels yet.' : 'No posts yet.'" style="font-weight:800; font-size:22px; margin:0;">No posts yet.</h3>
+                    <p th:text="${isReelsPage} ? 'Upload your first reel!' : 'Be the first to share something!'" style="font-size:14px; color:var(--text-secondary); margin:0;"></p>
+                </div>
+                <div th:each="post : ${posts}" th:class="${isReelsPage} ? 'post-card reel-card' : 'post-card'" th:id="'post-' + ${post.id}" th:attr="data-post-id=${post.id}">
                 <div class="post-header">
                     <!-- Clickable avatar opens profile/story popup -->
                     <img th:src="${post.user != null and post.user.profilePhotoUrl != null and !post.user.profilePhotoUrl.isEmpty()} ? ${post.user.profilePhotoUrl} : 'https://ui-avatars.com/api/?name=' + ${post.user != null ? post.user.username : 'U'} + '&background=F84464&color=fff&size=80'"
                         class="user-avatar" alt="User" style="cursor: pointer;"
-                        th:attr="onclick='openAvatarMenu(' + ${post.user != null ? post.user.id : 0} + ', \'' + ${post.user != null ? post.user.username : 'Unknown'} + '\')'"
+                        th:attr="data-userid=${post.user != null ? post.user.id : 0}, data-username=${post.user != null ? post.user.username : 'Unknown'}"
+                        onclick="openAvatarMenu(this.getAttribute('data-userid'), this.getAttribute('data-username'))"
                         title="Click to view profile or story">
                     <div class="post-user-info">
                         <h4>
                             <span th:text="${post.user != null ? post.user.username : 'Unknown User'}">Username</span>
                             <span th:each="collab : ${post.collaborations}"
-                                th:if="${collab.status.name() == 'ACCEPTED'}">
-
-                            &amp; <span th:text="${collab.user.username}">CollabUser</span>
-
-                                &amp; <span
-                                    th:text="${collab.user != null ? collab.user.username : 'Unknown User'}">CollabUser</span>
-
+                                th:if="${collab.status != null and collab.status.name() == 'ACCEPTED'}">
+                                &amp; <span th:text="${collab.user != null ? collab.user.username : 'Unknown User'}">CollabUser</span>
                             </span>
                         </h4>
                         <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-top:3px;">
@@ -709,16 +709,16 @@
                     </div>
                     <!-- Emoji Selection Bar -->
                     <div class="emoji-bar" style="display:flex; gap:12px; margin-bottom:8px; overflow-x:auto; padding:4px 2px; scrollbar-width:none; -ms-overflow-style:none;">
-                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'❤️\')'">❤️</span>
-                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'😂\')'">😂</span>
-                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'🔥\')'">🔥</span>
-                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'😍\')'">😍</span>
-                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'👏\')'">👏</span>
-                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'🙌\')'">🙌</span>
-                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'😢\')'">😢</span>
-                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'😮\')'">😮</span>
-                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'🎉\')'">🎉</span>
-                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'💯\')'">💯</span>
+                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'â¤ï¸\')'">â¤ï¸</span>
+                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'ðŸ˜‚\')'">ðŸ˜‚</span>
+                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'ðŸ”¥\')'">ðŸ”¥</span>
+                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'ðŸ˜\')'">ðŸ˜</span>
+                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'ðŸ‘\')'">ðŸ‘</span>
+                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'ðŸ™Œ\')'">ðŸ™Œ</span>
+                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'ðŸ˜¢\')'">ðŸ˜¢</span>
+                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'ðŸ˜®\')'">ðŸ˜®</span>
+                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'ðŸŽ‰\')'">ðŸŽ‰</span>
+                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'ðŸ’¯\')'">ðŸ’¯</span>
                     </div>
                     <style>
                         .emoji-bar::-webkit-scrollbar { display:none; }
@@ -728,7 +728,7 @@
                             <input type="text" th:id="'comment-input-' + ${post.id}" placeholder="Write a comment..."
                                 style="flex:1; padding:8px 36px 8px 12px; border-radius:20px; background:var(--card-bg); border:1px solid var(--glass-border); color:var(--text-primary); font-size:13px; outline:none;">
                             <button type="button" th:attr="onclick='toggleEmojiPicker(' + ${post.id} + ')'" 
-                                    style="position:absolute; right:12px; background:none; border:none; font-size:16px; cursor:pointer; color:#aaa; outline:none; user-select:none;">😀</button>
+                                    style="position:absolute; right:12px; background:none; border:none; font-size:16px; cursor:pointer; color:#aaa; outline:none; user-select:none;">ðŸ˜€</button>
                         </div>
                         <button th:onclick="'postComment(' + ${post.id} + ')'"
                             style="background:var(--accent); color:white; border:none; border-radius:20px; padding:8px 16px; font-size:13px; cursor:pointer; font-weight:600; flex-shrink:0;">Post</button>
@@ -738,12 +738,12 @@
                              style="display:none; position:absolute; bottom:42px; right:10px; background:#101018; border:1px solid rgba(255,255,255,0.15); border-radius:12px; padding:10px; width:260px; z-index:100; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
                              <!-- Categories / Tabs -->
                              <div style="display:flex; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:6px; margin-bottom:8px; font-size:14px; color:#aaa; font-weight:700; user-select:none;">
-                                 <span style="cursor:pointer; color:#fff;" onclick="switchEmojiCategory(this, 'smileys')">😀</span>
-                                 <span style="cursor:pointer;" onclick="switchEmojiCategory(this, 'gestures')">👍</span>
-                                 <span style="cursor:pointer;" onclick="switchEmojiCategory(this, 'hearts')">❤️</span>
-                                 <span style="cursor:pointer;" onclick="switchEmojiCategory(this, 'animals')">🐱</span>
-                                 <span style="cursor:pointer;" onclick="switchEmojiCategory(this, 'food')">🍕</span>
-                                 <span style="cursor:pointer;" onclick="switchEmojiCategory(this, 'activities')">⚽</span>
+                                 <span style="cursor:pointer; color:#fff;" onclick="switchEmojiCategory(this, 'smileys')">ðŸ˜€</span>
+                                 <span style="cursor:pointer;" onclick="switchEmojiCategory(this, 'gestures')">ðŸ‘</span>
+                                 <span style="cursor:pointer;" onclick="switchEmojiCategory(this, 'hearts')">â¤ï¸</span>
+                                 <span style="cursor:pointer;" onclick="switchEmojiCategory(this, 'animals')">ðŸ±</span>
+                                 <span style="cursor:pointer;" onclick="switchEmojiCategory(this, 'food')">ðŸ•</span>
+                                 <span style="cursor:pointer;" onclick="switchEmojiCategory(this, 'activities')">âš½</span>
                              </div>
                              <!-- Emoji Content Area -->
                              <div class="emoji-picker-content" style="height:140px; overflow-y:auto; display:grid; grid-template-columns:repeat(7, 1fr); gap:6px; font-size:18px; text-align:center;">
@@ -769,7 +769,7 @@
             <div class="widget-card" th:if="${ongoingMusicBattles != null and !ongoingMusicBattles.isEmpty()}">
                 <div class="widget-header">
                     <h3>Ongoing Music Battles</h3>
-                    <a th:href="@{${pageContext.request.contextPath}/music/rooms(auth=${auth})}" class="see-all">Create / Join</a>
+                    <a th:href="@{/music/rooms(auth=${auth})}" class="see-all">Create / Join</a>
                 </div>
                 <div th:each="r : ${ongoingMusicBattles}"
                      style="display:flex; gap:10px; align-items:center; justify-content:space-between; padding:10px 0; border-bottom: 1px solid rgba(255,255,255,0.06);">
@@ -777,7 +777,7 @@
                         <span style="font-size:13px; font-weight:800;" th:text="${r.name}">Room</span>
                         <span style="font-size:11px; color: rgba(255,255,255,0.5);">
                             Code: <span th:text="${r.code}" style="font-weight:900; letter-spacing:0.5px;">CODE</span>
-                            <span style="opacity:0.6;"> • </span>
+                            <span style="opacity:0.6;"> â€¢ </span>
                             <span th:text="${r.phase}">SUBMIT</span>
                         </span>
                     </div>
@@ -793,7 +793,7 @@
             <div class="widget-card">
                 <div class="widget-header">
                     <h3>Trending Events</h3>
-                    <a href="${pageContext.request.contextPath}/events" class="see-all">See All</a>
+                    <a th:href="@{/events}" class="see-all">See All</a>
                 </div>
                 <div style="display: flex; gap: 10px; margin-bottom: 15px;">
                     <img src="https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?q=80&w=1974&auto=format&fit=crop"
@@ -817,13 +817,13 @@
             <div class="widget-card">
                 <div class="widget-header">
                     <h3>Suggested for you</h3>
-                    <a href="${pageContext.request.contextPath}/explore" class="see-all">See All</a>
+                    <a th:href="@{/explore}" class="see-all">See All</a>
                 </div>
                 <div class="suggestion-item" th:each="suggestedUser : ${suggestions}">
                     <div class="suggestion-user">
                         <img th:src="'https://ui-avatars.com/api/?name=' + ${suggestedUser.username} + '&background=F84464&color=fff&size=80'"
                             class="user-avatar" style="width: 32px; height: 32px;">
-                        <a th:href="@{'${pageContext.request.contextPath}/profile/' + ${suggestedUser.username}}">
+                        <a th:href="@{'/profile/' + ${suggestedUser.username}}">
                             <span style="font-size: 13px; font-weight: 500;"
                                 th:text="${suggestedUser.username}">username</span>
                         </a>
@@ -877,6 +877,7 @@
                     <p style="font-size: 14px; font-weight: bold; color: #ffffff; margin-bottom: 5px;"
                         th:text="${n.type == 'FOLLOW_REQUEST' ? '@' + n.actor.username + ' wants to follow you!' : n.message}">
                         Message</p>
+                    <a th:if="${n.postId != null}" th:href="@{'/dashboard#post-' + ${n.postId}}" style="color: var(--accent); font-size: 12px; font-weight: 700; margin-bottom: 8px; display: inline-block;">View Post →</a>
                     <span style="font-size: 12px; color: #aaaaaa; display: block; margin-bottom: 10px;"
                         th:text="${#temporals.format(n.createdAt, 'dd MMM, HH:mm')}">Date</span>
 
@@ -1000,7 +1001,7 @@
         let currentSharePostId = null;
         const FEED_USER_ID = /*[[${user != null ? user.id : 0}]]*/ 0;
 
-        // ── Feed Filter Dropdown ─────────────────────────────
+        // â”€â”€ Feed Filter Dropdown â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         function toggleFeedFilterMenu() {
             const menu = document.getElementById('feedFilterMenu');
             if (!menu) return;
@@ -1013,7 +1014,7 @@
             if (!within) menu.style.display = 'none';
         });
 
-        // ── Create Post Modal ──────────────────────────────
+        // â”€â”€ Create Post Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         function openThoughtModal() {
             openCreateModal();
             const btn = document.querySelector('.type-btn[data-type="THOUGHT"]');
@@ -1023,14 +1024,14 @@
         }
         function showFileName(input) {
             const span = document.getElementById('selectedFileName');
-            span.textContent = input.files.length > 0 ? '📎 ' + input.files[0].name : '';
+            span.textContent = input.files.length > 0 ? 'ðŸ“Ž ' + input.files[0].name : '';
         }
         document.getElementById('overlay').addEventListener('click', function () {
             closeCreateModal();
             closeShareModal && closeShareModal();
         });
 
-        // ── Like Toggle ─────────────────────────────────────
+        // â”€â”€ Like Toggle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         async function toggleLike(postId) {
             const btn = document.getElementById('like-btn-' + postId);
             const icon = btn ? btn.querySelector('i') : null;
@@ -1081,13 +1082,13 @@
                 icon.className = isSaved ? 'far fa-bookmark' : 'fas fa-bookmark';
                 if (!isSaved) {
                     recordFeedActivity(postId, 'SAVE');
-                    showToast("Saved successfully! 🔖");
+                    showToast("Saved successfully! ðŸ”–");
                 } else {
                     showToast("Removed from saved");
                 }
             } else {
                 recordFeedActivity(postId, 'SAVE');
-                showToast("Saved successfully! 🔖");
+                showToast("Saved successfully! ðŸ”–");
             }
         }
 
@@ -1198,12 +1199,12 @@
         }
 
         const EMOJI_CATEGORIES = {
-            smileys: ['😀','😃','😄','😁','😆','😅','😂','🤣','😊','😇','🙂','🙃','😉','😌','😍','🥰','😘','😗','😙','😚','😋','😛','😝','😜','🤪','🤨','🧐','🤓','😎','🤩','🥳','😏','😒','😞','😔','😟','😕','🙁','☹️','😣','😖','😫','😩','🥺','😢','😭','😤','😠','😡','🤬','🤯','😳','🥵','🥶','😱','😨','😰','😥','😓','🤗','🤔','🤭','🤫','🤥','😶','😐','😑','😬','🙄','😯','😦','😧','😮','😲','🥱','😴','🤤','😪','😵','🤐','🥴','🤢','🤮','🤧','😷','🤒','🤕'],
-            gestures: ['👋','🤚','🖐️','✋','🖖','👌','💥','✌️','🤞','🤟','🤘','🤙','👈','👉','👆','🖕','👇','☝️','👍','👎','✊','👊','🤛','🤜','👏','🙌','👐','🤲','🤝','🙏','✍️','💅','🤳','💪','🦾','👂','👃','🧠','🦷','🦴','👀','👁️'],
-            hearts: ['❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','💕','💞','💓','💗','💖','💘','💝','💟'],
-            animals: ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐽','🐸','🐵','🙈','🙉','🙊','🐒','🐔','🐧','🐦','🐤','🐣','🐥','🦆','🦅','🦉','🦇','🐺','🐗','🐴','🦄','🐝','🐛','🦋','🐌','🐞','🐜','🕷️','🕸️','🐢','🐍','🦎','🐙','🦑','🦞','🦀','🐡','🐠','🐟','🐬','🐳','🐋','🦈','🐊'],
-            food: ['🍏','🍎','🍐','🍊','🍋','🍌','🍉','🍇','🍓','🍒','🍑','🥭','🍍','🥥','🥝','🍅','茄','🥑','🥦','🥬','🥒','🌶️','🌽','🥕','🥔','🥖','🧀','🍗','🥩','🥓','🍔','🍟','🍕','🌭','🥪','🌮','🌯','🍳','🥘','🍲','🥣','🥗','🍿','🍱','🍣','🍤','🥟','🍦','🍧','🍨','🍩','🍪','🎂','🍰','🍫','🍬','🍭','🍮','🍯','☕','🍵','🍶','🍷','🍸','🍹','🍺','🍻'],
-            activities: ['⚽','🏀','🏈','⚾','🥎','🎾','🏐','🏉','🎱','🏓','🏸','🏒','🏑','🥍','🥅','⛳','🏹','🎣','🥊','🥋','🛹','🛼','🎯','🎮','🕹️','🎰','🎳','🎸','🎺','🎻','🎨','🎬','🎤']
+            smileys: ['ðŸ˜€','ðŸ˜ƒ','ðŸ˜„','ðŸ˜','ðŸ˜†','ðŸ˜…','ðŸ˜‚','ðŸ¤£','ðŸ˜Š','ðŸ˜‡','ðŸ™‚','ðŸ™ƒ','ðŸ˜‰','ðŸ˜Œ','ðŸ˜','ðŸ¥°','ðŸ˜˜','ðŸ˜—','ðŸ˜™','ðŸ˜š','ðŸ˜‹','ðŸ˜›','ðŸ˜','ðŸ˜œ','ðŸ¤ª','ðŸ¤¨','ðŸ§','ðŸ¤“','ðŸ˜Ž','ðŸ¤©','ðŸ¥³','ðŸ˜','ðŸ˜’','ðŸ˜ž','ðŸ˜”','ðŸ˜Ÿ','ðŸ˜•','ðŸ™','â˜¹ï¸','ðŸ˜£','ðŸ˜–','ðŸ˜«','ðŸ˜©','ðŸ¥º','ðŸ˜¢','ðŸ˜­','ðŸ˜¤','ðŸ˜ ','ðŸ˜¡','ðŸ¤¬','ðŸ¤¯','ðŸ˜³','ðŸ¥µ','ðŸ¥¶','ðŸ˜±','ðŸ˜¨','ðŸ˜°','ðŸ˜¥','ðŸ˜“','ðŸ¤—','ðŸ¤”','ðŸ¤­','ðŸ¤«','ðŸ¤¥','ðŸ˜¶','ðŸ˜','ðŸ˜‘','ðŸ˜¬','ðŸ™„','ðŸ˜¯','ðŸ˜¦','ðŸ˜§','ðŸ˜®','ðŸ˜²','ðŸ¥±','ðŸ˜´','ðŸ¤¤','ðŸ˜ª','ðŸ˜µ','ðŸ¤','ðŸ¥´','ðŸ¤¢','ðŸ¤®','ðŸ¤§','ðŸ˜·','ðŸ¤’','ðŸ¤•'],
+            gestures: ['ðŸ‘‹','ðŸ¤š','ðŸ–ï¸','âœ‹','ðŸ––','ðŸ‘Œ','ðŸ’¥','âœŒï¸','ðŸ¤ž','ðŸ¤Ÿ','ðŸ¤˜','ðŸ¤™','ðŸ‘ˆ','ðŸ‘‰','ðŸ‘†','ðŸ–•','ðŸ‘‡','â˜ï¸','ðŸ‘','ðŸ‘Ž','âœŠ','ðŸ‘Š','ðŸ¤›','ðŸ¤œ','ðŸ‘','ðŸ™Œ','ðŸ‘','ðŸ¤²','ðŸ¤','ðŸ™','âœï¸','ðŸ’…','ðŸ¤³','ðŸ’ª','ðŸ¦¾','ðŸ‘‚','ðŸ‘ƒ','ðŸ§ ','ðŸ¦·','ðŸ¦´','ðŸ‘€','ðŸ‘ï¸'],
+            hearts: ['â¤ï¸','ðŸ§¡','ðŸ’›','ðŸ’š','ðŸ’™','ðŸ’œ','ðŸ–¤','ðŸ¤','ðŸ¤Ž','ðŸ’”','ðŸ’•','ðŸ’ž','ðŸ’“','ðŸ’—','ðŸ’–','ðŸ’˜','ðŸ’','ðŸ’Ÿ'],
+            animals: ['ðŸ¶','ðŸ±','ðŸ­','ðŸ¹','ðŸ°','ðŸ¦Š','ðŸ»','ðŸ¼','ðŸ¨','ðŸ¯','ðŸ¦','ðŸ®','ðŸ·','ðŸ½','ðŸ¸','ðŸµ','ðŸ™ˆ','ðŸ™‰','ðŸ™Š','ðŸ’','ðŸ”','ðŸ§','ðŸ¦','ðŸ¤','ðŸ£','ðŸ¥','ðŸ¦†','ðŸ¦…','ðŸ¦‰','ðŸ¦‡','ðŸº','ðŸ—','ðŸ´','ðŸ¦„','ðŸ','ðŸ›','ðŸ¦‹','ðŸŒ','ðŸž','ðŸœ','ðŸ•·ï¸','ðŸ•¸ï¸','ðŸ¢','ðŸ','ðŸ¦Ž','ðŸ™','ðŸ¦‘','ðŸ¦ž','ðŸ¦€','ðŸ¡','ðŸ ','ðŸŸ','ðŸ¬','ðŸ³','ðŸ‹','ðŸ¦ˆ','ðŸŠ'],
+            food: ['ðŸ','ðŸŽ','ðŸ','ðŸŠ','ðŸ‹','ðŸŒ','ðŸ‰','ðŸ‡','ðŸ“','ðŸ’','ðŸ‘','ðŸ¥­','ðŸ','ðŸ¥¥','ðŸ¥','ðŸ…','èŒ„','ðŸ¥‘','ðŸ¥¦','ðŸ¥¬','ðŸ¥’','ðŸŒ¶ï¸','ðŸŒ½','ðŸ¥•','ðŸ¥”','ðŸ¥–','ðŸ§€','ðŸ—','ðŸ¥©','ðŸ¥“','ðŸ”','ðŸŸ','ðŸ•','ðŸŒ­','ðŸ¥ª','ðŸŒ®','ðŸŒ¯','ðŸ³','ðŸ¥˜','ðŸ²','ðŸ¥£','ðŸ¥—','ðŸ¿','ðŸ±','ðŸ£','ðŸ¤','ðŸ¥Ÿ','ðŸ¦','ðŸ§','ðŸ¨','ðŸ©','ðŸª','ðŸŽ‚','ðŸ°','ðŸ«','ðŸ¬','ðŸ­','ðŸ®','ðŸ¯','â˜•','ðŸµ','ðŸ¶','ðŸ·','ðŸ¸','ðŸ¹','ðŸº','ðŸ»'],
+            activities: ['âš½','ðŸ€','ðŸˆ','âš¾','ðŸ¥Ž','ðŸŽ¾','ðŸ','ðŸ‰','ðŸŽ±','ðŸ“','ðŸ¸','ðŸ’','ðŸ‘','ðŸ¥','ðŸ¥…','â›³','ðŸ¹','ðŸŽ£','ðŸ¥Š','ðŸ¥‹','ðŸ›¹','ðŸ›¼','ðŸŽ¯','ðŸŽ®','ðŸ•¹ï¸','ðŸŽ°','ðŸŽ³','ðŸŽ¸','ðŸŽº','ðŸŽ»','ðŸŽ¨','ðŸŽ¬','ðŸŽ¤']
         };
 
         function toggleEmojiPicker(postId) {
@@ -1269,14 +1270,14 @@
             }
         }
 
-        // ── Comments Toggle ──────────────────────────────────
+        // â”€â”€ Comments Toggle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         function toggleComments(postId) {
             const panel = document.getElementById('comments-panel-' + postId);
             if (!panel) return;
             panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
         }
 
-        // ── Post Comment ─────────────────────────────────────
+        // â”€â”€ Post Comment â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         async function postComment(postId) {
             const input = document.getElementById('comment-input-' + postId);
             if (!input || !input.value.trim()) return;
@@ -1313,8 +1314,7 @@
         let allFollowers = [];
         async function openShareModal(postId) {
             currentSharePostId = postId;
-            const modal = document.getElementById('shareModal');
-            if (modal) { modal.style.display = 'flex'; }
+            openM('shareModal');
             document.getElementById('shareSearchInput').value = '';
 
             try {
@@ -1365,10 +1365,13 @@
         }
 
         function closeShareModal() {
-            const modal = document.getElementById('shareModal');
-            if (modal) { modal.style.display = 'none'; }
+            closeM('shareModal');
         }
         async function shareToUser(userId) {
+            if (!currentSharePostId) {
+                alert('Please add content before sharing');
+                return;
+            }
             const res = await fetch('/api/chat/share-post-to-user', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -1622,7 +1625,7 @@
                     })
                 });
                 if (res.ok) {
-                    showToast("Reaction sent! ❤️");
+                    showToast("Reaction sent! â¤ï¸");
                 }
             } catch (e) {
                 console.error("Failed to send reaction", e);
@@ -1653,7 +1656,7 @@
                     })
                 });
                 if (res.ok) {
-                    showToast("Reply sent! ✉️");
+                    showToast("Reply sent! âœ‰ï¸");
                     input.blur();
                 }
             } catch (e) {
@@ -1741,7 +1744,7 @@
                 usernameSpan.textContent = story.username || 'Unknown';
             }
             if (timeSpan) {
-                timeSpan.textContent = '• ' + formatRelativeTime(story.createdAt);
+                timeSpan.textContent = 'â€¢ ' + formatRelativeTime(story.createdAt);
             }
 
             // Show/hide bottom reply panel or viewers panel based on ownership
@@ -1911,9 +1914,14 @@
         }
         function avatarGoToProfile() {
             const userId = document.getElementById('avatarMenuUserId').value;
-            // go to /profile/{username} – we stored username in the span
+            // go to /profile/{username} â€“ we stored username in the span
             const username = document.getElementById('avatarMenuUsername').textContent;
             window.location.href = '/profile/' + username;
+        }
+        function viewProfile(username) {
+            if (username) {
+                window.location.href = '/profile/' + username;
+            }
         }
         function avatarViewStory() {
             const userId = document.getElementById('avatarMenuUserId').value;
@@ -1937,14 +1945,14 @@
             <div id="storyViewerHeader" style="position: absolute; top: 28px; left: 16px; display: flex; align-items: center; gap: 10px; z-index: 110; color: white;">
                 <img id="storyViewerAvatar" src="" style="width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid #fff; object-fit: cover; box-shadow: 0 2px 8px rgba(0,0,0,0.5);">
                 <span id="storyViewerUsername" style="font-weight: 700; font-size: 13.5px; text-shadow: 0 2px 5px rgba(0,0,0,0.95); font-family: 'DM Sans', sans-serif;">Username</span>
-                <span id="storyViewerTime" style="font-size: 11px; color: rgba(255,255,255,0.7); text-shadow: 0 2px 5px rgba(0,0,0,0.95); font-family: 'DM Sans', sans-serif;">• 2h ago</span>
+                <span id="storyViewerTime" style="font-size: 11px; color: rgba(255,255,255,0.7); text-shadow: 0 2px 5px rgba(0,0,0,0.95); font-family: 'DM Sans', sans-serif;">â€¢ 2h ago</span>
             </div>
 
             <button
                 style="position: absolute; top: 28px; right: 16px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: #fff; background: rgba(0,0,0,0.4); border-radius: 50%; border: none; z-index: 120; font-weight: bold; transition: background 0.2s;"
                 onmouseover="this.style.background='rgba(0,0,0,0.7)'"
                 onmouseout="this.style.background='rgba(0,0,0,0.4)'"
-                onclick="closeStoryViewer()">✕</button>
+                onclick="closeStoryViewer()">âœ•</button>
 
             <div id="storyViewerContent"
                 style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #000;">
@@ -1955,12 +1963,12 @@
             <div id="storyViewerBottom" onclick="event.stopPropagation()" style="position: absolute; bottom: 0; left: 0; right: 0; padding: 16px; background: linear-gradient(transparent, rgba(0,0,0,0.9)); z-index: 110; display: flex; flex-direction: column; gap: 10px;">
                 <!-- Quick React Emojis -->
                 <div class="story-reactions" style="display: flex; justify-content: space-around; font-size: 22px; user-select: none;">
-                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('❤️')">❤️</span>
-                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('😂')">😂</span>
-                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('😮')">😮</span>
-                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('😢')">😢</span>
-                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('👏')">👏</span>
-                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('🔥')">🔥</span>
+                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('â¤ï¸')">â¤ï¸</span>
+                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('ðŸ˜‚')">ðŸ˜‚</span>
+                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('ðŸ˜®')">ðŸ˜®</span>
+                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('ðŸ˜¢')">ðŸ˜¢</span>
+                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('ðŸ‘')">ðŸ‘</span>
+                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('ðŸ”¥')">ðŸ”¥</span>
                 </div>
                 <!-- Message Input -->
                 <div style="display: flex; gap: 8px; align-items: center; position: relative;">
@@ -1970,7 +1978,7 @@
                                onfocus="pauseStoryTimer()" onblur="resumeStoryTimer()"
                                onkeydown="if(event.key === 'Enter') sendStoryReply()">
                         <button type="button" onclick="event.stopPropagation(); toggleStoryEmojiPicker()" 
-                                style="position: absolute; right: 12px; background: none; border: none; font-size: 16px; cursor: pointer; color: #aaa; outline: none; user-select: none;">😀</button>
+                                style="position: absolute; right: 12px; background: none; border: none; font-size: 16px; cursor: pointer; color: #aaa; outline: none; user-select: none;">ðŸ˜€</button>
                     </div>
                     <button onclick="sendStoryReply()" 
                             style="background: #f84464; border: none; border-radius: 50%; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; flex-shrink: 0;">
@@ -1983,12 +1991,12 @@
                          onclick="event.stopPropagation()">
                          <!-- Categories / Tabs -->
                          <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px; margin-bottom: 8px; font-size: 14px; color: #aaa; font-weight: 700; user-select: none;">
-                             <span style="cursor: pointer; color: #fff;" onclick="switchStoryEmojiCategory(this, 'smileys')">😀</span>
-                             <span style="cursor: pointer;" onclick="switchStoryEmojiCategory(this, 'gestures')">👍</span>
-                             <span style="cursor: pointer;" onclick="switchStoryEmojiCategory(this, 'hearts')">❤️</span>
-                             <span style="cursor: pointer;" onclick="switchStoryEmojiCategory(this, 'animals')">🐱</span>
-                             <span style="cursor: pointer;" onclick="switchStoryEmojiCategory(this, 'food')">🍕</span>
-                             <span style="cursor: pointer;" onclick="switchStoryEmojiCategory(this, 'activities')">⚽</span>
+                             <span style="cursor: pointer; color: #fff;" onclick="switchStoryEmojiCategory(this, 'smileys')">ðŸ˜€</span>
+                             <span style="cursor: pointer;" onclick="switchStoryEmojiCategory(this, 'gestures')">ðŸ‘</span>
+                             <span style="cursor: pointer;" onclick="switchStoryEmojiCategory(this, 'hearts')">â¤ï¸</span>
+                             <span style="cursor: pointer;" onclick="switchStoryEmojiCategory(this, 'animals')">ðŸ±</span>
+                             <span style="cursor: pointer;" onclick="switchStoryEmojiCategory(this, 'food')">ðŸ•</span>
+                             <span style="cursor: pointer;" onclick="switchStoryEmojiCategory(this, 'activities')">âš½</span>
                          </div>
                          <!-- Emoji Content Area -->
                          <div class="emoji-picker-content" style="height: 140px; overflow-y: auto; display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; font-size: 18px; text-align: center;">
@@ -2071,3 +2079,4 @@
 </body>
 
 </html>
+

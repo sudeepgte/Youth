@@ -76,8 +76,10 @@ public class PostInteractionController {
             // Trigger Notification for the owner (if not liking own post)
             if (!post.getUser().getId().equals(user.getId())) {
                 String typeStr = post.getPostType() != null ? post.getPostType().toLowerCase() : "post";
-                String msg = "@" + user.getUsername() + " liked your " + typeStr + "!";
-                notificationRepository.save(new Notification(post.getUser(), user, msg, "LIKE"));
+                String postSnippet = post.getContent() != null && !post.getContent().isBlank() ? 
+                    (post.getContent().length() > 15 ? post.getContent().substring(0, 15) + "..." : post.getContent()) : "media";
+                String msg = "@" + user.getUsername() + " liked your " + typeStr + " (" + postSnippet + ")";
+                notificationRepository.save(new Notification(post.getUser(), user, msg, "LIKE", post.getId()));
             }
         }
 
@@ -112,9 +114,11 @@ public class PostInteractionController {
         // Trigger Notification for the owner (if not commenting on own post)
         if (!post.getUser().getId().equals(user.getId())) {
             String typeStr = post.getPostType() != null ? post.getPostType().toLowerCase() : "post";
-            String msg = "@" + user.getUsername() + " commented on your " + typeStr + ": \"" + 
+            String postSnippet = post.getContent() != null && !post.getContent().isBlank() ? 
+                (post.getContent().length() > 15 ? post.getContent().substring(0, 15) + "..." : post.getContent()) : "media";
+            String msg = "@" + user.getUsername() + " commented on (" + postSnippet + "): \"" + 
                          (content.length() > 20 ? content.substring(0, 17) + "..." : content.trim()) + "\"";
-            notificationRepository.save(new Notification(post.getUser(), user, msg, "COMMENT"));
+            notificationRepository.save(new Notification(post.getUser(), user, msg, "COMMENT", post.getId()));
         }
 
         Map<String, Object> resp = new HashMap<>();
