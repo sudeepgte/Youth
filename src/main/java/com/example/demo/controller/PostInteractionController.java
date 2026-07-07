@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 
 @RestController
-@RequestMapping("/api/posts")
+@RequestMapping(value = "/api/posts")
 public class PostInteractionController {
 
     @Autowired
@@ -51,7 +51,7 @@ public class PostInteractionController {
     }
 
     // ── Like / Unlike (toggle) ──────────────────────────────────────────────
-    @PostMapping("/{postId}/like")
+    @RequestMapping(value = "/{postId}/like", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> toggleLike(
             @PathVariable Long postId, HttpSession session) {
 
@@ -76,8 +76,10 @@ public class PostInteractionController {
             // Trigger Notification for the owner (if not liking own post)
             if (!post.getUser().getId().equals(user.getId())) {
                 String typeStr = post.getPostType() != null ? post.getPostType().toLowerCase() : "post";
-                String msg = "@" + user.getUsername() + " liked your " + typeStr + "!";
-                notificationRepository.save(new Notification(post.getUser(), user, msg, "LIKE"));
+                String postSnippet = post.getContent() != null && !post.getContent().isBlank() ? 
+                    (post.getContent().length() > 15 ? post.getContent().substring(0, 15) + "..." : post.getContent()) : "media";
+                String msg = "@" + user.getUsername() + " liked your " + typeStr + " (" + postSnippet + ")";
+                notificationRepository.save(new Notification(post.getUser(), user, msg, "LIKE", post.getId()));
             }
         }
 
@@ -89,7 +91,7 @@ public class PostInteractionController {
     }
 
     // ── Add Comment ─────────────────────────────────────────────────────────
-    @PostMapping("/{postId}/comment")
+    @RequestMapping(value = "/{postId}/comment", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> addComment(
             @PathVariable Long postId,
             @RequestParam String content,
@@ -112,9 +114,11 @@ public class PostInteractionController {
         // Trigger Notification for the owner (if not commenting on own post)
         if (!post.getUser().getId().equals(user.getId())) {
             String typeStr = post.getPostType() != null ? post.getPostType().toLowerCase() : "post";
-            String msg = "@" + user.getUsername() + " commented on your " + typeStr + ": \"" + 
+            String postSnippet = post.getContent() != null && !post.getContent().isBlank() ? 
+                (post.getContent().length() > 15 ? post.getContent().substring(0, 15) + "..." : post.getContent()) : "media";
+            String msg = "@" + user.getUsername() + " commented on (" + postSnippet + "): \"" + 
                          (content.length() > 20 ? content.substring(0, 17) + "..." : content.trim()) + "\"";
-            notificationRepository.save(new Notification(post.getUser(), user, msg, "COMMENT"));
+            notificationRepository.save(new Notification(post.getUser(), user, msg, "COMMENT", post.getId()));
         }
 
         Map<String, Object> resp = new HashMap<>();
@@ -128,7 +132,7 @@ public class PostInteractionController {
     }
 
     // ── Get Comments ────────────────────────────────────────────────────────
-    @GetMapping("/{postId}/comments")
+    @RequestMapping(value = "/{postId}/comments", method = RequestMethod.GET)
     public ResponseEntity<List<Map<String, Object>>> getComments(
             @PathVariable Long postId, HttpSession session) {
 
@@ -152,7 +156,7 @@ public class PostInteractionController {
     }
 
     // ── Get post stats (likes + comments count + did current user like/save?) ──
-    @GetMapping("/{postId}/stats")
+    @RequestMapping(value = "/{postId}/stats", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> getStats(
             @PathVariable Long postId, HttpSession session) {
 
@@ -179,7 +183,7 @@ public class PostInteractionController {
 
     // ── Save / Unsave toggle (bookmark) ─────────────────────────────────────
     @Transactional
-    @PostMapping("/{postId}/save")
+    @RequestMapping(value = "/{postId}/save", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> toggleSave(
             @PathVariable Long postId, HttpSession session) {
 
@@ -212,7 +216,7 @@ public class PostInteractionController {
 
     // ── Edit post caption / hashtags (owner only) ────────────────────────────
     @Transactional
-    @PostMapping("/{postId}/edit")
+    @RequestMapping(value = "/{postId}/edit", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> editPost(
             @PathVariable Long postId,
             @RequestParam String content,

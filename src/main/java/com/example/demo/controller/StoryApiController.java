@@ -23,7 +23,7 @@ import java.util.HashSet;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/stories")
+@RequestMapping(value = "/api/stories")
 public class StoryApiController {
 
     @Autowired
@@ -38,7 +38,7 @@ public class StoryApiController {
     @Autowired
     private jakarta.servlet.http.HttpServletRequest httpServletRequest;
 
-    @GetMapping("/user/{userId}")
+    @RequestMapping(value = "/user/{userId}", method = RequestMethod.GET)
     public ResponseEntity<?> getUserStories(@PathVariable Long userId, HttpSession session) {
         Object authUser = httpServletRequest.getAttribute("authenticatedUser");
         User currentUser = null;
@@ -86,7 +86,7 @@ public class StoryApiController {
     }
 
     @Transactional(readOnly = true)
-    @GetMapping("/{storyId}/viewers")
+    @RequestMapping(value = "/{storyId}/viewers", method = RequestMethod.GET)
     public ResponseEntity<?> getStoryViewers(@PathVariable Long storyId, HttpSession session) {
         Object authUser = httpServletRequest.getAttribute("authenticatedUser");
         User currentUser = null;

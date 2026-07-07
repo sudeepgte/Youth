@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 
 <head>
@@ -102,7 +102,7 @@
 
 <body>
     <div style="position: absolute; top: 30px; left: 30px; z-index: 10;">
-        <a href="/home" style="display: inline-flex; align-items: center; gap: 8px; color: var(--text-primary); text-decoration: none; font-weight: 700; background: rgba(255,255,255,0.8); padding: 10px 16px; border-radius: 12px; border: 1px solid var(--glass-border); box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: transform 0.2s;">
+        <a th:href="@{/home}" style="display: inline-flex; align-items: center; gap: 8px; color: var(--text-primary); text-decoration: none; font-weight: 700; background: rgba(255,255,255,0.8); padding: 10px 16px; border-radius: 12px; border: 1px solid var(--glass-border); box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: transform 0.2s;">
             <i class="fas fa-arrow-left"></i> Back to Website
         </a>
     </div>
@@ -110,19 +110,19 @@
     <div class="login-container">
         <h2>Welcome Back</h2>
 
-        <!-- ✅ Logged out successfully -->
+        <!-- âœ… Logged out successfully -->
         <div th:if="${param.loggedOut}"
              style="color: #15803d; background: rgba(21,128,61,0.08); border: 1.5px solid #86efac; padding: 12px 14px; border-radius: 10px; text-align: center; margin-bottom: 1rem; font-weight: 600; font-size: 14px; display:flex; align-items:center; gap:8px; justify-content:center;">
             <i class="fas fa-check-circle"></i> You've been logged out successfully. Please sign in again.
         </div>
 
-        <!-- ⚠️ Session expired / token revoked -->
+        <!-- âš ï¸ Session expired / token revoked -->
         <div th:if="${param.expired}"
              style="color: #92400e; background: rgba(245,158,11,0.08); border: 1.5px solid #fcd34d; padding: 12px 14px; border-radius: 10px; text-align: center; margin-bottom: 1rem; font-weight: 600; font-size: 14px; display:flex; align-items:center; gap:8px; justify-content:center;">
             <i class="fas fa-clock"></i> Your session has expired. Please log in again to continue.
         </div>
 
-        <!-- ❌ Wrong credentials -->
+        <!-- âŒ Wrong credentials -->
         <div th:if="${param.error}"
             style="color: #ff4444; background-color: rgba(255, 68, 68, 0.1); border: 1px solid #ff4444; padding: 10px; border-radius: 5px; text-align: center; margin-bottom: 1rem;">
             Invalid username or password.
@@ -137,7 +137,7 @@
             <div class="form-group">
                 <div style="display:flex; justify-content:space-between; margin-bottom: 0.5rem;">
                     <label for="password" style="margin-bottom:0;">Password</label>
-                    <a href="/forgot-password" style="font-size: 13px; font-weight: 700; color: var(--primary); text-decoration: none;">Forgot Password?</a>
+                    <a th:href="@{/forgot-password}" style="font-size: 13px; font-weight: 700; color: var(--primary); text-decoration: none;">Forgot Password?</a>
                 </div>
                 <input type="password" id="password" name="password" required>
             </div>
@@ -145,7 +145,7 @@
             <button type="submit" class="btn-login">Login</button>
         </form>
         <div class="register-link">
-            Don't have an account? <a href="/register">Register</a>
+            Don't have an account? <a th:href="@{/register}">Register</a>
         </div>
     </div>
 

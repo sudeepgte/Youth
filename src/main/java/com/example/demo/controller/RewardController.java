@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @Controller
-@RequestMapping("/rewards")
+@RequestMapping(value = "/rewards")
 public class RewardController {
 
     @Autowired
@@ -33,7 +33,7 @@ public class RewardController {
     @Autowired
     private SecretRewardService secretRewardService;
 
-    @PostMapping("/reveal/{registrationId}")
+    @RequestMapping(value = "/reveal/{registrationId}", method = RequestMethod.POST)
     @ResponseBody
     public Map<String, Object> revealReward(@PathVariable Long registrationId, HttpSession session) {
         Map<String, Object> response = new HashMap<>();
@@ -71,7 +71,7 @@ public class RewardController {
         return response;
     }
 
-    @GetMapping("/redeem/{rewardCode}")
+    @RequestMapping(value = "/redeem/{rewardCode}", method = RequestMethod.GET)
     public String redeemPage(@PathVariable String rewardCode, Model model, HttpSession session) {
         Optional<UserReward> optionalReward = userRewardRepository.findByRewardCode(rewardCode);
         
@@ -85,7 +85,7 @@ public class RewardController {
         return "reward-redeem";
     }
 
-    @PostMapping("/redeem/{rewardCode}")
+    @RequestMapping(value = "/redeem/{rewardCode}", method = RequestMethod.POST)
     public String confirmRedeem(@PathVariable String rewardCode, Model model, HttpSession session) {
         // Typically a business owner scans and confirms. 
         // We'll just allow any logged-in user to redeem it for now if they have the link (or require auth).

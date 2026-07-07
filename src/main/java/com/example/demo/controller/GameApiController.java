@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/games")
+@RequestMapping(value = "/api/games")
 public class GameApiController {
 
     @Autowired
@@ -31,7 +31,7 @@ public class GameApiController {
     @Autowired
     private CoinTransactionRepository coinTransactionRepository;
 
-    @PostMapping("/reward")
+    @RequestMapping(value = "/reward", method = RequestMethod.POST)
     public ResponseEntity<?> awardReward(@RequestBody Map<String, String> payload, HttpSession session) {
         // Authenticate user
         User user = getUserFromSession(session);
@@ -77,7 +77,7 @@ public class GameApiController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/history")
+    @RequestMapping(value = "/history", method = RequestMethod.GET)
     public ResponseEntity<?> getHistory(HttpSession session) {
         User user = getUserFromSession(session);
         if (user == null || user.getId() == null) {

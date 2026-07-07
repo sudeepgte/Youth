@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 
 <head th:replace="~{fragments/template :: head('FAQs | Zentrix')}">
@@ -57,7 +57,7 @@
 
         <div style="margin-top: 40px; text-align: center; max-width: 800px;">
             <p style="color: var(--text-secondary); font-size: 14px;">Still have questions?</p>
-            <a href="/support" class="btn btn-primary" style="margin-top: 16px; display: inline-flex; padding: 12px 24px; border-radius: 12px; font-weight: 800;">Contact Support</a>
+            <a th:href="@{/support}" class="btn btn-primary" style="margin-top: 16px; display: inline-flex; padding: 12px 24px; border-radius: 12px; font-weight: 800;">Contact Support</a>
         </div>
     </section>
 
@@ -66,3 +66,4 @@
 </body>
 
 </html>
+

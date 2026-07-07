@@ -21,6 +21,11 @@
             --text-secondary: #334155;
             --card-bg: rgba(255, 255, 255, 0.6);
             --glass-border: rgba(255, 255, 255, 0.5);
+            --dashboard-nav-height: 64px;
+        }
+
+        html, body {
+            overflow-x: clip !important;
         }
 
         body {
@@ -615,13 +620,202 @@
                 align-items: stretch;
             }
         }
+
+        /* Responsive Dashboard Container and Sidebar Styling */
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 30px;
+            max-width: 1440px;
+            margin: calc(var(--dashboard-nav-height) + 24px) auto 0;
+            padding: 0 20px;
+        }
+
+        .dashboard-navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--dashboard-nav-height);
+            z-index: 1100;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 4px 30px rgba(15, 23, 42, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            padding: 0 24px;
+        }
+
+        .dashboard-spacer {
+            flex: 1 1 auto;
+            min-width: 8px;
+        }
+
+        .dashboard-logo {
+            font-size: 22px;
+            font-weight: 900;
+            letter-spacing: 0.6px;
+            color: var(--text-primary);
+            flex: 0 0 auto;
+            text-decoration: none;
+        }
+
+        .dashboard-nav-links {
+            display: inline-flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 18px;
+            flex: 0 0 auto;
+            margin-left: auto;
+        }
+
+        .sidebar {
+            position: sticky;
+            top: 90px;
+            height: calc(100vh - 110px);
+            align-self: start;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            overflow-y: hidden;
+            padding-right: 5px;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            padding: 14px 20px;
+            color: var(--text-secondary);
+            border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            text-decoration: none;
+        }
+
+        .sidebar-link:hover,
+        .sidebar-link.active {
+            background: var(--gradient-1);
+            color: #ffffff;
+            box-shadow: 0 8px 20px -6px rgba(59, 130, 246, 0.4);
+            transform: translateX(4px);
+        }
+
+        .sidebar-link:hover i,
+        .sidebar-link.active i {
+            color: #ffffff !important;
+        }
+
+        .sidebar-link i {
+            width: 25px;
+            font-size: 18px;
+            color: var(--text-secondary);
+        }
+
+        .mobile-menu-btn {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 20px;
+            cursor: pointer;
+            margin-right: 15px;
+            padding: 0;
+            display: none;
+        }
+
+        .mobile-menu-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(8px);
+            z-index: 1150;
+            display: none;
+        }
+
+        .mobile-menu-overlay.active {
+            display: block;
+        }
+
+        @media (max-width: 992px) {
+            .dashboard-container {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                position: fixed;
+                left: -270px;
+                top: 0;
+                bottom: 0;
+                width: 250px;
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(20px);
+                z-index: 1200;
+                box-shadow: 4px 0 30px rgba(0, 0, 0, 0.1);
+                transition: left 0.3s ease;
+                padding: 30px 20px 20px;
+                height: 100vh;
+                overflow-y: auto;
+            }
+
+            .sidebar.mobile-open {
+                left: 0;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+        }
     </style>
 </head>
 
 <body>
-    <header th:replace="~{fragments/template :: adminNavbar('manage')}"></header>
+    <div class="mobile-menu-overlay" onclick="document.querySelector('.sidebar').classList.remove('mobile-open'); this.classList.remove('active'); document.body.style.overflow = '';"></div>
 
-    <div class="page-wrapper">
+    <nav class="dashboard-navbar">
+        <button class="mobile-menu-btn" onclick="const s=document.querySelector('.sidebar'); if(s) { s.classList.toggle('mobile-open'); const isOpen = s.classList.contains('mobile-open'); document.body.style.overflow = isOpen ? 'hidden' : ''; } const o=document.querySelector('.mobile-menu-overlay'); if(o) o.classList.toggle('active');">
+            <i class="fas fa-bars"></i>
+        </button>
+        <a class="dashboard-logo" th:href="@{/admin}">Zentrix <span style="font-size: 14px; font-weight: 500; opacity: 0.8; color: var(--primary);">Admin</span></a>
+
+        <div class="dashboard-spacer"></div>
+        <div class="dashboard-nav-links">
+            <a th:href="@{/dashboard}" class="btn btn-outline" style="border: 1px solid rgba(2, 132, 199, 0.4); color: #0284c7 !important; border-radius: 10px; padding: 8px 16px; text-decoration: none; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
+                <i class="fas fa-arrow-left"></i> App
+            </a>
+            <a th:href="@{/logout}" class="btn btn-primary" style="background: linear-gradient(135deg, #f84464, #ff6b9d); color: #fff !important; border-radius: 10px; padding: 8px 18px; text-decoration: none; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">Logout</a>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <!-- Left Sidebar -->
+        <aside class="sidebar">
+            <a th:href="@{/admin}" class="sidebar-link"><i class="fas fa-chart-line" style="color: inherit;"></i> Overview</a>
+            <a th:href="@{/events/admin/manage}" class="sidebar-link active"><i class="fas fa-calendar-alt" style="color: inherit;"></i> Manage Events</a>
+            <a th:href="@{/admin/music}" class="sidebar-link"><i class="fas fa-music" style="color: inherit;"></i> Review Music</a>
+            <a th:href="@{/admin/battles}" class="sidebar-link"><i class="fas fa-fire" style="color: inherit;"></i> Manage Battles</a>
+            <a th:href="@{/events/admin/create}" class="sidebar-link"><i class="fas fa-plus-circle" style="color: inherit;"></i> Create Event</a>
+            
+            <div style="border-top: 1px solid rgba(0,0,0,0.08); margin: 15px 0;"></div>
+            
+            <a th:href="@{/dashboard}" class="sidebar-link"><i class="fas fa-arrow-left" style="color: inherit;"></i> Back to App</a>
+            <a th:href="@{/logout}" class="sidebar-link" style="color: #ff4444;"><i class="fas fa-sign-out-alt" style="color: inherit;"></i> Logout</a>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="social-feed" style="max-width: 100%; padding-bottom: 60px;">
 
         <!-- Toasts -->
         <div th:if="${param.created}" class="toast success">
@@ -696,7 +890,7 @@
                     <option value="Cultural">Cultural</option>
                 </select>
             </div>
-            <a href="/events/admin/create" class="btn-nav primary">
+            <a th:href="@{/events/admin/create}" class="btn-nav primary">
                 <i class="fas fa-plus"></i> New Event
             </a>
         </div>
@@ -728,7 +922,7 @@
                         <div class="meta-row">
                             <i class="fas fa-calendar-alt"></i>
                             <span
-                                th:text="${event.dateTime != null ? #temporals.format(event.dateTime, 'MMM dd, yyyy · hh:mm a') : 'TBA'}">Date</span>
+                                th:text="${event.dateTime != null ? #temporals.format(event.dateTime, 'MMM dd, yyyy Â· hh:mm a') : 'TBA'}">Date</span>
                         </div>
                         <div class="meta-row">
                             <i class="fas fa-map-marker-alt"></i>
@@ -737,7 +931,7 @@
                         <div class="meta-row">
                             <i class="fas fa-users"></i>
                             <span>Max <strong
-                                    th:text="${event.maxParticipants != null ? event.maxParticipants : '—'}">100</strong>
+                                    th:text="${event.maxParticipants != null ? event.maxParticipants : 'â€”'}">100</strong>
                                 participants</span>
                         </div>
                     </div>
@@ -755,7 +949,7 @@
                             <i class="fas fa-eye"></i> View
                         </a>
 
-                        <!-- Attendance Button — highlighted for ONGOING events -->
+                        <!-- Attendance Button â€” highlighted for ONGOING events -->
                         <a th:href="@{'/events/admin/' + ${event.id} + '/attendance'}" class="action-btn" th:style="${event.status == 'ONGOING'} ?
                                'background:rgba(245,158,11,0.2);border-color:rgba(245,158,11,0.4);color:#f59e0b;animation:pulse-att 1.5s infinite;' :
                                'background:rgba(99,102,241,0.12);border-color:rgba(99,102,241,0.25);color:#a5b4fc;'">
@@ -787,14 +981,15 @@
                 <div class="empty-icon"><i class="fas fa-calendar-times"></i></div>
                 <h2>No Events Found</h2>
                 <p>You haven't created any events yet. Get started by publishing your first event!</p>
-                <a href="/events/admin/create" class="btn-nav primary" style="margin: 0 auto; width:fit-content;">
+                <a th:href="@{/events/admin/create}" class="btn-nav primary" style="margin: 0 auto; width:fit-content;">
                     <i class="fas fa-plus"></i> Create First Event
                 </a>
             </div>
 
         </div><!-- /events-grid -->
 
-    </div><!-- /page-wrapper -->
+        </main>
+    </div>
 
     <!-- Delete Confirmation Modal -->
     <div class="modal-overlay" id="deleteModal">
@@ -814,7 +1009,7 @@
     </div>
 
     <script>
-        // ── Filter Cards ──
+        // â”€â”€ Filter Cards â”€â”€
         function filterCards() {
             const q = document.getElementById('searchInput').value.toLowerCase();
             const status = document.getElementById('statusFilter').value;
@@ -833,7 +1028,7 @@
             });
         }
 
-        // ── Delete Modal ──
+        // â”€â”€ Delete Modal â”€â”€
         let pendingDeleteId = null;
 
         function openDeleteModal(id, title) {

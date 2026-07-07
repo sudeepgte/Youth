@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/reels")
+@RequestMapping(value = "/api/reels")
 public class ReelApiController {
 
     @Autowired
@@ -30,7 +30,7 @@ public class ReelApiController {
     private UserRepository userRepository;
 
     // 1. Upload Reel
-    @PostMapping("/upload")
+    @RequestMapping(value = "/upload", method = RequestMethod.POST)
     public ResponseEntity<?> uploadReel(
             @RequestParam("userId") Long userId,
             @RequestParam("video") MultipartFile video,
@@ -47,7 +47,7 @@ public class ReelApiController {
     }
 
     // 2. Fetch Personalized Feed
-    @GetMapping("/feed")
+    @RequestMapping(value = "/feed", method = RequestMethod.GET)
     public ResponseEntity<List<Reel>> getReelsFeed(
             @RequestParam("userId") Long userId,
             @RequestParam(value = "limit", defaultValue = "10") int limit) {
@@ -56,7 +56,7 @@ public class ReelApiController {
     }
 
     // 3. User Interaction Tracking
-    @PostMapping("/{id}/interact")
+    @RequestMapping(value = "/{id}/interact", method = RequestMethod.POST)
     public ResponseEntity<?> recordInteraction(
             @PathVariable Long id,
             @RequestParam("userId") Long userId,

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 
 <head>
@@ -264,7 +264,7 @@
 
 <body>
 
-    <h1>🍬 Candy Crush</h1>
+    <h1>ðŸ¬ Candy Crush</h1>
 
     <div id="scoreboard">
         <div class="score-box">
@@ -291,15 +291,15 @@
     </div>
 
     <div id="controls">
-        <button id="btn-new" onclick="initBoard()">🔀 New Game</button>
-        <button id="btn-hint" onclick="showHint()">💡 Hint</button>
-        <a href="/games" class="exit-btn">Exit Game</a>
+        <button id="btn-new" onclick="initBoard()">ðŸ”€ New Game</button>
+        <button id="btn-hint" onclick="showHint()">ðŸ’¡ Hint</button>
+        <a th:href="@{/games}" class="exit-btn">Exit Game</a>
     </div>
 
     <script th:inline="none">
         /*<![CDATA[*/
         const COLS = 8, ROWS = 8;
-        const CANDIES = ['🍭', '🍬', '🍫', '🍡', '🧁', '🍩', '🍦'];
+        const CANDIES = ['ðŸ­', 'ðŸ¬', 'ðŸ«', 'ðŸ¡', 'ðŸ§', 'ðŸ©', 'ðŸ¦'];
         let board = [], selected = null, score = 0, best = parseInt(localStorage.getItem('candyBest')) || 0, movesLeft = 30, hintsLeft = 3;
         let busy = false, hintCells = [];
 
@@ -510,11 +510,11 @@
         function checkGameOver() {
             if (movesLeft <= 0) {
                 if (score > best) { best = score; bestEl.textContent = best; localStorage.setItem('candyBest', best); }
-                showMessage('Game Over! 😢\nScore: ' + score);
+                showMessage('Game Over! ðŸ˜¢\nScore: ' + score);
                 return;
             }
             if (!findValidMoves().length) {
-                showMessage('No moves! Shuffling... 🔀');
+                showMessage('No moves! Shuffling... ðŸ”€');
                 setTimeout(initBoard, 1800);
             }
         }

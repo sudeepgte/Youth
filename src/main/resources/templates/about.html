@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 
 <head th:replace="~{fragments/template :: head('About Us | Zentrix')}">
@@ -28,8 +28,11 @@
                 </div>
 
                 <div style="margin-top: 40px; display: flex; gap: 16px;">
-                    <a href="/register" class="btn btn-primary" style="padding: 14px 28px; border-radius: 14px;">Join Zentrix Now</a>
-                    <a href="/support" class="btn btn-outline" style="padding: 14px 28px; border-radius: 14px;">Contact Community</a>
+                    <a th:href="@{/register}" class="btn btn-primary" style="padding: 14px 28px; border-radius: 14px;">Join Zentrix Now</a>
+
+
+                    <a th:href="@{/support}" class="btn btn-outline" style="padding: 14px 28px; border-radius: 14px;">Contact Community</a>
+
                 </div>
             </div>
             

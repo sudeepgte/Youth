@@ -148,6 +148,12 @@ public class MainController {
     @Autowired
     private com.example.demo.repository.GameRepository gameRepository;
 
+    @Autowired
+    private BattleRepository battleRepository;
+
+    @Autowired
+    private BattleParticipantRepository battleParticipantRepository;
+
     @GetMapping("/")
     public String root(jakarta.servlet.http.HttpSession session, jakarta.servlet.http.HttpServletResponse response) {
         // Clear session to ensure we start fresh on landing
@@ -444,12 +450,10 @@ public class MainController {
                 user, "STORY", java.time.LocalDateTime.now().minusHours(24)).isEmpty();
         model.addAttribute("hasStory", hasStory);
 
-        // Find all users (except self) with active stories
+        // Find all followed users with active stories
         java.time.LocalDateTime cutoff = java.time.LocalDateTime.now().minusHours(24);
         List<User> storyUsers = new java.util.ArrayList<>();
-        for (User otherUser : allUsers) {
-            if (otherUser.getId().equals(user.getId()))
-                continue; // skip self
+        for (User otherUser : user.getFollowing()) {
             boolean fHasStory = !postRepository.findByUserAndPostTypeAndCreatedAtAfterOrderByCreatedAtAsc(
                     otherUser, "STORY", cutoff).isEmpty();
             if (fHasStory) {
@@ -480,6 +484,7 @@ public class MainController {
     }
 
     @GetMapping("/admin")
+    @Transactional
     public String admin(Model model, HttpSession session) {
         // Only let admin session through
         if (!"admin".equals(session.getAttribute("user")))
@@ -492,9 +497,57 @@ public class MainController {
         model.addAttribute("votingCount", eventRepository.countByStatus("VOTING"));
         model.addAttribute("completedCount", eventRepository.countByStatus("COMPLETED"));
         model.addAttribute("rewardConfig", rewardService.getConfig());
+        
+        // Battle details for admin overview
+        List<Battle> battles = battleRepository.findAllByOrderByCreatedAtDesc();
+        long runningBattles = battles.stream().filter(b -> "ACTIVE".equals(b.getStatus())).count();
+        long totalJoinedUsers = battleParticipantRepository.count();
+        
+        double totalAdminCommission = 0.0;
+        for (Battle b : battles) {
+            double entryFee = b.getEntryFee() != null ? b.getEntryFee() : 0.0;
+            // Creator auto-joins and is stored in b.participants, so other joining users are (participants size - 1)
+            int joinsCount = b.getParticipants() != null ? Math.max(0, b.getParticipants().size() - 1) : 0;
+            totalAdminCommission += entryFee * 0.07 * joinsCount;
+        }
+
+        model.addAttribute("battles", battles);
+        model.addAttribute("totalBattles", battles.size());
+        model.addAttribute("runningBattles", runningBattles);
+        model.addAttribute("totalJoinedUsers", totalJoinedUsers);
+        model.addAttribute("totalAdminCommission", totalAdminCommission);
+
         User user = getUserFromSession(session);
         model.addAttribute("user", user);
         return "admin-dashboard";
+    }
+
+    @GetMapping("/admin/battles")
+    @Transactional
+    public String adminBattles(Model model, HttpSession session) {
+        if (!"admin".equals(session.getAttribute("user")))
+            return "redirect:/login";
+
+        List<Battle> battles = battleRepository.findAllByOrderByCreatedAtDesc();
+        long runningBattles = battles.stream().filter(b -> "ACTIVE".equals(b.getStatus())).count();
+        long totalJoinedUsers = battleParticipantRepository.count();
+        
+        double totalAdminCommission = 0.0;
+        for (Battle b : battles) {
+            double entryFee = b.getEntryFee() != null ? b.getEntryFee() : 0.0;
+            int joinsCount = b.getParticipants() != null ? Math.max(0, b.getParticipants().size() - 1) : 0;
+            totalAdminCommission += entryFee * 0.07 * joinsCount;
+        }
+
+        model.addAttribute("battles", battles);
+        model.addAttribute("totalBattles", battles.size());
+        model.addAttribute("runningBattles", runningBattles);
+        model.addAttribute("totalJoinedUsers", totalJoinedUsers);
+        model.addAttribute("totalAdminCommission", totalAdminCommission);
+
+        User user = getUserFromSession(session);
+        model.addAttribute("user", user);
+        return "admin-battles";
     }
 
     // ── Stub routes: sidebar links that don't have full pages yet ──

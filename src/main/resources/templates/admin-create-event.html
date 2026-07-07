@@ -22,6 +22,11 @@
             --text-secondary: #334155;
             --card-bg: rgba(255, 255, 255, 0.6);
             --glass-border: rgba(255, 255, 255, 0.5);
+            --dashboard-nav-height: 64px;
+        }
+
+        html, body {
+            overflow-x: clip !important;
         }
 
         body {
@@ -623,6 +628,8 @@
 
         @media (max-width: 768px) {
 
+        @media (max-width: 768px) {
+
             .two-col,
             .three-col {
                 grid-template-columns: 1fr;
@@ -636,14 +643,203 @@
                 font-size: 1.6rem;
             }
         }
+
+        /* Responsive Dashboard Container and Sidebar Styling */
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 30px;
+            max-width: 1200px;
+            margin: calc(var(--dashboard-nav-height) + 24px) auto 0;
+            padding: 0 20px;
+        }
+
+        .dashboard-navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--dashboard-nav-height);
+            z-index: 1100;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 4px 30px rgba(15, 23, 42, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            padding: 0 24px;
+        }
+
+        .dashboard-spacer {
+            flex: 1 1 auto;
+            min-width: 8px;
+        }
+
+        .dashboard-logo {
+            font-size: 22px;
+            font-weight: 900;
+            letter-spacing: 0.6px;
+            color: var(--text-primary);
+            flex: 0 0 auto;
+            text-decoration: none;
+        }
+
+        .dashboard-nav-links {
+            display: inline-flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 18px;
+            flex: 0 0 auto;
+            margin-left: auto;
+        }
+
+        .sidebar {
+            position: sticky;
+            top: 90px;
+            height: calc(100vh - 110px);
+            align-self: start;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            overflow-y: hidden;
+            padding-right: 5px;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            padding: 14px 20px;
+            color: var(--text-secondary);
+            border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            text-decoration: none;
+        }
+
+        .sidebar-link:hover,
+        .sidebar-link.active {
+            background: var(--gradient-1);
+            color: #ffffff;
+            box-shadow: 0 8px 20px -6px rgba(59, 130, 246, 0.4);
+            transform: translateX(4px);
+        }
+
+        .sidebar-link:hover i,
+        .sidebar-link.active i {
+            color: #ffffff !important;
+        }
+
+        .sidebar-link i {
+            width: 25px;
+            font-size: 18px;
+            color: var(--text-secondary);
+        }
+
+        .mobile-menu-btn {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 20px;
+            cursor: pointer;
+            margin-right: 15px;
+            padding: 0;
+            display: none;
+        }
+
+        .mobile-menu-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(8px);
+            z-index: 1150;
+            display: none;
+        }
+
+        .mobile-menu-overlay.active {
+            display: block;
+        }
+
+        @media (max-width: 992px) {
+            .dashboard-container {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                position: fixed;
+                left: -270px;
+                top: 0;
+                bottom: 0;
+                width: 250px;
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(20px);
+                z-index: 1200;
+                box-shadow: 4px 0 30px rgba(0, 0, 0, 0.1);
+                transition: left 0.3s ease;
+                padding: 30px 20px 20px;
+                height: 100vh;
+                overflow-y: auto;
+            }
+
+            .sidebar.mobile-open {
+                left: 0;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+        }
     </style>
 </head>
 
 <body>
     <!-- Admin Navbar -->
-    <header th:replace="~{fragments/template :: adminNavbar('create')}"></header>
+    <div class="mobile-menu-overlay" onclick="document.querySelector('.sidebar').classList.remove('mobile-open'); this.classList.remove('active'); document.body.style.overflow = '';"></div>
 
-    <div class="page-wrapper">
+    <nav class="dashboard-navbar">
+        <button class="mobile-menu-btn" onclick="const s=document.querySelector('.sidebar'); if(s) { s.classList.toggle('mobile-open'); const isOpen = s.classList.contains('mobile-open'); document.body.style.overflow = isOpen ? 'hidden' : ''; } const o=document.querySelector('.mobile-menu-overlay'); if(o) o.classList.toggle('active');">
+            <i class="fas fa-bars"></i>
+        </button>
+        <a class="dashboard-logo" th:href="@{/admin}">Zentrix <span style="font-size: 14px; font-weight: 500; opacity: 0.8; color: var(--primary);">Admin</span></a>
+
+        <div class="dashboard-spacer"></div>
+        <div class="dashboard-nav-links">
+            <a th:href="@{/dashboard}" class="btn btn-outline" style="border: 1px solid rgba(2, 132, 199, 0.4); color: #0284c7 !important; border-radius: 10px; padding: 8px 16px; text-decoration: none; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
+                <i class="fas fa-arrow-left"></i> App
+            </a>
+            <a th:href="@{/logout}" class="btn btn-primary" style="background: linear-gradient(135deg, #f84464, #ff6b9d); color: #fff !important; border-radius: 10px; padding: 8px 18px; text-decoration: none; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">Logout</a>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <!-- Left Sidebar -->
+        <aside class="sidebar">
+            <a th:href="@{/admin}" class="sidebar-link"><i class="fas fa-chart-line" style="color: inherit;"></i> Overview</a>
+            <a th:href="@{/events/admin/manage}" class="sidebar-link"><i class="fas fa-calendar-alt" style="color: inherit;"></i> Manage Events</a>
+            <a th:href="@{/admin/music}" class="sidebar-link"><i class="fas fa-music" style="color: inherit;"></i> Review Music</a>
+            <a th:href="@{/admin/battles}" class="sidebar-link"><i class="fas fa-fire" style="color: inherit;"></i> Manage Battles</a>
+            <a th:href="@{/events/admin/create}" class="sidebar-link active"><i class="fas fa-plus-circle" style="color: inherit;"></i> Create Event</a>
+            
+            <div style="border-top: 1px solid rgba(0,0,0,0.08); margin: 15px 0;"></div>
+            
+            <a th:href="@{/dashboard}" class="sidebar-link"><i class="fas fa-arrow-left" style="color: inherit;"></i> Back to App</a>
+            <a th:href="@{/logout}" class="sidebar-link" style="color: #ff4444;"><i class="fas fa-sign-out-alt" style="color: inherit;"></i> Logout</a>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="social-feed" style="max-width: 100%; padding-bottom: 60px;">
         <!-- Page Header -->
         <div class="page-header">
             <div class="badge">
@@ -818,8 +1014,8 @@
                             </div>
                             <div id="paidAmountField">
                                 <input type="number" name="price" id="priceInput"
-                                    th:value="${event.price != null and !event.price.startsWith('F') ? event.price.replace('₹','') : ''}"
-                                    placeholder="Enter amount in ₹" min="1" onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();">
+                                    th:value="${event.price != null and !event.price.startsWith('F') ? event.price.replace('â‚¹','') : ''}"
+                                    placeholder="Enter amount in â‚¹" min="1" onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();">
                             </div>
                         </div>
 
@@ -866,12 +1062,12 @@
                                     placeholder="e.g. 10" min="0" onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();">
                             </div>
                             <div class="field-group">
-                                <label>VIP Seat Price (₹)</label>
+                                <label>VIP Seat Price (â‚¹)</label>
                                 <input type="number" name="vipPrice" th:value="${event.vipPrice}" placeholder="500"
                                     min="0" onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();">
                             </div>
                             <div class="field-group">
-                                <label>Regular Seat Price (₹)</label>
+                                <label>Regular Seat Price (â‚¹)</label>
                                 <input type="number" name="regularPrice" th:value="${event.regularPrice}"
                                     placeholder="200" min="0" onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();">
                             </div>
@@ -1013,15 +1209,9 @@
                     <div class="field-group">
                         <label>Poster Image Upload</label>
                         <div style="position:relative;">
-<<<<<<< HEAD
                             <input type="file" name="imageFile" id="imageFileInput" accept="image/png, image/jpeg"
                                 onchange="previewImageFile(this)"
                                 style="width:100%; padding:12px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1); border-radius:10px; color:#fff;">
-=======
-                            <input type="url" name="imageUrl" id="imageUrlInput" th:value="${event.imageUrl}"
-                                oninput="previewUrlPoster(this.value)" placeholder="https://example.com/poster.jpg"
-                                style="width:100%; padding:12px; background:rgba(255,255,255,0.8); border:1px solid rgba(255,255,255,0.5); border-radius:10px; color:#0f172a;">
->>>>>>> d9701997387483b45377a4fd9ab68719135e581f
                         </div>
                         <p style="font-size:12px; color:#334155; margin-top:6px;">
                             <i class="fas fa-info-circle" style="color:#f84464;"></i>
@@ -1043,7 +1233,7 @@
 
                 <!-- Submit Bar -->
                 <div class="submit-bar">
-                    <a href="/events/admin/manage" class="btn-cancel">
+                    <a th:href="@{/events/admin/manage}" class="btn-cancel">
                         <i class="fas fa-times"></i> Cancel
                     </a>
                     <button type="submit" class="btn-publish" id="publishBtn">
@@ -1054,10 +1244,11 @@
 
             </div><!-- /form-grid -->
         </form>
+        </main>
     </div>
 
     <script>
-        // ── Paid fee toggle ──
+        // â”€â”€ Paid fee toggle â”€â”€
         function togglePaidField(radio) {
             const field = document.getElementById('paidAmountField');
             const input = document.getElementById('priceInput');
@@ -1219,7 +1410,7 @@
             }
         }
 
-        // ── Poster file live preview ──
+        // â”€â”€ Poster file live preview â”€â”€
         function previewImageFile(input) {
             const preview = document.getElementById('posterPreview');
             const img = document.getElementById('posterImg');
@@ -1236,7 +1427,7 @@
             }
         }
 
-        // ── Form validation ──
+        // â”€â”€ Form validation â”€â”€
         function validateForm() {
             const cat = document.querySelector('input[name="category"]:checked');
             if (!cat) { alert('Please select an event category.'); return false; }
@@ -1264,7 +1455,7 @@
         }
 
 
-        // ── Publish button animation ──
+        // â”€â”€ Publish button animation â”€â”€
         document.querySelector('form').addEventListener('submit', function () {
             if (!validateForm()) return false;
             const btn = document.getElementById('publishBtn');

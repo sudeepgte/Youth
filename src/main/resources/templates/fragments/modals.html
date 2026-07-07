@@ -73,7 +73,7 @@
     </style>
 
     <!-- Create Post Modal -->
-    <div class="modal" id="createPostModal" style="display:none; flex-direction: column;">
+    <div class="modal" id="createPostModal" style="display:none; flex-direction: column; max-height: 90vh;">
             <div style="padding:20px; border-bottom:1px solid var(--glass-border); display:flex; justify-content:space-between; align-items:center;">
                 <h3 style="font-size:16px; display:flex; align-items:center; gap:8px;">
                     <i class="fas fa-plus-circle" style="color:var(--accent);"></i>
@@ -82,7 +82,7 @@
                 <button class="nav-btn" onclick="closeM('createPostModal')"
                     style="background:none; border:none; color:var(--text-secondary); font-size:20px;">&times;</button>
             </div>
-            <div style="padding:20px;">
+            <div style="padding:20px; overflow-y:auto; flex:1;">
                 <form id="createPostForm" th:action="@{/profile/post}" method="post" enctype="multipart/form-data">
                     <!-- Hidden fields for type & category -->
                     <input type="hidden" name="postType" id="postTypeInput" value="POST">
@@ -322,8 +322,7 @@
                 });
         }
 
-        // Initialize listeners after DOM loads
-        document.addEventListener('DOMContentLoaded', () => {
+        function initModalListeners() {
             const postContent = document.getElementById('postContent');
             const mentionDrop = document.getElementById('mentionDrop');
             if (postContent && mentionDrop) {
@@ -363,7 +362,27 @@
                     });
                 };
             }
-        });
+
+            const createPostForm = document.getElementById('createPostForm');
+            if (createPostForm) {
+                createPostForm.onsubmit = function(e) {
+                    const content = document.getElementById('postContent').value.trim();
+                    const mediaFiles = document.getElementById('mediaFile').files.length;
+                    if (!content && mediaFiles === 0) {
+                        e.preventDefault();
+                        alert('Please add content before posting');
+                        return false;
+                    }
+                    return true;
+                };
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initModalListeners);
+        } else {
+            initModalListeners();
+        }
     </script>
 </div>
 

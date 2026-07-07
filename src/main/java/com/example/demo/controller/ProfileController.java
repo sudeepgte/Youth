@@ -21,7 +21,7 @@ import java.util.Set;
 import java.util.HashSet;
 
 @Controller
-@RequestMapping("/profile")
+@RequestMapping(value = "/profile")
 public class ProfileController {
 
     @Autowired
@@ -85,8 +85,9 @@ public class ProfileController {
     @Autowired
     private com.example.demo.repository.UserActivityRepository userActivityRepository;
 
+
     @Transactional(readOnly = true)
-    @GetMapping("/{username}")
+    @RequestMapping(value = "/{username}", method = RequestMethod.GET)
     public String showPublicProfile(@PathVariable String username, HttpSession session, Model model) {
         User currentUser = (User) session.getAttribute("user");
         if (currentUser == null) {
@@ -106,13 +107,23 @@ public class ProfileController {
         long eventsJoined = eventRegistrationRepository.countByUser(targetUser);
         long eventsWon = eventRegistrationRepository.countByUserAndPosition(targetUser, "Winner");
 
-        // Calculate Rank (simplistic query-based approach: all users with XP >
-        // targetUser's XP + 1)
-        long higherXpCount = userRepository.findAll().stream()
-                .filter(u -> (u.getXp() != null ? u.getXp() : 0) > (targetUser.getXp() != null ? targetUser.getXp()
-                        : 0))
-                .count();
-        long rank = higherXpCount + 1;
+        // Calculate Rank with XP descending and ID ascending as a tie-breaker
+        long rank = 1;
+        List<User> allUsers = userRepository.findAll();
+        allUsers.sort((u1, u2) -> {
+            int xp1 = u1.getXp() != null ? u1.getXp() : 0;
+            int xp2 = u2.getXp() != null ? u2.getXp() : 0;
+            if (xp1 != xp2) {
+                return Integer.compare(xp2, xp1);
+            }
+            return Long.compare(u1.getId(), u2.getId());
+        });
+        for (int i = 0; i < allUsers.size(); i++) {
+            if (allUsers.get(i).getId().equals(targetUser.getId())) {
+                rank = i + 1;
+                break;
+            }
+        }
 
         String badge = targetUser.getLevel() != null ? targetUser.getLevel() : "Novice";
 
@@ -177,6 +188,14 @@ public class ProfileController {
             // Fetch user rewards
             List<UserReward> userRewards = userRewardRepository.findByUserOrderByIssueDateDesc(currentUser);
             model.addAttribute("userRewards", userRewards);
+        } else {
+            model.addAttribute("pendingRequests", new java.util.ArrayList<>());
+            model.addAttribute("notifications", new java.util.ArrayList<>());
+            model.addAttribute("unreadNotifCount", 0);
+            model.addAttribute("followRequests", new java.util.ArrayList<>());
+            model.addAttribute("followingUserIds", new java.util.HashSet<>());
+            model.addAttribute("savedPosts", new java.util.ArrayList<>());
+            model.addAttribute("userRewards", new java.util.ArrayList<>());
         }
 
         return "profile";
@@ -188,11 +207,11 @@ public class ProfileController {
         if (user == null) {
             return "redirect:/login";
         }
-        return showPublicProfile(user.getUsername(), session, model);
+        return "redirect:/profile/" + user.getUsername();
     }
 
     @Transactional
-    @PostMapping("/update")
+    @RequestMapping(value = "/update", method = RequestMethod.POST)
     public String updateProfile(@RequestParam String username,
             @RequestParam String email,
             @RequestParam(required = false) String dob,
@@ -248,7 +267,7 @@ public class ProfileController {
         }
     }
 
-    @PostMapping("/reset-password")
+    @RequestMapping(value = "/reset-password", method = RequestMethod.POST)
     public String resetPassword(@RequestParam String newPassword, HttpSession session) {
         Object sessionUser = session.getAttribute("user");
         if (!(sessionUser instanceof User)) {
@@ -264,7 +283,7 @@ public class ProfileController {
         return "redirect:/profile?passwordReset";
     }
 
-    @PostMapping("/post")
+    @RequestMapping(value = "/post", method = RequestMethod.POST)
     public String createPost(@RequestParam String content,
             @RequestParam(required = false) org.springframework.web.multipart.MultipartFile file,
             @RequestParam(required = false) String hashtags,
@@ -360,7 +379,7 @@ public class ProfileController {
         return "redirect:/profile";
     }
 
-    @PostMapping("/post/delete/{id}")
+    @RequestMapping(value = "/post/delete/{id}", method = RequestMethod.POST)
     @ResponseBody
     public org.springframework.http.ResponseEntity<?> deletePost(@PathVariable Long id, HttpSession session) {
         User user = (User) session.getAttribute("user");
@@ -385,7 +404,7 @@ public class ProfileController {
     }
 
     @Transactional
-    @PostMapping("/{id}/follow")
+    @RequestMapping(value = "/{id}/follow", method = RequestMethod.POST)
     public String followUser(@PathVariable Long id, HttpSession session,
             @RequestHeader(value = "Referer", required = false) String referer) {
         User currentUser = (User) session.getAttribute("user");
@@ -421,7 +440,7 @@ public class ProfileController {
     }
 
     @Transactional
-    @PostMapping("/{id}/follow/ajax")
+    @RequestMapping(value = "/{id}/follow/ajax", method = RequestMethod.POST)
     @ResponseBody
     public org.springframework.http.ResponseEntity<?> followUserAjax(@PathVariable Long id, HttpSession session) {
         User currentUser = (User) session.getAttribute("user");
@@ -486,7 +505,7 @@ public class ProfileController {
     }
 
     @Transactional
-    @PostMapping("/{id}/cancel-follow/ajax")
+    @RequestMapping(value = "/{id}/cancel-follow/ajax", method = RequestMethod.POST)
     @ResponseBody
     public org.springframework.http.ResponseEntity<?> cancelFollowAjax(@PathVariable Long id, HttpSession session) {
         User currentUser = (User) session.getAttribute("user");
@@ -508,7 +527,7 @@ public class ProfileController {
     }
 
     @Transactional
-    @PostMapping("/{id}/unfollow")
+    @RequestMapping(value = "/{id}/unfollow", method = RequestMethod.POST)
     public String unfollowUser(@PathVariable Long id, HttpSession session,
             @RequestHeader(value = "Referer", required = false) String referer) {
         User currentUser = (User) session.getAttribute("user");
@@ -528,7 +547,7 @@ public class ProfileController {
         return (referer != null) ? "redirect:" + referer : "redirect:/profile";
     }
 
-    @GetMapping("/api/users/search")
+    @RequestMapping(value = "/api/users/search", method = RequestMethod.GET)
     @ResponseBody
     public List<Map<String, Object>> searchUsers(@RequestParam String q) {
         List<User> users = userRepository.findByUsernameContainingIgnoreCase(q);
@@ -542,7 +561,7 @@ public class ProfileController {
         return result;
     }
 
-    @PostMapping("/collaboration/{id}/accept")
+    @RequestMapping(value = "/collaboration/{id}/accept", method = RequestMethod.POST)
     public String acceptCollaboration(@PathVariable Long id, HttpSession session) {
         User user = (User) session.getAttribute("user");
         if (user == null) {
@@ -557,7 +576,7 @@ public class ProfileController {
         return "redirect:/profile";
     }
 
-    @PostMapping("/collaboration/{id}/reject")
+    @RequestMapping(value = "/collaboration/{id}/reject", method = RequestMethod.POST)
     public String rejectCollaboration(@PathVariable Long id, HttpSession session) {
         User user = (User) session.getAttribute("user");
         if (user == null) {
@@ -573,7 +592,7 @@ public class ProfileController {
     }
 
     @Transactional
-    @PostMapping("/notifications/mark-all-read")
+    @RequestMapping(value = "/notifications/mark-all-read", method = RequestMethod.POST)
     @ResponseBody
     public org.springframework.http.ResponseEntity<?> markAllNotificationsRead(HttpSession session) {
         User user = (User) session.getAttribute("user");
@@ -592,7 +611,7 @@ public class ProfileController {
     }
 
     @Transactional
-    @PostMapping("/follow-request/{id}/accept/ajax")
+    @RequestMapping(value = "/follow-request/{id}/accept/ajax", method = RequestMethod.POST)
     @ResponseBody
     public org.springframework.http.ResponseEntity<?> acceptFollowAjax(@PathVariable Long id, HttpSession session) {
         User user = (User) session.getAttribute("user");
@@ -658,7 +677,7 @@ public class ProfileController {
     }
 
     @Transactional
-    @PostMapping("/follow-request/{id}/reject/ajax")
+    @RequestMapping(value = "/follow-request/{id}/reject/ajax", method = RequestMethod.POST)
     @ResponseBody
     public org.springframework.http.ResponseEntity<?> rejectFollowAjax(@PathVariable Long id, HttpSession session) {
         User user = (User) session.getAttribute("user");
@@ -682,21 +701,21 @@ public class ProfileController {
     }
 
     @Transactional
-    @PostMapping("/follow-request/{id}/accept")
+    @RequestMapping(value = "/follow-request/{id}/accept", method = RequestMethod.POST)
     public String acceptFollow(@PathVariable Long id, HttpSession session) {
         acceptFollowAjax(id, session);
         return "redirect:/profile";
     }
 
     @Transactional
-    @PostMapping("/follow-request/{id}/reject")
+    @RequestMapping(value = "/follow-request/{id}/reject", method = RequestMethod.POST)
     public String rejectFollow(@PathVariable Long id, HttpSession session) {
         rejectFollowAjax(id, session);
         return "redirect:/profile";
     }
 
     @Transactional
-    @PostMapping("/notifications/{id}/delete")
+    @RequestMapping(value = "/notifications/{id}/delete", method = RequestMethod.POST)
     @ResponseBody
     public org.springframework.http.ResponseEntity<?> deleteNotification(@PathVariable Long id, HttpSession session) {
         User user = (User) session.getAttribute("user");
@@ -713,7 +732,7 @@ public class ProfileController {
     }
 
     @Transactional
-    @PostMapping("/notifications/clear-all")
+    @RequestMapping(value = "/notifications/clear-all", method = RequestMethod.POST)
     @ResponseBody
     public org.springframework.http.ResponseEntity<?> clearAllNotifications(HttpSession session) {
         User user = (User) session.getAttribute("user");

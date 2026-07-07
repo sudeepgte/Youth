@@ -11,13 +11,13 @@ import java.util.*;
  * GET /api/users/explore?name=&college=
  */
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping(value = "/api/users")
 public class UserExploreApiController {
 
     @Autowired
     private UserRepository userRepository;
 
-    @GetMapping("/explore")
+    @RequestMapping(value = "/explore", method = RequestMethod.GET)
     public List<Map<String, Object>> exploreUsers(
             @RequestParam(required = false, defaultValue = "") String name,
             @RequestParam(required = false, defaultValue = "") String college) {

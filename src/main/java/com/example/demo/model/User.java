@@ -25,6 +25,7 @@ public class User implements Serializable {
     private String email;
     @JsonIgnore
     private String password;
+    private boolean emailVerified = false;
     private LocalDate dob;
     private String gender;
     private String profilePicture;
@@ -116,6 +117,14 @@ public class User implements Serializable {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public boolean isEmailVerified() {
+        return emailVerified;
+    }
+
+    public void setEmailVerified(boolean emailVerified) {
+        this.emailVerified = emailVerified;
     }
 
     public LocalDate getDob() {

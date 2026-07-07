@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 
 <head th:replace="~{fragments/template :: head('Organizers | Zentrix')}">
@@ -32,7 +32,7 @@
                         <i class="fa-solid fa-check-circle" style="color: var(--primary);"></i> Community Engagement Tools
                     </li>
                 </ul>
-                <a href="/support" class="btn btn-primary" style="padding: 14px 30px; border-radius: 14px; font-weight: 800;">Contact for Partnership</a>
+                <a th:href="@{/support}" class="btn btn-primary" style="padding: 14px 30px; border-radius: 14px; font-weight: 800;">Contact for Partnership</a>
             </div>
             <div style="border-radius: 24px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.1);">
                 <img src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=800&auto=format&fit=crop" 
@@ -46,3 +46,4 @@
 </body>
 
 </html>
+
