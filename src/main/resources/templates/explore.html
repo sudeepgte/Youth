@@ -15,7 +15,7 @@
             padding: 20px;
         }
 
-        /* â”€â”€ Search Panel â”€â”€ */
+        /* ── Search Panel ── */
         .explore-search-panel {
             background: rgba(255,255,255,0.88);
             border: 1px solid var(--glass-border);
@@ -101,7 +101,7 @@
 
         .explore-clear-btn:hover { border-color: #ef4444; color: #ef4444; }
 
-        /* â”€â”€ Results summary â”€â”€ */
+        /* ── Results summary ── */
         .explore-header {
             display: flex;
             align-items: center;
@@ -131,7 +131,7 @@
             border: 1px solid rgba(59,130,246,0.12);
         }
 
-        /* â”€â”€ People Grid â”€â”€ */
+        /* ── People Grid ── */
         .people-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
@@ -245,7 +245,7 @@
             .explore-header h1 { font-size: 20px; }
         }
 
-        /* â”€â”€ Follow Requests Section â”€â”€ */
+        /* ── Follow Requests Section ── */
         .follow-requests-section {
             background: rgba(255, 255, 255, 0.95);
             border: 1.5px solid var(--accent);
@@ -357,7 +357,7 @@
 
         <main class="explore-container">
         
-        <!-- â•â• Pending Follow Requests â•â• -->
+        <!-- ══ Pending Follow Requests ══ -->
         <div th:if="${not #lists.isEmpty(followRequests)}" class="follow-requests-section">
             <div class="fr-title">
                 <i class="fas fa-user-clock" style="color: var(--accent);"></i>
@@ -380,7 +380,7 @@
                 </div>
             </div>
         </div>
-        <!-- â•â• Search Panel â•â• -->
+        <!-- ══ Search Panel ══ -->
         <div class="explore-search-panel">
             <div class="explore-search-field">
                 <i class="fas fa-user"></i>
@@ -398,7 +398,7 @@
             </button>
         </div>
 
-        <!-- â•â• Header â•â• -->
+        <!-- ══ Header ══ -->
         <div class="explore-header">
             <h1>
                 <i class="fas fa-users" style="-webkit-text-fill-color: var(--accent); font-size:20px;"></i>
@@ -409,7 +409,7 @@
             </span>
         </div>
 
-        <!-- â•â• People Grid â•â• -->
+        <!-- ══ People Grid ══ -->
         <div class="people-grid" id="peopleGrid">
 
             <!-- Server-rendered initial cards (all users) -->
@@ -467,7 +467,7 @@
         </main>
     </div>
     <script>
-        /* â”€â”€â”€ Live client-side filter on initial server-rendered cards â”€â”€â”€ */
+        /* ─── Live client-side filter on initial server-rendered cards ─── */
         function filterCards() {
             const name    = document.getElementById('nameInput').value.trim().toLowerCase();
             const college = document.getElementById('collegeInput').value.trim().toLowerCase();
@@ -508,7 +508,7 @@
             filterCards();
         }
 
-        /* â”€â”€â”€ Follow / Unfollow AJAX (same as dashboard) â”€â”€â”€ */
+        /* ─── Follow / Unfollow AJAX (same as dashboard) ─── */
         async function followUserAjax(userId, btn) {
             const wrapper = document.getElementById('fw-' + userId);
             if (!wrapper) return;
@@ -540,7 +540,7 @@
             }
         }
 
-        /* â”€â”€â”€ Accept / Reject Follow Request AJAX â”€â”€â”€ */
+        /* ─── Accept / Reject Follow Request AJAX ─── */
         async function respondToRequest(requestId, accept) {
             const row = document.getElementById('fr-row-' + requestId);
             const endpoint = `/profile/follow-request/${requestId}/${accept ? 'accept' : 'reject'}/ajax`;

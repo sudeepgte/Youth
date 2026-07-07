@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 
 <head>
@@ -414,7 +414,7 @@
 
             <div id="start-screen">
                 <h2>SUPER MARIO</h2>
-                <div class="subtitle">â˜… WORLD 1-1 â˜…</div>
+                <div class="subtitle">★ WORLD 1-1 ★</div>
                 <canvas id="mario-preview" width="80" height="80"
                     style="image-rendering:pixelated;margin:8px 0;"></canvas>
                 <div class="press-start">PRESS SPACE OR CLICK TO START</div>
@@ -444,7 +444,7 @@
             </div>
             <div style="font-size:8px;color:#555;text-align:center;">
                 <div style="color:#cc8800;margin-bottom:4px;">LIVES</div>
-                <div id="lives-display" style="color:#fff;font-size:10px;">â™¥â™¥â™¥</div>
+                <div id="lives-display" style="color:#fff;font-size:10px;">♥♥♥</div>
             </div>
             <div class="action-btns">
                 <button class="action-btn btn-run" id="mb-run">B</button>
@@ -455,15 +455,15 @@
 
     <script th:inline="none">
         /*<![CDATA[*/
-        // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+        // ════════════════════════════════════════════════════
         //   SUPER MARIO  â€”  Full Game Engine
-        // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+        // ════════════════════════════════════════════════════
 
         const C = document.getElementById('c');
         const ctx = C.getContext('2d');
         const W = 768, H = 432;
 
-        // â”€â”€ Constants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ── Constants ──────────────────────────────────────
         const TILE = 32;
         const GRAVITY = 0.55;
         const JUMP_FORCE = -13.5;
@@ -473,7 +473,7 @@
         const FRICTION = 0.82;
         const LEVEL_WIDTH = 6400;
 
-        // â”€â”€ Palette â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ── Palette ────────────────────────────────────────
         const PAL = {
             sky1: '#5c94fc', sky2: '#3060c0',
             ground1: '#c84c0c', ground2: '#a83000', ground3: '#f8b878',
@@ -489,7 +489,7 @@
             star1: '#f8d800', star2: '#c09000',
         };
 
-        // â”€â”€ State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ── State ─────────────────────────────────────────
         let keys = {};
         let gameState = 'start'; // start | playing | dead | gameover | win
         let score = 0, coins = 0, lives = 3, timeLeft = 400;
@@ -501,7 +501,7 @@
         let jumpPressed = false;
         let bestScore = parseInt(localStorage.getItem('marioBest')) || 0;
 
-        // â”€â”€ Mario â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ── Mario ──────────────────────────────────────────
         const mario = {
             x: 80, y: H - TILE * 3,
             w: 28, h: 32,
@@ -517,7 +517,7 @@
             Big: false,
         };
 
-        // â”€â”€ Level Layout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ── Level Layout ────────────────────────────────────
         // Tiles: G=ground, B=brick, Q=question, P=pipe(bot), p=pipe(top), _=air, E=end flag
         const GROUND_Y = H - TILE * 2; // top of ground row
 
@@ -614,7 +614,7 @@
             }));
         }
 
-        // â”€â”€ Collision â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ── Collision ──────────────────────────────────────
         function rectOverlap(a, b) {
             return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
         }
@@ -677,7 +677,7 @@
             }
         }
 
-        // â”€â”€ Particles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ── Particles ──────────────────────────────────────
         function spawnBrickParts(x, y) {
             for (let i = 0; i < 8; i++) {
                 const a = (Math.random() * Math.PI * 2);
@@ -702,14 +702,14 @@
             }
         }
 
-        // â”€â”€ Camera â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ── Camera ─────────────────────────────────────────
         function updateCamera() {
             const target = mario.x - W * 0.35;
             cameraX += (target - cameraX) * 0.12;
             cameraX = Math.max(0, Math.min(LEVEL_WIDTH - W, cameraX));
         }
 
-        // â”€â”€ Background drawing â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ── Background drawing ────────────────────────────
         function drawBackground() {
             // Sky gradient
             const sky = ctx.createLinearGradient(0, 0, 0, H);
@@ -854,7 +854,7 @@
             ctx.restore();
         }
 
-        // â”€â”€ Tile rendering â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ── Tile rendering ────────────────────────────────
         function drawGround(x, y, w, h, type) {
             const px = x - cameraX;
             if (px + w < -TILE || px > W + TILE) return;
@@ -976,7 +976,7 @@
             ctx.restore();
         }
 
-        // â”€â”€ Mario Rendering â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ── Mario Rendering ────────────────────────────────
         function drawMario() {
             if (mario.dead && mario.deadTimer < 20) return;
             ctx.save();
@@ -1007,7 +1007,7 @@
             ctx.restore();
         }
 
-        // â”€â”€ HUD etc â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ── HUD etc ────────────────────────────────────────
         function updateHUD() {
             document.getElementById('hud-score').textContent = String(score).padStart(6, '0');
             document.getElementById('hud-coins').textContent = 'Ã—' + String(coins).padStart(2, '0');
@@ -1032,7 +1032,7 @@
             }
         }
 
-        // â”€â”€ Update â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ── Update ────────────────────────────────────────
         function update() {
             frameCount++;
             if (gameState === 'playing') {
@@ -1147,7 +1147,7 @@
             gameState = 'playing'; timeLeft = 400;
         }
 
-        // â”€â”€ Input â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ── Input ──────────────────────────────────────────
         window.onkeydown = e => {
             keys[e.key] = true;
             if (gameState === 'start') startGame();
@@ -1163,7 +1163,7 @@
         document.getElementById('mb-jump').onpointerdown = () => keys['w'] = true;
         document.getElementById('mb-jump').onpointerup = () => keys['w'] = false;
 
-        // â”€â”€ Loop â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ── Loop ──────────────────────────────────────────
         function startGame() {
             gameState = 'playing';
             document.getElementById('start-screen').style.display = 'none';

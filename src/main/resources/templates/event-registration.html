@@ -20,7 +20,7 @@
             color: var(--text-primary) !important;
         }
 
-        /* â”€â”€ Hero â”€â”€ */
+        /* ── Hero ── */
         .event-hero {
             position: relative;
             width: 100%;
@@ -118,7 +118,7 @@
             color: #fff;
         }
 
-        /* â”€â”€ Status Badge â”€â”€ */
+        /* ── Status Badge ── */
         .status-badge {
             display: inline-flex;
             align-items: center;
@@ -147,7 +147,7 @@
             border: 1px solid rgba(16, 185, 129, 0.3);
         }
 
-        /* â”€â”€ Layout â”€â”€ */
+        /* ── Layout ── */
         .detail-layout {
             max-width: 1100px;
             margin: 0 auto;
@@ -157,7 +157,7 @@
             padding: 40px 30px 80px;
         }
 
-        /* â”€â”€ Info Grid (Redesigned) â”€â”€ */
+        /* ── Info Grid (Redesigned) ── */
         .event-details-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
@@ -221,7 +221,7 @@
             line-height: 1.2;
         }
 
-        /* â”€â”€ About â”€â”€ */
+        /* ── About ── */
         .about-section h2 {
             font-size: 1.2rem;
             font-weight: 700;
@@ -236,7 +236,7 @@
             opacity: 0.9;
         }
 
-        /* â”€â”€ Organizer â”€â”€ */
+        /* ── Organizer ── */
         .organizer-card {
             margin-top: 34px;
             padding: 22px;
@@ -272,7 +272,7 @@
             color: var(--text-muted);
         }
 
-        /* â”€â”€ Related â”€â”€ */
+        /* ── Related ── */
         .related-section {
             margin-top: 40px;
         }
@@ -329,7 +329,7 @@
             color: var(--text-muted);
         }
 
-        /* â”€â”€ RIGHT STICKY CARD â”€â”€ */
+        /* ── RIGHT STICKY CARD ── */
         .register-card {
             background: #fff;
             border: 1px solid rgba(0, 0, 0, 0.08);
@@ -795,7 +795,7 @@
             font-weight: 600;
         }
 
-        /* â”€â”€ Registration Modal â”€â”€ */
+        /* ── Registration Modal ── */
         .reg-modal-overlay {
             display: none;
             position: fixed;
@@ -1030,7 +1030,7 @@
 <body>
     <div th:replace="~{fragments/template :: navbar('event-details')}"></div>
 
-    <!-- â•â•â•â•â•â•â•â•â•â•â• HERO â•â•â•â•â•â•â•â•â•â•â• -->
+    <!-- ═══════════ HERO ═══════════ -->
     <div class="event-hero">
         <img th:src="${event.imageUrl}" alt="Event Banner"
             onerror="this.src='https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1400'">
@@ -1072,10 +1072,10 @@
         </div>
     </div>
 
-    <!-- â•â•â•â•â•â•â•â•â•â•â• DETAIL LAYOUT â•â•â•â•â•â•â•â•â•â•â• -->
+    <!-- ═══════════ DETAIL LAYOUT ═══════════ -->
     <div class="detail-layout">
 
-        <!-- â”€â”€ LEFT: Info â”€â”€ -->
+        <!-- ── LEFT: Info ── -->
         <div>
             <!-- Alerts -->
             <div th:if="${param.alreadyRegistered}" class="alert-already">
@@ -1294,7 +1294,7 @@
 
         </div><!-- /left -->
 
-        <!-- â”€â”€ RIGHT: Registration Card â”€â”€ -->
+        <!-- ── RIGHT: Registration Card ── -->
         <div>
             <div class="register-card">
 
@@ -1431,14 +1431,14 @@
 
     </div><!-- /detail-layout -->
 
-    <!-- â•â•â•â•â•â•â•â•â•â•â• REGISTRATION INFO MODAL (students only) â•â•â•â•â•â•â•â•â•â•â• -->
+    <!-- ═══════════ REGISTRATION INFO MODAL (students only) ═══════════ -->
     <div th:if="${!isAdmin}" class="reg-modal-overlay" id="regModalOverlay">
         <div class="reg-modal">
 
             <!-- Modal Header -->
             <div class="modal-head">
                 <div class="modal-head-left">
-                    <h2>ðŸ“‹ Registration Details</h2>
+                    <h2>📋 Registration Details</h2>
                     <p>Fill in your info to complete registration</p>
                 </div>
                 <button class="modal-close" onclick="closeRegModal()"><i class="fas fa-times"></i></button>
@@ -1573,11 +1573,11 @@
 
             </form>
 
-            <p class="modal-note">ðŸ”’ Your information is secure and used only for this event registration.</p>
+            <p class="modal-note">🔒 Your information is secure and used only for this event registration.</p>
         </div>
     </div>
 
-    <!-- â•â•â•â•â•â•â•â•â•â•â• BOOKING BAR (BMOS) â•â•â•â•â•â•â•â•â•â•â• -->
+    <!-- ═══════════ BOOKING BAR (BMOS) ═══════════ -->
     <div class="booking-bar" id="bookingBar">
         <div class="summary-left">
             <span class="booking-total-label">Selected Seats: <span id="selectedCount"

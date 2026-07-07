@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 
 <head>
@@ -27,7 +27,7 @@
             padding: 80px 20px 60px;
         }
 
-        /* â”€â”€ Top nav â”€â”€ */
+        /* ── Top nav ── */
         .topbar {
             position: fixed;
             top: 0;
@@ -66,7 +66,7 @@
             color: #fff;
         }
 
-        /* â”€â”€ Success Header â”€â”€ */
+        /* ── Success Header ── */
         .success-header {
             text-align: center;
             margin-bottom: 40px;
@@ -127,7 +127,7 @@
             font-size: 15px;
         }
 
-        /* â”€â”€ Ticket â”€â”€ */
+        /* ── Ticket ── */
         .ticket-wrapper {
             width: 100%;
             max-width: 680px;
@@ -166,7 +166,7 @@
             background: radial-gradient(circle, rgba(139, 92, 246, 0.12) 0%, transparent 70%);
         }
 
-        /* â”€â”€ Ticket Top â”€â”€ */
+        /* ── Ticket Top ── */
         .ticket-top {
             position: relative;
             display: flex;
@@ -241,7 +241,7 @@
             text-align: center;
         }
 
-        /* â”€â”€ Perforation â”€â”€ */
+        /* ── Perforation ── */
         .perforated {
             position: relative;
             margin: 0 20px;
@@ -268,7 +268,7 @@
             right: -36px;
         }
 
-        /* â”€â”€ Ticket Body â”€â”€ */
+        /* ── Ticket Body ── */
         .ticket-body {
             padding: 24px 28px;
             display: grid;
@@ -292,7 +292,7 @@
             color: #fff;
         }
 
-        /* â”€â”€ Ticket Footer (Ticket ID + QR) â”€â”€ */
+        /* ── Ticket Footer (Ticket ID + QR) ── */
         .ticket-footer {
             padding: 0 28px 28px;
             display: flex;
@@ -364,7 +364,7 @@
             white-space: nowrap;
         }
 
-        /* â”€â”€ Action Buttons â”€â”€ */
+        /* ── Action Buttons ── */
         .ticket-actions {
             display: flex;
             gap: 12px;
@@ -410,7 +410,7 @@
             color: #fff;
         }
 
-        /* â”€â”€ Confetti â”€â”€ */
+        /* ── Confetti ── */
         .confetti-piece {
             position: fixed;
             top: -10px;
@@ -439,22 +439,22 @@
 <body>
     <!-- Topbar -->
     <div class="topbar">
-        <div class="brand">âš¡ Zentrix</div>
+        <div class="brand">⚡ Zentrix</div>
         <div class="nav-links">
             <a th:href="@{/events}">Browse Events</a>
             <a th:href="@{/dashboard}">Dashboard</a>
         </div>
     </div>
 
-    <!-- â•â•â•â•â• Success Header â•â•â•â•â• -->
+    <!-- ═════ Success Header ═════ -->
     <div class="success-header">
         <div class="success-icon-wrap"><i class="fas fa-check"></i></div>
-        <h1>You're Registered! ðŸŽ‰</h1>
+        <h1>You're Registered! 🎉</h1>
         <p th:if="${registration.paymentStatus == 'PAID'}">Payment confirmed Â· Your ticket is ready below</p>
         <p th:if="${registration.paymentStatus != 'PAID'}">Registration successful Â· Your free ticket is ready below</p>
     </div>
 
-    <!-- â•â•â•â•â• TICKET â•â•â•â•â• -->
+    <!-- ═════ TICKET ═════ -->
     <div class="ticket-wrapper">
         <div class="ticket" id="ticketCard">
             <!-- Public Verification Banner (Only shows when scanned/public) -->
@@ -661,7 +661,7 @@
     </div><!-- /ticket-wrapper -->
 
     <script>
-        // â”€â”€ Confetti on load â”€â”€
+        // ── Confetti on load ──
         (function spawnConfetti() {
             const colors = ['#f84464', '#ff6b9d', '#10b981', '#8b5cf6', '#f59e0b', '#3b82f6'];
             for (let i = 0; i < 70; i++) {
@@ -681,7 +681,7 @@
             }
         })();
 
-        // â”€â”€ Print Ticket â”€â”€
+        // ── Print Ticket ──
         function printTicket() {
             window.print();
         }

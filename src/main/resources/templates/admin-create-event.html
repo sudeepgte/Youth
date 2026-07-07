@@ -1248,7 +1248,7 @@
     </div>
 
     <script>
-        // â”€â”€ Paid fee toggle â”€â”€
+        // ── Paid fee toggle ──
         function togglePaidField(radio) {
             const field = document.getElementById('paidAmountField');
             const input = document.getElementById('priceInput');
@@ -1410,7 +1410,7 @@
             }
         }
 
-        // â”€â”€ Poster file live preview â”€â”€
+        // ── Poster file live preview ──
         function previewImageFile(input) {
             const preview = document.getElementById('posterPreview');
             const img = document.getElementById('posterImg');
@@ -1427,7 +1427,7 @@
             }
         }
 
-        // â”€â”€ Form validation â”€â”€
+        // ── Form validation ──
         function validateForm() {
             const cat = document.querySelector('input[name="category"]:checked');
             if (!cat) { alert('Please select an event category.'); return false; }
@@ -1455,7 +1455,7 @@
         }
 
 
-        // â”€â”€ Publish button animation â”€â”€
+        // ── Publish button animation ──
         document.querySelector('form').addEventListener('submit', function () {
             if (!validateForm()) return false;
             const btn = document.getElementById('publishBtn');
