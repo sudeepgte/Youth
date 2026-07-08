@@ -1608,20 +1608,20 @@
 
                         <div class="arena-field">
                             <label>Entry Fee (â‚¹)</label>
-                            <input type="number" step="0.01" name="entryFee" value="0.0" min="0" placeholder="e.g. 50.00" />
+                            <input type="number" step="0.01" name="entryFee" min="0" placeholder="e.g. 50.00" required />
                         </div>
                         <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom: 20px;">
                             <div class="arena-field" style="margin-bottom:0;">
                                 <label><i class="fas fa-trophy" style="color:#FFD700;"></i> 1st Prize (â‚¹)</label>
-                                <input type="number" step="0.01" name="prize1" value="0.0" min="0" />
+                                <input type="number" step="0.01" name="prize1" min="0" placeholder="0" required />
                             </div>
                             <div class="arena-field" style="margin-bottom:0;">
                                 <label><i class="fas fa-trophy" style="color:#C0C0C0;"></i> 2nd Prize (â‚¹)</label>
-                                <input type="number" step="0.01" name="prize2" value="0.0" min="0" />
+                                <input type="number" step="0.01" name="prize2" min="0" placeholder="0" required />
                             </div>
                             <div class="arena-field" style="margin-bottom:0;">
                                 <label><i class="fas fa-trophy" style="color:#cd7f32;"></i> 3rd Prize (â‚¹)</label>
-                                <input type="number" step="0.01" name="prize3" value="0.0" min="0" />
+                                <input type="number" step="0.01" name="prize3" min="0" placeholder="0" required />
                             </div>
                         </div>
 
@@ -1823,6 +1823,18 @@
 
          // Adjust form input names dynamically on submission
         document.getElementById('createBattleForm').addEventListener('submit', function(e) {
+            const mode = document.getElementById('modeSelect').value;
+            if (mode === 'OFFLINE') {
+                const venue = document.querySelector('input[name="venue"]').value.trim();
+                const eventDate = document.querySelector('input[name="eventDate"]').value.trim();
+                const eventTime = document.querySelector('input[name="eventTime"]').value.trim();
+                if (!venue || !eventDate || !eventTime) {
+                    e.preventDefault();
+                    alert('Please fill out Venue, Event Date, and Event Time for offline battles.');
+                    return;
+                }
+            }
+
             const durSelect = document.getElementById('durationSelect');
             const customDur = document.getElementById('customDurationInput');
             if (durSelect.value === 'custom') {
