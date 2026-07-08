@@ -29,7 +29,7 @@ public class AuthInterceptor implements HandlerInterceptor {
         
         // Skip public paths and game/socket endpoints
         if (path.equals("/") || path.equals("/home") || path.equals("/login") || 
-            path.equals("/register") || path.equals("/about") || path.equals("/support") || path.equals("/debug-users") ||
+            path.equals("/register") || path.equals("/about") || path.equals("/support") || path.equals("/contact") || path.equals("/debug-users") ||
             path.equals("/games") || path.startsWith("/games/") || 
             path.startsWith("/play-") ||
             path.endsWith("/play-runner") ||

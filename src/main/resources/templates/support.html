@@ -34,28 +34,31 @@
 
                 <div class="surface" style="padding: 30px; border-radius: 20px; border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 15px 40px rgba(0,0,0,0.03);">
                     <h3 style="margin-bottom: 20px; font-weight: 800; font-size: 20px;">Send us a message</h3>
-                    <form>
+                    <div th:if="${param.success != null}" style="background: #dcfce7; color: #166534; padding: 16px; border-radius: 12px; margin-bottom: 20px; font-weight: 700; text-align: center;">
+                        <i class="fa-solid fa-check-circle"></i> Message sent successfully!
+                    </div>
+                    <form th:action="@{/contact}" method="POST">
                         <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
                             <div class="form-group" style="margin-bottom: 0;">
                                 <label style="display: block; margin-bottom: 6px; font-size: 11px; font-weight: 800; color: #666; text-transform: uppercase;">Full Name</label>
-                                <input type="text" class="form-input" placeholder="Your name" style="background: #f8fafc; border-color: #e2e8f0; height: 45px;">
+                                <input type="text" name="name" required class="form-input" placeholder="Your name" style="background: #f8fafc; border-color: #e2e8f0; height: 45px;">
                             </div>
                             <div class="form-group" style="margin-bottom: 0;">
                                 <label style="display: block; margin-bottom: 6px; font-size: 11px; font-weight: 800; color: #666; text-transform: uppercase;">Email</label>
-                                <input type="email" class="form-input" placeholder="your@email.com" style="background: #f8fafc; border-color: #e2e8f0; height: 45px;">
+                                <input type="email" name="email" required class="form-input" placeholder="your@email.com" style="background: #f8fafc; border-color: #e2e8f0; height: 45px;">
                             </div>
                         </div>
                         <div class="form-group" style="margin-bottom: 16px;">
                             <label style="display: block; margin-bottom: 6px; font-size: 11px; font-weight: 800; color: #666; text-transform: uppercase;">Subject</label>
-                            <select class="form-input" style="background: #f8fafc; border-color: #e2e8f0; height: 45px;">
-                                <option>General Inquiry</option>
-                                <option>Feedback</option>
-                                <option>Support Request</option>
+                            <select name="subject" required class="form-input" style="background: #f8fafc; border-color: #e2e8f0; height: 45px;">
+                                <option value="General Inquiry">General Inquiry</option>
+                                <option value="Feedback">Feedback</option>
+                                <option value="Support Request">Support Request</option>
                             </select>
                         </div>
                         <div class="form-group" style="margin-bottom: 24px;">
                             <label style="display: block; margin-bottom: 6px; font-size: 11px; font-weight: 800; color: #666; text-transform: uppercase;">Message</label>
-                            <textarea class="form-input" rows="4" placeholder="How can we help you?" style="background: #f8fafc; border-color: #e2e8f0; resize: none;"></textarea>
+                            <textarea name="message" required class="form-input" rows="4" placeholder="How can we help you?" style="background: #f8fafc; border-color: #e2e8f0; resize: none;"></textarea>
                         </div>
                         <button type="submit" class="btn btn-primary" style="width: 100%; padding: 14px; font-weight: 800; border-radius: 12px;">Submit Inquiry</button>
                     </form>

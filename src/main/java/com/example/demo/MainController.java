@@ -149,6 +149,9 @@ public class MainController {
     private com.example.demo.repository.GameRepository gameRepository;
 
     @Autowired
+    private ContactMessageRepository contactMessageRepository;
+
+    @Autowired
     private BattleRepository battleRepository;
 
     @Autowired
@@ -497,6 +500,7 @@ public class MainController {
         model.addAttribute("votingCount", eventRepository.countByStatus("VOTING"));
         model.addAttribute("completedCount", eventRepository.countByStatus("COMPLETED"));
         model.addAttribute("rewardConfig", rewardService.getConfig());
+        model.addAttribute("contactMessages", contactMessageRepository.findAllByOrderByCreatedAtDesc());
         
         // Battle details for admin overview
         List<Battle> battles = battleRepository.findAllByOrderByCreatedAtDesc();
