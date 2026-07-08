@@ -151,7 +151,8 @@
 </head>
 <body>
 
-    <div class="payment-card">
+    <!-- Battle Payment Card -->
+    <div class="payment-card" th:if="${battle != null}">
         <div class="icon-container">
             <i class="fas fa-credit-card"></i>
         </div>
@@ -185,6 +186,58 @@
         
         <a th:href="@{/dashboard}" style="text-decoration: none;">
             <button class="btn-cancel">Cancel &amp; Return</button>
+        </a>
+
+        <div class="secure-badge">
+            <i class="fas fa-lock"></i> Mock Payment Gateway for Demonstration
+        </div>
+    </div>
+
+    <!-- Event Payment Card -->
+    <div class="payment-card" th:if="${event != null}">
+        <div class="icon-container">
+            <i class="fas fa-ticket-alt"></i>
+        </div>
+        
+        <h1>Event Registration</h1>
+        <p class="subtitle">Complete your payment to secure your spot</p>
+
+        <div class="battle-summary">
+            <div class="title" th:text="${event.title}">Event Title</div>
+            
+            <div class="summary-row">
+                <span>Venue</span>
+                <span th:text="${event.venue}" style="font-weight:600;">Venue</span>
+            </div>
+            <div class="summary-row">
+                <span>Quantity</span>
+                <span th:text="${quantity}">1</span>
+            </div>
+            
+            <div class="summary-row" th:if="${isDiscounted}">
+                <span>Discount Applied</span>
+                <span style="color: var(--success-color); font-weight:600;">Yes (50%)</span>
+            </div>
+
+            <div class="summary-row" th:if="${isDiscounted}">
+                <span>Base Price</span>
+                <span th:text="${basePrice}" style="text-decoration: line-through;">₹500.00</span>
+            </div>
+            
+            <div class="summary-row">
+                <span>Total Payment</span>
+                <span th:text="${finalPrice}" style="font-weight:600; color: var(--primary-color);">₹500.00</span>
+            </div>
+        </div>
+
+        <form th:action="@{/events/{id}/payment/confirm(id=${event.id})}" method="POST">
+            <button type="submit" class="btn-pay">
+                Pay <span th:text="${finalPrice}">₹50.00</span> &amp; Register
+            </button>
+        </form>
+        
+        <a th:href="@{/events/{id}(id=${event.id})}" style="text-decoration: none;">
+            <button type="button" class="btn-cancel">Cancel &amp; Return</button>
         </a>
 
         <div class="secure-badge">
