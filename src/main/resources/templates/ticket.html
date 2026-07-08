@@ -441,8 +441,8 @@
     <div class="topbar">
         <div class="brand">⚡ Zentrix</div>
         <div class="nav-links">
-            <a href="/events">Browse Events</a>
-            <a href="/dashboard">Dashboard</a>
+            <a th:href="@{/events}">Browse Events</a>
+            <a th:href="@{/dashboard}">Dashboard</a>
         </div>
     </div>
 
@@ -450,8 +450,8 @@
     <div class="success-header">
         <div class="success-icon-wrap"><i class="fas fa-check"></i></div>
         <h1>You're Registered! 🎉</h1>
-        <p th:if="${registration.paymentStatus == 'PAID'}">Payment confirmed · Your ticket is ready below</p>
-        <p th:if="${registration.paymentStatus != 'PAID'}">Registration successful · Your free ticket is ready below</p>
+        <p th:if="${registration.paymentStatus == 'PAID'}">Payment confirmed Â· Your ticket is ready below</p>
+        <p th:if="${registration.paymentStatus != 'PAID'}">Registration successful Â· Your free ticket is ready below</p>
     </div>
 
     <!-- ═════ TICKET ═════ -->
@@ -512,25 +512,25 @@
                 <div class="ticket-field">
                     <label>Email</label>
                     <div class="val" style="font-size:12px;"
-                        th:text="${canSeePII ? (registration.email != null ? registration.email : '—') : '••••@••••.com'}">email@email.com</div>
+                        th:text="${canSeePII ? (registration.email != null ? registration.email : 'â€”') : 'â€¢â€¢â€¢â€¢@â€¢â€¢â€¢â€¢.com'}">email@email.com</div>
                 </div>
                 <div class="ticket-field">
                     <label>Phone</label>
-                    <div class="val" th:text="${canSeePII ? (registration.phone != null ? registration.phone : '—') : '••••••••••'}">Phone</div>
+                    <div class="val" th:text="${canSeePII ? (registration.phone != null ? registration.phone : 'â€”') : 'â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢'}">Phone</div>
                 </div>
                 <div class="ticket-field">
                     <label>College / Org</label>
                     <div class="val" style="font-size:12px;"
-                        th:text="${registration.college != null ? registration.college : '—'}">—</div>
+                        th:text="${registration.college != null ? registration.college : 'â€”'}">â€”</div>
                 </div>
                 <div class="ticket-field">
                     <label>Year of Study</label>
-                    <div class="val" th:text="${registration.yearOfStudy != null ? registration.yearOfStudy : '—'}">—
+                    <div class="val" th:text="${registration.yearOfStudy != null ? registration.yearOfStudy : 'â€”'}">â€”
                     </div>
                 </div>
                 <div class="ticket-field">
                     <label>Amount Paid</label>
-                    <div class="val" th:text="${registration.totalPrice != null and registration.totalPrice > 0 ? '₹' + #numbers.formatDecimal(registration.totalPrice, 1, 0) : (event.price == null or event.price == 'Free' or event.price == '0' ? 'Free' : '₹0')}">Free</div>
+                    <div class="val" th:text="${registration.totalPrice != null and registration.totalPrice > 0 ? 'â‚¹' + #numbers.formatDecimal(registration.totalPrice, 1, 0) : (event.price == null or event.price == 'Free' or event.price == '0' ? 'Free' : 'â‚¹0')}">Free</div>
                 </div>
                 
                 <!-- Secret Reward Section -->
@@ -650,10 +650,10 @@
             <button class="btn-action btn-secondary" onclick="printTicket()">
                 <i class="fas fa-print"></i> Print Ticket
             </button>
-            <a href="/events" class="btn-action btn-primary">
+            <a th:href="@{/events}" class="btn-action btn-primary">
                 <i class="fas fa-calendar-alt"></i> Browse More Events
             </a>
-            <a href="/dashboard" class="btn-action btn-secondary">
+            <a th:href="@{/dashboard}" class="btn-action btn-secondary">
                 <i class="fas fa-home"></i> Dashboard
             </a>
         </div>

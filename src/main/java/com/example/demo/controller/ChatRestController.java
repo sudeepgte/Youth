@@ -22,7 +22,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/chat")
+@RequestMapping(value = "/api/chat")
 public class ChatRestController {
 
     private User getUserFromSession(HttpSession session) {
@@ -104,7 +104,7 @@ public class ChatRestController {
         }
     }
 
-    @GetMapping("/conversations")
+    @RequestMapping(value = "/conversations", method = RequestMethod.GET)
     public ResponseEntity<List<Conversation>> getConversations(HttpSession session) {
         User user = getUserFromSession(session);
         if (user == null) {
@@ -119,7 +119,7 @@ public class ChatRestController {
         }
     }
 
-    @GetMapping("/history/{conversationId}")
+    @RequestMapping(value = "/history/{conversationId}", method = RequestMethod.GET)
     public ResponseEntity<List<ChatMessage>> getHistory(@PathVariable Long conversationId, HttpSession session) {
         User user = getUserFromSession(session);
         if (user == null) {
@@ -135,7 +135,7 @@ public class ChatRestController {
         }
     }
 
-    @PostMapping("/mark-seen/{conversationId}")
+    @RequestMapping(value = "/mark-seen/{conversationId}", method = RequestMethod.POST)
     public ResponseEntity<Void> markSeen(@PathVariable Long conversationId, HttpSession session) {
         User user = getUserFromSession(session);
         if (user == null) {
@@ -150,7 +150,7 @@ public class ChatRestController {
         }
     }
 
-    @GetMapping("/media/{conversationId}")
+    @RequestMapping(value = "/media/{conversationId}", method = RequestMethod.GET)
     public ResponseEntity<List<ChatMessage>> getMedia(@PathVariable Long conversationId, HttpSession session) {
         User user = getUserFromSession(session);
         if (user == null) {
@@ -163,7 +163,7 @@ public class ChatRestController {
         }
     }
 
-    @PostMapping("/cleanup-vanish/{conversationId}")
+    @RequestMapping(value = "/cleanup-vanish/{conversationId}", method = RequestMethod.POST)
     public ResponseEntity<Void> cleanupVanish(@PathVariable Long conversationId, HttpSession session) {
         User user = getUserFromSession(session);
         if (user == null) {
@@ -177,7 +177,7 @@ public class ChatRestController {
         }
     }
 
-    @PostMapping("/update-theme/{conversationId}")
+    @RequestMapping(value = "/update-theme/{conversationId}", method = RequestMethod.POST)
     public ResponseEntity<Conversation> updateTheme(@PathVariable Long conversationId, @RequestParam String theme,
             HttpSession session) {
         User user = getUserFromSession(session);
@@ -191,7 +191,7 @@ public class ChatRestController {
         }
     }
 
-    @PostMapping("/create-group")
+    @RequestMapping(value = "/create-group", method = RequestMethod.POST)
     public ResponseEntity<Conversation> createGroup(@RequestBody Map<String, Object> payload, HttpSession session) {
         User user = getUserFromSession(session);
         if (user == null) {
@@ -207,7 +207,7 @@ public class ChatRestController {
         return ResponseEntity.ok(chatService.createGroup(name, participantIds, user));
     }
 
-    @GetMapping("/group/{conversationId}/participants")
+    @RequestMapping(value = "/group/{conversationId}/participants", method = RequestMethod.GET)
     public ResponseEntity<?> getGroupParticipants(@PathVariable Long conversationId, HttpSession session) {
         User user = getUserFromSession(session);
         if (user == null) return ResponseEntity.status(401).build();
@@ -228,7 +228,7 @@ public class ChatRestController {
                 .orElseGet(() -> ResponseEntity.status(404).build());
     }
 
-    @PostMapping("/group/{conversationId}/add-participants")
+    @RequestMapping(value = "/group/{conversationId}/add-participants", method = RequestMethod.POST)
     public ResponseEntity<Conversation> addGroupParticipants(
             @PathVariable Long conversationId,
             @RequestBody Map<String, Object> payload,
@@ -250,7 +250,7 @@ public class ChatRestController {
         }
     }
 
-    @PostMapping("/group/{conversationId}/remove-participant/{userId}")
+    @RequestMapping(value = "/group/{conversationId}/remove-participant/{userId}", method = RequestMethod.POST)
     public ResponseEntity<Conversation> removeGroupParticipant(
             @PathVariable Long conversationId,
             @PathVariable Long userId,
@@ -267,7 +267,7 @@ public class ChatRestController {
         }
     }
 
-    @PostMapping("/toggle-pin/{messageId}")
+    @RequestMapping(value = "/toggle-pin/{messageId}", method = RequestMethod.POST)
     public ResponseEntity<ChatMessage> togglePin(@PathVariable Long messageId, HttpSession session) {
         User user = getUserFromSession(session);
         if (user == null)
@@ -275,7 +275,7 @@ public class ChatRestController {
         return ResponseEntity.ok(chatService.togglePin(messageId, user));
     }
 
-    @PostMapping("/share-post")
+    @RequestMapping(value = "/share-post", method = RequestMethod.POST)
     public ResponseEntity<ChatMessage> sharePost(@RequestBody Map<String, Object> payload, HttpSession session) {
         User user = getUserFromSession(session);
         if (user == null)
@@ -296,7 +296,7 @@ public class ChatRestController {
         return ResponseEntity.ok(shared);
     }
 
-    @PostMapping("/share-post-to-user")
+    @RequestMapping(value = "/share-post-to-user", method = RequestMethod.POST)
     public ResponseEntity<ChatMessage> sharePostToUser(@RequestBody Map<String, Object> payload, HttpSession session) {
         User user = getUserFromSession(session);
         if (user == null)
@@ -330,7 +330,7 @@ public class ChatRestController {
         }
     }
 
-    @GetMapping("/users")
+    @RequestMapping(value = "/users", method = RequestMethod.GET)
     public ResponseEntity<List<User>> getAllUsers(HttpSession session) {
         User currentUser = getUserFromSession(session);
         List<User> users = userRepository.findAll();
@@ -340,7 +340,7 @@ public class ChatRestController {
         return ResponseEntity.ok(users);
     }
 
-    @GetMapping("/followers")
+    @RequestMapping(value = "/followers", method = RequestMethod.GET)
     public ResponseEntity<List<User>> getFollowers(HttpSession session) {
         User user = getUserFromSession(session);
         if (user == null)
@@ -350,7 +350,7 @@ public class ChatRestController {
         return ResponseEntity.ok(List.copyOf(user.getFollowers()));
     }
 
-    @GetMapping("/search-users")
+    @RequestMapping(value = "/search-users", method = RequestMethod.GET)
     public ResponseEntity<List<User>> searchUsers(@RequestParam String query, HttpSession session) {
         User currentUser = getUserFromSession(session);
         List<User> users = userRepository.findByUsernameContainingIgnoreCase(query);
@@ -360,7 +360,7 @@ public class ChatRestController {
         return ResponseEntity.ok(users);
     }
 
-    @GetMapping("/unread-count")
+    @RequestMapping(value = "/unread-count", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Long>> getUnreadCount(HttpSession session) {
         User user = getUserFromSession(session);
         if (user == null) {
@@ -369,7 +369,7 @@ public class ChatRestController {
         return ResponseEntity.ok(Map.of("count", chatService.getUnreadCount(user)));
     }
 
-    @PostMapping("/upload")
+    @RequestMapping(value = "/upload", method = RequestMethod.POST)
     public ResponseEntity<Map<String, String>> uploadMedia(@RequestParam("file") MultipartFile file) {
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().build();
@@ -402,7 +402,7 @@ public class ChatRestController {
         }
     }
 
-    @PostMapping("/accept/{id}")
+    @RequestMapping(value = "/accept/{id}", method = RequestMethod.POST)
     public ResponseEntity<Conversation> acceptConversation(@PathVariable Long id, HttpSession session) {
         User user = getUserFromSession(session);
         if (user == null) {
@@ -424,7 +424,7 @@ public class ChatRestController {
         return ResponseEntity.ok(accepted);
     }
 
-    @PostMapping("/reject/{id}")
+    @RequestMapping(value = "/reject/{id}", method = RequestMethod.POST)
     public ResponseEntity<Void> rejectConversation(@PathVariable Long id, HttpSession session) {
         User user = getUserFromSession(session);
         if (user == null) {

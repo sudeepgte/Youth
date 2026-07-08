@@ -254,7 +254,7 @@
 
 <body>
     <nav>
-        <a href="/dashboard" class="logo">ZENTRIX</a>
+        <a th:href="@{/dashboard}" class="logo">ZENTRIX</a>
         <div class="coin-balance" onclick="GameRewards.showHistory()" style="cursor: pointer;">
             <i class="fas fa-coins text-warning"></i>
             <span th:text="${user.coins}">0</span> Coins
@@ -263,7 +263,7 @@
 
     <div class="hero">
         <div style="max-width: 800px; margin: 0 auto; text-align: left; padding: 0 20px;">
-            <a href="/dashboard" class="back-link"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+            <a th:href="@{/dashboard}" class="back-link"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
         </div>
         <h1>Reward Shop</h1>
         <p>Spend your Zentrix Coins to unlock exclusive benefits and premium features.</p>

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bubble Shot – Realistic | Zentrix</title>
+    <title>Bubble Shot â€“ Realistic | Zentrix</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Rajdhani:wght@400;600;700&display=swap');
 
@@ -380,11 +380,11 @@
                 <canvas id="c" width="426" height="580"></canvas>
                 <div id="overlay">
                     <h2 id="ov-title">BUBBLE SHOT</h2>
-                    <p id="ov-msg">Aim with your mouse · Click to fire · Match 3+ bubbles to pop them</p>
+                    <p id="ov-msg">Aim with your mouse Â· Click to fire Â· Match 3+ bubbles to pop them</p>
                     <div class="ov-score" id="ov-score" style="display:none"></div>
                     <button id="play-btn">INSERT COIN</button>
                     <div style="margin-top: 20px;">
-                        <a href="/games" class="exit-btn">Exit Game</a>
+                        <a th:href="@{/games}" class="exit-btn">Exit Game</a>
                     </div>
                 </div>
             </div>
@@ -422,7 +422,7 @@
     <script th:inline="none">
         /*<![CDATA[*/
         // ═══════════════════════════════════════════════════
-        //  BUBBLE SHOT — Hyper-Realistic Renderer + Game Logic
+        //  BUBBLE SHOT â€” Hyper-Realistic Renderer + Game Logic
         // ═══════════════════════════════════════════════════
 
         const C = document.getElementById('c');
@@ -434,7 +434,7 @@
         const W = 426, H = 580, R = 21;
         const COLS = 10, ROW_H = R * 1.73, TOP = 38, SY = H - 60, SX = W / 2, SPD = 11;
 
-        // Realistic glass bubble color palette — each has base, light, dark, glow
+        // Realistic glass bubble color palette â€” each has base, light, dark, glow
         const PALETTE = [
             { id: 'ruby', base: '#d62e2e', mid: '#ff5555', hi: '#ffaaaa', dark: '#7a0a0a', glow: '#ff2200', rim: '#ff6644' },
             { id: 'sapph', base: '#1a5fb4', mid: '#3d90e0', hi: '#9fd0ff', dark: '#0a2a6a', glow: '#0088ff', rim: '#44aaff' },

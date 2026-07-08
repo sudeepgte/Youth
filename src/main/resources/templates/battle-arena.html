@@ -810,10 +810,12 @@
     <div class="mobile-menu-overlay" onclick="document.querySelector('.sidebar').classList.remove('mobile-open'); this.classList.remove('active');"></div>
 
     <nav class="dashboard-navbar">
-        <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('mobile-open'); document.querySelector('.mobile-menu-overlay').classList.toggle('active');" style="display:none; background:none; border:none; color:var(--text-primary); font-size:20px; cursor:pointer; margin-right:15px; margin-left: 5px; padding: 0;">
+
+        <button class="mobile-menu-btn" onclick="const s=document.querySelector('.sidebar');if(s)s.classList.toggle('mobile-open'); const o=document.querySelector('.mobile-menu-overlay');if(o)o.classList.toggle('active');" style="display:none; background:none; border:none; color:var(--text-primary); font-size:20px; cursor:pointer; margin-right:15px; margin-left: 5px; padding: 0;">
             <i class="fas fa-bars"></i>
         </button>
-        <a class="dashboard-logo" href="/home">Zentrix</a>
+        <a class="dashboard-logo" th:href="@{/home}">Zentrix</a>
+
         <div class="dashboard-spacer"></div>
         <div class="dashboard-nav-links">
             <a href="javascript:void(0)" class="coin-nav"
@@ -821,9 +823,9 @@
                 <i class="fas fa-coins" style="font-size: 14px;"></i>
                 <span th:text="${user.coins}">0</span>
             </a>
-            <a href="/dashboard"><i class="fas fa-home"></i></a>
-            <a href="/messages"><i class="fas fa-comment-dots"></i></a>
-            <a href="/profile">
+            <a th:href="@{/dashboard}"><i class="fas fa-home"></i></a>
+            <a th:href="@{/messages}"><i class="fas fa-comment-dots"></i></a>
+            <a th:href="@{/profile}">
                 <img th:src="${user.profilePhotoUrl != null and !user.profilePhotoUrl.isEmpty()} ? ${user.profilePhotoUrl} : 'https://ui-avatars.com/api/?name=' + ${user.username} + '&background=F84464&color=fff&size=80'"
                     class="user-avatar" style="width: 32px; height: 32px; border: none;">
             </a>
@@ -834,30 +836,30 @@
     <div class="dashboard-container">
         <!-- Left Sidebar -->
         <aside class="sidebar">
-            <a href="/dashboard" class="sidebar-link"><i class="fas fa-home"></i> Home</a>
-            <a href="/explore" class="sidebar-link"><i class="fas fa-compass"></i> Explore</a>
-            <a href="/events" class="sidebar-link"><i class="fas fa-calendar-alt"></i> Events</a>
-            <a href="/battles" class="sidebar-link active"><i class="fas fa-fire"></i> Battle Arena</a>
-            <a href="/achievements" class="sidebar-link"><i class="fas fa-trophy"></i> Achievements</a>
-            <a href="/messages" class="sidebar-link"><i class="fas fa-comment-dots"></i> Chat</a>
-            <a href="/reels" class="sidebar-link"><i class="fas fa-film"></i> Reels</a>
-            <a href="/profile" class="sidebar-link"><i class="fas fa-user"></i> Profile</a>
-            <a href="/games" class="sidebar-link"><i class="fas fa-gamepad"></i> Games</a>
-            <a href="/music" class="sidebar-link"><i class="fas fa-music"></i> Music</a>
-            <a href="/logout" class="sidebar-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            <a th:href="@{/dashboard}" class="sidebar-link"><i class="fas fa-home"></i> Home</a>
+            <a th:href="@{/explore}" class="sidebar-link"><i class="fas fa-compass"></i> Explore</a>
+            <a th:href="@{/events}" class="sidebar-link"><i class="fas fa-calendar-alt"></i> Events</a>
+            <a th:href="@{/battles}" class="sidebar-link active"><i class="fas fa-fire"></i> Battle Arena</a>
+            <a th:href="@{/achievements}" class="sidebar-link"><i class="fas fa-trophy"></i> Achievements</a>
+            <a th:href="@{/messages}" class="sidebar-link"><i class="fas fa-comment-dots"></i> Chat</a>
+            <a th:href="@{/reels}" class="sidebar-link"><i class="fas fa-film"></i> Reels</a>
+            <a th:href="@{/profile}" class="sidebar-link"><i class="fas fa-user"></i> Profile</a>
+            <a th:href="@{/games}" class="sidebar-link"><i class="fas fa-gamepad"></i> Games</a>
+            <a th:href="@{/music}" class="sidebar-link"><i class="fas fa-music"></i> Music</a>
+            <a th:href="@{/logout}" class="sidebar-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </aside>
 
         <!-- Main Content -->
         <main class="social-feed" style="max-width: 100%; padding-bottom: 60px;">
             <!-- Alerts -->
             <div th:if="${param.deleted}" class="arena-alert arena-alert-success" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #EF4444;">
-                <i class="fas fa-trash-alt"></i> Battle has been deleted successfully! 🗑️
+                <i class="fas fa-trash-alt"></i> Battle has been deleted successfully! 🗑️ 
             </div>
             <div th:if="${param.submitted}" class="arena-alert arena-alert-success">
                 <i class="fas fa-check-circle"></i> Your submission has been uploaded! 🎉
             </div>
             <div th:if="${param.voted}" class="arena-alert arena-alert-success">
-                <i class="fas fa-check-circle"></i> Your vote has been recorded! 🗳️
+                <i class="fas fa-check-circle"></i> Your vote has been recorded! 🗳️ 
             </div>
             <div th:if="${param.error}" class="arena-alert arena-alert-error">
                 <i class="fas fa-exclamation-circle"></i>
@@ -871,12 +873,12 @@
                 <span th:if="${param.error[0] == 'unauthorized'}">You are not authorized to perform this action.</span>
             </div>
 
-            <!-- ═══════════════════════════════════════════════════ -->
+            <!-- ──────────────────────────────────────── -->
             <!-- SINGLE BATTLE VIEW (when battle is in model) -->
-            <!-- ═══════════════════════════════════════════════════ -->
+            <!-- ──────────────────────────────────────── -->
             <div th:if="${battle != null}">
                 <!-- Back Button -->
-                <a href="/battles" style="display:inline-flex; align-items:center; gap:6px; color:var(--text-muted); font-size:13px; font-weight:700; text-decoration:none; margin-bottom:16px; transition:0.2s;"
+                <a th:href="@{/battles}" style="display:inline-flex; align-items:center; gap:6px; color:var(--text-muted); font-size:13px; font-weight:700; text-decoration:none; margin-bottom:16px; transition:0.2s;"
                    onmouseover="this.style.color='var(--text-primary)'" onmouseout="this.style.color='var(--text-muted)'">
                     <i class="fas fa-arrow-left"></i> Back to Arena
                 </a>
@@ -1077,7 +1079,7 @@
 
                     <form th:action="@{'/battles/' + ${battle.id} + '/submit'}" method="POST">
 
-                        <!-- ═══ CATEGORY-SPECIFIC UPLOAD ZONE ═══ -->
+                        <!-- ══ CATEGORY-SPECIFIC UPLOAD ZONE ══ -->
                         <div class="arena-field">
                             <!-- Category-specific label with icon -->
                             <label style="display:flex; align-items:center; gap:6px;">
@@ -1367,9 +1369,9 @@
                 </div>
             </div>
 
-            <!-- ═══════════════════════════════════════════════════ -->
+            <!-- ──────────────────────────────────────── -->
             <!-- BATTLES LIST VIEW (when no single battle selected) -->
-            <!-- ═══════════════════════════════════════════════════ -->
+            <!-- ──────────────────────────────────────── -->
             <div th:if="${battle == null}">
                 <!-- Hero Banner -->
                 <div class="arena-hero">
@@ -1516,9 +1518,9 @@
         </aside>
     </div>
 
-    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- ──────────────────────────────────────── -->
     <!-- CREATE BATTLE MODAL -->
-    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- ──────────────────────────────────────── -->
     <div class="arena-modal-overlay" id="createBattleModal">
         <div class="arena-modal">
             <button class="arena-modal-close" onclick="closeCreateBattle()">&times;</button>
@@ -1588,7 +1590,7 @@
                                 </div>
                                 <div class="arena-field">
                                     <label>Event Time</label>
-                                    <input type="text" name="eventTime" placeholder="e.g. 10:00 AM – 1:00 PM" />
+                                    <input type="text" name="eventTime" placeholder="e.g. 10:00 AM â€“ 1:00 PM" />
                                 </div>
                             </div>
 
@@ -1605,20 +1607,20 @@
                         </div>
 
                         <div class="arena-field">
-                            <label>Entry Fee (₹)</label>
+                            <label>Entry Fee (â‚¹)</label>
                             <input type="number" step="0.01" name="entryFee" value="0.0" min="0" placeholder="e.g. 50.00" />
                         </div>
                         <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom: 20px;">
                             <div class="arena-field" style="margin-bottom:0;">
-                                <label><i class="fas fa-trophy" style="color:#FFD700;"></i> 1st Prize (₹)</label>
+                                <label><i class="fas fa-trophy" style="color:#FFD700;"></i> 1st Prize (â‚¹)</label>
                                 <input type="number" step="0.01" name="prize1" value="0.0" min="0" />
                             </div>
                             <div class="arena-field" style="margin-bottom:0;">
-                                <label><i class="fas fa-trophy" style="color:#C0C0C0;"></i> 2nd Prize (₹)</label>
+                                <label><i class="fas fa-trophy" style="color:#C0C0C0;"></i> 2nd Prize (â‚¹)</label>
                                 <input type="number" step="0.01" name="prize2" value="0.0" min="0" />
                             </div>
                             <div class="arena-field" style="margin-bottom:0;">
-                                <label><i class="fas fa-trophy" style="color:#cd7f32;"></i> 3rd Prize (₹)</label>
+                                <label><i class="fas fa-trophy" style="color:#cd7f32;"></i> 3rd Prize (â‚¹)</label>
                                 <input type="number" step="0.01" name="prize3" value="0.0" min="0" />
                             </div>
                         </div>
@@ -1626,7 +1628,7 @@
                         <div class="arena-field">
                             <label>Duration (Hours)</label>
                             <select id="durationSelect" name="durationHours" onchange="toggleCustomDuration(this.value)">
-                                <option value="1">1 Hour – Speed Round ⚡</option>
+                                <option value="1">1 Hour â€“ Speed Round ⚡</option>
                                 <option value="6">6 Hours</option>
                                 <option value="12">12 Hours</option>
                                 <option value="24" selected>24 Hours</option>
@@ -1939,3 +1941,5 @@
     </style>
 </body>
 </html>
+
+

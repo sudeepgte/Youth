@@ -45,7 +45,7 @@ import java.util.stream.Collectors;
 import java.net.InetAddress;
 
 @Controller
-@RequestMapping("/events")
+@RequestMapping(value = "/events")
 public class EventController {
 
     @Autowired
@@ -184,7 +184,7 @@ public class EventController {
         return "events";
     }
 
-    @PostMapping("/{id}/poll-vote")
+    @RequestMapping(value = "/{id}/poll-vote", method = RequestMethod.POST)
     public String castPollVote(@PathVariable Long id, HttpSession session, HttpServletRequest request) {
         User user = getUserFromSession(session);
         if (user == null) return "redirect:/login";
@@ -253,7 +253,7 @@ public class EventController {
     // ─────────────────────────────────────────────────────────
     //  PUBLIC: Event Detail Page
     // ─────────────────────────────────────────────────────────
-    @GetMapping("/{id}")
+    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
     public String eventDetails(@PathVariable Long id, Model model, HttpSession session) {
         User user = getUserFromSession(session);
         boolean adminViewing = isAdmin(session);
@@ -382,7 +382,7 @@ public class EventController {
     // ─────────────────────────────────────────────────────────
     //  PUBLIC VOTING
     // ─────────────────────────────────────────────────────────
-    @PostMapping("/{id}/vote/{regId}")
+    @RequestMapping(value = "/{id}/vote/{regId}", method = RequestMethod.POST)
     public String castVote(@PathVariable Long id, @PathVariable Long regId, HttpSession session) {
         User user = getUserFromSession(session);
         if (user == null) return "redirect:/login";
@@ -412,7 +412,7 @@ public class EventController {
     // ─────────────────────────────────────────────────────────
     //  SEATING: Hold seats for 5 minutes
     // ─────────────────────────────────────────────────────────
-    @PostMapping("/{id}/hold-seats")
+    @RequestMapping(value = "/{id}/hold-seats", method = RequestMethod.POST)
     @ResponseBody
     public Map<String, Object> holdSeats(@PathVariable Long id, @RequestBody List<Long> seatIds, HttpSession session) {
         Map<String, Object> response = new java.util.HashMap<>();
@@ -473,7 +473,7 @@ public class EventController {
     // ─────────────────────────────────────────────────────────
     //  REGISTER: Entry point — decides Free vs Paid
     // ─────────────────────────────────────────────────────────
-    @PostMapping("/{id}/register")
+    @RequestMapping(value = "/{id}/register", method = RequestMethod.POST)
     public String initiateRegistration(
             @PathVariable Long id,
             @RequestParam(required = false) String fullName,
@@ -522,7 +522,7 @@ public class EventController {
     // ─────────────────────────────────────────────────────────
     //  PAYMENT: Show payment gateway page
     // ─────────────────────────────────────────────────────────
-    @GetMapping("/{id}/payment")
+    @RequestMapping(value = "/{id}/payment", method = RequestMethod.GET)
     public String showPaymentPage(@PathVariable Long id, Model model, HttpSession session) {
         User user = getUserFromSession(session);
         if (user == null) return "redirect:/login";
@@ -571,7 +571,7 @@ public class EventController {
     // ─────────────────────────────────────────────────────────
     //  PAYMENT: Process payment (simulate success)
     // ─────────────────────────────────────────────────────────
-    @PostMapping("/{id}/payment/confirm")
+    @RequestMapping(value = "/{id}/payment/confirm", method = RequestMethod.POST)
     @SuppressWarnings("unchecked")
     public String confirmPayment(
             @PathVariable Long id,
@@ -610,7 +610,7 @@ public class EventController {
     // ─────────────────────────────────────────────────────────
     //  TICKET: Show confirmation + ticket
     // ─────────────────────────────────────────────────────────
-    @GetMapping("/ticket/{ticketId}")
+    @RequestMapping(value = "/ticket/{ticketId}", method = RequestMethod.GET)
     public String showTicket(@PathVariable String ticketId, Model model, HttpSession session, HttpServletRequest request) {
         User user = getUserFromSession(session);
         boolean adminViewing = isAdmin(session);
@@ -681,7 +681,7 @@ public class EventController {
     // ─────────────────────────────────────────────────────────
     //  ADMIN: Manage Events
     // ─────────────────────────────────────────────────────────
-    @GetMapping("/admin/manage")
+    @RequestMapping(value = "/admin/manage", method = RequestMethod.GET)
     public String adminManageEvents(Model model, HttpSession session) {
         if (!isAdmin(session)) return "redirect:/login";
 
@@ -695,14 +695,14 @@ public class EventController {
         return "admin-events";
     }
 
-    @GetMapping("/admin/create")
+    @RequestMapping(value = "/admin/create", method = RequestMethod.GET)
     public String showCreateEventForm(Model model, HttpSession session) {
         if (!isAdmin(session)) return "redirect:/login";
         model.addAttribute("event", new Event());
         return "admin-create-event";
     }
 
-    @PostMapping("/admin/create")
+    @RequestMapping(value = "/admin/create", method = RequestMethod.POST)
     public String createEvent(
             @ModelAttribute("formEvent") Event formEvent,
             @RequestParam String title,
@@ -829,7 +829,7 @@ public class EventController {
         return "redirect:/events/admin/manage?created=true";
     }
 
-    @GetMapping("/admin/edit/{id}")
+    @RequestMapping(value = "/admin/edit/{id}", method = RequestMethod.GET)
     public String showEditEventForm(@PathVariable Long id, Model model, HttpSession session) {
         if (!isAdmin(session)) return "redirect:/login";
         Event event = eventRepository.findById(id).orElse(null);
@@ -838,7 +838,7 @@ public class EventController {
         return "admin-create-event";
     }
 
-    @PostMapping("/admin/edit/{id}")
+    @RequestMapping(value = "/admin/edit/{id}", method = RequestMethod.POST)
     public String updateEvent(
             @PathVariable Long id,
             @RequestParam String title,
@@ -960,7 +960,7 @@ public class EventController {
     }
 
     @Transactional
-    @PostMapping("/admin/delete/{id}")
+    @RequestMapping(value = "/admin/delete/{id}", method = RequestMethod.POST)
     public String deleteEvent(@PathVariable Long id, HttpSession session) {
         if (!isAdmin(session)) return "redirect:/login";
         
@@ -991,7 +991,7 @@ public class EventController {
     // ─────────────────────────────────────────────────────────
     //  ADMIN: Attendance Dashboard
     // ─────────────────────────────────────────────────────────
-    @GetMapping("/admin/{id}/attendance")
+    @RequestMapping(value = "/admin/{id}/attendance", method = RequestMethod.GET)
     public String adminAttendancePage(@PathVariable Long id, Model model, HttpSession session) {
         if (!isAdmin(session)) return "redirect:/login";
 
@@ -1009,7 +1009,7 @@ public class EventController {
     }
 
     /** Mark event as ONGOING */
-    @PostMapping("/admin/{id}/start")
+    @RequestMapping(value = "/admin/{id}/start", method = RequestMethod.POST)
     public String startEvent(@PathVariable Long id, HttpSession session) {
         if (!isAdmin(session)) return "redirect:/login";
         Event event = eventRepository.findById(id).orElse(null);
@@ -1021,7 +1021,7 @@ public class EventController {
     }
 
     /** Mark event as COMPLETED and Assign XP/Results */
-    @PostMapping("/admin/{id}/complete")
+    @RequestMapping(value = "/admin/{id}/complete", method = RequestMethod.POST)
     public String completeEvent(
             @PathVariable Long id,
             @RequestParam(required = false) List<Long> winnerIds,
@@ -1107,7 +1107,7 @@ public class EventController {
         return "redirect:/events/admin/" + id + "/attendance?completed=true";
     }
 
-    @PostMapping("/admin/{id}/nominate-finalists")
+    @RequestMapping(value = "/admin/{id}/nominate-finalists", method = RequestMethod.POST)
     public String nominateFinalists(
             @PathVariable Long id,
             @RequestParam(required = false) Long finalist1_id,
@@ -1163,7 +1163,7 @@ public class EventController {
     }
 
     /** Mark attendance for a specific ticket ID (offline scan) */
-    @PostMapping("/admin/{id}/attendance/mark")
+    @RequestMapping(value = "/admin/{id}/attendance/mark", method = RequestMethod.POST)
     public String markAttendance(@PathVariable Long id,
                                   @RequestParam String ticketId,
                                   HttpSession session) {
@@ -1186,7 +1186,7 @@ public class EventController {
     }
 
     /** Mark ALL registered participants as attended */
-    @PostMapping("/admin/{id}/attendance/mark-all")
+    @RequestMapping(value = "/admin/{id}/attendance/mark-all", method = RequestMethod.POST)
     public String markAllAttendance(@PathVariable Long id, 
                                      @RequestParam(required = false) String next, 
                                      HttpSession session) {
@@ -1212,7 +1212,7 @@ public class EventController {
     // ─────────────────────────────────────────────────────────
     //  STUDENT: Join Online Event (auto-marks attendance)
     // ─────────────────────────────────────────────────────────
-    @PostMapping("/{id}/join")
+    @RequestMapping(value = "/{id}/join", method = RequestMethod.POST)
     public String joinOnlineEvent(@PathVariable Long id, HttpSession session) {
         User user = getUserFromSession(session);
         if (user == null) return "redirect:/login";

@@ -207,6 +207,12 @@
             grid-template-columns: 1fr;
             max-width: 600px;
         }
+
+        @media (min-width: 769px) {
+            body:has(.reels-container) .sidebar {
+                display: none !important;
+            }
+        }
         
         .reels-container {
             height: calc(100vh - var(--dashboard-nav-height) - 40px);
@@ -383,10 +389,11 @@
     <div class="mobile-menu-overlay" onclick="document.querySelector('.sidebar').classList.remove('mobile-open'); this.classList.remove('active');"></div>
 
     <nav class="dashboard-navbar">
-        <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('mobile-open'); document.querySelector('.mobile-menu-overlay').classList.toggle('active');" style="display:none; background:none; border:none; color:var(--text-primary); font-size:20px; cursor:pointer; margin-right:15px; margin-left: 5px; padding: 0;">
+        <button class="mobile-menu-btn" onclick="const s=document.querySelector('.sidebar');if(s)s.classList.toggle('mobile-open'); const o=document.querySelector('.mobile-menu-overlay');if(o)o.classList.toggle('active');" style="display:none; background:none; border:none; color:var(--text-primary); font-size:20px; cursor:pointer; margin-right:15px; margin-left: 5px; padding: 0;">
             <i class="fas fa-bars"></i>
         </button>
-        <a class="dashboard-logo" href="/home">Zentrix</a>
+        <a class="dashboard-logo" th:href="@{/home}">Zentrix</a>
+
         <div class="dashboard-spacer"></div>
         <div class="dashboard-nav-links">
             <!-- Zen Coin System -->
@@ -395,10 +402,10 @@
                 <i class="fas fa-coins" style="font-size: 14px;"></i>
                 <span th:text="${user.coins}">0</span>
             </a>
-            <a href="/shop" title="Reward Shop"><i class="fas fa-shopping-bag"></i></a>
+            <a th:href="@{/shop}" title="Reward Shop"><i class="fas fa-shopping-bag"></i></a>
 
-            <a href="/dashboard" class="active"><i class="fas fa-home"></i></a>
-            <a href="/messages" style="position: relative;">
+            <a th:href="@{/dashboard}" class="active"><i class="fas fa-home"></i></a>
+            <a th:href="@{/messages}" style="position: relative;">
                 <i class="fas fa-comment-dots"></i>
                 <span th:if="${unreadMessageCount != null && unreadMessageCount > 0}" id="msg-badge"
                     style="position: absolute; top: -5px; right: -5px; background: red; color: white; border-radius: 50%; padding: 2px 5px; font-size: 10px; font-weight: bold;"
@@ -411,7 +418,7 @@
                     th:text="${unreadNotifCount}"></span>
             </a>
             <div class="profile-dropdown">
-                <a href="/profile" style="position: relative;">
+                <a th:href="@{/profile}" style="position: relative;">
                     <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=1780&auto=format&fit=crop"
                         class="user-avatar" style="width: 32px; height: 32px; border: none;">
                     <span th:if="${pendingCount != null && pendingCount > 0}"
@@ -419,14 +426,14 @@
                         th:text="${pendingCount}"></span>
                 </a>
                 <div class="dropdown-menu">
-                    <a href="/profile" class="dropdown-item">
+                    <a th:href="@{/profile}" class="dropdown-item">
                         <i class="fas fa-user-circle"></i> View Profile
                     </a>
-                    <a href="/settings" class="dropdown-item">
+                    <a th:href="@{/settings}" class="dropdown-item">
                         <i class="fas fa-cog"></i> Settings
                     </a>
                     <div class="dropdown-divider"></div>
-                    <a href="/logout" class="dropdown-item" style="color: #ff4444;">
+                    <a th:href="@{/logout}" class="dropdown-item" style="color: #ff4444;">
                         <i class="fas fa-sign-out-alt"></i> Logout
                     </a>
                 </div>
@@ -437,19 +444,19 @@
     <div class="dashboard-container">
 
         <!-- Left Sidebar -->
-        <aside class="sidebar" th:if="${isReelsPage == null or !isReelsPage}">
-            <a href="/dashboard" class="sidebar-link" th:classappend="${isReelsPage} ? '' : ' active'"><i class="fas fa-home"></i> Home</a>
-            <a href="/explore" class="sidebar-link"><i class="fas fa-compass"></i> Explore</a>
-            <a href="/events" class="sidebar-link"><i class="fas fa-calendar-alt"></i> Events</a>
-            <a href="/battles" class="sidebar-link"><i class="fas fa-fire"></i> Battle Arena</a>
-            <a href="/achievements" class="sidebar-link"><i class="fas fa-trophy"></i> Achievements</a>
-            <a href="/messages" class="sidebar-link"><i class="fas fa-comment-dots"></i> Chat</a>
-            <a href="/reels" class="sidebar-link" th:classappend="${isReelsPage} ? ' active' : ''"><i class="fas fa-film"></i> Reels</a>
-            <a href="/profile" class="sidebar-link"><i class="fas fa-user"></i> Profile</a>
-            <a href="/games" class="sidebar-link"><i class="fas fa-gamepad"></i> Games</a>
-            <a href="/music" class="sidebar-link"><i class="fas fa-music"></i> Music</a>
+        <aside class="sidebar">
+            <a th:href="@{/dashboard}" class="sidebar-link" th:classappend="${isReelsPage} ? '' : ' active'"><i class="fas fa-home"></i> Home</a>
+            <a th:href="@{/explore}" class="sidebar-link"><i class="fas fa-compass"></i> Explore</a>
+            <a th:href="@{/events}" class="sidebar-link"><i class="fas fa-calendar-alt"></i> Events</a>
+            <a th:href="@{/battles}" class="sidebar-link"><i class="fas fa-fire"></i> Battle Arena</a>
+            <a th:href="@{/achievements}" class="sidebar-link"><i class="fas fa-trophy"></i> Achievements</a>
+            <a th:href="@{/messages}" class="sidebar-link"><i class="fas fa-comment-dots"></i> Chat</a>
+            <a th:href="@{/reels}" class="sidebar-link" th:classappend="${isReelsPage} ? ' active' : ''"><i class="fas fa-film"></i> Reels</a>
+            <a th:href="@{/profile}" class="sidebar-link"><i class="fas fa-user"></i> Profile</a>
+            <a th:href="@{/games}" class="sidebar-link"><i class="fas fa-gamepad"></i> Games</a>
+            <a th:href="@{/music}" class="sidebar-link"><i class="fas fa-music"></i> Music</a>
             <a href="javascript:void(0)" class="sidebar-link" onclick="openCreateModal()"><i class="fas fa-plus-circle" style="color: var(--accent);"></i> Create Post</a>
-            <a href="/logout" class="sidebar-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            <a th:href="@{/logout}" class="sidebar-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </aside>
 
         <!-- Center Feed -->
@@ -496,7 +503,7 @@
             <!-- 🗳️ Voting Polls -->
             <div th:if="${(isReelsPage == null or !isReelsPage) and not #lists.isEmpty(votingPolls)}" class="dashboard-vote-section">
                 <div style="margin-bottom: 15px;">
-                    <h3 style="font-size: 14px; font-weight: 800; color: #111;">Vote for Next Event! 🗳️
+                    <h3 style="font-size: 14px; font-weight: 800; color: #111;">Vote for Next Event! 🗳️ 
                     </h3>
                     <p style="font-size: 11px; color: rgba(0,0,0,0.5);">Your vote shapes our platform.
                     </p>
@@ -550,7 +557,7 @@
                         <i class="fas fa-chevron-down" style="opacity:0.7; font-size: 11px;"></i>
                     </button>
                     <div class="filter-menu" id="feedFilterMenu">
-                        <a href="/dashboard" th:classappend="${activeCategory == null} ? ' active' : ''">All</a>
+                        <a th:href="@{/dashboard}" th:classappend="${activeCategory == null} ? ' active' : ''">All</a>
                         <a th:href="@{/dashboard(category='TRAVEL')}"
                             th:classappend="${activeCategory != null and activeCategory.equalsIgnoreCase('TRAVEL')} ? ' active' : ''">
                             Travel
@@ -596,30 +603,33 @@
 
                 <div th:if="${activeCategory != null}" class="filter-chip">
                     <span th:text="${activeCategory}">TRAVEL</span>
-                    <a href="/dashboard" title="Clear filter">×</a>
+                    <a th:href="@{/dashboard}" title="Clear filter">Ã—</a>
                 </div>
             </div>
 
             <!-- Posts -->
             <div th:class="${isReelsPage} ? 'reels-container' : 'posts-feed'">
-                <div th:each="post : ${posts}" th:class="${isReelsPage} ? 'post-card reel-card' : 'post-card'" th:attr="data-post-id=${post.id}">
+                <div th:if="${posts == null or posts.isEmpty()}" style="text-align:center; padding:60px 40px; color:var(--text-primary); width: 100%; max-width: 500px; margin: 40px auto; background: rgba(255,255,255,0.7); border: 1px solid var(--glass-border); border-radius: 24px; backdrop-filter: blur(10px); box-shadow: var(--shadow-premium); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;">
+                    <div style="width: 80px; height: 80px; border-radius: 50%; background: rgba(248, 68, 100, 0.1); display: flex; align-items: center; justify-content: center; margin-bottom: 8px;">
+                        <i th:class="${isReelsPage} ? 'fas fa-film' : 'fas fa-image'" style="font-size:32px; color: var(--accent);"></i>
+                    </div>
+                    <h3 th:text="${isReelsPage} ? 'No reels yet.' : 'No posts yet.'" style="font-weight:800; font-size:22px; margin:0;">No posts yet.</h3>
+                    <p th:text="${isReelsPage} ? 'Upload your first reel!' : 'Be the first to share something!'" style="font-size:14px; color:var(--text-secondary); margin:0;"></p>
+                </div>
+                <div th:each="post : ${posts}" th:class="${isReelsPage} ? 'post-card reel-card' : 'post-card'" th:id="'post-' + ${post.id}" th:attr="data-post-id=${post.id}">
                 <div class="post-header">
                     <!-- Clickable avatar opens profile/story popup -->
                     <img th:src="${post.user != null and post.user.profilePhotoUrl != null and !post.user.profilePhotoUrl.isEmpty()} ? ${post.user.profilePhotoUrl} : 'https://ui-avatars.com/api/?name=' + ${post.user != null ? post.user.username : 'U'} + '&background=F84464&color=fff&size=80'"
                         class="user-avatar" alt="User" style="cursor: pointer;"
-                        th:attr="onclick='openAvatarMenu(' + ${post.user != null ? post.user.id : 0} + ', \'' + ${post.user != null ? post.user.username : 'Unknown'} + '\')'"
+                        th:attr="data-userid=${post.user != null ? post.user.id : 0}, data-username=${post.user != null ? post.user.username : 'Unknown'}"
+                        onclick="openAvatarMenu(this.getAttribute('data-userid'), this.getAttribute('data-username'))"
                         title="Click to view profile or story">
                     <div class="post-user-info">
                         <h4>
                             <span th:text="${post.user != null ? post.user.username : 'Unknown User'}">Username</span>
                             <span th:each="collab : ${post.collaborations}"
-                                th:if="${collab.status.name() == 'ACCEPTED'}">
-
-                            &amp; <span th:text="${collab.user.username}">CollabUser</span>
-
-                                &amp; <span
-                                    th:text="${collab.user != null ? collab.user.username : 'Unknown User'}">CollabUser</span>
-
+                                th:if="${collab.status != null and collab.status.name() == 'ACCEPTED'}">
+                                &amp; <span th:text="${collab.user != null ? collab.user.username : 'Unknown User'}">CollabUser</span>
                             </span>
                         </h4>
                         <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-top:3px;">
@@ -773,7 +783,7 @@
                         <span style="font-size:13px; font-weight:800;" th:text="${r.name}">Room</span>
                         <span style="font-size:11px; color: rgba(255,255,255,0.5);">
                             Code: <span th:text="${r.code}" style="font-weight:900; letter-spacing:0.5px;">CODE</span>
-                            <span style="opacity:0.6;"> • </span>
+                            <span style="opacity:0.6;"> â€¢ </span>
                             <span th:text="${r.phase}">SUBMIT</span>
                         </span>
                     </div>
@@ -789,7 +799,7 @@
             <div class="widget-card">
                 <div class="widget-header">
                     <h3>Trending Events</h3>
-                    <a href="/events" class="see-all">See All</a>
+                    <a th:href="@{/events}" class="see-all">See All</a>
                 </div>
                 <div style="display: flex; gap: 10px; margin-bottom: 15px;">
                     <img src="https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?q=80&w=1974&auto=format&fit=crop"
@@ -813,7 +823,7 @@
             <div class="widget-card">
                 <div class="widget-header">
                     <h3>Suggested for you</h3>
-                    <a href="/explore" class="see-all">See All</a>
+                    <a th:href="@{/explore}" class="see-all">See All</a>
                 </div>
                 <div class="suggestion-item" th:each="suggestedUser : ${suggestions}">
                     <div class="suggestion-user">
@@ -873,6 +883,7 @@
                     <p style="font-size: 14px; font-weight: bold; color: #ffffff; margin-bottom: 5px;"
                         th:text="${n.type == 'FOLLOW_REQUEST' ? '@' + n.actor.username + ' wants to follow you!' : n.message}">
                         Message</p>
+                    <a th:if="${n.postId != null}" th:href="@{'/dashboard#post-' + ${n.postId}}" style="color: var(--accent); font-size: 12px; font-weight: 700; margin-bottom: 8px; display: inline-block;">View Post →</a>
                     <span style="font-size: 12px; color: #aaaaaa; display: block; margin-bottom: 10px;"
                         th:text="${#temporals.format(n.createdAt, 'dd MMM, HH:mm')}">Date</span>
 
@@ -1198,7 +1209,7 @@
             gestures: ['👋','🤚','🖐️','✋','🖖','👌','💥','✌️','🤞','🤟','🤘','🤙','👈','👉','👆','🖕','👇','☝️','👍','👎','✊','👊','🤛','🤜','👏','🙌','👐','🤲','🤝','🙏','✍️','💅','🤳','💪','🦾','👂','👃','🧠','🦷','🦴','👀','👁️'],
             hearts: ['❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','💕','💞','💓','💗','💖','💘','💝','💟'],
             animals: ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐽','🐸','🐵','🙈','🙉','🙊','🐒','🐔','🐧','🐦','🐤','🐣','🐥','🦆','🦅','🦉','🦇','🐺','🐗','🐴','🦄','🐝','🐛','🦋','🐌','🐞','🐜','🕷️','🕸️','🐢','🐍','🦎','🐙','🦑','🦞','🦀','🐡','🐠','🐟','🐬','🐳','🐋','🦈','🐊'],
-            food: ['🍏','🍎','🍐','🍊','🍋','🍌','🍉','🍇','🍓','🍒','🍑','🥭','🍍','🥥','🥝','🍅','茄','🥑','🥦','🥬','🥒','🌶️','🌽','🥕','🥔','🥖','🧀','🍗','🥩','🥓','🍔','🍟','🍕','🌭','🥪','🌮','🌯','🍳','🥘','🍲','🥣','🥗','🍿','🍱','🍣','🍤','🥟','🍦','🍧','🍨','🍩','🍪','🎂','🍰','🍫','🍬','🍭','🍮','🍯','☕','🍵','🍶','🍷','🍸','🍹','🍺','🍻'],
+            food: ['🍏','🍎','🍐','🍊','🍋','🍌','🍉','🍇','🍓','🍒','🍑','🥭','🍍','🥥','🥝','🍅','èŒ„','🥑','🥦','🥬','🥒','🌶️','🌽','🥕','🥔','🥖','🧀','🍗','🥩','🥓','🍔','🍟','🍕','🌭','🥪','🌮','🌯','🍳','🥘','🍲','🥣','🥗','🍿','🍱','🍣','🍤','🥟','🍦','🍧','🍨','🍩','🍪','🎂','🍰','🍫','🍬','🍭','🍮','🍯','☕','🍵','🍶','🍷','🍸','🍹','🍺','🍻'],
             activities: ['⚽','🏀','🏈','⚾','🥎','🎾','🏐','🏉','🎱','🏓','🏸','🏒','🏑','🥍','🥅','⛳','🏹','🎣','🥊','🥋','🛹','🛼','🎯','🎮','🕹️','🎰','🎳','🎸','🎺','🎻','🎨','🎬','🎤']
         };
 
@@ -1309,8 +1320,7 @@
         let allFollowers = [];
         async function openShareModal(postId) {
             currentSharePostId = postId;
-            const modal = document.getElementById('shareModal');
-            if (modal) { modal.style.display = 'flex'; }
+            openM('shareModal');
             document.getElementById('shareSearchInput').value = '';
 
             try {
@@ -1361,10 +1371,13 @@
         }
 
         function closeShareModal() {
-            const modal = document.getElementById('shareModal');
-            if (modal) { modal.style.display = 'none'; }
+            closeM('shareModal');
         }
         async function shareToUser(userId) {
+            if (!currentSharePostId) {
+                alert('Please add content before sharing');
+                return;
+            }
             const res = await fetch('/api/chat/share-post-to-user', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -1737,7 +1750,7 @@
                 usernameSpan.textContent = story.username || 'Unknown';
             }
             if (timeSpan) {
-                timeSpan.textContent = '• ' + formatRelativeTime(story.createdAt);
+                timeSpan.textContent = 'â€¢ ' + formatRelativeTime(story.createdAt);
             }
 
             // Show/hide bottom reply panel or viewers panel based on ownership
@@ -1907,9 +1920,14 @@
         }
         function avatarGoToProfile() {
             const userId = document.getElementById('avatarMenuUserId').value;
-            // go to /profile/{username} – we stored username in the span
+            // go to /profile/{username} â€“ we stored username in the span
             const username = document.getElementById('avatarMenuUsername').textContent;
             window.location.href = '/profile/' + username;
+        }
+        function viewProfile(username) {
+            if (username) {
+                window.location.href = '/profile/' + username;
+            }
         }
         function avatarViewStory() {
             const userId = document.getElementById('avatarMenuUserId').value;
@@ -1933,7 +1951,7 @@
             <div id="storyViewerHeader" style="position: absolute; top: 28px; left: 16px; display: flex; align-items: center; gap: 10px; z-index: 110; color: white;">
                 <img id="storyViewerAvatar" src="" style="width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid #fff; object-fit: cover; box-shadow: 0 2px 8px rgba(0,0,0,0.5);">
                 <span id="storyViewerUsername" style="font-weight: 700; font-size: 13.5px; text-shadow: 0 2px 5px rgba(0,0,0,0.95); font-family: 'DM Sans', sans-serif;">Username</span>
-                <span id="storyViewerTime" style="font-size: 11px; color: rgba(255,255,255,0.7); text-shadow: 0 2px 5px rgba(0,0,0,0.95); font-family: 'DM Sans', sans-serif;">• 2h ago</span>
+                <span id="storyViewerTime" style="font-size: 11px; color: rgba(255,255,255,0.7); text-shadow: 0 2px 5px rgba(0,0,0,0.95); font-family: 'DM Sans', sans-serif;">â€¢ 2h ago</span>
             </div>
 
             <button
@@ -2067,3 +2085,4 @@
 </body>
 
 </html>
+

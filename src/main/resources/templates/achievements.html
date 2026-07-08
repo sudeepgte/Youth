@@ -491,15 +491,131 @@
 
         /* ── Responsive ── */
         @media (max-width: 768px) {
-            .dashboard-container { grid-template-columns: 1fr; padding: 0 10px; gap: 15px; }
-            .content-area { padding: 15px 10px; }
-            .lb-header h1 { font-size: 1.4rem; }
-            .my-stats-card, .mystery-card { flex-direction: column; text-align: center; gap: 12px; }
-            .xp-pill { margin-left: 0; }
-            .achievements-grid { grid-template-columns: 1fr; }
-            /* Make table scrollable on mobile */
-            .lb-table { display: block; overflow-x: auto; white-space: nowrap; }
-            .badges-row { justify-content: center; }
+            .dashboard-container {
+                grid-template-columns: 1fr;
+                padding: 0 12px;
+                gap: 15px;
+                margin-top: calc(var(--dashboard-nav-height) + 10px);
+            }
+            .content-area {
+                padding: 15px 12px;
+            }
+            .lb-header {
+                margin-bottom: 20px;
+            }
+            .lb-header h1 {
+                font-size: 1.5rem;
+            }
+            .my-stats-card, .mystery-card {
+                padding: 18px 15px;
+                gap: 15px;
+                align-items: flex-start;
+            }
+            .my-stats-card {
+                flex-direction: row;
+                align-items: center;
+            }
+            .my-stats-card img {
+                width: 50px;
+                height: 50px;
+            }
+            .my-stats-info h3 {
+                font-size: 1rem;
+            }
+            .xp-pill {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+            .mystery-card {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+            .mystery-icon {
+                width: 50px;
+                height: 50px;
+                font-size: 22px;
+                margin-bottom: -5px;
+            }
+            .mystery-info h3 {
+                justify-content: center;
+                font-size: 1.05rem;
+            }
+            .achievements-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            .achievement-card {
+                padding: 18px 15px;
+                gap: 15px;
+            }
+            .award-icon {
+                width: 46px;
+                height: 46px;
+                font-size: 20px;
+            }
+            .award-info h4 {
+                font-size: 14px;
+            }
+            .lb-table th, .lb-table td {
+                padding: 12px 10px;
+            }
+            .lb-table th:nth-child(3), .lb-table td:nth-child(3) {
+                display: none; /* Hide Tier column on small mobile devices to save space */
+            }
+            .u-flex {
+                gap: 8px;
+            }
+            .u-flex img {
+                width: 30px;
+                height: 30px;
+            }
+            .u-flex div div {
+                font-size: 13px;
+            }
+            .rank {
+                width: 30px;
+                font-size: 14px;
+            }
+            .rank-1 {
+                font-size: 18px;
+            }
+            .rank-2, .rank-3 {
+                font-size: 16px;
+            }
+            .xp-score {
+                font-size: 13px;
+            }
+            #redeemSection {
+                flex-direction: column;
+                width: 100%;
+            }
+            #redeemSection input, #redeemSection button {
+                width: 100%;
+            }
+            .achievements-section h2 {
+                font-size: 1.15rem;
+            }
+            .empty-achievements {
+                padding: 30px 20px;
+            }
+            .empty-achievements i {
+                font-size: 32px;
+            }
+            .badges-row {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+            .tier {
+                padding: 10px;
+            }
+            .tier i {
+                font-size: 20px;
+            }
+            .tier .t-name {
+                font-size: 12px;
+            }
         }
     </style>
 </head>
@@ -510,25 +626,27 @@
     <div class="mobile-menu-overlay" onclick="document.querySelector('.sidebar').classList.remove('mobile-open'); this.classList.remove('active');"></div>
 
     <nav class="dashboard-navbar">
-        <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('mobile-open'); document.querySelector('.mobile-menu-overlay').classList.toggle('active');" style="display:none; background:none; border:none; color:var(--text-primary); font-size:20px; cursor:pointer; margin-right:15px; margin-left: 5px; padding: 0;">
+
+        <button class="mobile-menu-btn" onclick="const s=document.querySelector('.sidebar');if(s)s.classList.toggle('mobile-open'); const o=document.querySelector('.mobile-menu-overlay');if(o)o.classList.toggle('active');" style="display:none; background:none; border:none; color:var(--text-primary); font-size:20px; cursor:pointer; margin-right:15px; margin-left: 5px; padding: 0;">
             <i class="fas fa-bars"></i>
         </button>
-        <a class="dashboard-logo" href="/home">Zentrix</a>
+        <a class="dashboard-logo" th:href="@{/home}">Zentrix</a>
+
         <div class="dashboard-spacer"></div>
         <div class="dashboard-nav-links">
-            <a href="/dashboard"><i class="fas fa-home"></i></a>
-            <a href="/messages"><i class="fas fa-comment-dots"></i></a>
-            <a href="/explore"><i class="fas fa-compass"></i></a>
+            <a th:href="@{/dashboard}"><i class="fas fa-home"></i></a>
+            <a th:href="@{/messages}"><i class="fas fa-comment-dots"></i></a>
+            <a th:href="@{/explore}"><i class="fas fa-compass"></i></a>
             <div class="profile-dropdown">
-                <a href="/profile">
+                <a th:href="@{/profile}">
                     <img th:src="${user != null and user.profilePhotoUrl != null ? user.profilePhotoUrl : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=1780&auto=format&fit=crop'}"
                         class="user-avatar" style="width:32px; height:32px; border:none;">
                 </a>
                 <div class="dropdown-menu">
-                    <a href="/profile" class="dropdown-item"><i class="fas fa-user-circle"></i> View Profile</a>
-                    <a href="/settings" class="dropdown-item"><i class="fas fa-cog"></i> Settings</a>
+                    <a th:href="@{/profile}" class="dropdown-item"><i class="fas fa-user-circle"></i> View Profile</a>
+                    <a th:href="@{/settings}" class="dropdown-item"><i class="fas fa-cog"></i> Settings</a>
                     <div class="dropdown-divider"></div>
-                    <a href="/logout" class="dropdown-item" style="color: #ff4444;"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                    <a th:href="@{/logout}" class="dropdown-item" style="color: #ff4444;"><i class="fas fa-sign-out-alt"></i> Logout</a>
                 </div>
             </div>
         </div>
@@ -538,18 +656,18 @@
     <div class="dashboard-container">
         <!-- Sidebar -->
         <aside class="sidebar">
-            <a href="/dashboard" class="sidebar-link"><i class="fas fa-home"></i> Home</a>
-            <a href="/explore" class="sidebar-link"><i class="fas fa-compass"></i> Explore</a>
-            <a href="/events" class="sidebar-link"><i class="fas fa-calendar-alt"></i> Events</a>
-            <a href="/battles" class="sidebar-link"><i class="fas fa-fire"></i> Battle Arena</a>
-            <a href="/achievements" class="sidebar-link active"><i class="fas fa-trophy"></i> Achievements</a>
-            <a href="/messages" class="sidebar-link"><i class="fas fa-comment-dots"></i> Chat</a>
-            <a href="/reels" class="sidebar-link"><i class="fas fa-film"></i> Reels</a>
-            <a href="/profile" class="sidebar-link"><i class="fas fa-user"></i> Profile</a>
-            <a href="/games" class="sidebar-link"><i class="fas fa-gamepad"></i> Games</a>
-            <a href="/music" class="sidebar-link"><i class="fas fa-music"></i> Music</a>
+            <a th:href="@{/dashboard}" class="sidebar-link"><i class="fas fa-home"></i> Home</a>
+            <a th:href="@{/explore}" class="sidebar-link"><i class="fas fa-compass"></i> Explore</a>
+            <a th:href="@{/events}" class="sidebar-link"><i class="fas fa-calendar-alt"></i> Events</a>
+            <a th:href="@{/battles}" class="sidebar-link"><i class="fas fa-fire"></i> Battle Arena</a>
+            <a th:href="@{/achievements}" class="sidebar-link active"><i class="fas fa-trophy"></i> Achievements</a>
+            <a th:href="@{/messages}" class="sidebar-link"><i class="fas fa-comment-dots"></i> Chat</a>
+            <a th:href="@{/reels}" class="sidebar-link"><i class="fas fa-film"></i> Reels</a>
+            <a th:href="@{/profile}" class="sidebar-link"><i class="fas fa-user"></i> Profile</a>
+            <a th:href="@{/games}" class="sidebar-link"><i class="fas fa-gamepad"></i> Games</a>
+            <a th:href="@{/music}" class="sidebar-link"><i class="fas fa-music"></i> Music</a>
             <a href="javascript:void(0)" class="sidebar-link" onclick="openCreateModal()"><i class="fas fa-plus-circle" style="color: var(--accent);"></i> Create Post</a>
-            <a href="/logout" class="sidebar-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            <a th:href="@{/logout}" class="sidebar-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </aside>
 
         <!-- Content -->
@@ -620,8 +738,8 @@
                             <i th:class="${ach.position == 'Winner'} ? 'fas fa-trophy' : 'fas fa-medal'"></i>
                         </div>
                         <div class="award-info">
-                            <p th:text="${ach.position} + ' • ' + ${#temporals.format(ach.event.dateTime, 'MMM yyyy')}">
-                                WINNER • MAR 2025</p>
+                            <p th:text="${ach.position} + ' â€¢ ' + ${#temporals.format(ach.event.dateTime, 'MMM yyyy')}">
+                                WINNER â€¢ MAR 2025</p>
                             <h4 th:text="${ach.event.title}">Event Title</h4>
                             <div class="award-xp">
                                 <i class="fas fa-bolt"></i>
@@ -724,3 +842,4 @@
 </body>
 
 </html>
+

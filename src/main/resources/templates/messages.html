@@ -1250,7 +1250,17 @@
         }
 
         @media (max-width: 768px) {
-            .app-container { position: relative; }
+            body .dashboard-container {
+                grid-template-columns: 1fr;
+                margin-top: calc(var(--dashboard-nav-height));
+                padding: 0;
+                gap: 0;
+            }
+            body .content-main {
+                border-right: none !important;
+                height: calc(100vh - var(--dashboard-nav-height)) !important;
+            }
+            .app-container { position: relative; border-left: none; border-right: none; }
             .chat-sidebar { width: 100% !important; border-right: none; }
             
             .chat-main { 
@@ -1736,24 +1746,24 @@
     <div class="mobile-menu-overlay" onclick="document.querySelector('.sidebar').classList.remove('mobile-open'); this.classList.remove('active');"></div>
 
     <nav class="dashboard-navbar">
-        <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('mobile-open'); document.querySelector('.mobile-menu-overlay').classList.toggle('active');" style="display:none; background:none; border:none; color:var(--text-primary); font-size:20px; cursor:pointer; margin-right:15px; margin-left: 5px; padding: 0;">
+        <button class="mobile-menu-btn" onclick="const s=document.querySelector('.sidebar');if(s)s.classList.toggle('mobile-open'); const o=document.querySelector('.mobile-menu-overlay');if(o)o.classList.toggle('active');" style="display:none; background:none; border:none; color:var(--text-primary); font-size:20px; cursor:pointer; margin-right:15px; margin-left: 5px; padding: 0;">
             <i class="fas fa-bars"></i>
         </button>
-        <a class="dashboard-logo" href="/home">Zentrix</a>
+        <a class="dashboard-logo" th:href="@{/home}">Zentrix</a>
         <div class="dashboard-spacer"></div>
         <div class="dashboard-nav-links">
-            <a href="/dashboard"><i class="fas fa-home"></i></a>
-            <a href="/explore"><i class="fas fa-compass"></i></a>
+            <a th:href="@{/dashboard}"><i class="fas fa-home"></i></a>
+            <a th:href="@{/explore}"><i class="fas fa-compass"></i></a>
             <div class="profile-dropdown">
-                <a href="/profile">
+                <a th:href="@{/profile}">
                     <img th:src="${currentUser != null and currentUser.profilePhotoUrl != null ? currentUser.profilePhotoUrl : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=1780&auto=format&fit=crop'}"
                         class="user-avatar" style="width:32px; height:32px; border:none;">
                 </a>
                 <div class="dropdown-menu">
-                    <a href="/profile" class="dropdown-item"><i class="fas fa-user-circle"></i> View Profile</a>
-                    <a href="/settings" class="dropdown-item"><i class="fas fa-cog"></i> Settings</a>
+                    <a th:href="@{/profile}" class="dropdown-item"><i class="fas fa-user-circle"></i> View Profile</a>
+                    <a th:href="@{/settings}" class="dropdown-item"><i class="fas fa-cog"></i> Settings</a>
                     <div class="dropdown-divider"></div>
-                    <a href="/logout" class="dropdown-item" style="color: #ff4444;"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                    <a th:href="@{/logout}" class="dropdown-item" style="color: #ff4444;"><i class="fas fa-sign-out-alt"></i> Logout</a>
                 </div>
             </div>
         </div>
@@ -1762,18 +1772,18 @@
     <div class="dashboard-container">
         <!-- Sidebar Navigation -->
         <aside class="sidebar" style="height: calc(100vh - var(--dashboard-nav-height));">
-            <a href="/dashboard" class="sidebar-link"><i class="fas fa-home"></i> Home</a>
-            <a href="/explore" class="sidebar-link"><i class="fas fa-compass"></i> Explore</a>
-            <a href="/events" class="sidebar-link"><i class="fas fa-calendar-alt"></i> Events</a>
-            <a href="/battles" class="sidebar-link"><i class="fas fa-fire"></i> Battle Arena</a>
-            <a href="/achievements" class="sidebar-link"><i class="fas fa-trophy"></i> Achievements</a>
-            <a href="/messages" class="sidebar-link active"><i class="fas fa-comment-dots"></i> Chat</a>
-            <a href="/reels" class="sidebar-link"><i class="fas fa-film"></i> Reels</a>
-            <a href="/profile" class="sidebar-link"><i class="fas fa-user"></i> Profile</a>
-            <a href="/games" class="sidebar-link"><i class="fas fa-gamepad"></i> Games</a>
-            <a href="/music" class="sidebar-link"><i class="fas fa-music"></i> Music</a>
+            <a th:href="@{/dashboard}" class="sidebar-link"><i class="fas fa-home"></i> Home</a>
+            <a th:href="@{/explore}" class="sidebar-link"><i class="fas fa-compass"></i> Explore</a>
+            <a th:href="@{/events}" class="sidebar-link"><i class="fas fa-calendar-alt"></i> Events</a>
+            <a th:href="@{/battles}" class="sidebar-link"><i class="fas fa-fire"></i> Battle Arena</a>
+            <a th:href="@{/achievements}" class="sidebar-link"><i class="fas fa-trophy"></i> Achievements</a>
+            <a th:href="@{/messages}" class="sidebar-link active"><i class="fas fa-comment-dots"></i> Chat</a>
+            <a th:href="@{/reels}" class="sidebar-link"><i class="fas fa-film"></i> Reels</a>
+            <a th:href="@{/profile}" class="sidebar-link"><i class="fas fa-user"></i> Profile</a>
+            <a th:href="@{/games}" class="sidebar-link"><i class="fas fa-gamepad"></i> Games</a>
+            <a th:href="@{/music}" class="sidebar-link"><i class="fas fa-music"></i> Music</a>
             <a href="javascript:void(0)" class="sidebar-link" onclick="openCreateModal()"><i class="fas fa-plus-circle" style="color: var(--accent);"></i> Create Post</a>
-            <a href="/logout" class="sidebar-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            <a th:href="@{/logout}" class="sidebar-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </aside>
 
         <main class="content-main" style="padding: 0; overflow: hidden; height: calc(100vh - var(--dashboard-nav-height)); border-right: 1px solid var(--glass-border);">
@@ -2021,7 +2031,7 @@
                         <div class="header-icon" title="Stickers" onclick="toggleStickerPicker()" style="margin: 0 4px;">
                             <span style="font-size:20px; line-height:1;">🧩</span>
                         </div>
-                        <input type="text" id="chatInput" placeholder="Message..." onkeypress="handleKeyStroke(event)">
+                        <input type="text" id="chatInput" placeholder="Message..." onkeypress="handleKeyStroke(event)" oninput="toggleSendButton()">
                         <div class="header-icon" id="voiceBtn" title="Record voice message" onclick="startRecording()"
                             style="margin: 0 5px;">
                             <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor"
@@ -2032,7 +2042,12 @@
                                 <line x1="8" y1="23" x2="16" y2="23"></line>
                             </svg>
                         </div>
-                        <div class="btn-send" onclick="sendChatMessage()">Send</div>
+                        <div class="header-icon" id="sendBtn" title="Send message" onclick="sendChatMessage()"
+                            style="margin: 0 5px; display: none; color: var(--primary-accent);">
+                            <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
+                            </svg>
+                        </div>
 
                         <div class="picker-panel" id="emojiPicker">
                             <div class="picker-grid" id="emojiGrid"></div>
@@ -2244,6 +2259,7 @@
             const pos = start + emoji.length;
             input.setSelectionRange(pos, pos);
             input.focus();
+            toggleSendButton();
         }
 
         function sendSticker(stickerUrl) {
@@ -2302,7 +2318,7 @@
             const container = document.getElementById('selectedUsersArea');
             container.innerHTML = selectedGroupUsers.map(u => `
                 <div style="background:var(--active-bg); padding:4px 10px; border-radius:15px; font-size:12px; display:flex; align-items:center; gap:5px;">
-                    ${u.username} <span onclick="toggleGroupUserSelection(${u.id})" style="cursor:pointer;">×</span>
+                    ${u.username} <span onclick="toggleGroupUserSelection(${u.id})" style="cursor:pointer;">Ã—</span>
                 </div>
             `).join('');
         }
@@ -2452,7 +2468,7 @@
                     const data = JSON.parse(msg.body);
                     if (activeConversationId === data.conversationId) {
                         const seenIndicator = document.getElementById('seenIndicator');
-                        seenIndicator.innerText = 'Seen · ' + formatTime(data.seenAt);
+                        seenIndicator.innerText = 'Seen Â· ' + formatTime(data.seenAt);
                         seenIndicator.style.display = 'block';
                     }
                 });
@@ -2606,7 +2622,7 @@
                 </div>
                 <div class="conv-info">
                     <div class="conv-name">${convName}</div>
-                    <div class="conv-preview">${previewText} · ${formatTime(c.lastMessageTime)}</div>
+                    <div class="conv-preview">${previewText} Â· ${formatTime(c.lastMessageTime)}</div>
                 </div>
                 <div class="unread-dot"></div>
             `;
@@ -2982,7 +2998,7 @@
                         <div class="voice-wave">
                             ${Array(15).fill('<div class="wave-bar"></div>').join('')}
                         </div>
-                        <div class="voice-duration">Voice</div>
+                        <div class="voice-duration">0:00</div>
                     `;
                     mediaDiv.appendChild(voiceContainer);
                 } else {
@@ -3140,7 +3156,22 @@
             console.log('Sending message:', payload);
             stompClient.send("/app/chat.send", {}, JSON.stringify(payload));
             input.value = '';
+            toggleSendButton();
             cancelReply();
+        }
+
+        function toggleSendButton() {
+            const input = document.getElementById('chatInput');
+            const voiceBtn = document.getElementById('voiceBtn');
+            const sendBtn = document.getElementById('sendBtn');
+            
+            if (input && input.value.trim().length > 0) {
+                if (voiceBtn) voiceBtn.style.display = 'none';
+                if (sendBtn) sendBtn.style.display = 'flex';
+            } else {
+                if (voiceBtn) voiceBtn.style.display = 'flex';
+                if (sendBtn) sendBtn.style.display = 'none';
+            }
         }
 
         function onNewMessage(msg) {
@@ -3718,34 +3749,50 @@
             }
         }
 
-        let currentAudio = null;
-        let currentPlayBtn = null;
-        let currentUrl = null;
-
         function playVoice(url, btn) {
-            if (currentAudio && currentUrl === url) {
-                if (currentAudio.paused) {
-                    currentAudio.play();
-                } else {
-                    currentAudio.pause();
-                }
-                return;
+            const container = btn.closest('.voice-msg-bubble');
+            const durationEl = container.querySelector('.voice-duration');
+
+            // If there's already an audio element playing, pause it
+            if (window.currentVoiceAudio && window.currentVoiceAudio.dataset.url !== url) {
+                window.currentVoiceAudio.pause();
+                // Reset previous button
             }
 
-            if (currentAudio) {
-                currentAudio.pause();
-                currentAudio = null; // Clear to avoid issues
+            if (!window.currentVoiceAudio || window.currentVoiceAudio.dataset.url !== url) {
+                window.currentVoiceAudio = new Audio(url);
+                window.currentVoiceAudio.dataset.url = url;
+
+                window.currentVoiceAudio.addEventListener('loadedmetadata', function() {
+                    const dur = Math.floor(this.duration);
+                    const mins = Math.floor(dur / 60);
+                    const secs = dur % 60;
+                    if (durationEl) durationEl.textContent = mins + ':' + (secs < 10 ? '0' : '') + secs;
+                });
+
+                window.currentVoiceAudio.addEventListener('timeupdate', function() {
+                    const cur = Math.floor(this.currentTime);
+                    const mins = Math.floor(cur / 60);
+                    const secs = cur % 60;
+                    if (durationEl) durationEl.textContent = mins + ':' + (secs < 10 ? '0' : '') + secs;
+                });
+
+                window.currentVoiceAudio.addEventListener('ended', function() {
+                    updatePlayBtnIcon(btn, false);
+                    const dur = Math.floor(this.duration);
+                    const mins = Math.floor(dur / 60);
+                    const secs = dur % 60;
+                    if (durationEl) durationEl.textContent = mins + ':' + (secs < 10 ? '0' : '') + secs;
+                });
             }
 
-            currentAudio = new Audio(url);
-            currentPlayBtn = btn;
-            currentUrl = url;
-
-            currentAudio.onplay = () => updatePlayBtnIcon(btn, true);
-            currentAudio.onpause = () => updatePlayBtnIcon(btn, false);
-            currentAudio.onended = () => updatePlayBtnIcon(btn, false);
-
-            currentAudio.play();
+            if (window.currentVoiceAudio.paused) {
+                window.currentVoiceAudio.play();
+                updatePlayBtnIcon(btn, true);
+            } else {
+                window.currentVoiceAudio.pause();
+                updatePlayBtnIcon(btn, false);
+            }
         }
 
         function updatePlayBtnIcon(btn, isPlaying) {

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Super Mario – Realistic | Zentrix</title>
+    <title>Super Mario â€“ Realistic | Zentrix</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;700;900&display=swap');
 
@@ -397,7 +397,7 @@
             <div class="hud-group hud-center">
                 <div class="hud-coins">
                     <span class="coin-icon"></span>
-                    <span id="hud-coins">×00</span>
+                    <span id="hud-coins">Ã—00</span>
                 </div>
                 <div style="font-size:7px;color:#888;margin-top:3px;letter-spacing:1px;">WORLD</div>
                 <div class="hud-value" style="font-size:9px;" id="hud-world">1-1</div>
@@ -418,9 +418,9 @@
                 <canvas id="mario-preview" width="80" height="80"
                     style="image-rendering:pixelated;margin:8px 0;"></canvas>
                 <div class="press-start">PRESS SPACE OR CLICK TO START</div>
-                <button class="play-btn" id="start-btn">▶ START GAME</button>
+                <button class="play-btn" id="start-btn">â–¶ START GAME</button>
                 <div style="margin-top: 10px;">
-                    <a href="/games" class="exit-btn">Exit Game</a>
+                    <a th:href="@{/games}" class="exit-btn">Exit Game</a>
                 </div>
             </div>
 
@@ -428,19 +428,19 @@
                 <h2>GAME OVER</h2>
                 <div class="go-score">SCORE: <span id="final-score">0</span></div>
                 <div class="go-score" style="margin-top: 5px; color: #ffdd00;">BEST: <span id="best-score">0</span></div>
-                <button class="play-btn" id="restart-btn" style="margin-top: 10px;">▶ TRY AGAIN</button>
+                <button class="play-btn" id="restart-btn" style="margin-top: 10px;">â–¶ TRY AGAIN</button>
                 <div style="margin-top: 10px;">
-                    <a href="/games" class="exit-btn">Exit Game</a>
+                    <a th:href="@{/games}" class="exit-btn">Exit Game</a>
                 </div>
             </div>
         </div>
 
         <div id="mobile-controls">
             <div class="d-pad">
-                <div class="dpad-btn dpad-up" id="mb-up">▲</div>
-                <div class="dpad-btn dpad-left" id="mb-left">◀</div>
-                <div class="dpad-btn dpad-right" id="mb-right">▶</div>
-                <div class="dpad-btn dpad-down" id="mb-down">▼</div>
+                <div class="dpad-btn dpad-up" id="mb-up">â–²</div>
+                <div class="dpad-btn dpad-left" id="mb-left">â—€</div>
+                <div class="dpad-btn dpad-right" id="mb-right">â–¶</div>
+                <div class="dpad-btn dpad-down" id="mb-down">â–¼</div>
             </div>
             <div style="font-size:8px;color:#555;text-align:center;">
                 <div style="color:#cc8800;margin-bottom:4px;">LIVES</div>
@@ -456,7 +456,7 @@
     <script th:inline="none">
         /*<![CDATA[*/
         // ════════════════════════════════════════════════════
-        //   SUPER MARIO  —  Full Game Engine
+        //   SUPER MARIO  â€”  Full Game Engine
         // ════════════════════════════════════════════════════
 
         const C = document.getElementById('c');
@@ -1010,7 +1010,7 @@
         // ── HUD etc ────────────────────────────────────────
         function updateHUD() {
             document.getElementById('hud-score').textContent = String(score).padStart(6, '0');
-            document.getElementById('hud-coins').textContent = '×' + String(coins).padStart(2, '0');
+            document.getElementById('hud-coins').textContent = 'Ã—' + String(coins).padStart(2, '0');
             document.getElementById('hud-time').textContent = Math.max(0, Math.floor(timeLeft));
             document.getElementById('final-score').textContent = score;
         }

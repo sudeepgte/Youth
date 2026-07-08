@@ -97,7 +97,7 @@
             <input type="text" id="roomCodeInput" placeholder="Enter Table Code" class="lobby-input">
             <button class="btn-lobby" style="background: linear-gradient(135deg, var(--blue) 0%, #4ea8de 100%);" onclick="joinRoom()">Join Table</button>
         </div>
-        <a href="/games" class="back-btn" style="color: #666; margin-top: 20px; text-decoration: none;"><i class="fas fa-arrow-left"></i> Back to Games</a>
+        <a th:href="@{/games}" class="back-btn" style="color: #666; margin-top: 20px; text-decoration: none;"><i class="fas fa-arrow-left"></i> Back to Games</a>
     </div>
 
     <div id="roomInfo" class="room-info" style="display: none;">
@@ -639,7 +639,7 @@
             </div>
             <button class="start-btn" id="startBtn">🚀 Start Game</button>
             <div style="margin-top:14px;">
-                <a href="/games" class="exit-btn">← Exit to Games</a>
+                <a th:href="@{/games}" class="exit-btn">← Exit to Games</a>
             </div>
         </div>
         <!-- Win Modal -->
@@ -649,7 +649,7 @@
             <p class="win-msg">Congratulations! All pieces reached home!</p>
             <button class="start-btn" onclick="location.reload()">🎲 Play Again</button>
             <div style="margin-top:14px;">
-                <a href="/games" class="exit-btn">← Exit to Games</a>
+                <a th:href="@{/games}" class="exit-btn">← Exit to Games</a>
             </div>
         </div>
     </div>
@@ -668,7 +668,7 @@
                 <button id="rollBtn" onclick="rollDice()" disabled>Roll Dice</button>
                 <div id="status" class="good">Ready to roll</div>
             </div>
-            <a href="/games" class="exit-btn">← Exit Game</a>
+            <a th:href="@{/games}" class="exit-btn">← Exit Game</a>
         </div>
     </div>
 
@@ -925,15 +925,15 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
                 state.moveableIndices = moveable;
                 if (moveable.length === 0) {
                     setStatus('No valid moves!', '');
-                    showToast(`${NAMES[state.currentPlayer]} rolled ${state.diceValue} — no moves`);
-                    // Auto-advance turn after a delay — send a skip to server
+                    showToast(`${NAMES[state.currentPlayer]} rolled ${state.diceValue} â€” no moves`);
+                    // Auto-advance turn after a delay â€” send a skip to server
                     setTimeout(() => {
                         if (stompClient && state.roomId) {
                             stompClient.send("/app/ludo/" + state.roomId + "/skip", {}, JSON.stringify({ playerIndex: state.playerIndex }));
                         }
                     }, 1200);
                 } else {
-                    setStatus(`Rolled ${state.diceValue} — choose a piece!`, 'good');
+                    setStatus(`Rolled ${state.diceValue} â€” choose a piece!`, 'good');
                 }
             } else {
                 state.moveableIndices = [];
@@ -973,7 +973,7 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
 
             // Colored quadrants / bases
             drawBaseZone(0, 0, COLORS[0]);      // Red: col0-5, row9-14
-            drawBaseZone(1, 0, COLORS[1]);      // Blue: col0-5, row0-5 — needs custom draw
+            drawBaseZone(1, 0, COLORS[1]);      // Blue: col0-5, row0-5 â€” needs custom draw
             drawBaseZone(2, 9, COLORS[2]);      // Green: col9-14, row0-5
             drawBaseZone(3, 9, COLORS[3]);      // Yellow: col9-14, row9-14
 
@@ -1387,10 +1387,10 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
 
                 if (moveable.length === 0) {
                     setStatus('No valid moves!');
-                    showToast(`${NAMES[pi]} rolled ${val} — no moves`);
+                    showToast(`${NAMES[pi]} rolled ${val} â€” no moves`);
                     setTimeout(nextPlayer, 1200);
                 } else {
-                    setStatus(`Rolled ${val} — choose a piece!`, 'good');
+                    setStatus(`Rolled ${val} â€” choose a piece!`, 'good');
                     if (state.playerTypes[pi] === 'computer') {
                         setTimeout(() => doComputerMove(moveable), 900);
                     }
@@ -1474,8 +1474,8 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
                 if (!state.isGameOver) {
                     if (val === 6) {
                         state.diceRolled = false;
-                        setStatus('🎲 Rolled 6 — roll again!', 'rollAgain');
-                        showToast(`${NAMES[pi]} rolled 6 — roll again!`, COLORS[pi]);
+                        setStatus('🎲 Rolled 6 â€” roll again!', 'rollAgain');
+                        showToast(`${NAMES[pi]} rolled 6 â€” roll again!`, COLORS[pi]);
                         updateTurnUI();
                         if (state.playerTypes[state.currentPlayer] === 'computer') setTimeout(doComputerTurn, 1100);
                     } else {

@@ -10,6 +10,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+
 import com.example.demo.config.JwtUtil;
 
 @Controller
@@ -30,7 +33,8 @@ public class AuthController {
 
 
     @org.springframework.web.bind.annotation.ResponseBody
-    @GetMapping("/debug-users")
+    
+    @RequestMapping(value = "/debug-users", method = RequestMethod.GET)
     public String debugUsers() {
         StringBuilder sb = new StringBuilder();
         for (User u : userRepository.findAll()) {
@@ -39,13 +43,13 @@ public class AuthController {
         return sb.toString();
     }
 
-    @GetMapping("/register")
+    @RequestMapping(value = "/register", method = RequestMethod.GET)
     public String showRegistrationForm(Model model) {
         model.addAttribute("user", new User());
         return "register";
     }
 
-    @PostMapping("/register")
+    @RequestMapping(value = "/register", method = RequestMethod.POST)
     public String registerUser(@ModelAttribute("user") User user, Model model) {
         if (userRepository.findByUsername(user.getUsername()) != null) {
             return "redirect:/register?error=duplicate";
@@ -60,12 +64,12 @@ public class AuthController {
         return "redirect:/home";
     }
 
-    @GetMapping("/login")
+    @RequestMapping(value = "/login", method = RequestMethod.GET)
     public String showLoginForm() {
         return "login";
     }
 
-    @PostMapping("/login")
+    @RequestMapping(value = "/login", method = RequestMethod.POST)
     public String loginUser(@org.springframework.web.bind.annotation.RequestParam String username,
             @org.springframework.web.bind.annotation.RequestParam String password,
             jakarta.servlet.http.HttpSession session,
@@ -98,7 +102,7 @@ public class AuthController {
         }
     }
 
-    @GetMapping("/logout")
+    @RequestMapping(value = "/logout", method = RequestMethod.GET)
     public String logout(
             jakarta.servlet.http.HttpSession session,
             jakarta.servlet.http.HttpServletRequest request,
