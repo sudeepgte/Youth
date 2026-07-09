@@ -107,14 +107,22 @@
 
 <div class="register-container">
     <h2>Create Account</h2>
-    <div th:if="${param.error == 'duplicate'}" style="background-color: #fce8e8; border: 1px solid #f5c2c2; color: #a94442; padding: 10px; border-radius: 4px; margin-bottom: 1rem; text-align: center;">
+    <div id="js-error" style="display: none; background-color: #fce8e8; border: 1px solid #f5c2c2; color: #a94442; padding: 10px; border-radius: 4px; margin-bottom: 1rem; text-align: center; font-size: 14px;"></div>
+    
+    <div th:if="${param.error != null and param.error[0] == 'duplicate'}" style="background-color: #fce8e8; border: 1px solid #f5c2c2; color: #a94442; padding: 10px; border-radius: 4px; margin-bottom: 1rem; text-align: center; font-size: 14px;">
         Username already exists.
     </div>
-    <div th:if="${param.error == 'duplicate_email'}" style="background-color: #fce8e8; border: 1px solid #f5c2c2; color: #a94442; padding: 10px; border-radius: 4px; margin-bottom: 1rem; text-align: center;">
+    <div th:if="${param.error != null and param.error[0] == 'duplicate_email'}" style="background-color: #fce8e8; border: 1px solid #f5c2c2; color: #a94442; padding: 10px; border-radius: 4px; margin-bottom: 1rem; text-align: center; font-size: 14px;">
         Email address already in use.
     </div>
-    <div th:if="${param.error == 'future_dob'}" style="background-color: #fce8e8; border: 1px solid #f5c2c2; color: #a94442; padding: 10px; border-radius: 4px; margin-bottom: 1rem; text-align: center;">
+    <div th:if="${param.error != null and param.error[0] == 'future_dob'}" style="background-color: #fce8e8; border: 1px solid #f5c2c2; color: #a94442; padding: 10px; border-radius: 4px; margin-bottom: 1rem; text-align: center; font-size: 14px;">
         Date of Birth cannot be in the future.
+    </div>
+    <div th:if="${param.error != null and param.error[0] == 'weak_password'}" style="background-color: #fce8e8; border: 1px solid #f5c2c2; color: #a94442; padding: 10px; border-radius: 4px; margin-bottom: 1rem; text-align: center; font-size: 14px;">
+        Password must be strong (at least 8 characters, one uppercase, one lowercase, one number, and one special character).
+    </div>
+    <div th:if="${param.error != null and param.error[0] == 'invalid_email_domain'}" style="background-color: #fce8e8; border: 1px solid #f5c2c2; color: #a94442; padding: 10px; border-radius: 4px; margin-bottom: 1rem; text-align: center; font-size: 14px;">
+        Please enter a valid email address ending with .com.
     </div>
     <form th:action="@{/register}" th:object="${user}" method="post" onsubmit="return validateRegistrationForm(this)">
         <div class="form-group">
@@ -164,24 +172,33 @@
 </div>
 
 <script>
+    function showError(message) {
+        const errorDiv = document.getElementById('js-error');
+        errorDiv.textContent = message;
+        errorDiv.style.display = 'block';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
     function validateRegistrationForm(form) {
+        document.getElementById('js-error').style.display = 'none';
+        
         // 1. Username Validation: Alphanumeric only, at least one letter or number
         const username = form.username.value.trim();
         const usernameRegex = /^[a-zA-Z0-9_-]+$/;
         if (!usernameRegex.test(username)) {
-            alert("Username can only contain letters, numbers, underscores, and hyphens.");
+            showError("Username can only contain letters, numbers, underscores, and hyphens.");
             return false;
         }
         const hasAlphaNum = /[a-zA-Z0-9]/.test(username);
         if (!hasAlphaNum) {
-            alert("Username must contain at least one letter or number.");
+            showError("Username must contain at least one letter or number.");
             return false;
         }
 
         // 2. DOB Validation: Min 13, Max 100 years old
         const dobValue = form.dob.value;
         if (!dobValue) {
-            alert("Please enter your Date of Birth.");
+            showError("Please enter your Date of Birth.");
             return false;
         }
         const dobDate = new Date(dobValue);
@@ -192,18 +209,34 @@
             age--;
         }
         if (age < 13) {
-            alert("You must be at least 13 years old to register on this youth platform.");
+            showError("You must be at least 13 years old to register on this youth platform.");
             return false;
         }
         if (age > 100) {
-            alert("Please enter a realistic Date of Birth (maximum age 100).");
+            showError("Please enter a realistic Date of Birth (maximum age 100).");
             return false;
         }
 
         // 3. College Name Validation: Must contain at least one letter
         const college = form.collegeName.value.trim();
         if (!/[a-zA-Z]/.test(college)) {
-            alert("College/Institution Name must contain at least one letter.");
+            showError("College/Institution Name must contain at least one letter.");
+            return false;
+        }
+
+        // 4. Password Validation: Strong password
+        const password = form.password.value;
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        if (!passwordRegex.test(password)) {
+            showError("Password must be strong (at least 8 characters, one uppercase, one lowercase, one number, and one special character).");
+            return false;
+        }
+
+        // 5. Email Validation: Must end with .com
+        const email = form.email.value.trim();
+        const emailRegex = /^[^\s@]+@[^\s@]+\.com$/i;
+        if (!emailRegex.test(email)) {
+            showError("Please enter a valid email address ending with .com.");
             return false;
         }
 

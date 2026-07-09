@@ -60,6 +60,13 @@ public class AuthController {
         if (user.getDob() != null && user.getDob().isAfter(java.time.LocalDate.now())) {
             return "redirect:/register?error=future_dob";
         }
+        String pwd = user.getPassword();
+        if (pwd == null || pwd.length() < 8 || !pwd.matches(".*[A-Z].*") || !pwd.matches(".*[a-z].*") || !pwd.matches(".*\\d.*") || !pwd.matches(".*[@$!%*?&].*")) {
+            return "redirect:/register?error=weak_password";
+        }
+        if (user.getEmail() == null || !user.getEmail().toLowerCase().endsWith(".com")) {
+            return "redirect:/register?error=invalid_email_domain";
+        }
         userRepository.save(user);
         return "redirect:/home";
     }
