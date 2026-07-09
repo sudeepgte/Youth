@@ -29,9 +29,15 @@
         
         <div id="waitArea" style="display: none; text-align: center;">
             <div style="background: #1e293b; padding: 30px; border-radius: 20px; border: 1px solid #334155;">
-                <h2 style="color: #fbcc15;">WAITING FOR OPPONENT</h2>
+                <h2 style="color: #fbcc15;">GAME LOBBY</h2>
                 <div id="roomCode" style="font-size: 48px; letter-spacing: 12px; margin: 20px 0; color: #fbcc15; font-family: monospace;"></div>
-                <p style="color: #94a3b8;">Share this code to start the battle.</p>
+                <div style="margin: 20px 0; background: rgba(0,0,0,0.2); padding: 20px; border-radius: 12px;">
+                    <div style="font-size: 18px; font-weight: bold; margin-bottom: 10px;">Players Joined:</div>
+                    <div id="lobbyP1" style="font-size: 16px; color: #fbcc15; margin-bottom: 5px;">Player 1: ...</div>
+                    <div id="lobbyP2" style="font-size: 16px; color: #fbcc15;">Player 2: Waiting...</div>
+                </div>
+                <p style="color: #94a3b8; margin-bottom: 20px;">Share this code to invite opponent.</p>
+                <button id="startBattleBtn" class="choice-btn" onclick="startBattle()" style="display: none; width: 100%; height: auto; max-width: 300px; margin: 0 auto; background: #fbcc15; color: #000; padding: 15px; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; text-transform: uppercase;">START BATTLE</button>
             </div>
         </div>
 
@@ -118,9 +124,19 @@
         function update(s) {
             document.getElementById('status').innerText = "ARENA ACTIVE";
             if (s.status === 'waiting') {
+                document.getElementById('status').innerText = "GAME LOBBY";
                 document.getElementById('waitArea').style.display = 'block';
                 document.getElementById('roomCode').innerText = rId;
                 document.getElementById('gameArea').style.display = 'none';
+                
+                document.getElementById('lobbyP1').innerText = "Player 1: " + (s.player1 || "Waiting...");
+                document.getElementById('lobbyP2').innerText = "Player 2: " + (s.player2 || "Waiting...");
+                
+                if (pNum === 1 && s.player2) {
+                    document.getElementById('startBattleBtn').style.display = 'block';
+                } else {
+                    document.getElementById('startBattleBtn').style.display = 'none';
+                }
             } else {
                 document.getElementById('waitArea').style.display = 'none';
                 document.getElementById('gameArea').style.display = 'block';
@@ -158,6 +174,7 @@
 
         function makeChoice(c) { stomp.send("/app/rps/" + rId + "/choice", {}, JSON.stringify({ playerNum: pNum, choice: c })); }
         function nextRound() { stomp.send("/app/rps/" + rId + "/nextRound", {}, "{}"); }
+        function startBattle() { stomp.send("/app/rps/" + rId + "/start", {}, "{}"); }
 
         init();
         // ]]>

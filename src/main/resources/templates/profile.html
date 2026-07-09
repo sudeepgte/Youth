@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${user.username + ' â€¢ Zentrix'}">Profile</title>
+    <title th:text="${user.username + ' &bull; Zentrix'}">Profile</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap"
@@ -648,7 +648,7 @@
                 <div class="stats-row">
                     <div class="stat" style="cursor:pointer;"
                         onclick="switchTab('grid', document.querySelector('.tab-btn'))">
-                        <span class="stat-num" th:text="${#lists.size(posts)}">0</span>
+                        <span class="stat-num" th:text="${postsCount}">0</span>
                         <span class="stat-label">Posts</span>
                     </div>
                     <div class="stat" style="cursor:pointer;" onclick="openFollowList('followers')">
@@ -698,6 +698,14 @@
                 </div>
             </div>
 
+    <!-- Private Account Lock -->
+    <div th:if="${isPrivateAndNotFollowing}" class="empty-state" style="margin-top: 50px;">
+        <i class="fas fa-lock" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 15px;"></i>
+        <h3>This Account is Private</h3>
+        <p>Follow to see their photos and videos.</p>
+    </div>
+
+    <th:block th:if="${!isPrivateAndNotFollowing}">
     <!-- Tabs -->
     <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('grid',this)"><i class="fas fa-th"></i> Posts</button>
@@ -904,6 +912,7 @@
         </div>
     </div>
 
+    </th:block>
     </main>
     </div>
 
@@ -971,6 +980,13 @@
                         <label>College / Institution</label>
                         <input type="text" name="collegeName" th:value="${user.collegeName}" class="form-input" maxlength="255"
                             placeholder="e.g. IIT Bombay">
+                    </div>
+                    <div class="form-group">
+                        <label>Account Privacy</label>
+                        <select name="privateAccount" class="form-input">
+                            <option value="false" th:selected="${!user.privateAccount}">Public</option>
+                            <option value="true" th:selected="${user.privateAccount}">Private</option>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label>About Me</label>
@@ -1715,7 +1731,7 @@
                 usernameSpan.textContent = story.username || 'Unknown';
             }
             if (timeSpan) {
-                timeSpan.textContent = 'â€¢ ' + formatRelativeTime(story.createdAt);
+                timeSpan.textContent = '&bull; ' + formatRelativeTime(story.createdAt);
             }
 
             // Show/hide bottom reply panel or viewers panel based on ownership
@@ -1948,7 +1964,7 @@
             <div id="storyViewerHeader" style="position: absolute; top: 28px; left: 16px; display: flex; align-items: center; gap: 10px; z-index: 110; color: white;">
                 <img id="storyViewerAvatar" src="" style="width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid #fff; object-fit: cover; box-shadow: 0 2px 8px rgba(0,0,0,0.5);">
                 <span id="storyViewerUsername" style="font-weight: 700; font-size: 13.5px; text-shadow: 0 2px 5px rgba(0,0,0,0.95); font-family: 'DM Sans', sans-serif;">Username</span>
-                <span id="storyViewerTime" style="font-size: 11px; color: rgba(255,255,255,0.7); text-shadow: 0 2px 5px rgba(0,0,0,0.95); font-family: 'DM Sans', sans-serif;">â€¢ 2h ago</span>
+                <span id="storyViewerTime" style="font-size: 11px; color: rgba(255,255,255,0.7); text-shadow: 0 2px 5px rgba(0,0,0,0.95); font-family: 'DM Sans', sans-serif;">&bull; 2h ago</span>
             </div>
 
             <button

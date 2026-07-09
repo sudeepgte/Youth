@@ -51,7 +51,7 @@ public class ChessWebSocketController {
             color = "b";
         } else if (room.blackPlayer == null) {
             room.blackPlayer = playerName;
-            room.status = "active";
+            // keep status as waiting
             color = "b";
         } else {
             return Map.of("error", "Room is full");
@@ -63,6 +63,17 @@ public class ChessWebSocketController {
         Map<String, Object> resp = new HashMap<>(room.toStateMap());
         resp.put("color", color);
         return resp;
+    }
+
+    // WebSocket: Start Game
+    @MessageMapping("/chess/{roomId}/start")
+    public void startGame(@DestinationVariable String roomId) {
+        ChessRoom room = rooms.get(roomId);
+        if (room == null) return;
+        if (room.whitePlayer != null && room.blackPlayer != null) {
+            room.status = "active";
+            messagingTemplate.convertAndSend("/topic/chess/" + roomId, (Object) room.toStateMap());
+        }
     }
 
     // WebSocket: Make Move

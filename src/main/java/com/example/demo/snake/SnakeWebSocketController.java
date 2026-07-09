@@ -56,14 +56,22 @@ public class SnakeWebSocketController {
         int playerIdx = room.players.size();
         room.players.add(playerName);
         
-        if (room.players.size() == room.maxPlayers) {
-            room.status = "active";
-        }
+        // keep status as waiting
 
         messagingTemplate.convertAndSend("/topic/snake/" + roomId, (Object) room.toStateMap());
         Map<String, Object> resp = new HashMap<>(room.toStateMap());
         resp.put("playerIndex", playerIdx);
         return resp;
+    }
+
+    @MessageMapping("/snake/{roomId}/start")
+    public void startGame(@DestinationVariable String roomId) {
+        SnakeRoom room = rooms.get(roomId);
+        if (room == null) return;
+        if (room.players.size() > 1) {
+            room.status = "active";
+            messagingTemplate.convertAndSend("/topic/snake/" + roomId, (Object) room.toStateMap());
+        }
     }
 
     // WebSocket: Roll Dice (Sends roll value, then updates state)
