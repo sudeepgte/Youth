@@ -153,10 +153,17 @@ public class EventController {
                 .filter(e -> e.getVotingEndDate() == null || e.getVotingEndDate().isAfter(LocalDateTime.now()))
                 .collect(Collectors.toList());
 
+        LocalDateTime eightDaysAgo = LocalDateTime.now().minusDays(8);
         List<Event> regularEvents = allItems.stream()
                 .filter(e -> {
                     String status = e.getStatus();
-                    return status == null || (!"VOTING".equals(status) && !"REJECTED".equals(status));
+                    if ("VOTING".equals(status) || "REJECTED".equals(status)) return false;
+                    
+                    if (e.getDateTime() != null && e.getDateTime().isBefore(eightDaysAgo)) {
+                        return false;
+                    }
+                    
+                    return true;
                 })
                 .collect(Collectors.toList());
 

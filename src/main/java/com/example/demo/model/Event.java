@@ -25,6 +25,9 @@ public class Event {
     private String category;
     private String organizer;
     private LocalDateTime createdAt = LocalDateTime.now();
+    
+    @Column(name = "deleted", nullable = false, columnDefinition = "boolean default false")
+    private boolean deleted = false;
 
     // New fields for admin create event flow
     private String status = "UPCOMING";  // UPCOMING, ONGOING, COMPLETED
@@ -240,4 +243,7 @@ public class Event {
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public boolean isDeleted() { return deleted; }
+    public void setDeleted(boolean deleted) { this.deleted = deleted; }
 }

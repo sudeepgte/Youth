@@ -217,19 +217,26 @@
                 </div>
 
                 <div class="events-cards">
-                    <!-- Standard Event Card -->
-                    <a th:each="event : ${events}" class="event-card hover-lift" th:href="@{'/events/' + ${event.id}}">
+                    <a th:each="event : ${events}" class="event-card hover-lift" 
+                       th:href="${event.dateTime != null and event.dateTime.isBefore(#temporals.createNow())} ? 'javascript:void(0)' : @{'/events/' + ${event.id}}"
+                       th:style="${event.dateTime != null and event.dateTime.isBefore(#temporals.createNow())} ? 'opacity: 0.65; cursor: not-allowed;' : ''">
                         <div class="event-card-media">
                             <img th:src="${event.imageUrl}" th:alt="${event.title}" onerror="this.src='https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=2070&auto=format&fit=crop'">
                             <div class="event-card-top">
                                 <span class="pill event-pill" th:text="${event.category}">Category</span>
+                            </div>
+                            <div th:if="${event.status == 'UPCOMING' and event.dateTime != null}"
+                                 class="countdown-timer pill event-pill"
+                                 style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.75); color: #fff; font-weight: bold; padding: 4px 10px; border-radius: 12px; font-size: 11px; z-index: 2; border: 1px solid rgba(255,255,255,0.2);"
+                                 th:data-datetime="${event.dateTime}">
+                                <i class="fas fa-clock"></i> <span>Calculating...</span>
                             </div>
                             <div class="event-card-bottom">
                                 <span class="pill event-pill event-pill-price" th:text="${event.price}">Free</span>
                             </div>
                         </div>
                         <div class="event-card-body">
-                            <div class="event-date" th:text="${event.dateTime != null ? #temporals.format(event.dateTime, 'EEE, MMM dd Â· hh:mm a') : 'Date TBA'}">Date</div>
+                            <div class="event-date" th:text="${event.dateTime != null ? #temporals.format(event.dateTime, 'EEE, MMM dd &middot; hh:mm a') : 'Date TBA'}">Date</div>
                             <div class="event-title" th:text="${event.title}">Event Title</div>
                             <div class="event-venue">
                                 <i class="fas fa-map-marker-alt"></i>
@@ -237,7 +244,12 @@
                             </div>
                             <div class="event-card-footer">
                                 <span class="attendees"><i class="fas fa-users"></i> 24+ Going</span>
-                                <span class="btn btn-primary" style="padding: 8px 14px; font-size: 13px;"><i class="fas fa-ticket"></i> View</span>
+                                <th:block th:if="${event.dateTime != null and event.dateTime.isBefore(#temporals.createNow())}">
+                                    <span class="btn btn-secondary" style="padding: 8px 14px; font-size: 13px; background-color: #6c757d; border: none; color: white;"><i class="fas fa-ban"></i> Event Over</span>
+                                </th:block>
+                                <th:block th:unless="${event.dateTime != null and event.dateTime.isBefore(#temporals.createNow())}">
+                                    <span class="btn btn-primary" style="padding: 8px 14px; font-size: 13px;"><i class="fas fa-ticket"></i> View</span>
+                                </th:block>
                             </div>
                         </div>
                     </a>
@@ -286,6 +298,33 @@
             if (clearBtn)    clearBtn.classList.remove('visible');
             if (searchInput) searchInput.focus();
         }
+
+        // Countdown Timer Logic
+        function updateCountdowns() {
+            const timers = document.querySelectorAll('.countdown-timer');
+            const now = new Date().getTime();
+            timers.forEach(timer => {
+                const eventTimeStr = timer.getAttribute('data-datetime');
+                if (eventTimeStr) {
+                    const eventTime = new Date(eventTimeStr).getTime();
+                    const distance = eventTime - now;
+                    if (distance < 0) {
+                        timer.innerHTML = '<i class="fas fa-flag-checkered"></i> <span>Started</span>';
+                    } else {
+                        const d = Math.floor(distance / (1000 * 60 * 60 * 24));
+                        const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                        const s = Math.floor((distance % (1000 * 60)) / 1000);
+                        let text = '';
+                        if (d > 0) text += d + 'd ';
+                        text += h + 'h ' + m + 'm ' + s + 's';
+                        timer.innerHTML = '<i class="fas fa-clock"></i> <span>Starts in: ' + text + '</span>';
+                    }
+                }
+            });
+        }
+        setInterval(updateCountdowns, 1000);
+        updateCountdowns();
     </script>
 
     <div th:replace="~{fragments/modals :: createPostModal}"></div>

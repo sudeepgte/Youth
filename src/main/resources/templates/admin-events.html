@@ -914,6 +914,13 @@
                             th:classappend="${event.status == 'UPCOMING'} ? 'fa-hourglass-start' : (${event.status == 'ONGOING'} ? 'fa-circle' : 'fa-check')"></i>
                         <span th:text="${event.status != null ? event.status : 'UPCOMING'}">UPCOMING</span>
                     </div>
+
+                    <div th:if="${event.status == 'UPCOMING' and event.dateTime != null}"
+                         class="countdown-timer"
+                         style="position: absolute; bottom: 12px; right: 12px; background: rgba(0,0,0,0.75); color: #fff; font-weight: bold; padding: 4px 10px; border-radius: 12px; font-size: 11px; z-index: 2; border: 1px solid rgba(255,255,255,0.2);"
+                         th:data-datetime="${event.dateTime}">
+                        <i class="fas fa-clock"></i> <span>Calculating...</span>
+                    </div>
                 </div>
 
                 <div class="event-body">
@@ -1052,6 +1059,33 @@
         document.querySelectorAll('.toast').forEach(t => {
             setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.5s'; }, 4000);
         });
+
+        // Countdown Timer Logic
+        function updateCountdowns() {
+            const timers = document.querySelectorAll('.countdown-timer');
+            const now = new Date().getTime();
+            timers.forEach(timer => {
+                const eventTimeStr = timer.getAttribute('data-datetime');
+                if (eventTimeStr) {
+                    const eventTime = new Date(eventTimeStr).getTime();
+                    const distance = eventTime - now;
+                    if (distance < 0) {
+                        timer.innerHTML = '<i class="fas fa-flag-checkered"></i> <span>Started</span>';
+                    } else {
+                        const d = Math.floor(distance / (1000 * 60 * 60 * 24));
+                        const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                        const s = Math.floor((distance % (1000 * 60)) / 1000);
+                        let text = '';
+                        if (d > 0) text += d + 'd ';
+                        text += h + 'h ' + m + 'm ' + s + 's';
+                        timer.innerHTML = '<i class="fas fa-clock"></i> <span>Starts in: ' + text + '</span>';
+                    }
+                }
+            });
+        }
+        setInterval(updateCountdowns, 1000);
+        updateCountdowns();
     </script>
 </body>
 
