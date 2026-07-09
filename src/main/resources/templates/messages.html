@@ -2184,6 +2184,7 @@
 
     <script th:inline="javascript">
         window.Zentrix = {
+            contextPath: /*[[@{/}]]*/ '/',
             currentUser: {
                 id: /*[[${currentUser.id}]]*/ 0,
                 username: /*[[${currentUser.username}]]*/ 'Unknown',
@@ -2206,6 +2207,21 @@
 
     <script th:inline="none">
         const currentUser = window.Zentrix.currentUser;
+
+        function resolveUrl(url) {
+            if (!url) return url;
+            if (url.startsWith('http') || url.startsWith('data:')) return url;
+            if (url.startsWith('/')) {
+                const cp = window.Zentrix.contextPath;
+                const base = cp.endsWith('/') ? cp.slice(0, -1) : cp;
+                if (base && url.startsWith(base)) {
+                    return url;
+                }
+                return base + url;
+            }
+            return url;
+        }
+
         let stompClient = null;
         let activeConversationId = null;
         let activeRecipientId = null;
@@ -2419,8 +2435,8 @@
             const stickerGrid = document.getElementById('stickerGrid');
             if (stickerGrid && stickerGrid.children.length === 0) {
                 stickerGrid.innerHTML = STICKERS.map(u => `
-                    <div class="picker-item picker-sticker" onclick="sendSticker('${u}')">
-                        <img src="${u}" alt="sticker">
+                    <div class="picker-item picker-sticker" onclick="sendSticker('${resolveUrl(u)}')">
+                        <img src="${resolveUrl(u)}" alt="sticker">
                     </div>
                 `).join('');
             }
@@ -2606,7 +2622,7 @@
                         ${c.participants.slice(0, 4).map(p => `<div style="width:50%; height:50%; background:var(--avatar-bg); font-size:10px; display:flex; align-items:center; justify-content:center; border-radius:2px;">${p.username.charAt(0)}</div>`).join('')}
                     </div>`;
                 } else if (partner && partner.profilePicture) {
-                    avatarHtml = `<img src="${partner.profilePicture}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+                    avatarHtml = `<img src="${resolveUrl(partner.profilePicture)}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
                 } else {
                     avatarHtml = convName.charAt(0).toUpperCase();
                 }
@@ -2721,7 +2737,7 @@
                         ${conv.participants.slice(0, 4).map(p => `<div style="width:50%; height:50%; background:var(--avatar-bg); font-size:10px; display:flex; align-items:center; justify-content:center; border-radius:2px;">${p.username.charAt(0)}</div>`).join('')}
                     </div>`;
                 } else if (partner && partner.profilePicture) {
-                    avatarEl.innerHTML = `<img src="${partner.profilePicture}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+                    avatarEl.innerHTML = `<img src="${resolveUrl(partner.profilePicture)}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
                 } else {
                     avatarEl.innerText = convName.charAt(0).toUpperCase();
                 }
@@ -2981,18 +2997,18 @@
 
                 if (lowerUrl.includes('/stickers/')) {
                     bubble.classList.add('sticker');
-                    mediaDiv.innerHTML = `<img src="${msg.mediaUrl}" alt="sticker">`;
+                    mediaDiv.innerHTML = `<img src="${resolveUrl(msg.mediaUrl)}" alt="sticker">`;
                 } else
                 if (lowerUrl.endsWith('.mp4') || lowerUrl.endsWith('.mov')) {
                     // Standard Video
-                    mediaDiv.innerHTML = `<video src="${msg.mediaUrl}" controls></video>`;
+                    mediaDiv.innerHTML = `<video src="${resolveUrl(msg.mediaUrl)}" controls></video>`;
                 } else if (lowerUrl.includes('voice-message') || lowerUrl.endsWith('.webm') || lowerUrl.endsWith('.mp3') || lowerUrl.endsWith('.wav') || lowerUrl.endsWith('.m4a') || lowerUrl.endsWith('.ogg') || lowerUrl.endsWith('.aac')) {
                     // Voice Message
                     bubble.classList.remove('media-only');
                     const voiceContainer = document.createElement('div');
                     voiceContainer.className = 'voice-msg-bubble';
                     voiceContainer.innerHTML = `
-                        <div class="voice-play-btn" onclick="playVoice('${msg.mediaUrl}', this)">
+                        <div class="voice-play-btn" onclick="playVoice('${resolveUrl(msg.mediaUrl)}', this)">
                             <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M8 5.14v14l11-7-11-7z"></path></svg>
                         </div>
                         <div class="voice-wave">
@@ -3003,7 +3019,7 @@
                     mediaDiv.appendChild(voiceContainer);
                 } else {
                     // Image
-                    mediaDiv.innerHTML = `<img src="${msg.mediaUrl}" style="cursor:pointer;" onclick="window.open('${msg.mediaUrl}')">`;
+                    mediaDiv.innerHTML = `<img src="${resolveUrl(msg.mediaUrl)}" style="cursor:pointer;" onclick="window.open('${resolveUrl(msg.mediaUrl)}')">`;
                 }
                 bubble.appendChild(mediaDiv);
             }
@@ -3142,10 +3158,11 @@
             }
             const isGroup = conv && conv.type === 'GROUP';
 
+            const isDummyConv = activeConversationId && String(activeConversationId).startsWith('dummy_');
             const payload = {
                 senderId: currentUser.id,
                 recipientId: isGroup ? activeConversationId : activeRecipientId,
-                conversationId: activeConversationId,
+                conversationId: isDummyConv ? null : activeConversationId,
                 content: text,
                 mediaUrl: null,
                 parentId: replyingToId,
@@ -3176,7 +3193,7 @@
 
         function onNewMessage(msg) {
             // If this is the first message in a new conversation, update the ID
-            if (!activeConversationId && msg.conversation.type !== 'GROUP') {
+            if ((!activeConversationId || String(activeConversationId).startsWith('dummy_')) && msg.conversation.type !== 'GROUP') {
                 const isMatch = msg.conversation.participants.some(p => String(p.id) === String(activeRecipientId));
                 if (isMatch) {
                     activeConversationId = msg.conversation.id;
@@ -3409,7 +3426,7 @@
                 item.onclick = () => selectUserForChat(u);
 
                 const avatarHtml = u.profilePicture ?
-                    `<img src="${u.profilePicture}" style="width:100%; height:100%; object-fit:cover;">` :
+                    `<img src="${resolveUrl(u.profilePicture)}" style="width:100%; height:100%; object-fit:cover;">` :
                     u.username.charAt(0).toUpperCase();
 
                 item.innerHTML = `
@@ -3444,14 +3461,16 @@
                 } else {
                     // Initialize a "pending" conversation object
                     const dummyConv = {
-                        id: null,
+                        id: 'dummy_' + partner.id,
                         participants: [currentUser, partner],
                         type: 'DIRECT',
                         status: 'NEW', // Allows typing
                         creator: currentUser,
-                        lastMessage: null,
-                        lastMessageTime: null
+                        lastMessage: 'New Chat',
+                        lastMessageTime: new Date().toISOString()
                     };
+                    conversationsData.unshift(dummyConv);
+                    renderConversationList(conversationsData);
                     selectConversation(dummyConv, partner);
                     document.getElementById('messagesArea').innerHTML = '';
                     document.getElementById('seenIndicator').style.display = 'none';
@@ -3604,13 +3623,13 @@
 
                 if (m.mediaUrl.toLowerCase().endsWith('.mp4') || m.mediaUrl.toLowerCase().endsWith('.webm')) {
                     item.innerHTML = `
-                        <video src="${m.mediaUrl}"></video>
+                        <video src="${resolveUrl(m.mediaUrl)}"></video>
                         <div class="video-overlay">
                             <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
                         </div>
                     `;
                 } else {
-                    item.innerHTML = `<img src="${m.mediaUrl}">`;
+                    item.innerHTML = `<img src="${resolveUrl(m.mediaUrl)}">`;
                 }
                 grid.appendChild(item);
             });

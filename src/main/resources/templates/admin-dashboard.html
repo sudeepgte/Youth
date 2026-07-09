@@ -405,14 +405,14 @@
                 </div>
             </div>
             <!-- Battle Stats -->
-            <div class="stat-card" style="cursor:pointer;" onclick="document.getElementById('battles-section').scrollIntoView({behavior: 'smooth'})">
+            <div class="stat-card" style="cursor:pointer;" onclick="location.href='/admin/battles'">
                 <div class="stat-icon" style="background: rgba(139, 92, 246, 0.15);"><i class="fas fa-fire" style="color: #8b5cf6;"></i></div>
                 <div>
                     <h3 style="font-size: 24px; color: #fff;" th:text="${totalBattles}">0</h3>
                     <span style="color: #94a3b8; font-size: 14px;">Total Battles</span>
                 </div>
             </div>
-            <div class="stat-card" style="cursor:pointer;" onclick="document.getElementById('battles-section').scrollIntoView({behavior: 'smooth'})">
+            <div class="stat-card" style="cursor:pointer;" onclick="location.href='/admin/battles'">
                 <div class="stat-icon" style="background: rgba(16, 185, 129, 0.15);"><i class="fas fa-play" style="color: #10b981;"></i></div>
                 <div>
                     <h3 style="font-size: 24px; color: #fff;" th:text="${runningBattles}">0</h3>

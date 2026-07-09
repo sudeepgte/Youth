@@ -17,43 +17,44 @@
                     <span>Join the Spring Tech Fest 2026 — Registrations now open!</span>
                 </div>
                 <div class="top-links">
-                    <a href="/support">Support</a>
-                    <a href="/home#faq">Help Center</a>
+                    <a th:href="@{/support}">Support</a>
+                    <a th:href="@{/faq}">Help Center</a>
                 </div>
             </div>
         </div>
         <nav class="navbar" th:classappend="(${active} != 'home' and ${active} != 'games' and ${active} != 'about' and ${active} != 'support' and ${active} != 'events' and ${active} != 'event-details' ? ' has-topbar' : '') + (${active} == 'home' ? ' navbar-home' : '')">
             <div class="nav-shell navbar-inner" style="display: flex; align-items: center; justify-content: space-between; width: 100%; height: 100%; padding: 0;">
                 
-                <a class="logo" href="/home" style="font-size: 22px; font-weight: 900; color: #0f172a; text-decoration: none; font-family: 'Outfit', sans-serif; letter-spacing: -0.5px; z-index: 1010; display: flex; align-items: center; gap: 6px;">
+                <a class="logo" th:href="@{/home}" style="font-size: 22px; font-weight: 900; color: #0f172a; text-decoration: none; font-family: 'Outfit', sans-serif; letter-spacing: -0.5px; z-index: 1010; display: flex; align-items: center; gap: 6px;">
                     <i class="fa-solid fa-compass" style="color: var(--primary);"></i> Zentrix
                 </a>
 
                 <!-- Games/Events page: minimal header (Dashboard button only) -->
                 <th:block th:if="${active} == 'games' or ${active} == 'events' or ${active} == 'event-details'">
                     <div class="nav-links" style="justify-content:flex-start;">
-                        <a href="/dashboard" class="btn btn-outline">Dashboard</a>
+                        <a th:href="@{/dashboard}" class="btn btn-outline">Dashboard</a>
                     </div>
                 </th:block>
 
                 <!-- All other public pages -->
                 <th:block th:if="${active} != 'games' and ${active} != 'events' and ${active} != 'event-details'">
                     <div class="nav-links">
-                        <a href="/home" th:classappend="${active} == 'home' ? ' active' : ''">Home</a>
-                        <a href="/home#featured-events">Events</a>
-                        <a href="/games" th:if="${active} != 'home'" th:classappend="${active} == 'games' ? ' active' : ''">Games</a>
-                        <a href="/home#about">About Us</a>
-                        <a href="/home#contact">Contact</a>
-                        <a href="/home#faq">FAQs</a>
+                        <a th:href="@{/home}" th:classappend="${active} == 'home' ? ' active' : ''">Home</a>
+                        <a th:href="@{/featured-events}">Events</a>
+                        <a th:href="@{/games}" th:if="${active} != 'home'" th:classappend="${active} == 'games' ? ' active' : ''">Games</a>
+                        <a th:href="@{/about-us}">About Us</a>
+                <a th:href="@{/careers}" style="margin-bottom: 10px; font-size: 14px; color: var(--text-secondary);">Careers</a>
+                        <a th:href="@{/home} + '#contact'">Contact</a>
+                        <a th:href="@{/faq}">FAQs</a>
                     </div>
                     <div class="nav-actions">
                         <th:block th:if="${session.user == null}">
-                            <a href="/login" class="btn btn-outline">Login</a>
-                            <a href="/register" class="btn btn-primary">Register</a>
+                            <a th:href="@{/login}" class="btn btn-outline">Login</a>
+                            <a th:href="@{/register}" class="btn btn-primary">Register</a>
                         </th:block>
                         <th:block th:if="${session.user != null}">
-                            <a href="/dashboard" class="btn btn-outline">Dashboard</a>
-                            <a href="/logout" class="btn btn-primary">Logout</a>
+                            <a th:href="@{/dashboard}" class="btn btn-outline">Dashboard</a>
+                            <a th:href="@{/logout}" class="btn btn-primary">Logout</a>
                         </th:block>
                     </div>
 
@@ -64,21 +65,22 @@
                     <!-- Mobile drawer menu -->
                     <div class="mobile-nav-drawer" id="mobileNavDrawer" onclick="event.stopPropagation()">
                         <div class="nav-links">
-                            <a href="/home" onclick="toggleMobileNav()">Home</a>
-                            <a href="/home#featured-events" onclick="toggleMobileNav()">Events</a>
-                            <a href="/games" onclick="toggleMobileNav()">Games</a>
-                            <a href="/home#about" onclick="toggleMobileNav()">About Us</a>
-                            <a href="/home#contact" onclick="toggleMobileNav()">Contact</a>
-                            <a href="/home#faq" onclick="toggleMobileNav()">FAQs</a>
+                            <a th:href="@{/home}" onclick="toggleMobileNav()">Home</a>
+                            <a th:href="@{/featured-events}" onclick="toggleMobileNav()">Events</a>
+                            <a th:href="@{/games}" onclick="toggleMobileNav()">Games</a>
+                            <a th:href="@{/about-us}" onclick="toggleMobileNav()">About Us</a>
+                <a th:href="@{/careers}" style="margin-bottom: 10px; font-size: 14px; color: var(--text-secondary);">Careers</a>
+                            <a th:href="@{/home} + '#contact'" onclick="toggleMobileNav()">Contact</a>
+                            <a th:href="@{/faq}" onclick="toggleMobileNav()">FAQs</a>
                         </div>
                         <div class="nav-actions">
                             <th:block th:if="${session.user == null}">
-                                <a href="/login" class="btn btn-outline" onclick="toggleMobileNav()">Login</a>
-                                <a href="/register" class="btn btn-primary" onclick="toggleMobileNav()">Register</a>
+                                <a th:href="@{/login}" class="btn btn-outline" onclick="toggleMobileNav()">Login</a>
+                                <a th:href="@{/register}" class="btn btn-primary" onclick="toggleMobileNav()">Register</a>
                             </th:block>
                             <th:block th:if="${session.user != null}">
-                                <a href="/dashboard" class="btn btn-outline" onclick="toggleMobileNav()">Dashboard</a>
-                                <a href="/logout" class="btn btn-primary" onclick="toggleMobileNav()">Logout</a>
+                                <a th:href="@{/dashboard}" class="btn btn-outline" onclick="toggleMobileNav()">Dashboard</a>
+                                <a th:href="@{/logout}" class="btn btn-primary" onclick="toggleMobileNav()">Logout</a>
                             </th:block>
                         </div>
                     </div>
@@ -110,6 +112,7 @@
             <div class="nav-links">
                 <a th:href="@{/home}"><i class="fas fa-house"></i> Home</a>
                 <a th:href="@{/music(auth=${auth})}" th:classappend="${active} == 'music' ? ' active' : ''"><i class="fas fa-music"></i> Music</a>
+                <a th:href="@{/wallet(auth=${auth})}" th:classappend="${active} == 'wallet' ? ' active' : ''"><i class="fas fa-wallet"></i> Wallet</a>
                 <a th:href="@{/music/rooms(auth=${auth})}" th:classappend="${active} == 'rooms' ? ' active' : ''"><i class="fas fa-users"></i> Rooms</a>
                 <a th:href="@{/music/leaderboard(auth=${auth})}" th:classappend="${active} == 'leaderboard' ? ' active' : ''"><i class="fas fa-trophy"></i> Leaderboard</a>
             </div>
@@ -117,32 +120,32 @@
                 <a href="javascript:void(0)" onclick="GameRewards.showHistory()" class="btn btn-outline" style="gap:8px;">
                     <i class="fas fa-coins" style="color: #f59e0b;"></i> <span th:text="${coins}">0</span>
                 </a>
-                <a href="/logout" class="btn btn-primary">Logout</a>
+                <a th:href="@{/logout}" class="btn btn-primary">Logout</a>
             </div>
         </div>
     </header>
 
     <header th:fragment="adminNavbar(active)" class="admin-header">
         <nav class="navbar" style="background: rgba(255, 255, 255, 0.85) !important; border-bottom: 1px solid rgba(255, 255, 255, 0.5) !important; backdrop-filter: blur(20px); position: sticky; top: 0; z-index: 1000;">
-            <a class="logo" href="/admin" style="color: #0284c7 !important; font-weight: 900; font-size: 1.3rem; text-decoration: none;">Zentrix<span style="color: #0f172a !important; font-weight: 400; font-size: 0.9rem; margin-left: 4px;">Admin</span></a>
+            <a class="logo" th:href="@{/admin}" style="color: #0284c7 !important; font-weight: 900; font-size: 1.3rem; text-decoration: none;">Zentrix<span style="color: #0f172a !important; font-weight: 400; font-size: 0.9rem; margin-left: 4px;">Admin</span></a>
             
             <div class="nav-links">
-                <a href="/events/admin/manage" th:classappend="${active} == 'manage' ? ' active' : ''" style="color: #334155 !important; text-decoration: none; font-size: 14px;">
+                <a th:href="@{/events/admin/manage}" th:classappend="${active} == 'manage' ? ' active' : ''" style="color: #334155 !important; text-decoration: none; font-size: 14px;">
                     <i class="fas fa-calendar-alt"></i> Manage Events
                 </a>
-                <a href="/admin/music" th:classappend="${active} == 'music' ? ' active' : ''" style="color: #334155 !important; text-decoration: none; font-size: 14px;">
+                <a th:href="@{/admin/music}" th:classappend="${active} == 'music' ? ' active' : ''" style="color: #334155 !important; text-decoration: none; font-size: 14px;">
                     <i class="fas fa-music"></i> Music
                 </a>
-                <a href="/events/admin/create" th:classappend="${active} == 'create' ? ' active' : ''" style="color: #334155 !important; text-decoration: none; font-size: 14px;">
+                <a th:href="@{/events/admin/create}" th:classappend="${active} == 'create' ? ' active' : ''" style="color: #334155 !important; text-decoration: none; font-size: 14px;">
                     <i class="fas fa-plus"></i> Create
                 </a>
             </div>
 
             <div class="nav-actions">
-                <a href="/dashboard" class="btn btn-outline" style="border: 1px solid rgba(2, 132, 199, 0.4); color: #0284c7 !important; border-radius: 10px; padding: 8px 16px; text-decoration: none; font-size: 13px; font-weight: 600;">
+                <a th:href="@{/dashboard}" class="btn btn-outline" style="border: 1px solid rgba(2, 132, 199, 0.4); color: #0284c7 !important; border-radius: 10px; padding: 8px 16px; text-decoration: none; font-size: 13px; font-weight: 600;">
                     <i class="fas fa-arrow-left"></i> App
                 </a>
-                <a href="/logout" class="btn btn-primary" style="background: linear-gradient(135deg, #f84464, #ff6b9d); color: #fff !important; border-radius: 10px; padding: 8px 18px; text-decoration: none; font-size: 13px; font-weight: 700;">Logout</a>
+                <a th:href="@{/logout}" class="btn btn-primary" style="background: linear-gradient(135deg, #f84464, #ff6b9d); color: #fff !important; border-radius: 10px; padding: 8px 18px; text-decoration: none; font-size: 13px; font-weight: 700;">Logout</a>
             </div>
         </nav>
     </header>
@@ -168,19 +171,20 @@
             <!-- Column 2: Quick Links -->
             <div class="footer-col">
                 <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 20px; color: var(--text-primary);">Navigation</h3>
-                <a href="/home#about" style="margin-bottom: 10px; font-size: 14px; color: var(--text-secondary);">About Us</a>
-                <a href="/home#featured-events" style="margin-bottom: 10px; font-size: 14px; color: var(--text-secondary);">Events</a>
-                <a href="/home#organizers" style="margin-bottom: 10px; font-size: 14px; color: var(--text-secondary);">Organizers</a>
-                <a href="/games" style="margin-bottom: 10px; font-size: 14px; color: var(--text-secondary);">Games Arena</a>
+                <a th:href="@{/about-us}" style="margin-bottom: 10px; font-size: 14px; color: var(--text-secondary);">About Us</a>
+                <a th:href="@{/careers}" style="margin-bottom: 10px; font-size: 14px; color: var(--text-secondary);">Careers</a>
+                <a th:href="@{/featured-events}" style="margin-bottom: 10px; font-size: 14px; color: var(--text-secondary);">Events</a>
+                <a th:href="@{/home} + '#organizers'" style="margin-bottom: 10px; font-size: 14px; color: var(--text-secondary);">Organizers</a>
+                <a th:href="@{/games}" style="margin-bottom: 10px; font-size: 14px; color: var(--text-secondary);">Games Arena</a>
             </div>
 
             <!-- Column 3: Help & Support -->
             <div class="footer-col">
                 <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 20px; color: var(--text-primary);">Support</h3>
-                <a href="/home#contact" style="margin-bottom: 10px; font-size: 14px; color: var(--text-secondary);">Contact Us</a>
-                <a href="/home#faq" style="margin-bottom: 10px; font-size: 14px; color: var(--text-secondary);">FAQs</a>
-                <a href="/terms" style="margin-bottom: 10px; font-size: 14px; color: var(--text-secondary);">Terms of Service</a>
-                <a href="/privacy" style="margin-bottom: 10px; font-size: 14px; color: var(--text-secondary);">Privacy Policy</a>
+                <a th:href="@{/home} + '#contact'" style="margin-bottom: 10px; font-size: 14px; color: var(--text-secondary);">Contact Us</a>
+                <a th:href="@{/faq}" style="margin-bottom: 10px; font-size: 14px; color: var(--text-secondary);">FAQs</a>
+                <a th:href="@{/terms-of-service}" style="margin-bottom: 10px; font-size: 14px; color: var(--text-secondary);">Terms of Service</a>
+                <a th:href="@{/privacy-policy}" style="margin-bottom: 10px; font-size: 14px; color: var(--text-secondary);">Privacy Policy</a>
             </div>
 
             <!-- Column 4: Social media & CTA -->
@@ -221,3 +225,6 @@
     </footer>
 </body>
 </html>
+
+
+

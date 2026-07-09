@@ -22,7 +22,9 @@
             align-items: center;
             justify-content: center;
             font-family: 'Nunito', sans-serif;
-            overflow: hidden;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 20px 0;
         }
 
         body::before {
@@ -258,6 +260,25 @@
                 transform: translateY(-120px) scale(0.3);
                 opacity: 0;
             }
+        }
+
+        @media (max-width: 600px), (max-height: 700px) {
+            h1 { font-size: 2rem; margin-bottom: 5px; }
+            #scoreboard { gap: 15px; margin-bottom: 10px; }
+            .score-box { padding: 5px 12px; }
+            .score-box .value { font-size: 1.2rem; }
+            #board {
+                grid-template-columns: repeat(8, 40px);
+                grid-template-rows: repeat(8, 40px);
+                gap: 2px;
+            }
+            .cell {
+                width: 40px;
+                height: 40px;
+                font-size: 20px;
+                border-radius: 8px;
+            }
+            #board-wrap { padding: 8px; }
         }
     </style>
 </head>

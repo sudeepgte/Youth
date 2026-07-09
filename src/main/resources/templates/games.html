@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 
 <head th:replace="~{fragments/template :: head('Games & Sports | Zentrix')}">
@@ -55,7 +55,9 @@
             margin: 0;
             font-size: 14px;
             flex: 1;
-            opacity: 0.8;
+            opacity: 1;
+            color: var(--text-primary, #ffffff);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
         }
 
         .game-content .game-footer {
@@ -223,7 +225,7 @@
             <!-- Rock Paper Scissors -->
             <div class="game-card">
                 <div class="game-img-wrap">
-                    <img src="/images/rps.jpg" class="game-img" alt="Rock Paper Scissors">
+                    <img th:src="@{/images/rps.jpg}" class="game-img" alt="Rock Paper Scissors">
                 </div>
                 <div class="game-content">
                     <h3>Rock Paper Scissors</h3>
@@ -245,7 +247,7 @@
             <!-- Snake & Ladder -->
             <div class="game-card">
                 <div class="game-img-wrap">
-                    <img src="/images/snake.jpg" class="game-img" alt="Snake and Ladder">
+                    <img th:src="@{/images/snake.jpg}" class="game-img" alt="Snake and Ladder">
                 </div>
                 <div class="game-content">
                     <h3>Snake & Ladder Legends</h3>
@@ -266,7 +268,7 @@
             <!-- Chess -->
             <div class="game-card">
                 <div class="game-img-wrap">
-                    <img src="https://images.unsplash.com/photo-1529699211952-734e80c4d42b?q=80&w=2071&auto=format&fit=crop"
+                    <img src="https://images.unsplash.com/photo-1580541832626-2a7156641e4d?q=80&w=2070&auto=format&fit=crop"
                         class="game-img" alt="Chess">
                 </div>
                 <div class="game-content">
@@ -289,7 +291,7 @@
             <!-- Uno -->
             <div class="game-card">
                 <div class="game-img-wrap">
-                    <img src="/images/uno.jpg" class="game-img" alt="Uno">
+                    <img th:src="@{/images/uno.jpg}" class="game-img" alt="Uno">
                 </div>
                 <div class="game-content">
                     <h3>Uno Realistic</h3>
@@ -309,7 +311,7 @@
             <!-- Ludo -->
             <div class="game-card">
                 <div class="game-img-wrap">
-                    <img src="/images/ludo.png" class="game-img" alt="Ludo">
+                    <img th:src="@{/images/ludo.png}" class="game-img" alt="Ludo">
                 </div>
                 <div class="game-content">
                     <h3>Ludo King</h3>
@@ -329,7 +331,7 @@
             <!-- Super Mario -->
             <div class="game-card">
                 <div class="game-img-wrap">
-                    <img src="https://images.unsplash.com/photo-1612036782180-6f0b6cd846fe?q=80&w=2070&auto=format&fit=crop"
+                    <img src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=2070&auto=format&fit=crop"
                         class="game-img" alt="Super Mario">
                 </div>
                 <div class="game-content">
@@ -348,7 +350,7 @@
             <!-- Memory Game -->
             <div class="game-card">
                 <div class="game-img-wrap">
-                    <img src="https://images.unsplash.com/photo-1596443686812-2f45229eebc3?q=80&w=2071&auto=format&fit=crop"
+                    <img src="https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?q=80&w=2070&auto=format&fit=crop"
                         class="game-img" alt="Memory Game">
                 </div>
                 <div class="game-content">
@@ -366,7 +368,7 @@
             <!-- Bubble Shooter -->
             <div class="game-card">
                 <div class="game-img-wrap">
-                    <img src="/images/bubble.png" class="game-img" alt="Bubble Shooter">
+                    <img th:src="@{/images/bubble.png}" class="game-img" alt="Bubble Shooter">
                 </div>
                 <div class="game-content">
                     <h3>Bubble Shooter</h3>
@@ -385,7 +387,7 @@
             <!-- Candy Crush -->
             <div class="game-card">
                 <div class="game-img-wrap">
-                    <img src="/images/candy.jpg" class="game-img" alt="Candy Crush">
+                    <img th:src="@{/images/candy.jpg}" class="game-img" alt="Candy Crush">
                 </div>
                 <div class="game-content">
                     <h3>Candy Crush</h3>
@@ -404,7 +406,7 @@
             <!-- Zentrix Runner -->
             <div class="game-card">
                 <div class="game-img-wrap">
-                    <img src="/images/runner.jpg" class="game-img" alt="Zentrix Runner">
+                    <img th:src="@{/images/runner.jpg}" class="game-img" alt="Zentrix Runner">
                 </div>
                 <div class="game-content">
                     <h3>Zentrix Runner</h3>
@@ -423,7 +425,7 @@
             <!-- Zentrix Racing -->
             <div class="game-card">
                 <div class="game-img-wrap">
-                    <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=2070&auto=format&fit=crop"
+                    <img src="https://images.unsplash.com/photo-1511994298241-608e28f14fde?q=80&w=2070&auto=format&fit=crop"
                         class="game-img" alt="Zentrix Racing">
                 </div>
                 <div class="game-content">
@@ -589,6 +591,15 @@
         let selectedPlayerCount = 2;
         let generatedRoomId = null;
         const userName = /*[[${session.user != null ? session.user.username : 'Player'}]]*/ 'Player';
+        const contextPath = /*[[@{/}]]*/ '/';
+        
+        function getFullPath(url) {
+            if (url.startsWith('http')) return url;
+            let path = contextPath;
+            if (path.endsWith('/')) path = path.slice(0, -1);
+            if (!url.startsWith('/')) url = '/' + url;
+            return path + url;
+        }
 
         function openGameLobby(gameName, skipToCreate = false) {
             currentGameName = gameName;
@@ -648,7 +659,7 @@
                 this.textContent = 'Generating Room...';
                 this.disabled = true;
 
-                const response = await fetch(config.createApi, {
+                const response = await fetch(getFullPath(config.createApi), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ playerName: userName, maxPlayers: selectedPlayerCount })
@@ -676,11 +687,11 @@
                 alert('Code must be 6 characters.');
                 return;
             }
-            window.location.href = gameConfigs[currentGameName].gameUrl + '?room=' + code;
+            window.location.href = getFullPath(gameConfigs[currentGameName].gameUrl) + '?room=' + code;
         }
 
         document.getElementById('lobby-copy-link').onclick = function () {
-            const url = window.location.origin + gameConfigs[currentGameName].gameUrl + '?room=' + generatedRoomId;
+            const url = window.location.origin + getFullPath(gameConfigs[currentGameName].gameUrl) + '?room=' + generatedRoomId;
             copyToClipboard(url);
         };
 
@@ -688,14 +699,14 @@
             const auth = new URLSearchParams(window.location.search).get('auth');
             const glue = gameConfigs[currentGameName].gameUrl.includes('?') ? '&' : '?';
             const authParam = auth ? `&auth=${auth}` : '';
-            window.location.href = gameConfigs[currentGameName].gameUrl + glue + 'room=' + generatedRoomId + authParam;
+            window.location.href = getFullPath(gameConfigs[currentGameName].gameUrl) + glue + 'room=' + generatedRoomId + authParam;
         };
 
         function handleJoinWithCode() {
             const code = document.getElementById('join-room-code').value.trim().toUpperCase();
             if (code.length === 6) {
                 const url = currentGameName ? gameConfigs[currentGameName].gameUrl : '/play-chess';
-                window.location.href = url + '?room=' + code;
+                window.location.href = getFullPath(url) + '?room=' + code;
             }
         }
 

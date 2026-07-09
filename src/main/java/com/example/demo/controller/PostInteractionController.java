@@ -51,6 +51,7 @@ public class PostInteractionController {
     }
 
     // ── Like / Unlike (toggle) ──────────────────────────────────────────────
+    @Transactional
     @RequestMapping(value = "/{postId}/like", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> toggleLike(
             @PathVariable Long postId, HttpSession session) {
@@ -68,9 +69,10 @@ public class PostInteractionController {
         boolean liked;
         if (existing.isPresent()) {
             postLikeRepository.delete(existing.get());
+            postLikeRepository.flush();
             liked = false;
         } else {
-            postLikeRepository.save(new PostLike(post, user));
+            postLikeRepository.saveAndFlush(new PostLike(post, user));
             liked = true;
 
             // Trigger Notification for the owner (if not liking own post)

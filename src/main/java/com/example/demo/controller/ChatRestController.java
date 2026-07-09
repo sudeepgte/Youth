@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.multipart.MultipartFile;
@@ -200,6 +201,9 @@ public class ChatRestController {
 
         String name = (String) payload.get("name");
         List<?> participantIdsRaw = (List<?>) payload.get("participantIds");
+        if (participantIdsRaw == null) {
+            participantIdsRaw = java.util.Collections.emptyList();
+        }
         List<Long> participantIds = participantIdsRaw.stream()
                 .map(id -> Long.valueOf(id.toString()))
                 .collect(Collectors.toList());
@@ -452,3 +456,5 @@ public class ChatRestController {
         return ResponseEntity.ok().build();
     }
 }
+
+

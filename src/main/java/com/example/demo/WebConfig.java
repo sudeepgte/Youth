@@ -24,11 +24,13 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // Serve uploaded event posters from the file system
-        Path uploadDir = Paths.get("src/main/resources/static/uploads");
-        String uploadPath = uploadDir.toFile().getAbsolutePath();
+        Path uploadDir = Paths.get("src/main/resources/static/uploads").toAbsolutePath();
+        String uploadUrl = uploadDir.toUri().toString();
+        if (!uploadUrl.endsWith("/")) {
+            uploadUrl += "/";
+        }
 
         registry.addResourceHandler("/uploads/**")
-                .addResourceLocations("file:" + uploadPath + "/");
+                .addResourceLocations(uploadUrl, "classpath:/static/uploads/");
     }
 }

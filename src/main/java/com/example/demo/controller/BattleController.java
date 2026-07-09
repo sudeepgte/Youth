@@ -396,6 +396,10 @@ public class BattleController {
         if (user == null) return "redirect:/login";
         user = userRepository.findById(user.getId()).orElse(user);
 
+        if (submissionUrl == null || submissionUrl.trim().isEmpty()) {
+            return "redirect:/battles/" + id + "?error=empty_submission";
+        }
+
         Battle battle = battleRepository.findById(id).orElse(null);
         if (battle == null) return "redirect:/battles";
         if (!"ACTIVE".equals(battle.getStatus())) return "redirect:/battles/" + id + "?error=not_active";
@@ -525,6 +529,28 @@ public class BattleController {
                 return Double.compare(score2, score1);
             });
         }
+        
+        boolean isTie = false;
+        if (subs.size() >= 2) {
+            if ("OFFLINE".equals(battle.getMode())) {
+                final double jw = battle.getJudgeWeight() != null ? battle.getJudgeWeight() : 70.0;
+                final double aw = battle.getAudienceWeight() != null ? battle.getAudienceWeight() : 30.0;
+                double score0 = (subs.get(0).getJudgeTotalScore() * jw / 100.0) + (subs.get(0).getVoteCount() * aw / 100.0);
+                double score1 = (subs.get(1).getJudgeTotalScore() * jw / 100.0) + (subs.get(1).getVoteCount() * aw / 100.0);
+                isTie = (score0 == score1);
+            } else {
+                isTie = (subs.get(0).getVoteCount().equals(subs.get(1).getVoteCount()));
+            }
+        }
+
+        if (isTie) {
+            battle.setStatus("TIE");
+            battle.setWinner(subs.get(0).getUser());
+            battle.setWinner2(subs.get(1).getUser());
+            battleRepository.save(battle);
+            return;
+        }
+
         if (!subs.isEmpty()) {
             BattleSubmission topSub = subs.get(0);
             User winner = topSub.getUser();
