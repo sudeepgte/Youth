@@ -871,6 +871,7 @@
                 <span th:if="${param.error[0] == 'not_active'}">This battle isn't accepting submissions right now.</span>
                 <span th:if="${param.error[0] == 'not_participant'}">You need to join this battle first.</span>
                 <span th:if="${param.error[0] == 'unauthorized'}">You are not authorized to perform this action.</span>
+                <span th:if="${param.error[0] == 'empty_submission'}">Please upload a file or provide a valid URL for your submission.</span>
             </div>
 
             <!-- ──────────────────────────────────────── -->
@@ -1077,7 +1078,7 @@
                     </h3>
                     <p style="font-size:12px; color:var(--text-muted); margin-bottom:20px;">Submit your entry for this <span th:text="${battle.category}" style="color:var(--arena-primary); font-weight:800;">Category</span> battle</p>
 
-                    <form th:action="@{'/battles/' + ${battle.id} + '/submit'}" method="POST">
+                    <form th:action="@{'/battles/' + ${battle.id} + '/submit'}" method="POST" onsubmit="return validateSubmissionForm()">
 
                         <!-- ══ CATEGORY-SPECIFIC UPLOAD ZONE ══ -->
                         <div class="arena-field">
@@ -1293,7 +1294,7 @@
                 </div>
 
                 <!-- ─── LEADERBOARD ─── -->
-                <div th:if="${!submissions.isEmpty() and (battle.status == 'VOTING' or battle.status == 'COMPLETED')}" class="leaderboard-section">
+                <div th:if="${!submissions.isEmpty() and (battle.status == 'VOTING' or battle.status == 'COMPLETED' or battle.status == 'TIE')}" class="leaderboard-section">
                     <h3><i class="fas fa-chart-bar"></i> Live Leaderboard</h3>
                     <div th:each="sub,iter : ${submissions}" class="leaderboard-row" style="display:flex; justify-content:space-between; align-items:center; padding:10px 16px; margin-bottom:8px; background:#fff; border:1px solid var(--arena-border); border-radius:12px;">
                         <div style="display:flex; align-items:center; gap:12px;">
@@ -1333,9 +1334,9 @@
                 </div>
 
                 <!-- ─── WINNER ANNOUNCEMENT ─── -->
-                <div th:if="${battle.status == 'COMPLETED' and battle.winner != null}" class="winner-section" id="winner-display" style="padding: 20px;">
+                <div th:if="${(battle.status == 'COMPLETED' or battle.status == 'TIE') and battle.winner != null}" class="winner-section" id="winner-display" style="padding: 20px;">
                     <div class="winner-trophy" style="font-size: 48px; margin-bottom: 10px;">🏆</div>
-                    <div style="font-size:14px; color:var(--text-muted); font-weight:700; margin-bottom:8px;">1ST PLACE</div>
+                    <div style="font-size:14px; color:var(--text-muted); font-weight:700; margin-bottom:8px;" th:text="${battle.status == 'TIE' ? 'IT\'S A TIE!' : '1ST PLACE'}">1ST PLACE</div>
                     <div class="winner-name" th:text="${battle.winner.username}">Winner Name</div>
                     <div class="winner-reward">
                         <i class="fas fa-bolt"></i> +<span th:text="${battle.winnerXp}">500</span> XP
@@ -1351,7 +1352,7 @@
                     <div style="display: flex; justify-content: center; gap: 20px; margin-top: 20px; flex-wrap: wrap;">
                         <div th:if="${battle.winner2 != null}" style="background: rgba(255,255,255,0.5); padding: 15px; border-radius: 12px; border: 1px solid rgba(15,23,42,0.1); flex: 1; min-width: 120px;">
                             <div style="font-size:24px; margin-bottom:5px;">🥈</div>
-                            <div style="font-size:12px; color:var(--text-muted); font-weight:700;">2ND PLACE</div>
+                            <div style="font-size:12px; color:var(--text-muted); font-weight:700;" th:text="${battle.status == 'TIE' ? 'TIED WINNER' : '2ND PLACE'}">2ND PLACE</div>
                             <div style="font-size:16px; font-weight:800; color:var(--text-primary);" th:text="${battle.winner2.username}">User 2</div>
                             <div th:if="${battle.prize2 != null and battle.prize2 > 0}" style="font-size:13px; color:#10B981; font-weight:700; margin-top:6px;">
                                 <i class="fas fa-rupee-sign"></i> <span th:text="${battle.prize2}">0</span>
@@ -1607,28 +1608,28 @@
                         </div>
 
                         <div class="arena-field">
-                            <label>Entry Fee (â‚¹)</label>
-                            <input type="number" step="0.01" name="entryFee" value="0.0" min="0" placeholder="e.g. 50.00" />
+                            <label>Entry Fee (&#8377;)</label>
+                            <input type="number" step="0.01" name="entryFee" min="0" placeholder="e.g. 50.00" required />
                         </div>
                         <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom: 20px;">
                             <div class="arena-field" style="margin-bottom:0;">
-                                <label><i class="fas fa-trophy" style="color:#FFD700;"></i> 1st Prize (â‚¹)</label>
-                                <input type="number" step="0.01" name="prize1" value="0.0" min="0" />
+                                <label><i class="fas fa-trophy" style="color:#FFD700;"></i> 1st Prize (&#8377;)</label>
+                                <input type="number" step="0.01" name="prize1" min="0" placeholder="0" required />
                             </div>
                             <div class="arena-field" style="margin-bottom:0;">
-                                <label><i class="fas fa-trophy" style="color:#C0C0C0;"></i> 2nd Prize (â‚¹)</label>
-                                <input type="number" step="0.01" name="prize2" value="0.0" min="0" />
+                                <label><i class="fas fa-trophy" style="color:#C0C0C0;"></i> 2nd Prize (&#8377;)</label>
+                                <input type="number" step="0.01" name="prize2" min="0" placeholder="0" required />
                             </div>
                             <div class="arena-field" style="margin-bottom:0;">
-                                <label><i class="fas fa-trophy" style="color:#cd7f32;"></i> 3rd Prize (â‚¹)</label>
-                                <input type="number" step="0.01" name="prize3" value="0.0" min="0" />
+                                <label><i class="fas fa-trophy" style="color:#cd7f32;"></i> 3rd Prize (&#8377;)</label>
+                                <input type="number" step="0.01" name="prize3" min="0" placeholder="0" required />
                             </div>
                         </div>
 
                         <div class="arena-field">
                             <label>Duration (Hours)</label>
                             <select id="durationSelect" name="durationHours" onchange="toggleCustomDuration(this.value)">
-                                <option value="1">1 Hour â€“ Speed Round ⚡</option>
+                                <option value="1">1 Hour &ndash; Speed Round &#9889;</option>
                                 <option value="6">6 Hours</option>
                                 <option value="12">12 Hours</option>
                                 <option value="24" selected>24 Hours</option>
@@ -1823,6 +1824,18 @@
 
          // Adjust form input names dynamically on submission
         document.getElementById('createBattleForm').addEventListener('submit', function(e) {
+            const mode = document.getElementById('modeSelect').value;
+            if (mode === 'OFFLINE') {
+                const venue = document.querySelector('input[name="venue"]').value.trim();
+                const eventDate = document.querySelector('input[name="eventDate"]').value.trim();
+                const eventTime = document.querySelector('input[name="eventTime"]').value.trim();
+                if (!venue || !eventDate || !eventTime) {
+                    e.preventDefault();
+                    alert('Please fill out Venue, Event Date, and Event Time for offline battles.');
+                    return;
+                }
+            }
+
             const durSelect = document.getElementById('durationSelect');
             const customDur = document.getElementById('customDurationInput');
             if (durSelect.value === 'custom') {
@@ -1929,6 +1942,15 @@
                 statusSpan.style.color = '#EF4444';
                 statusSpan.innerHTML = `<i class="fas fa-exclamation-circle"></i> Failed to upload.`;
             }
+        }
+
+        function validateSubmissionForm() {
+            var urlInput = document.getElementById('submissionUrlInput').value;
+            if (!urlInput || urlInput.trim() === "") {
+                alert("Please upload a file or provide a valid URL for your submission.");
+                return false;
+            }
+            return true;
         }
     </script>
     <style>

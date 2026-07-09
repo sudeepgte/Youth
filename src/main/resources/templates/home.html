@@ -738,17 +738,20 @@
                 </div>
             </div>
             <div class="surface" style="padding: 40px; border-radius: 24px; border: 1px solid rgba(0,0,0,0.05); box-shadow: var(--shadow-premium);">
-                <form style="display: grid; gap: 20px;">
+                <div th:if="${param.success != null}" style="background: #dcfce7; color: #166534; padding: 16px; border-radius: 12px; margin-bottom: 20px; font-weight: 700; text-align: center;">
+                    <i class="fa-solid fa-check-circle"></i> Message sent successfully!
+                </div>
+                <form th:action="@{/contact}" method="POST" style="display: grid; gap: 20px;">
                     <div class="contact-form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                        <input type="text" placeholder="Full Name" style="width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #e2e8f0; background: #f8fafc;">
-                        <input type="email" placeholder="Email Address" style="width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #e2e8f0; background: #f8fafc;">
+                        <input type="text" name="name" required placeholder="Full Name" style="width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #e2e8f0; background: #f8fafc;">
+                        <input type="email" name="email" required placeholder="Email Address" style="width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #e2e8f0; background: #f8fafc;">
                     </div>
-                    <select style="width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #e2e8f0; background: #f8fafc;">
-                        <option>General Inquiry</option>
-                        <option>Partnership</option>
-                        <option>Support</option>
+                    <select name="subject" required style="width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #e2e8f0; background: #f8fafc;">
+                        <option value="General Inquiry">General Inquiry</option>
+                        <option value="Partnership">Partnership</option>
+                        <option value="Support">Support</option>
                     </select>
-                    <textarea placeholder="Your Message" rows="4" style="width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #e2e8f0; background: #f8fafc; resize: none;"></textarea>
+                    <textarea name="message" required placeholder="Your Message" rows="4" style="width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #e2e8f0; background: #f8fafc; resize: none;"></textarea>
                     <button type="submit" class="btn btn-primary" style="width: 100%; padding: 16px; border-radius: 12px; font-weight: 800;">Send Message</button>
                 </form>
             </div>

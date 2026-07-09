@@ -8,6 +8,10 @@
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
         :root {
             --bg-gradient: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
             --text-primary: #0f172a;
@@ -18,6 +22,8 @@
 
         html, body {
             overflow-x: clip !important;
+            margin: 0;
+            padding: 0;
         }
 
         body {
@@ -173,6 +179,7 @@
             align-items: center;
             gap: 18px;
             padding: 0 24px;
+            box-sizing: border-box;
         }
 
         .dashboard-spacer {
@@ -353,10 +360,10 @@
 
         <div class="dashboard-spacer"></div>
         <div class="dashboard-nav-links">
-            <a th:href="@{/dashboard}" class="btn btn-outline" style="border: 1px solid rgba(2, 132, 199, 0.4); color: #0284c7 !important; border-radius: 10px; padding: 8px 16px; text-decoration: none; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
+            <a th:href="@{/dashboard}" class="btn btn-outline" style="border: 1px solid rgba(2, 132, 199, 0.4); color: #0284c7 !important; border-radius: 10px; padding: 8px 16px; text-decoration: none; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0; white-space: nowrap; min-width: max-content; overflow: visible !important;">
                 <i class="fas fa-arrow-left"></i> App
             </a>
-            <a th:href="@{/logout}" class="btn btn-primary" style="background: linear-gradient(135deg, #f84464, #ff6b9d); color: #fff !important; border-radius: 10px; padding: 8px 18px; text-decoration: none; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">Logout</a>
+            <a th:href="@{/logout}" class="btn btn-primary" style="background: linear-gradient(135deg, #f84464, #ff6b9d); color: #fff !important; border-radius: 10px; padding: 8px 18px; text-decoration: none; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0; white-space: nowrap; min-width: max-content; overflow: visible !important;">Logout</a>
         </div>
     </nav>
 
@@ -466,14 +473,14 @@
                 </div>
             </div>
             <!-- Battle Stats -->
-            <div class="stat-card" style="cursor:pointer;" onclick="document.getElementById('battles-section').scrollIntoView({behavior: 'smooth'})">
+            <div class="stat-card" style="cursor:pointer;" onclick="location.href='/admin/battles'">
                 <div class="stat-icon" style="background: rgba(139, 92, 246, 0.15);"><i class="fas fa-fire" style="color: #8b5cf6;"></i></div>
                 <div>
                     <h3 style="font-size: 24px; color: #fff;" th:text="${totalBattles}">0</h3>
                     <span style="color: #94a3b8; font-size: 14px;">Total Battles</span>
                 </div>
             </div>
-            <div class="stat-card" style="cursor:pointer;" onclick="document.getElementById('battles-section').scrollIntoView({behavior: 'smooth'})">
+            <div class="stat-card" style="cursor:pointer;" onclick="location.href='/admin/battles'">
                 <div class="stat-icon" style="background: rgba(16, 185, 129, 0.15);"><i class="fas fa-play" style="color: #10b981;"></i></div>
                 <div>
                     <h3 style="font-size: 24px; color: #fff;" th:text="${runningBattles}">0</h3>
@@ -711,6 +718,31 @@
                     <td>User</td>
                     <td th:text="${user.dob}">2024-01-01</td>
                     <td><span class="status-badge status-active">Active</span></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2 style="margin-bottom: 20px; margin-top: 40px;">Support Inquiries</h2>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Subject</th>
+                    <th>Message</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="msg : ${contactMessages}">
+                    <td th:text="${msg.name}">Name</td>
+                    <td th:text="${msg.email}">email@example.com</td>
+                    <td th:text="${msg.subject}">Subject</td>
+                    <td th:text="${msg.message}" style="max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Message</td>
+                    <td th:text="${#temporals.format(msg.createdAt, 'yyyy-MM-dd HH:mm')}">Date</td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(contactMessages)}">
+                    <td colspan="5" style="text-align: center; color: var(--text-secondary);">No support inquiries yet.</td>
                 </tr>
             </tbody>
         </table>

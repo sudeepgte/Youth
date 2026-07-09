@@ -132,6 +132,8 @@ public class ProfileController {
         model.addAttribute("isOwnProfile", isOwnProfile);
 
         // Add Talent Score to model
+        long talentScore = (eventsJoined * 10) + (eventsWon * 50) + (targetUser.getXp() != null ? targetUser.getXp() : 0);
+        model.addAttribute("talentScore", talentScore);
         model.addAttribute("eventsJoined", eventsJoined);
         model.addAttribute("eventsWon", eventsWon);
         model.addAttribute("userRank", rank);
@@ -734,34 +736,5 @@ public class ProfileController {
         return "redirect:/profile";
     }
 
-    @Transactional
-    @RequestMapping(value = "/notifications/{id}/delete", method = RequestMethod.POST)
-    @ResponseBody
-    public org.springframework.http.ResponseEntity<?> deleteNotification(@PathVariable Long id, HttpSession session) {
-        User user = (User) session.getAttribute("user");
-        if (user == null) {
-            return org.springframework.http.ResponseEntity.status(401).build();
-        }
-
-        Notification notif = notificationRepository.findById(id).orElse(null);
-        if (notif != null && notif.getUser().getId().equals(user.getId())) {
-            notificationRepository.delete(notif);
-            return org.springframework.http.ResponseEntity.ok().build();
-        }
-        return org.springframework.http.ResponseEntity.notFound().build();
-    }
-
-    @Transactional
-    @RequestMapping(value = "/notifications/clear-all", method = RequestMethod.POST)
-    @ResponseBody
-    public org.springframework.http.ResponseEntity<?> clearAllNotifications(HttpSession session) {
-        User user = (User) session.getAttribute("user");
-        if (user == null) {
-            return org.springframework.http.ResponseEntity.status(401).build();
-        }
-  
-        List<Notification> notifications = notificationRepository.findByUserOrderByCreatedAtDesc(user);
-        notificationRepository.deleteAll(notifications);
-        return org.springframework.http.ResponseEntity.ok().build();
-    }
+    // Endpoints moved to NotificationController.java
 }
