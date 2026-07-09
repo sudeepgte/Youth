@@ -111,7 +111,6 @@
             <a class="logo" th:href="@{/dashboard(auth=${auth})}">Zentrix</a>
             <div class="nav-links">
                 <a th:href="@{/home}"><i class="fas fa-house"></i> Home</a>
-                <a th:href="@{/music(auth=${auth})}" th:classappend="${active} == 'music' ? ' active' : ''"><i class="fas fa-music"></i> Music</a>
                 <a th:href="@{/wallet(auth=${auth})}" th:classappend="${active} == 'wallet' ? ' active' : ''"><i class="fas fa-wallet"></i> Wallet</a>
                 <a th:href="@{/music/rooms(auth=${auth})}" th:classappend="${active} == 'rooms' ? ' active' : ''"><i class="fas fa-users"></i> Rooms</a>
                 <a th:href="@{/music/leaderboard(auth=${auth})}" th:classappend="${active} == 'leaderboard' ? ' active' : ''"><i class="fas fa-trophy"></i> Leaderboard</a>
@@ -132,9 +131,6 @@
             <div class="nav-links">
                 <a th:href="@{/events/admin/manage}" th:classappend="${active} == 'manage' ? ' active' : ''" style="color: #334155 !important; text-decoration: none; font-size: 14px;">
                     <i class="fas fa-calendar-alt"></i> Manage Events
-                </a>
-                <a th:href="@{/admin/music}" th:classappend="${active} == 'music' ? ' active' : ''" style="color: #334155 !important; text-decoration: none; font-size: 14px;">
-                    <i class="fas fa-music"></i> Music
                 </a>
                 <a th:href="@{/events/admin/create}" th:classappend="${active} == 'create' ? ' active' : ''" style="color: #334155 !important; text-decoration: none; font-size: 14px;">
                     <i class="fas fa-plus"></i> Create

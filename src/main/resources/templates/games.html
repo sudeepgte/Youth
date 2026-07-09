@@ -590,7 +590,7 @@
         let currentGameName = null;
         let selectedPlayerCount = 2;
         let generatedRoomId = null;
-        const userName = /*[[${session.user != null ? session.user.username : 'Player'}]]*/ 'Player';
+        const userName = /*[[${user != null ? user.username : 'Player'}]]*/ 'Player';
         const contextPath = /*[[@{/}]]*/ '/';
         
         function getFullPath(url) {
@@ -687,7 +687,9 @@
                 alert('Code must be 6 characters.');
                 return;
             }
-            window.location.href = getFullPath(gameConfigs[currentGameName].gameUrl) + '?room=' + code;
+            const auth = new URLSearchParams(window.location.search).get('auth');
+            const authParam = auth ? `&auth=${auth}` : '';
+            window.location.href = getFullPath(gameConfigs[currentGameName].gameUrl) + '?room=' + code + authParam;
         }
 
         document.getElementById('lobby-copy-link').onclick = function () {
@@ -706,7 +708,9 @@
             const code = document.getElementById('join-room-code').value.trim().toUpperCase();
             if (code.length === 6) {
                 const url = currentGameName ? gameConfigs[currentGameName].gameUrl : '/play-chess';
-                window.location.href = getFullPath(url) + '?room=' + code;
+                const auth = new URLSearchParams(window.location.search).get('auth');
+                const authParam = auth ? `&auth=${auth}` : '';
+                window.location.href = getFullPath(url) + '?room=' + code + authParam;
             }
         }
 

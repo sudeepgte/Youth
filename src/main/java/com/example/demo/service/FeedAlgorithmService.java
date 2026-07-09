@@ -75,6 +75,7 @@ public class FeedAlgorithmService {
         // Score and sort
         List<Post> ranked = pool.stream()
                 .filter(p -> p.getPostType() == null || !"STORY".equalsIgnoreCase(p.getPostType()))
+                .filter(p -> !p.getUser().isPrivateAccount() || followingIds.contains(p.getUser().getId()) || p.getUser().getId().equals(userId))
                 .sorted(Comparator.comparingDouble(
                         (Post p) -> calcScore(p, followingIds, interactedAuthorIds, categoryAffinity)).reversed())
                 .skip((long) page * size)
@@ -96,6 +97,7 @@ public class FeedAlgorithmService {
         List<Post> recent = postRepository.findByCreatedAtAfter(window);
 
         return recent.stream()
+                .filter(p -> !p.getUser().isPrivateAccount())
                 .sorted(Comparator.comparingDouble((Post p) -> calcEngagement(p)).reversed())
                 .limit(limit)
                 .collect(Collectors.toList());
@@ -119,6 +121,7 @@ public class FeedAlgorithmService {
                 .getContent();
 
         return candidates.stream()
+                .filter(p -> !p.getUser().isPrivateAccount())
                 .sorted(Comparator.comparingDouble((Post p) -> calcEngagement(p)).reversed())
                 .limit(limit)
                 .collect(Collectors.toList());

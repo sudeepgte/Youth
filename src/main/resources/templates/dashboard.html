@@ -366,7 +366,7 @@
             color: #bbb !important;
         }
 
-        /* â”€â”€ Mobile Responsive â”€â”€ */
+        /* -- Mobile Responsive -- */
         @media (max-width: 768px) {
             .feed-toolbar { flex-wrap: wrap; }
             .dashboard-vote-section { padding: 16px; margin-bottom: 20px; }
@@ -454,7 +454,6 @@
             <a th:href="@{/reels}" class="sidebar-link" th:classappend="${isReelsPage} ? ' active' : ''"><i class="fas fa-film"></i> Reels</a>
             <a th:href="@{/profile}" class="sidebar-link"><i class="fas fa-user"></i> Profile</a>
             <a th:href="@{/games}" class="sidebar-link"><i class="fas fa-gamepad"></i> Games</a>
-            <a th:href="@{/music}" class="sidebar-link"><i class="fas fa-music"></i> Music</a>
             <a th:href="@{/wallet}" class="sidebar-link"><i class="fas fa-wallet"></i> Wallet</a>
             <a href="javascript:void(0)" class="sidebar-link" onclick="openCreateModal()"><i class="fas fa-plus-circle" style="color: var(--accent);"></i> Create Post</a>
             <a th:href="@{/logout}" class="sidebar-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
@@ -501,10 +500,10 @@
                 </div>
             </div>
 
-            <!-- ðŸ—³ï¸ Voting Polls -->
+            <!-- &#128499; Voting Polls -->
             <div th:if="${(isReelsPage == null or !isReelsPage) and not #lists.isEmpty(votingPolls)}" class="dashboard-vote-section">
                 <div style="margin-bottom: 15px;">
-                    <h3 style="font-size: 14px; font-weight: 800; color: #111;">Vote for Next Event! ðŸ—³ï¸ 
+                    <h3 style="font-size: 14px; font-weight: 800; color: #111;">Vote for Next Event! &#128499;  
                     </h3>
                     <p style="font-size: 11px; color: rgba(0,0,0,0.5);">Your vote shapes our platform.
                     </p>
@@ -587,10 +586,6 @@
                             th:classappend="${activeCategory != null and activeCategory.equalsIgnoreCase('LIFESTYLE')} ? ' active' : ''">
                             Lifestyle
                         </a>
-                        <a th:href="@{/dashboard(category='MUSIC')}"
-                            th:classappend="${activeCategory != null and activeCategory.equalsIgnoreCase('MUSIC')} ? ' active' : ''">
-                            Music
-                        </a>
                         <a th:href="@{/dashboard(category='ART')}"
                             th:classappend="${activeCategory != null and activeCategory.equalsIgnoreCase('ART')} ? ' active' : ''">
                             Art
@@ -604,7 +599,7 @@
 
                 <div th:if="${activeCategory != null}" class="filter-chip">
                     <span th:text="${activeCategory}">TRAVEL</span>
-                    <a th:href="@{/dashboard}" title="Clear filter">Ãƒâ€”</a>
+                    <a th:href="@{/dashboard}" title="Clear filter">Ãƒ&mdash;</a>
                 </div>
             </div>
 
@@ -717,15 +712,15 @@
                     <!-- Emoji Selection Bar -->
                     <div class="emoji-bar" style="display:flex; gap:12px; margin-bottom:8px; overflow-x:auto; padding:4px 2px; scrollbar-width:none; -ms-overflow-style:none;">
                         <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'â¤ï¸\')'">â¤ï¸</span>
-                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'ðŸ˜‚\')'">ðŸ˜‚</span>
-                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'ðŸ”¥\')'">ðŸ”¥</span>
+                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'&#128514;\')'">&#128514;</span>
+                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'&#128293;\')'">&#128293;</span>
                         <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'ðŸ˜\')'">ðŸ˜</span>
                         <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'ðŸ‘\')'">ðŸ‘</span>
-                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'ðŸ™Œ\')'">ðŸ™Œ</span>
-                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'ðŸ˜¢\')'">ðŸ˜¢</span>
-                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'ðŸ˜®\')'">ðŸ˜®</span>
-                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'ðŸŽ‰\')'">ðŸŽ‰</span>
-                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'ðŸ’¯\')'">ðŸ’¯</span>
+                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'&#128588;\')'">&#128588;</span>
+                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'&#128546;\')'">&#128546;</span>
+                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'&#128558;\')'">&#128558;</span>
+                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'&#127881;\')'">&#127881;</span>
+                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'&#128175;\')'">&#128175;</span>
                     </div>
                     <style>
                         .emoji-bar::-webkit-scrollbar { display:none; }
@@ -735,7 +730,7 @@
                             <input type="text" th:id="'comment-input-' + ${post.id}" placeholder="Write a comment..."
                                 style="flex:1; padding:8px 36px 8px 12px; border-radius:20px; background:var(--card-bg); border:1px solid var(--glass-border); color:var(--text-primary); font-size:13px; outline:none;">
                             <button type="button" th:attr="onclick='toggleEmojiPicker(' + ${post.id} + ')'" 
-                                    style="position:absolute; right:12px; background:none; border:none; font-size:16px; cursor:pointer; color:#aaa; outline:none; user-select:none;">ðŸ˜€</button>
+                                    style="position:absolute; right:12px; background:none; border:none; font-size:16px; cursor:pointer; color:#aaa; outline:none; user-select:none;">&#128512;</button>
                         </div>
                         <button th:onclick="'postComment(' + ${post.id} + ')'"
                             style="background:var(--accent); color:white; border:none; border-radius:20px; padding:8px 16px; font-size:13px; cursor:pointer; font-weight:600; flex-shrink:0;">Post</button>
@@ -745,12 +740,12 @@
                              style="display:none; position:absolute; bottom:42px; right:10px; background:#101018; border:1px solid rgba(255,255,255,0.15); border-radius:12px; padding:10px; width:260px; z-index:100; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
                              <!-- Categories / Tabs -->
                              <div style="display:flex; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:6px; margin-bottom:8px; font-size:14px; color:#aaa; font-weight:700; user-select:none;">
-                                 <span style="cursor:pointer; color:#fff;" onclick="switchEmojiCategory(this, 'smileys')">ðŸ˜€</span>
+                                 <span style="cursor:pointer; color:#fff;" onclick="switchEmojiCategory(this, 'smileys')">&#128512;</span>
                                  <span style="cursor:pointer;" onclick="switchEmojiCategory(this, 'gestures')">ðŸ‘</span>
                                  <span style="cursor:pointer;" onclick="switchEmojiCategory(this, 'hearts')">â¤ï¸</span>
                                  <span style="cursor:pointer;" onclick="switchEmojiCategory(this, 'animals')">ðŸ±</span>
                                  <span style="cursor:pointer;" onclick="switchEmojiCategory(this, 'food')">ðŸ•</span>
-                                 <span style="cursor:pointer;" onclick="switchEmojiCategory(this, 'activities')">âš½</span>
+                                 <span style="cursor:pointer;" onclick="switchEmojiCategory(this, 'activities')">&#9917;</span>
                              </div>
                              <!-- Emoji Content Area -->
                              <div class="emoji-picker-content" style="height:140px; overflow-y:auto; display:grid; grid-template-columns:repeat(7, 1fr); gap:6px; font-size:18px; text-align:center;">
@@ -784,7 +779,7 @@
                         <span style="font-size:13px; font-weight:800;" th:text="${r.name}">Room</span>
                         <span style="font-size:11px; color: rgba(255,255,255,0.5);">
                             Code: <span th:text="${r.code}" style="font-weight:900; letter-spacing:0.5px;">CODE</span>
-                            <span style="opacity:0.6;"> Ã¢â‚¬Â¢ </span>
+                            <span style="opacity:0.6;"> &bull; </span>
                             <span th:text="${r.phase}">SUBMIT</span>
                         </span>
                     </div>
@@ -884,7 +879,7 @@
                     <p style="font-size: 14px; font-weight: bold; color: #ffffff; margin-bottom: 5px;"
                         th:text="${n.type == 'FOLLOW_REQUEST' ? '@' + n.actor.username + ' wants to follow you!' : n.message}">
                         Message</p>
-                    <a th:if="${n.postId != null}" th:href="@{'/dashboard#post-' + ${n.postId}}" style="color: var(--accent); font-size: 12px; font-weight: 700; margin-bottom: 8px; display: inline-block;">View Post â†’</a>
+                    <a th:if="${n.postId != null}" th:href="@{'/dashboard#post-' + ${n.postId}}" style="color: var(--accent); font-size: 12px; font-weight: 700; margin-bottom: 8px; display: inline-block;">View Post &rarr;</a>
                     <span style="font-size: 12px; color: #aaaaaa; display: block; margin-bottom: 10px;"
                         th:text="${#temporals.format(n.createdAt, 'dd MMM, HH:mm')}">Date</span>
 
@@ -1010,7 +1005,7 @@
           const CONTEXT_PATH = /*[[@{/}]]*/ '/';
           const basePath = CONTEXT_PATH === '/' ? '' : (CONTEXT_PATH.endsWith('/') ? CONTEXT_PATH.slice(0, -1) : CONTEXT_PATH);
 
-        // â”€â”€ Feed Filter Dropdown â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // -- Feed Filter Dropdown -----------------------------
         function toggleFeedFilterMenu() {
             const menu = document.getElementById('feedFilterMenu');
             if (!menu) return;
@@ -1023,7 +1018,7 @@
             if (!within) menu.style.display = 'none';
         });
 
-        // â”€â”€ Create Post Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // -- Create Post Modal ------------------------------
         function openThoughtModal() {
             openCreateModal();
             const btn = document.querySelector('.type-btn[data-type="THOUGHT"]');
@@ -1040,7 +1035,7 @@
             closeShareModal && closeShareModal();
         });
 
-        // â”€â”€ Like Toggle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // -- Like Toggle -------------------------------------
         async function toggleLike(postId) {
             const btn = document.getElementById('like-btn-' + postId);
             const icon = btn ? btn.querySelector('i') : null;
@@ -1283,14 +1278,14 @@
             }
         }
 
-        // â”€â”€ Comments Toggle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // -- Comments Toggle ----------------------------------
         function toggleComments(postId) {
             const panel = document.getElementById('comments-panel-' + postId);
             if (!panel) return;
             panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
         }
 
-        // â”€â”€ Post Comment â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // -- Post Comment -------------------------------------
         async function postComment(postId) {
             const input = document.getElementById('comment-input-' + postId);
             if (!input || !input.value.trim()) return;
@@ -1757,7 +1752,7 @@
                 usernameSpan.textContent = story.username || 'Unknown';
             }
             if (timeSpan) {
-                timeSpan.textContent = 'Ã¢â‚¬Â¢ ' + formatRelativeTime(story.createdAt);
+                timeSpan.textContent = '&bull; ' + formatRelativeTime(story.createdAt);
             }
 
             // Show/hide bottom reply panel or viewers panel based on ownership
@@ -1928,7 +1923,7 @@
         }
         function avatarGoToProfile() {
             const userId = document.getElementById('avatarMenuUserId').value;
-            // go to /profile/{username} Ã¢â‚¬â€œ we stored username in the span
+            // go to /profile/{username} Ã¢â‚¬&ldquo; we stored username in the span
             const username = document.getElementById('avatarMenuUsername').textContent;
             window.location.href = '/profile/' + username;
         }
@@ -1959,14 +1954,14 @@
             <div id="storyViewerHeader" style="position: absolute; top: 28px; left: 16px; display: flex; align-items: center; gap: 10px; z-index: 110; color: white;">
                 <img id="storyViewerAvatar" src="" style="width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid #fff; object-fit: cover; box-shadow: 0 2px 8px rgba(0,0,0,0.5);">
                 <span id="storyViewerUsername" style="font-weight: 700; font-size: 13.5px; text-shadow: 0 2px 5px rgba(0,0,0,0.95); font-family: 'DM Sans', sans-serif;">Username</span>
-                <span id="storyViewerTime" style="font-size: 11px; color: rgba(255,255,255,0.7); text-shadow: 0 2px 5px rgba(0,0,0,0.95); font-family: 'DM Sans', sans-serif;">Ã¢â‚¬Â¢ 2h ago</span>
+                <span id="storyViewerTime" style="font-size: 11px; color: rgba(255,255,255,0.7); text-shadow: 0 2px 5px rgba(0,0,0,0.95); font-family: 'DM Sans', sans-serif;">&bull; 2h ago</span>
             </div>
 
             <button
                 style="position: absolute; top: 28px; right: 16px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: #fff; background: rgba(0,0,0,0.4); border-radius: 50%; border: none; z-index: 120; font-weight: bold; transition: background 0.2s;"
                 onmouseover="this.style.background='rgba(0,0,0,0.7)'"
                 onmouseout="this.style.background='rgba(0,0,0,0.4)'"
-                onclick="closeStoryViewer()">âœ•</button>
+                onclick="closeStoryViewer()">&times;</button>
 
             <div id="storyViewerContent"
                 style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #000;">
@@ -1978,11 +1973,11 @@
                 <!-- Quick React Emojis -->
                 <div class="story-reactions" style="display: flex; justify-content: space-around; font-size: 22px; user-select: none;">
                     <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('â¤ï¸')">â¤ï¸</span>
-                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('ðŸ˜‚')">ðŸ˜‚</span>
-                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('ðŸ˜®')">ðŸ˜®</span>
-                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('ðŸ˜¢')">ðŸ˜¢</span>
+                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('&#128514;')">&#128514;</span>
+                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('&#128558;')">&#128558;</span>
+                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('&#128546;')">&#128546;</span>
                     <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('ðŸ‘')">ðŸ‘</span>
-                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('ðŸ”¥')">ðŸ”¥</span>
+                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('&#128293;')">&#128293;</span>
                 </div>
                 <!-- Message Input -->
                 <div style="display: flex; gap: 8px; align-items: center; position: relative;">

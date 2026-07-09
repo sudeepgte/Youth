@@ -138,14 +138,16 @@ public class ProfileController {
         model.addAttribute("eventsWon", eventsWon);
         model.addAttribute("userRank", rank);
         model.addAttribute("userBadge", badge);
-        model.addAttribute("isFollowing", currentUser.getFollowing().contains(targetUser));
+        boolean isFollowing = currentUser.getFollowing().contains(targetUser);
+        model.addAttribute("isFollowing", isFollowing);
+
+        boolean isPrivateAndNotFollowing = targetUser.isPrivateAccount() && !isOwnProfile && !isFollowing;
+        model.addAttribute("isPrivateAndNotFollowing", isPrivateAndNotFollowing);
 
         model.addAttribute("followersCount", targetUser.getFollowers().size());
         model.addAttribute("followingCount", targetUser.getFollowing().size());
-        model.addAttribute("followers", targetUser.getFollowers());
-        model.addAttribute("following", targetUser.getFollowing());
 
-        // Fetch posts
+        // Fetch posts to get the count
         List<Post> posts = postRepository.findByUserAndPostTypeNotOrderByCreatedAtDesc(targetUser, "STORY");
         List<com.example.demo.model.PostCollaboration> collaborations = postCollaborationRepository
                 .findByUserAndStatus(targetUser, com.example.demo.model.CollaborationStatus.ACCEPTED);
@@ -154,15 +156,24 @@ public class ProfileController {
         }
         posts.sort((p1, p2) -> p2.getCreatedAt().compareTo(p1.getCreatedAt()));
 
-        // Initialize lazy collaborations for posts
-        for (Post post : posts) {
-            if (post.getCollaborations() != null) {
-                post.getCollaborations().size();
-            }
-        }
-
-        model.addAttribute("posts", posts);
         model.addAttribute("postsCount", posts.size());
+
+        if (isPrivateAndNotFollowing) {
+            model.addAttribute("followers", new java.util.HashSet<>());
+            model.addAttribute("following", new java.util.HashSet<>());
+            model.addAttribute("posts", new java.util.ArrayList<>());
+        } else {
+            model.addAttribute("followers", targetUser.getFollowers());
+            model.addAttribute("following", targetUser.getFollowing());
+
+            // Initialize lazy collaborations for posts
+            for (Post post : posts) {
+                if (post.getCollaborations() != null) {
+                    post.getCollaborations().size();
+                }
+            }
+            model.addAttribute("posts", posts);
+        }
 
         // Check for active stories
         boolean hasStory = !postRepository.findByUserAndPostTypeAndCreatedAtAfterOrderByCreatedAtAsc(
@@ -242,6 +253,7 @@ public class ProfileController {
             @RequestParam(required = false) String aboutMe,
             @RequestParam(required = false) String skills,
             @RequestParam(required = false) String collegeName,
+            @RequestParam(required = false, defaultValue = "false") boolean privateAccount,
             HttpSession session) {
         Object sessionUser = session.getAttribute("user");
         if (!(sessionUser instanceof User)) {
@@ -272,6 +284,7 @@ public class ProfileController {
                     dbUser.setSkills(skills.length() > 255 ? skills.substring(0, 255) : skills);
                 if (collegeName != null)
                     dbUser.setCollegeName(collegeName.length() > 255 ? collegeName.substring(0, 255) : collegeName);
+                dbUser.setPrivateAccount(privateAccount);
                 userRepository.save(dbUser);
                 // Force reload with collections if needed, or just set the basic user
                 session.setAttribute("user", dbUser);
@@ -449,14 +462,23 @@ public class ProfileController {
                 return (referer != null) ? "redirect:" + referer : "redirect:/profile";
             }
 
-            // Create FollowRequest
-            FollowRequest request = new FollowRequest(dbCurrentUser, dbTargetUser);
-            followRequestRepository.save(request);
+            if (!dbTargetUser.isPrivateAccount()) {
+                dbTargetUser.getFollowers().add(dbCurrentUser);
+                dbCurrentUser.getFollowing().add(dbTargetUser);
+                userRepository.save(dbTargetUser);
+                userRepository.save(dbCurrentUser);
+                notificationRepository.save(new Notification(dbTargetUser, dbCurrentUser,
+                        "@" + dbCurrentUser.getUsername() + " started following you!", "FOLLOW_ACCEPT"));
+            } else {
+                // Create FollowRequest
+                FollowRequest request = new FollowRequest(dbCurrentUser, dbTargetUser);
+                followRequestRepository.save(request);
 
-            // Create Notification
-            Notification notif = new Notification(dbTargetUser, dbCurrentUser,
-                    "@" + dbCurrentUser.getUsername() + " wants to follow you!", "FOLLOW_REQUEST");
-            notificationRepository.save(notif);
+                // Create Notification
+                Notification notif = new Notification(dbTargetUser, dbCurrentUser,
+                        "@" + dbCurrentUser.getUsername() + " wants to follow you!", "FOLLOW_REQUEST");
+                notificationRepository.save(notif);
+            }
         }
         return (referer != null) ? "redirect:" + referer : "redirect:/profile";
     }
@@ -487,11 +509,11 @@ public class ProfileController {
                 return org.springframework.http.ResponseEntity.ok(java.util.Map.of("status", "FOLLOWING"));
             }
 
-            // Direct follow if target follows current user (Follow Back)
+            // Direct follow if target follows current user (Follow Back) AND target is not private
             final Long targetUserId = dbTargetUser.getId();
             boolean targetFollowsMe = dbCurrentUser.getFollowers().stream()
                     .anyMatch(f -> f.getId().equals(targetUserId));
-            if (targetFollowsMe) {
+            if (targetFollowsMe && !dbTargetUser.isPrivateAccount()) {
                 dbTargetUser.getFollowers().add(dbCurrentUser);
                 dbCurrentUser.getFollowing().add(dbTargetUser); // Bidirectional update
                 userRepository.save(dbTargetUser);
@@ -504,20 +526,31 @@ public class ProfileController {
                 return org.springframework.http.ResponseEntity.ok(java.util.Map.of("status", "FOLLOWING"));
             }
 
-            // Otherwise, create FollowRequest
+            // Otherwise, process based on privacy
             java.util.Optional<FollowRequest> existingReq = followRequestRepository
                     .findBySenderAndReceiver(dbCurrentUser, dbTargetUser);
             if (existingReq.isEmpty()) {
-                FollowRequest request = new FollowRequest(dbCurrentUser, dbTargetUser);
-                followRequestRepository.save(request);
+                if (!dbTargetUser.isPrivateAccount()) {
+                    // Direct follow for public accounts
+                    dbTargetUser.getFollowers().add(dbCurrentUser);
+                    dbCurrentUser.getFollowing().add(dbTargetUser);
+                    userRepository.save(dbTargetUser);
+                    userRepository.save(dbCurrentUser);
+                    notificationRepository.save(new Notification(dbTargetUser, dbCurrentUser,
+                            "@" + dbCurrentUser.getUsername() + " started following you!", "FOLLOW_ACCEPT"));
+                    return org.springframework.http.ResponseEntity.ok(java.util.Map.of("status", "FOLLOWING"));
+                } else {
+                    // Follow request for private accounts
+                    FollowRequest request = new FollowRequest(dbCurrentUser, dbTargetUser);
+                    followRequestRepository.save(request);
 
-                Notification notif = new Notification(dbTargetUser, dbCurrentUser,
-                        "@" + dbCurrentUser.getUsername() + " wants to follow you!", "FOLLOW_REQUEST");
-                notificationRepository.save(notif);
-                return org.springframework.http.ResponseEntity.ok(java.util.Map.of("status", "REQUESTED"));
+                    Notification notif = new Notification(dbTargetUser, dbCurrentUser,
+                            "@" + dbCurrentUser.getUsername() + " wants to follow you!", "FOLLOW_REQUEST");
+                    notificationRepository.save(notif);
+                    return org.springframework.http.ResponseEntity.ok(java.util.Map.of("status", "REQUESTED"));
+                }
             } else {
                 // If it already exists, we return REQUESTED so the frontend knows it's there.
-                // The frontend can then choose to call cancel if the user clicks again.
                 return org.springframework.http.ResponseEntity.ok(java.util.Map.of("status", "REQUESTED"));
             }
         }

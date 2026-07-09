@@ -258,6 +258,40 @@
             color: var(--text-secondary);
         }
 
+        .sidebar-subtab {
+            display: flex;
+            align-items: center;
+            padding: 8px 15px 8px 45px;
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            margin: 2px 0;
+        }
+
+        .sidebar-subtab:hover {
+            background: rgba(59, 130, 246, 0.1);
+            color: #0284c7;
+            transform: translateX(4px);
+        }
+
+        .sidebar-subtab i {
+            width: 20px;
+            font-size: 14px;
+            color: inherit;
+        }
+        
+        .sidebar-subtab b {
+            margin-left: auto;
+            background: rgba(15, 23, 42, 0.05);
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-size: 11px;
+            color: var(--text-primary);
+        }
+
         .mobile-menu-btn {
             background: none;
             border: none;
@@ -336,9 +370,39 @@
     <div class="dashboard-container">
         <!-- Left Sidebar -->
         <aside class="sidebar">
-            <a th:href="@{/admin}" class="sidebar-link active"><i class="fas fa-chart-line" style="color: inherit;"></i> Overview</a>
+            <a href="javascript:void(0)" class="sidebar-link active" onclick="toggleOverview()" style="display: flex; align-items: center; justify-content: space-between;">
+                <span><i class="fas fa-chart-line" style="color: inherit;"></i> Overview</span>
+                <i id="overview-arrow" class="fas fa-chevron-down" style="transition: transform 0.3s ease; width: auto; font-size: 14px;"></i>
+            </a>
+            
+            <div id="overview-subtabs" class="sidebar-subtabs" style="display: flex; flex-direction: column; margin-bottom: 8px; overflow: hidden; transition: max-height 0.3s ease, margin-bottom 0.3s ease, opacity 0.3s ease; max-height: 500px; opacity: 1;">
+                <a href="#users-section" onclick="document.getElementById('users-section').scrollIntoView({behavior: 'smooth'})" class="sidebar-subtab">
+                    <i class="fas fa-users"></i> Total Users <b th:text="${users.size()}">0</b>
+                </a>
+                <a href="/events/admin/manage" class="sidebar-subtab">
+                    <i class="fas fa-calendar-check"></i> Total Events <b th:text="${totalEvents}">0</b>
+                </a>
+                <a href="/events/admin/manage?status=UPCOMING" class="sidebar-subtab">
+                    <i class="fas fa-hourglass-start"></i> Upcoming Events <b th:text="${upcomingEvents}">0</b>
+                </a>
+                <a href="/events/admin/manage?status=ONGOING" class="sidebar-subtab">
+                    <i class="fas fa-circle-notch"></i> Ongoing Events <b th:text="${ongoingEvents}">0</b>
+                </a>
+                <a href="/events/admin/manage?status=VOTING" class="sidebar-subtab">
+                    <i class="fas fa-vote-yea"></i> Active Polls <b th:text="${votingCount}">0</b>
+                </a>
+                <a href="/admin/battles" class="sidebar-subtab">
+                    <i class="fas fa-fire"></i> Total Battles <b th:text="${totalBattles}">0</b>
+                </a>
+                <a href="/admin/battles" class="sidebar-subtab">
+                    <i class="fas fa-play"></i> Running Battles <b th:text="${runningBattles}">0</b>
+                </a>
+                <a href="/admin/battles" class="sidebar-subtab">
+                    <i class="fas fa-user-plus"></i> Battle Joins <b th:text="${totalJoinedUsers}">0</b>
+                </a>
+            </div>
+
             <a th:href="@{/events/admin/manage}" class="sidebar-link"><i class="fas fa-calendar-alt" style="color: inherit;"></i> Manage Events</a>
-            <a th:href="@{/admin/music}" class="sidebar-link"><i class="fas fa-music" style="color: inherit;"></i> Review Music</a>
             <a th:href="@{/admin/battles}" class="sidebar-link"><i class="fas fa-fire" style="color: inherit;"></i> Manage Battles</a>
             <a th:href="@{/events/admin/create}" class="sidebar-link"><i class="fas fa-plus-circle" style="color: inherit;"></i> Create Event</a>
             
@@ -360,15 +424,6 @@
                 <div>
                     <h3 style="font-size: 24px; color: #fff;" th:text="${users.size()}">0</h3>
                     <span style="color: #94a3b8; font-size: 14px;">Total Users</span>
-                </div>
-            </div>
-            <div class="stat-card" style="cursor:pointer;" onclick="location.href='/admin/music'">
-                <div class="stat-icon" style="background: rgba(59,130,246,0.12);">
-                    <i class="fas fa-music" style="color:#3b82f6;"></i>
-                </div>
-                <div>
-                    <h3 style="font-size: 24px; color: #fff;">Review</h3>
-                    <span style="color: #94a3b8; font-size: 14px;">Music uploads</span>
                 </div>
             </div>
             <div class="stat-card" style="cursor:pointer;" onclick="location.href='/events/admin/manage'">
@@ -628,7 +683,7 @@
             </form>
         </div>
 
-        <h2 style="margin-bottom: 20px;">Recent Registrations</h2>
+        <h2 id="users-section" style="margin-bottom: 20px; padding-top: 100px; margin-top: -100px;">Recent Registrations</h2>
         <table class="data-table">
             <thead>
                 <tr>
@@ -682,6 +737,24 @@
         </main>
     </div>
 
+    <script>
+        function toggleOverview() {
+            const subtabs = document.getElementById('overview-subtabs');
+            const arrow = document.getElementById('overview-arrow');
+            if (subtabs.style.maxHeight === '0px') {
+                subtabs.style.maxHeight = '500px';
+                subtabs.style.opacity = '1';
+                subtabs.style.marginBottom = '8px';
+                arrow.style.transform = 'rotate(0deg)';
+            } else {
+                subtabs.style.maxHeight = '0px';
+                subtabs.style.opacity = '0';
+                subtabs.style.marginBottom = '0px';
+                arrow.style.transform = 'rotate(-90deg)';
+            }
+        }
+    </script>
 </body>
 
 </html>
+

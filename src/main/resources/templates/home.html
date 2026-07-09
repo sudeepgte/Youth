@@ -358,7 +358,7 @@
                 <p style="color: var(--text-secondary); margin-top: 4px;">Everything you need to thrive in the Zentrix
                     community.</p>
             </div>
-            <a th:href="@{/features}" class="see-all">See All Features â€º</a>
+            <a th:href="@{/features}" class="see-all">See All Features &rsaquo;</a>
         </div>
         <div class="feature-grid">
             <a class="feature-item reveal" th:href="@{/messages}">
@@ -416,7 +416,7 @@
                         Campus Life</div>
                     <h3 style="font-size: 32px; font-weight: 800;">Local Events</h3>
                     <p style="font-size: 17px; margin-top: 12px; color: var(--text-secondary);">Your calendar for campus
-                        lifeâ€”from underground jam sessions to global tech summits.</p>
+                        life&mdash;from underground jam sessions to global tech summits.</p>
                     <span class="feature-link"
                         style="margin-top: 24px; color: var(--accent-hover); font-weight: 700;"><i
                             class="fa-solid fa-circle-arrow-right"></i> View Calendar</span>
@@ -466,7 +466,7 @@
                 <p style="color: var(--text-secondary); margin-top: 4px;">Created by our community and administrators.
                 </p>
             </div>
-            <a th:href="@{/events}" class="see-all">Explore All Events â€º</a>
+            <a th:href="@{/events}" class="see-all">Explore All Events &rsaquo;</a>
         </div>
         <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; max-width: 1200px;">
             <th:block th:each="event : ${events}" th:if="${eventStat.index < 3}">
@@ -541,7 +541,7 @@
                 <div class="category-info">
                     <h3>Music</h3>
                     <p>Concerts, jam sessions, open mics, and music battles.</p>
-                    <div class="category-meta"><i class="fa-solid fa-music"></i> Live â€¢ Rooms â€¢ Playlists</div>
+                    <div class="category-meta"><i class="fa-solid fa-music"></i> Live &bull; Rooms &bull; Playlists</div>
                 </div>
             </a>
             <a th:href="@{/events}" class="category-card cat-blue">
@@ -552,7 +552,7 @@
                 <div class="category-info">
                     <h3>Tech</h3>
                     <p>Hack nights, workshops, talks, and creator meetups.</p>
-                    <div class="category-meta"><i class="fa-solid fa-microchip"></i> Build â€¢ Learn â€¢ Ship</div>
+                    <div class="category-meta"><i class="fa-solid fa-microchip"></i> Build &bull; Learn &bull; Ship</div>
                 </div>
             </a>
             <a th:href="@{/events}" class="category-card cat-yellow">
@@ -563,7 +563,7 @@
                 <div class="category-info">
                     <h3>Comedy</h3>
                     <p>Standup shows, improv nights, and fun community gigs.</p>
-                    <div class="category-meta"><i class="fa-solid fa-face-laugh"></i> Laugh â€¢ Meet â€¢ Chill</div>
+                    <div class="category-meta"><i class="fa-solid fa-face-laugh"></i> Laugh &bull; Meet &bull; Chill</div>
                 </div>
             </a>
             <a th:href="@{/events}" class="category-card cat-purple">
@@ -574,7 +574,18 @@
                 <div class="category-info">
                     <h3>Sports</h3>
                     <p>Tournaments, watch parties, and friendly challenges.</p>
-                    <div class="category-meta"><i class="fa-solid fa-trophy"></i> Compete â€¢ Team up</div>
+                    <div class="category-meta"><i class="fa-solid fa-trophy"></i> Compete &bull; Team up</div>
+                </div>
+            </a>
+            <a th:href="@{/events}" class="category-card" style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2);">
+                <div class="category-icon">
+                    <img src="https://images.unsplash.com/photo-1517457373958-b7bdd4587205?q=80&w=800&auto=format&fit=crop"
+                        alt="Others category" style="border-radius: 20px;">
+                </div>
+                <div class="category-info">
+                    <h3 style="color: #10b981;">Others</h3>
+                    <p>Miscellaneous events, fun activities, and more.</p>
+                    <div class="category-meta" style="color: #10b981;"><i class="fa-solid fa-star"></i> Explore &bull; Discover</div>
                 </div>
             </a>
         </div>
@@ -584,7 +595,7 @@
     <section class="container section-muted" style="border-radius: 18px;">
         <div class="section-header">
             <h2 style="font-size: 32px; font-weight: 900;">What Students <span style="background: var(--gradient-1); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Say</span></h2>
-            <a th:href="@{/register}" class="see-all">Join Now â€º</a>
+            <a th:href="@{/register}" class="see-all">Join Now &rsaquo;</a>
         </div>
 
         <!-- Success toast -->
@@ -607,7 +618,7 @@
                     </div>
                 </div>
                 <textarea name="content" required rows="3"
-                    placeholder="Share your experience with Zentrix â€” what do you love most? What have you achieved here?..."
+                    placeholder="Share your experience with Zentrix &mdash; what do you love most? What have you achieved here?..."
                     style="width: 100%; border: 1.5px solid rgba(59,130,246,0.2); border-radius: 14px; padding: 14px 16px; font-size: 14px; color: #0F172A; background: #F8FAFC; outline: none; resize: vertical; font-family: inherit; box-sizing: border-box; line-height: 1.6;"></textarea>
                 <div class="form-actions-row" style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; flex-wrap: wrap;">
                     <select name="category"
@@ -632,8 +643,8 @@
                 <div class="surface reveal" style="padding: 22px;">
                     <div class="pill pill-pink"><i class="fa-solid fa-quote-left"></i> <span
                             th:text="${thought.category != null ? thought.category : 'Community'}">Category</span></div>
-                    <p style="margin-top: 12px; color: var(--text-secondary);" th:text="'â€œ' + ${thought.content} + 'â€'">
-                        â€œThoughts contentâ€</p>
+                    <p style="margin-top: 12px; color: var(--text-secondary);" th:text="'&quot;' + ${thought.content} + '&quot;'">
+                        &quot;Thoughts content&quot;</p>
                     <div style="margin-top: 14px; font-weight: 800;"
                         th:text="${thought.user != null ? thought.user.username : 'Anonymous'}">Aanya</div>
                 </div>
@@ -642,8 +653,8 @@
             <th:block th:if="${#lists.isEmpty(thoughts)}">
                 <div class="surface" style="padding: 22px;">
                     <div class="pill pill-pink"><i class="fa-solid fa-quote-left"></i> Community</div>
-                    <p style="margin-top: 12px; color: var(--text-secondary);">â€œI met my project teammates here and now
-                        we attend events together.â€</p>
+                    <p style="margin-top: 12px; color: var(--text-secondary);">&quot;I met my project teammates here and now
+                        we attend events together.&quot;</p>
                     <div style="margin-top: 14px; font-weight: 800;">Aanya</div>
                 </div>
             </th:block>
@@ -796,7 +807,7 @@
                 <h2 style="font-size: 32px;">Frequently Asked Questions</h2>
                 <p style="color: var(--text-secondary); margin-top: 4px;">Quick answers to common questions about the Zentrix platform.</p>
             </div>
-            <a th:href="@{/faq}" class="see-all">View All FAQs â€º</a>
+            <a th:href="@{/faq}" class="see-all">View All FAQs &rsaquo;</a>
         </div>
 
         <div style="max-width: 900px; margin: 0 auto;">

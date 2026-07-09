@@ -665,7 +665,6 @@
             <a th:href="@{/reels}" class="sidebar-link"><i class="fas fa-film"></i> Reels</a>
             <a th:href="@{/profile}" class="sidebar-link"><i class="fas fa-user"></i> Profile</a>
             <a th:href="@{/games}" class="sidebar-link"><i class="fas fa-gamepad"></i> Games</a>
-            <a th:href="@{/music}" class="sidebar-link"><i class="fas fa-music"></i> Music</a>
             <a href="javascript:void(0)" class="sidebar-link" onclick="openCreateModal()"><i class="fas fa-plus-circle" style="color: var(--accent);"></i> Create Post</a>
             <a th:href="@{/logout}" class="sidebar-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </aside>
@@ -738,8 +737,8 @@
                             <i th:class="${ach.position == 'Winner'} ? 'fas fa-trophy' : 'fas fa-medal'"></i>
                         </div>
                         <div class="award-info">
-                            <p th:text="${ach.position} + ' â€¢ ' + ${#temporals.format(ach.event.dateTime, 'MMM yyyy')}">
-                                WINNER â€¢ MAR 2025</p>
+                            <p th:text="${ach.position} + ' &bull; ' + ${#temporals.format(ach.event.dateTime, 'MMM yyyy')}">
+                                WINNER &bull; MAR 2025</p>
                             <h4 th:text="${ach.event.title}">Event Title</h4>
                             <div class="award-xp">
                                 <i class="fas fa-bolt"></i>

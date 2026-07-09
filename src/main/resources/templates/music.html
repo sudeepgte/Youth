@@ -81,7 +81,6 @@
             <a th:href="@{/reels}" class="sidebar-link"><i class="fas fa-film"></i> Reels</a>
             <a th:href="@{/profile}" class="sidebar-link"><i class="fas fa-user"></i> Profile</a>
             <a th:href="@{/games}" class="sidebar-link"><i class="fas fa-gamepad"></i> Games</a>
-            <a th:href="@{/music}" class="sidebar-link active"><i class="fas fa-music"></i> Music</a>
             <a href="javascript:void(0)" class="sidebar-link" onclick="openCreateModal()"><i class="fas fa-plus-circle" style="color: var(--accent);"></i> Create Post</a>
             <a th:href="@{/logout}" class="sidebar-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </aside>
@@ -149,7 +148,7 @@
                     <div style="font-weight: 900; font-size: 15px; color: var(--text-primary);" th:text="${t.title}">Title</div>
                     <div style="color: var(--text-secondary); font-size: 12px; font-weight: 600;">
                         <span th:text="${t.artistName}">Artist</span>
-                        <span style="opacity:0.6;"> â€¢ </span>
+                        <span style="opacity:0.6;"> &bull; </span>
                         <span th:text="${t.licenseName}">License</span>
                     </div>
                 </div>
