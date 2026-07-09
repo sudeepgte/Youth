@@ -25,6 +25,9 @@ public class Event {
     private String category;
     private String organizer;
     private LocalDateTime createdAt = LocalDateTime.now();
+    
+    @Column(name = "deleted", nullable = false, columnDefinition = "boolean default false")
+    private boolean deleted = false;
 
     // New fields for admin create event flow
     private String status = "UPCOMING";  // UPCOMING, ONGOING, COMPLETED
@@ -81,6 +84,70 @@ public class Event {
 
     public Double getRegularPrice() { return regularPrice; }
     public void setRegularPrice(Double regularPrice) { this.regularPrice = regularPrice; }
+
+
+    // House Parties
+    private String hpPartyType;
+    private String hpTheme;
+    private String hpDressCode;
+    private Integer hpGuestLimit;
+    private String hpEntryType;
+    private Integer hpMinimumAge;
+    private Integer hpMaximumAge;
+    private String hpMusicGenre;
+    private boolean hpFoodIncluded;
+    private boolean hpDrinksIncluded;
+    private boolean hpParkingAvailable;
+    private boolean hpSecurityAvailable;
+
+    // Trekking
+    private String trTrekDifficulty;
+    private Double trTrekDistance;
+    private String trTrekDuration;
+    private String trTrekHeight;
+    private String trMeetingPoint;
+    private String trReportingTime;
+    private String trFitnessLevel;
+    private boolean trGuideIncluded;
+    private boolean trCampingIncluded;
+    private boolean trFoodIncluded;
+    private boolean trTransportIncluded;
+    private String trEmergencyContact;
+    private String trRequiredEquipment;
+    private boolean trMedicalCertRequired;
+
+    // Adventure
+    private String advAdventureType;
+    private String advDifficultyLevel;
+    private boolean advSafetyEquipIncluded;
+    private boolean advInstructorAvailable;
+    private boolean advInsuranceIncluded;
+    private boolean advMedicalCertRequired;
+    private Integer advMinAge;
+    private Integer advMaxAge;
+    private String advDuration;
+    private String advTiming;
+    private String advEmergencyContact;
+
+    // Biking
+    private String bkRideType;
+    private Double bkRideDistance;
+    private String bkStartLocation;
+    private String bkDestination;
+    private String bkMeetingPoint;
+    private String bkReportingTime;
+    private String bkCCLimit;
+    private boolean bkHelmetMandatory;
+    private boolean bkJacketMandatory;
+    private boolean bkGlovesMandatory;
+    private boolean bkExperienceRequired;
+    private boolean bkFuelIncluded;
+    private boolean bkSupportVehicle;
+    private boolean bkBreakfastIncluded;
+    private boolean bkLunchIncluded;
+    private boolean bkDinnerIncluded;
+    private boolean bkStayIncluded;
+    private String bkEmergencySupport;
 
     public Long getId() {
         return id;
@@ -240,4 +307,118 @@ public class Event {
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public boolean isDeleted() { return deleted; }
+    public void setDeleted(boolean deleted) { this.deleted = deleted; }
+    public String getHpPartyType() { return hpPartyType; }
+    public void setHpPartyType(String hpPartyType) { this.hpPartyType = hpPartyType; }
+    public String getHpTheme() { return hpTheme; }
+    public void setHpTheme(String hpTheme) { this.hpTheme = hpTheme; }
+    public String getHpDressCode() { return hpDressCode; }
+    public void setHpDressCode(String hpDressCode) { this.hpDressCode = hpDressCode; }
+    public Integer getHpGuestLimit() { return hpGuestLimit; }
+    public void setHpGuestLimit(Integer hpGuestLimit) { this.hpGuestLimit = hpGuestLimit; }
+    public String getHpEntryType() { return hpEntryType; }
+    public void setHpEntryType(String hpEntryType) { this.hpEntryType = hpEntryType; }
+    public Integer getHpMinimumAge() { return hpMinimumAge; }
+    public void setHpMinimumAge(Integer hpMinimumAge) { this.hpMinimumAge = hpMinimumAge; }
+    public Integer getHpMaximumAge() { return hpMaximumAge; }
+    public void setHpMaximumAge(Integer hpMaximumAge) { this.hpMaximumAge = hpMaximumAge; }
+    public String getHpMusicGenre() { return hpMusicGenre; }
+    public void setHpMusicGenre(String hpMusicGenre) { this.hpMusicGenre = hpMusicGenre; }
+    public boolean isHpFoodIncluded() { return hpFoodIncluded; }
+    public void setHpFoodIncluded(boolean hpFoodIncluded) { this.hpFoodIncluded = hpFoodIncluded; }
+    public boolean isHpDrinksIncluded() { return hpDrinksIncluded; }
+    public void setHpDrinksIncluded(boolean hpDrinksIncluded) { this.hpDrinksIncluded = hpDrinksIncluded; }
+    public boolean isHpParkingAvailable() { return hpParkingAvailable; }
+    public void setHpParkingAvailable(boolean hpParkingAvailable) { this.hpParkingAvailable = hpParkingAvailable; }
+    public boolean isHpSecurityAvailable() { return hpSecurityAvailable; }
+    public void setHpSecurityAvailable(boolean hpSecurityAvailable) { this.hpSecurityAvailable = hpSecurityAvailable; }
+    public String getTrTrekDifficulty() { return trTrekDifficulty; }
+    public void setTrTrekDifficulty(String trTrekDifficulty) { this.trTrekDifficulty = trTrekDifficulty; }
+    public Double getTrTrekDistance() { return trTrekDistance; }
+    public void setTrTrekDistance(Double trTrekDistance) { this.trTrekDistance = trTrekDistance; }
+    public String getTrTrekDuration() { return trTrekDuration; }
+    public void setTrTrekDuration(String trTrekDuration) { this.trTrekDuration = trTrekDuration; }
+    public String getTrTrekHeight() { return trTrekHeight; }
+    public void setTrTrekHeight(String trTrekHeight) { this.trTrekHeight = trTrekHeight; }
+    public String getTrMeetingPoint() { return trMeetingPoint; }
+    public void setTrMeetingPoint(String trMeetingPoint) { this.trMeetingPoint = trMeetingPoint; }
+    public String getTrReportingTime() { return trReportingTime; }
+    public void setTrReportingTime(String trReportingTime) { this.trReportingTime = trReportingTime; }
+    public String getTrFitnessLevel() { return trFitnessLevel; }
+    public void setTrFitnessLevel(String trFitnessLevel) { this.trFitnessLevel = trFitnessLevel; }
+    public boolean isTrGuideIncluded() { return trGuideIncluded; }
+    public void setTrGuideIncluded(boolean trGuideIncluded) { this.trGuideIncluded = trGuideIncluded; }
+    public boolean isTrCampingIncluded() { return trCampingIncluded; }
+    public void setTrCampingIncluded(boolean trCampingIncluded) { this.trCampingIncluded = trCampingIncluded; }
+    public boolean isTrFoodIncluded() { return trFoodIncluded; }
+    public void setTrFoodIncluded(boolean trFoodIncluded) { this.trFoodIncluded = trFoodIncluded; }
+    public boolean isTrTransportIncluded() { return trTransportIncluded; }
+    public void setTrTransportIncluded(boolean trTransportIncluded) { this.trTransportIncluded = trTransportIncluded; }
+    public String getTrEmergencyContact() { return trEmergencyContact; }
+    public void setTrEmergencyContact(String trEmergencyContact) { this.trEmergencyContact = trEmergencyContact; }
+    public String getTrRequiredEquipment() { return trRequiredEquipment; }
+    public void setTrRequiredEquipment(String trRequiredEquipment) { this.trRequiredEquipment = trRequiredEquipment; }
+    public boolean isTrMedicalCertRequired() { return trMedicalCertRequired; }
+    public void setTrMedicalCertRequired(boolean trMedicalCertRequired) { this.trMedicalCertRequired = trMedicalCertRequired; }
+    public String getAdvAdventureType() { return advAdventureType; }
+    public void setAdvAdventureType(String advAdventureType) { this.advAdventureType = advAdventureType; }
+    public String getAdvDifficultyLevel() { return advDifficultyLevel; }
+    public void setAdvDifficultyLevel(String advDifficultyLevel) { this.advDifficultyLevel = advDifficultyLevel; }
+    public boolean isAdvSafetyEquipIncluded() { return advSafetyEquipIncluded; }
+    public void setAdvSafetyEquipIncluded(boolean advSafetyEquipIncluded) { this.advSafetyEquipIncluded = advSafetyEquipIncluded; }
+    public boolean isAdvInstructorAvailable() { return advInstructorAvailable; }
+    public void setAdvInstructorAvailable(boolean advInstructorAvailable) { this.advInstructorAvailable = advInstructorAvailable; }
+    public boolean isAdvInsuranceIncluded() { return advInsuranceIncluded; }
+    public void setAdvInsuranceIncluded(boolean advInsuranceIncluded) { this.advInsuranceIncluded = advInsuranceIncluded; }
+    public boolean isAdvMedicalCertRequired() { return advMedicalCertRequired; }
+    public void setAdvMedicalCertRequired(boolean advMedicalCertRequired) { this.advMedicalCertRequired = advMedicalCertRequired; }
+    public Integer getAdvMinAge() { return advMinAge; }
+    public void setAdvMinAge(Integer advMinAge) { this.advMinAge = advMinAge; }
+    public Integer getAdvMaxAge() { return advMaxAge; }
+    public void setAdvMaxAge(Integer advMaxAge) { this.advMaxAge = advMaxAge; }
+    public String getAdvDuration() { return advDuration; }
+    public void setAdvDuration(String advDuration) { this.advDuration = advDuration; }
+    public String getAdvTiming() { return advTiming; }
+    public void setAdvTiming(String advTiming) { this.advTiming = advTiming; }
+    public String getAdvEmergencyContact() { return advEmergencyContact; }
+    public void setAdvEmergencyContact(String advEmergencyContact) { this.advEmergencyContact = advEmergencyContact; }
+    public String getBkRideType() { return bkRideType; }
+    public void setBkRideType(String bkRideType) { this.bkRideType = bkRideType; }
+    public Double getBkRideDistance() { return bkRideDistance; }
+    public void setBkRideDistance(Double bkRideDistance) { this.bkRideDistance = bkRideDistance; }
+    public String getBkStartLocation() { return bkStartLocation; }
+    public void setBkStartLocation(String bkStartLocation) { this.bkStartLocation = bkStartLocation; }
+    public String getBkDestination() { return bkDestination; }
+    public void setBkDestination(String bkDestination) { this.bkDestination = bkDestination; }
+    public String getBkMeetingPoint() { return bkMeetingPoint; }
+    public void setBkMeetingPoint(String bkMeetingPoint) { this.bkMeetingPoint = bkMeetingPoint; }
+    public String getBkReportingTime() { return bkReportingTime; }
+    public void setBkReportingTime(String bkReportingTime) { this.bkReportingTime = bkReportingTime; }
+    public String getBkCCLimit() { return bkCCLimit; }
+    public void setBkCCLimit(String bkCCLimit) { this.bkCCLimit = bkCCLimit; }
+    public boolean isBkHelmetMandatory() { return bkHelmetMandatory; }
+    public void setBkHelmetMandatory(boolean bkHelmetMandatory) { this.bkHelmetMandatory = bkHelmetMandatory; }
+    public boolean isBkJacketMandatory() { return bkJacketMandatory; }
+    public void setBkJacketMandatory(boolean bkJacketMandatory) { this.bkJacketMandatory = bkJacketMandatory; }
+    public boolean isBkGlovesMandatory() { return bkGlovesMandatory; }
+    public void setBkGlovesMandatory(boolean bkGlovesMandatory) { this.bkGlovesMandatory = bkGlovesMandatory; }
+    public boolean isBkExperienceRequired() { return bkExperienceRequired; }
+    public void setBkExperienceRequired(boolean bkExperienceRequired) { this.bkExperienceRequired = bkExperienceRequired; }
+    public boolean isBkFuelIncluded() { return bkFuelIncluded; }
+    public void setBkFuelIncluded(boolean bkFuelIncluded) { this.bkFuelIncluded = bkFuelIncluded; }
+    public boolean isBkSupportVehicle() { return bkSupportVehicle; }
+    public void setBkSupportVehicle(boolean bkSupportVehicle) { this.bkSupportVehicle = bkSupportVehicle; }
+    public boolean isBkBreakfastIncluded() { return bkBreakfastIncluded; }
+    public void setBkBreakfastIncluded(boolean bkBreakfastIncluded) { this.bkBreakfastIncluded = bkBreakfastIncluded; }
+    public boolean isBkLunchIncluded() { return bkLunchIncluded; }
+    public void setBkLunchIncluded(boolean bkLunchIncluded) { this.bkLunchIncluded = bkLunchIncluded; }
+    public boolean isBkDinnerIncluded() { return bkDinnerIncluded; }
+    public void setBkDinnerIncluded(boolean bkDinnerIncluded) { this.bkDinnerIncluded = bkDinnerIncluded; }
+    public boolean isBkStayIncluded() { return bkStayIncluded; }
+    public void setBkStayIncluded(boolean bkStayIncluded) { this.bkStayIncluded = bkStayIncluded; }
+    public String getBkEmergencySupport() { return bkEmergencySupport; }
+    public void setBkEmergencySupport(String bkEmergencySupport) { this.bkEmergencySupport = bkEmergencySupport; }
+
 }

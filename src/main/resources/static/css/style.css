@@ -2588,4 +2588,7 @@ input[type="file"].form-input::file-selector-button:hover {
         justify-content: center;
         text-align: center;
     }
-}
+}
+/* Force light color for event countdown timers */
+.countdown-timer, .countdown-timer span, .countdown-timer i { color: #ffffff !important; }
+

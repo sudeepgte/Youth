@@ -25,6 +25,11 @@
             --dashboard-nav-height: 64px;
         }
 
+        select option {
+            background: #ffffff !important;
+            color: #ffffff !important;
+        }
+
         html, body {
             overflow-x: clip !important;
         }
@@ -235,7 +240,7 @@
         }
 
         select option {
-            background: #1a1a2e;
+            background: #1a1a2e; color: #ffffff !important;
         }
 
         /* Category Cards */
@@ -828,7 +833,6 @@
         <aside class="sidebar">
             <a th:href="@{/admin}" class="sidebar-link"><i class="fas fa-chart-line" style="color: inherit;"></i> Overview</a>
             <a th:href="@{/events/admin/manage}" class="sidebar-link"><i class="fas fa-calendar-alt" style="color: inherit;"></i> Manage Events</a>
-            <a th:href="@{/admin/music}" class="sidebar-link"><i class="fas fa-music" style="color: inherit;"></i> Review Music</a>
             <a th:href="@{/admin/battles}" class="sidebar-link"><i class="fas fa-fire" style="color: inherit;"></i> Manage Battles</a>
             <a th:href="@{/events/admin/create}" class="sidebar-link active"><i class="fas fa-plus-circle" style="color: inherit;"></i> Create Event</a>
             
@@ -939,6 +943,615 @@
                                 <span class="cat-name">Art</span>
                             </div>
                         </label>
+                        <label class="cat-btn">
+                            <input type="radio" name="category" value="House Party"
+                                th:checked="${event.category == 'House Party'}">
+                            <div class="cat-label">
+                                <span class="cat-icon">💃</span>
+                                <span class="cat-name">House Party</span>
+                            </div>
+                        </label>
+                        <label class="cat-btn">
+                            <input type="radio" name="category" value="Adventure"
+                                th:checked="${event.category == 'Adventure'}">
+                            <div class="cat-label">
+                                <span class="cat-icon">⛰️</span>
+                                <span class="cat-name">Adventure</span>
+                            </div>
+                        </label>
+                        <label class="cat-btn">
+                            <input type="radio" name="category" value="Trekking"
+                                th:checked="${event.category == 'Trekking'}">
+                            <div class="cat-label">
+                                <span class="cat-icon">🥾</span>
+                                <span class="cat-name">Trekking</span>
+                            </div>
+                        </label>
+                        <label class="cat-btn">
+                            <input type="radio" name="category" value="Bike Riding"
+                                th:checked="${event.category == 'Bike Riding'}">
+                            <div class="cat-label">
+                                <span class="cat-icon">🏍️</span>
+                                <span class="cat-name">Bike Riding</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- HOUSE PARTY DYNAMIC FIELDS -->
+                <style>
+                    #ladiesPartyFields select, #ladiesPartyFields input, #ladiesPartyFields textarea {
+                        color: #333 !important;
+                        background-color: #fff !important;
+                    }
+                    select option {
+                        color: #333 !important;
+                        background-color: #fff !important;
+                    }
+                </style>
+                <div class="form-card" id="ladiesPartyFields" style="display: none; background: #fff0f5; border: 1px solid #ffb6c1;">
+                    <div class="section-label" style="color: #d81b60;">
+                        <i class="fas fa-home"></i> House Party Exclusive Details
+                    </div>
+                    <div class="two-col">
+                        <div class="field-group">
+                            <label>Party Theme</label>
+                            <input type="text" name="lp_theme" placeholder="e.g. Masquerade, Neon, Vintage" oninput="this.value = this.value.replace(/[^A-Za-z\s,]/g, '')">
+                        </div>
+                        <div class="field-group">
+                            <label>Party Type</label>
+                            <select name="lp_partyType">
+                                <option value="Kitty Party">Kitty Party</option>
+                                <option value="Ladies Night">Ladies Night</option>
+                                <option value="Fashion Party">Fashion Party</option>
+                                <option value="Brunch">Brunch</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="two-col">
+                        <div class="field-group">
+                            <label>Dress Code</label>
+                            <input type="text" name="lp_dressCode" placeholder="e.g. Red Gown, Casual, Ethnic" oninput="this.value = this.value.replace(/[^A-Za-z\s,]/g, '')">
+                        </div>
+                        <div class="field-group">
+                            <label>Age Group</label>
+                            <select name="lp_ageGroup">
+                                <option value="18+">18+</option>
+                                <option value="21+">21+</option>
+                                <option value="25-40">25-40</option>
+                                <option value="All Ages">All Ages (Adults)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="field-group">
+                        <label>Activities & Games</label>
+                        <textarea name="lp_activities" rows="2" placeholder="e.g. Tambola, DJ, Fashion Show, Games" oninput="this.value = this.value.replace(/[^A-Za-z\s,]/g, '')"></textarea>
+                    </div>
+                </div>
+
+                <!-- ADVENTURE DYNAMIC FIELDS -->
+                <style>
+                    #adventureFields select, #adventureFields input, #adventureFields textarea {
+                        color: #333 !important;
+                        background-color: #fff !important;
+                    }
+                    #adventureFields .checkbox-group label {
+                        margin-right: 15px;
+                        color: #333;
+                    }
+                </style>
+                <div class="form-card" id="adventureFields" style="display: none; background: #f0f8ff; border: 1px solid #87cefa;">
+                    <div class="section-label" style="color: #4682b4;">
+                        <i class="fas fa-mountain"></i> Adventure Exclusive Details
+                    </div>
+                    <div class="two-col">
+                        <div class="field-group">
+                            <label>Adventure Type</label>
+                            <select name="adv_type">
+                                <option value="River Rafting">River Rafting</option>
+                                <option value="Rock Climbing">Rock Climbing</option>
+                                <option value="Zipline">Zipline</option>
+                                <option value="Bungee Jumping">Bungee Jumping</option>
+                                <option value="Sky Diving">Sky Diving</option>
+                                <option value="Kayaking">Kayaking</option>
+                                <option value="Camping">Camping</option>
+                                <option value="ATV Ride">ATV Ride</option>
+                                <option value="Jungle Safari">Jungle Safari</option>
+                                <option value="Paragliding">Paragliding</option>
+                                <option value="Hot Air Balloon">Hot Air Balloon</option>
+                                <option value="Custom">Custom</option>
+                            </select>
+                        </div>
+                        <div class="field-group">
+                            <label>Difficulty Level</label>
+                            <select name="adv_difficulty">
+                                <option value="Beginner">Beginner</option>
+                                <option value="Intermediate">Intermediate</option>
+                                <option value="Advanced">Advanced</option>
+                                <option value="Expert">Expert</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="two-col">
+                        <div class="field-group">
+                            <label>Adventure Duration</label>
+                            <input type="text" name="adv_duration" placeholder="e.g. 2 Hours, 3 Days" oninput="this.value = this.value.replace(/^[^0-9]+/, '').replace(/[^0-9a-zA-Z\s]/g, '')">
+                        </div>
+                        <div class="field-group">
+                            <label>Distance Covered (KM)</label>
+                            <input type="number" step="0.1" name="adv_distance" placeholder="e.g. 15.5">
+                        </div>
+                    </div>
+                    <div class="two-col">
+                        <div class="field-group">
+                            <label>Elevation / Altitude (Optional)</label>
+                            <input type="text" name="adv_elevation" placeholder="e.g. 5000 ft" oninput="this.value = this.value.replace(/^[^0-9]+/, '').replace(/[^0-9a-zA-Z\s]/g, '')">
+                        </div>
+                        <div class="field-group">
+                            <label>Fitness Level Required</label>
+                            <select name="adv_fitness">
+                                <option value="Basic">Basic</option>
+                                <option value="Moderate">Moderate</option>
+                                <option value="High">High</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="two-col">
+                        <div class="field-group">
+                            <label>Minimum Age</label>
+                            <input type="number" name="adv_minAge" placeholder="Min Age" min="0" onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();">
+                        </div>
+                        <div class="field-group">
+                            <label>Maximum Age</label>
+                            <input type="number" name="adv_maxAge" placeholder="Max Age" min="0" onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();">
+                        </div>
+                    </div>
+                    <div class="field-group">
+                        <label style="font-size: 14px; font-weight: 700; color: #2e7d32; text-transform: uppercase; margin-top: 20px; margin-bottom: 15px; border-bottom: 1px dashed #a5d6a7; padding-bottom: 8px; display: flex; align-items: center; gap: 8px;"><i class="fas fa-life-ring"></i> Safety Equipment Provided</label>
+                        <div class="checkbox-group" style="display: flex; flex-wrap: wrap;">
+                            <label><input type="checkbox" name="adv_safetyEquipment" value="Helmet"> Helmet</label>
+                            <label><input type="checkbox" name="adv_safetyEquipment" value="Life Jacket"> Life Jacket</label>
+                            <label><input type="checkbox" name="adv_safetyEquipment" value="Harness"> Harness</label>
+                            <label><input type="checkbox" name="adv_safetyEquipment" value="Gloves"> Gloves</label>
+                            <label><input type="checkbox" name="adv_safetyEquipment" value="Knee Guards"> Knee Guards</label>
+                            <label><input type="checkbox" name="adv_safetyEquipment" value="Elbow Guards"> Elbow Guards</label>
+                            <label><input type="checkbox" name="adv_safetyEquipment" value="Safety Rope"> Safety Rope</label>
+                            <label><input type="checkbox" name="adv_safetyEquipment" value="First Aid Kit"> First Aid Kit</label>
+                        </div>
+                    </div>
+                    <div class="field-group">
+                        <label style="font-size: 14px; font-weight: 700; color: #2e7d32; text-transform: uppercase; margin-top: 20px; margin-bottom: 15px; border-bottom: 1px dashed #a5d6a7; padding-bottom: 8px; display: flex; align-items: center; gap: 8px;"><i class="fas fa-backpack"></i> Things Participants Must Bring</label>
+                        <textarea name="adv_thingsToBring" rows="2" placeholder="e.g. Water bottle, Trekking shoes" oninput="this.value = this.value.replace(/^[^a-zA-Z]+/, '').replace(/[^0-9a-zA-Z\s,.-]/g, '')"></textarea>
+                    </div>
+                    <div class="two-col">
+                        <div class="field-group">
+                            <label>Medical Fitness Certificate Required</label>
+                            <select name="adv_medical">
+                                <option value="No">No</option>
+                                <option value="Yes">Yes</option>
+                            </select>
+                        </div>
+                        <div class="field-group">
+                            <label>Professional Guide Available</label>
+                            <select name="adv_guide">
+                                <option value="Yes">Yes</option>
+                                <option value="No">No</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="two-col">
+                        <div class="field-group">
+                            <label>Insurance Included</label>
+                            <select name="adv_insurance">
+                                <option value="No">No</option>
+                                <option value="Yes">Yes</option>
+                            </select>
+                        </div>
+                        <div class="field-group">
+                            <label>Emergency Rescue Support</label>
+                            <select name="adv_rescue">
+                                <option value="Yes">Yes</option>
+                                <option value="No">No</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="two-col">
+                        <div class="field-group">
+                            <label>Food Included</label>
+                            <select name="adv_food">
+                                <option value="None">None</option>
+                                <option value="Breakfast">Breakfast</option>
+                                <option value="Lunch">Lunch</option>
+                                <option value="Dinner">Dinner</option>
+                                <option value="Snacks">Snacks</option>
+                            </select>
+                        </div>
+                        <div class="field-group">
+                            <label>Stay Included</label>
+                            <select name="adv_stay">
+                                <option value="No Stay">No Stay</option>
+                                <option value="Tent">Tent</option>
+                                <option value="Camp">Camp</option>
+                                <option value="Resort">Resort</option>
+                                <option value="Hotel">Hotel</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="two-col">
+                        <div class="field-group">
+                            <label>Transportation Included</label>
+                            <select name="adv_transport">
+                                <option value="No">No</option>
+                                <option value="Yes">Yes</option>
+                            </select>
+                        </div>
+                        <div class="field-group">
+                            <label>Photography / Videography Included</label>
+                            <select name="adv_photography">
+                                <option value="No">No</option>
+                                <option value="Yes">Yes</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TREKKING DYNAMIC FIELDS -->
+                <style>
+                    #trekkingFields select, #trekkingFields input, #trekkingFields textarea {
+                        color: #333 !important;
+                        background-color: #fff !important;
+                    }
+                    #trekkingFields .checkbox-group label {
+                        margin-right: 15px;
+                        color: #333;
+                    }
+                </style>
+                <div class="form-card" id="trekkingFields" style="display: none; background: #e8f5e9; border: 1px solid #81c784;">
+                    <div class="section-label" style="color: #2e7d32;">
+                        <i class="fas fa-hiking"></i> Trekking Exclusive Details
+                    </div>
+                    <div class="two-col">
+                        <div class="field-group">
+                            <label>Trek Type</label>
+                            <select name="trek_type">
+                                <option value="Day Trek">Day Trek</option>
+                                <option value="Night Trek">Night Trek</option>
+                                <option value="Sunrise Trek">Sunrise Trek</option>
+                                <option value="Sunset Trek">Sunset Trek</option>
+                                <option value="Forest Trek">Forest Trek</option>
+                                <option value="Mountain Trek">Mountain Trek</option>
+                                <option value="Waterfall Trek">Waterfall Trek</option>
+                                <option value="Camping Trek">Camping Trek</option>
+                                <option value="Snow Trek">Snow Trek</option>
+                                <option value="Custom">Custom</option>
+                            </select>
+                        </div>
+                        <div class="field-group">
+                            <label>Trek Difficulty</label>
+                            <select name="trek_difficulty">
+                                <option value="Easy">Easy</option>
+                                <option value="Moderate">Moderate</option>
+                                <option value="Difficult">Difficult</option>
+                                <option value="Expert">Expert</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="two-col">
+                        <div class="field-group">
+                            <label>Trek Distance (KM)</label>
+                            <input type="number" step="0.1" name="trek_distance" placeholder="e.g. 12.5">
+                        </div>
+                        <div class="field-group">
+                            <label>Estimated Trek Duration</label>
+                            <input type="text" name="trek_duration" placeholder="e.g. 6 Hours" oninput="this.value = this.value.replace(/^[^0-9]+/, '').replace(/[^0-9a-zA-Z\s]/g, '')">
+                        </div>
+                    </div>
+                    <div class="two-col">
+                        <div class="field-group">
+                            <label>Maximum Trek Elevation (Feet / Meters)</label>
+                            <input type="text" name="trek_elevation" placeholder="e.g. 10000 ft" oninput="this.value = this.value.replace(/^[^0-9]+/, '').replace(/[^0-9a-zA-Z\s]/g, '')">
+                        </div>
+                        <div class="field-group">
+                            <label>Trail Type</label>
+                            <select name="trek_trailType">
+                                <option value="Forest">Forest</option>
+                                <option value="Mountain">Mountain</option>
+                                <option value="Rocky">Rocky</option>
+                                <option value="Desert">Desert</option>
+                                <option value="Coastal">Coastal</option>
+                                <option value="Mixed Terrain">Mixed Terrain</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="two-col">
+                        <div class="field-group">
+                            <label>Fitness Level Required</label>
+                            <select name="trek_fitness">
+                                <option value="Beginner">Beginner</option>
+                                <option value="Moderate">Moderate</option>
+                                <option value="High">High</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="two-col">
+                        <div class="field-group">
+                            <label>Minimum Age</label>
+                            <input type="number" name="trek_minAge" placeholder="Min Age" min="0" onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();">
+                        </div>
+                        <div class="field-group">
+                            <label>Maximum Age</label>
+                            <input type="number" name="trek_maxAge" placeholder="Max Age" min="0" onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();">
+                        </div>
+                    </div>
+                    <div class="two-col">
+                        <div class="field-group">
+                            <label>Reporting Point</label>
+                            <input type="text" name="trek_reportingPoint" placeholder="Location" oninput="this.value = this.value.replace(/^[^a-zA-Z]+/, '').replace(/[^0-9a-zA-Z\s,.-]/g, '')">
+                        </div>
+                        <div class="field-group">
+                            <label>Reporting Time</label>
+                            <input type="time" name="trek_reportingTime">
+                        </div>
+                    </div>
+                    <div class="two-col">
+                        <div class="field-group">
+                            <label>Departure Time</label>
+                            <input type="time" name="trek_departureTime">
+                        </div>
+                        <div class="field-group">
+                            <label>Return Time</label>
+                            <input type="time" name="trek_returnTime">
+                        </div>
+                    </div>
+                    <div class="field-group">
+                        <label style="font-size: 14px; font-weight: 700; color: #2e7d32; text-transform: uppercase; margin-top: 20px; margin-bottom: 15px; border-bottom: 1px dashed #a5d6a7; padding-bottom: 8px; display: flex; align-items: center; gap: 8px;"><i class="fas fa-box-open"></i> Trek Inclusions</label>
+                        <div class="checkbox-group" style="display: flex; flex-wrap: wrap;">
+                            <label><input type="checkbox" name="trek_inclusions" value="Trek Guide"> Trek Guide</label>
+                            <label><input type="checkbox" name="trek_inclusions" value="First Aid Support"> First Aid Support</label>
+                            <label><input type="checkbox" name="trek_inclusions" value="Meals"> Meals</label>
+                            <label><input type="checkbox" name="trek_inclusions" value="Drinking Water"> Drinking Water</label>
+                            <label><input type="checkbox" name="trek_inclusions" value="Snacks"> Snacks</label>
+                            <label><input type="checkbox" name="trek_inclusions" value="Transportation"> Transportation</label>
+                            <label><input type="checkbox" name="trek_inclusions" value="Camping Equipment"> Camping Equipment</label>
+                            <label><input type="checkbox" name="trek_inclusions" value="Tent Stay"> Tent Stay</label>
+                            <label><input type="checkbox" name="trek_inclusions" value="Sleeping Bag"> Sleeping Bag</label>
+                            <label><input type="checkbox" name="trek_inclusions" value="Bonfire"> Bonfire</label>
+                            <label><input type="checkbox" name="trek_inclusions" value="Photography"> Photography</label>
+                            <label><input type="checkbox" name="trek_inclusions" value="Local Guide"> Local Guide</label>
+                        </div>
+                    </div>
+                    <div class="field-group">
+                        <label style="font-size: 14px; font-weight: 700; color: #2e7d32; text-transform: uppercase; margin-top: 20px; margin-bottom: 15px; border-bottom: 1px dashed #a5d6a7; padding-bottom: 8px; display: flex; align-items: center; gap: 8px;"><i class="fas fa-backpack"></i> Participants Must Carry</label>
+                        <textarea name="trek_mustCarry" rows="3" placeholder="e.g. Trekking Shoes, Water Bottle, Raincoat, Torch, Power Bank, Backpack, Personal Medicines, Extra Clothes" oninput="this.value = this.value.replace(/^[^a-zA-Z]+/, '').replace(/[^0-9a-zA-Z\s,.-]/g, '')"></textarea>
+                    </div>
+                    <div class="two-col">
+                        <div class="field-group">
+                            <label>Medical Fitness Certificate Required</label>
+                            <select name="trek_medical">
+                                <option value="No">No</option>
+                                <option value="Yes">Yes</option>
+                            </select>
+                        </div>
+                        <div class="field-group">
+                            <label>Emergency Rescue Support</label>
+                            <select name="trek_rescue">
+                                <option value="Yes">Yes</option>
+                                <option value="No">No</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="two-col">
+                        <div class="field-group">
+                            <label>Forest Permission Required</label>
+                            <select name="trek_forest">
+                                <option value="No">No</option>
+                                <option value="Yes">Yes</option>
+                            </select>
+                        </div>
+                        <div class="field-group">
+                            <label>Mobile Network Availability</label>
+                            <select name="trek_network">
+                                <option value="Good">Good</option>
+                                <option value="Partial">Partial</option>
+                                <option value="No Network">No Network</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="two-col">
+                        <div class="field-group">
+                            <label>Washroom Facility</label>
+                            <select name="trek_washroom">
+                                <option value="Yes">Yes</option>
+                                <option value="No">No</option>
+                            </select>
+                        </div>
+                        <div class="field-group">
+                            <label>Drinking Water Availability</label>
+                            <select name="trek_drinkingWater">
+                                <option value="Yes">Yes</option>
+                                <option value="No">No</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="field-group">
+                        <label>Trek Schedule</label>
+                        <textarea name="trek_schedule" rows="4" placeholder="Example:&#10;Day 1&#10;06:00 AM Reporting&#10;07:00 AM Departure&#10;10:00 AM Reach Base Camp&#10;12:00 PM Trek Begins&#10;05:00 PM Return" oninput="this.value = this.value.replace(/^[^a-zA-Z]+/, '').replace(/[^0-9a-zA-Z\s,.:-]/g, '')"></textarea>
+                    </div>
+                </div>
+
+                <!-- BIKE RIDING DYNAMIC FIELDS -->
+                <style>
+                    #bikeRidingFields select, #bikeRidingFields input, #bikeRidingFields textarea {
+                        color: #333 !important;
+                        background-color: #fff !important;
+                    }
+                    #bikeRidingFields .checkbox-group label {
+                        margin-right: 15px;
+                        color: #333;
+                    }
+                </style>
+                <div class="form-card" id="bikeRidingFields" style="display: none; background: #fff8e1; border: 1px solid #ffca28;">
+                    <div class="section-label" style="color: #ff8f00;">
+                        <i class="fas fa-motorcycle"></i> Bike Riding Exclusive Details
+                    </div>
+                    <div class="two-col">
+                        <div class="field-group">
+                            <label>Ride Type</label>
+                            <select name="bike_type">
+                                <option value="City Ride">City Ride</option>
+                                <option value="Highway Ride">Highway Ride</option>
+                                <option value="Mountain Ride">Mountain Ride</option>
+                                <option value="Off-Road Ride">Off-Road Ride</option>
+                                <option value="Long Distance Ride">Long Distance Ride</option>
+                                <option value="Night Ride">Night Ride</option>
+                                <option value="Heritage Ride">Heritage Ride</option>
+                                <option value="Charity Ride">Charity Ride</option>
+                                <option value="Weekend Ride">Weekend Ride</option>
+                                <option value="Group Ride">Group Ride</option>
+                                <option value="Custom">Custom</option>
+                            </select>
+                        </div>
+                        <div class="field-group">
+                            <label>Minimum Bike Engine Capacity (CC)</label>
+                            <select name="bike_engine">
+                                <option value="125 CC">125 CC</option>
+                                <option value="150 CC">150 CC</option>
+                                <option value="200 CC">200 CC</option>
+                                <option value="250 CC">250 CC</option>
+                                <option value="350 CC">350 CC</option>
+                                <option value="500+ CC">500+ CC</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="field-group">
+                        <label>Bike Type Allowed</label>
+                        <div class="checkbox-group" style="display: flex; flex-wrap: wrap;">
+                            <label><input type="checkbox" name="bike_allowed" value="Sports Bike"> Sports Bike</label>
+                            <label><input type="checkbox" name="bike_allowed" value="Cruiser"> Cruiser</label>
+                            <label><input type="checkbox" name="bike_allowed" value="Adventure Bike"> Adventure Bike</label>
+                            <label><input type="checkbox" name="bike_allowed" value="Dirt Bike"> Dirt Bike</label>
+                            <label><input type="checkbox" name="bike_allowed" value="Scooter"> Scooter</label>
+                            <label><input type="checkbox" name="bike_allowed" value="Electric Bike"> Electric Bike</label>
+                        </div>
+                    </div>
+                    <div class="two-col">
+                        <div class="field-group">
+                            <label>Riding Experience Required</label>
+                            <select name="bike_experience">
+                                <option value="Beginner">Beginner</option>
+                                <option value="Intermediate">Intermediate</option>
+                                <option value="Experienced">Experienced</option>
+                                <option value="Professional">Professional</option>
+                            </select>
+                        </div>
+                        <div class="field-group">
+                            <label>Estimated Ride Duration</label>
+                            <input type="text" name="bike_duration" placeholder="e.g. 4 Hours, 2 Days" oninput="this.value = this.value.replace(/^[^0-9]+/, '').replace(/[^0-9a-zA-Z\s]/g, '')">
+                        </div>
+                    </div>
+                    <div class="two-col">
+                        <div class="field-group">
+                            <label>Start Point</label>
+                            <input type="text" name="bike_startPoint" placeholder="Location" oninput="this.value = this.value.replace(/^[^a-zA-Z]+/, '').replace(/[^0-9a-zA-Z\s,.-]/g, '')">
+                        </div>
+                        <div class="field-group">
+                            <label>Destination</label>
+                            <input type="text" name="bike_destination" placeholder="Location" oninput="this.value = this.value.replace(/^[^a-zA-Z]+/, '').replace(/[^0-9a-zA-Z\s,.-]/g, '')">
+                        </div>
+                    </div>
+                    <div class="two-col">
+                        <div class="field-group">
+                            <label>Total Distance (KM)</label>
+                            <input type="number" step="0.1" name="bike_distance" placeholder="e.g. 150" min="0" onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();">
+                        </div>
+                        <div class="field-group">
+                            <label>Reporting Time</label>
+                            <input type="time" name="bike_reportingTime">
+                        </div>
+                    </div>
+                    <div class="two-col">
+                        <div class="field-group">
+                            <label>Ride Start Time</label>
+                            <input type="time" name="bike_startTime">
+                        </div>
+                        <div class="field-group">
+                            <label>Estimated Finish Time</label>
+                            <input type="time" name="bike_finishTime">
+                        </div>
+                    </div>
+                    <div class="field-group">
+                        <label style="font-size: 14px; font-weight: 700; color: #e65100; text-transform: uppercase; margin-top: 20px; margin-bottom: 15px; border-bottom: 1px dashed #ffcc80; padding-bottom: 8px; display: flex; align-items: center; gap: 8px;"><i class="fas fa-hard-hat"></i> Safety Gear Mandatory</label>
+                        <div class="checkbox-group" style="display: flex; flex-wrap: wrap;">
+                            <label><input type="checkbox" name="bike_safety" value="Helmet"> Helmet</label>
+                            <label><input type="checkbox" name="bike_safety" value="Riding Jacket"> Riding Jacket</label>
+                            <label><input type="checkbox" name="bike_safety" value="Riding Gloves"> Riding Gloves</label>
+                            <label><input type="checkbox" name="bike_safety" value="Knee Guards"> Knee Guards</label>
+                            <label><input type="checkbox" name="bike_safety" value="Elbow Guards"> Elbow Guards</label>
+                            <label><input type="checkbox" name="bike_safety" value="Riding Boots"> Riding Boots</label>
+                            <label><input type="checkbox" name="bike_safety" value="Reflective Vest"> Reflective Vest</label>
+                        </div>
+                    </div>
+                    <div class="field-group">
+                        <label style="font-size: 14px; font-weight: 700; color: #e65100; text-transform: uppercase; margin-top: 20px; margin-bottom: 15px; border-bottom: 1px dashed #ffcc80; padding-bottom: 8px; display: flex; align-items: center; gap: 8px;"><i class="fas fa-hands-helping"></i> Support Available</label>
+                        <div class="checkbox-group" style="display: flex; flex-wrap: wrap;">
+                            <label><input type="checkbox" name="bike_support" value="Road Captain"> Road Captain</label>
+                            <label><input type="checkbox" name="bike_support" value="Marshal Riders"> Marshal Riders</label>
+                            <label><input type="checkbox" name="bike_support" value="Support Vehicle"> Support Vehicle</label>
+                            <label><input type="checkbox" name="bike_support" value="First Aid Team"> First Aid Team</label>
+                            <label><input type="checkbox" name="bike_support" value="Mechanic Support"> Mechanic Support</label>
+                            <label><input type="checkbox" name="bike_support" value="Fuel Backup"> Fuel Backup</label>
+                            <label><input type="checkbox" name="bike_support" value="Emergency Rescue Team"> Emergency Rescue Team</label>
+                        </div>
+                    </div>
+                    <div class="field-group">
+                        <label style="font-size: 14px; font-weight: 700; color: #e65100; text-transform: uppercase; margin-top: 20px; margin-bottom: 15px; border-bottom: 1px dashed #ffcc80; padding-bottom: 8px; display: flex; align-items: center; gap: 8px;"><i class="fas fa-gift"></i> Ride Inclusions</label>
+                        <div class="checkbox-group" style="display: flex; flex-wrap: wrap;">
+                            <label><input type="checkbox" name="bike_inclusions" value="Breakfast"> Breakfast</label>
+                            <label><input type="checkbox" name="bike_inclusions" value="Lunch"> Lunch</label>
+                            <label><input type="checkbox" name="bike_inclusions" value="Dinner"> Dinner</label>
+                            <label><input type="checkbox" name="bike_inclusions" value="Snacks"> Snacks</label>
+                            <label><input type="checkbox" name="bike_inclusions" value="Drinking Water"> Drinking Water</label>
+                            <label><input type="checkbox" name="bike_inclusions" value="Accommodation"> Accommodation</label>
+                            <label><input type="checkbox" name="bike_inclusions" value="Fuel Coupons"> Fuel Coupons</label>
+                            <label><input type="checkbox" name="bike_inclusions" value="Event T-Shirt"> Event T-Shirt</label>
+                            <label><input type="checkbox" name="bike_inclusions" value="Participation Certificate"> Participation Certificate</label>
+                            <label><input type="checkbox" name="bike_inclusions" value="Goodie Bag"> Goodie Bag</label>
+                        </div>
+                    </div>
+                    <div class="field-group">
+                        <label style="font-size: 14px; font-weight: 700; color: #e65100; text-transform: uppercase; margin-top: 20px; margin-bottom: 15px; border-bottom: 1px dashed #ffcc80; padding-bottom: 8px; display: flex; align-items: center; gap: 8px;"><i class="fas fa-clipboard-list"></i> Rider Requirements</label>
+                        <textarea name="bike_requirements" rows="3" placeholder="e.g. Valid Driving License, Bike RC, Insurance, Pollution Certificate, Government ID Proof, Emergency Contact Number" oninput="this.value = this.value.replace(/^[^a-zA-Z]+/, '').replace(/[^0-9a-zA-Z\s,.-]/g, '')"></textarea>
+                    </div>
+                    <div class="two-col">
+                        <div class="field-group">
+                            <label>Fuel Policy</label>
+                            <select name="bike_fuel">
+                                <option value="Self">Self</option>
+                                <option value="Included">Included</option>
+                                <option value="Partially Sponsored">Partially Sponsored</option>
+                            </select>
+                        </div>
+                        <div class="field-group">
+                            <label>Ride Difficulty</label>
+                            <select name="bike_difficulty">
+                                <option value="Easy">Easy</option>
+                                <option value="Moderate">Moderate</option>
+                                <option value="Challenging">Challenging</option>
+                                <option value="Extreme">Extreme</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="two-col">
+                        <div class="field-group">
+                            <label>Road Type</label>
+                            <select name="bike_road">
+                                <option value="City Roads">City Roads</option>
+                                <option value="Highway">Highway</option>
+                                <option value="Hills">Hills</option>
+                                <option value="Forest">Forest</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
@@ -1030,7 +1643,7 @@
                 </div>
 
                 <!-- SECTION 5: Simplified Seat Grid Setup -->
-                <div class="form-card">
+                <div class="form-card" id="bmosSeatSetupGrid">
                     <div class="section-label">
                         <i class="fas fa-grid-3"></i> BMOS Seat Setup Grid
                     </div>
@@ -1387,6 +2000,70 @@
             
             // Initial calculation for Max Participants
             calculateMaxParticipants();
+            
+            // Toggle House Party, Adventure, Trekking, and Bike Riding fields
+            const catRadios = document.querySelectorAll('input[name="category"]');
+            const lpFields = document.getElementById('ladiesPartyFields');
+            const advFields = document.getElementById('adventureFields');
+            const trekFields = document.getElementById('trekkingFields');
+            const bikeFields = document.getElementById('bikeRidingFields');
+            const bmosGrid = document.getElementById('bmosSeatSetupGrid');
+            
+            function updateVisibility(category) {
+                lpFields.style.display = 'none';
+                advFields.style.display = 'none';
+                trekFields.style.display = 'none';
+                bikeFields.style.display = 'none';
+                bmosGrid.style.display = 'block'; // default show
+                
+                const modeSelect = document.getElementById('modeSelect');
+                const onlineOption = modeSelect.querySelector('option[value="Online"]');
+                if (onlineOption) {
+                    onlineOption.style.display = 'block';
+                }
+                
+                if (category === 'House Party') {
+                    lpFields.style.display = 'block';
+                    bmosGrid.style.display = 'none';
+                } else if (category === 'Adventure') {
+                    advFields.style.display = 'block';
+                    bmosGrid.style.display = 'none';
+                    if (onlineOption) {
+                        onlineOption.style.display = 'none';
+                        modeSelect.value = 'Offline';
+                        toggleModeFields(); // trigger the mode change logic
+                    }
+                } else if (category === 'Trekking') {
+                    trekFields.style.display = 'block';
+                    bmosGrid.style.display = 'none';
+                    if (onlineOption) {
+                        onlineOption.style.display = 'none';
+                        modeSelect.value = 'Offline';
+                        toggleModeFields();
+                    }
+                } else if (category === 'Bike Riding') {
+                    bikeFields.style.display = 'block';
+                    bmosGrid.style.display = 'none';
+                    if (onlineOption) {
+                        onlineOption.style.display = 'none';
+                        modeSelect.value = 'Offline';
+                        toggleModeFields();
+                    }
+                }
+            }
+            
+            catRadios.forEach(r => {
+                r.addEventListener('change', () => {
+                    if (r.checked) {
+                        updateVisibility(r.value);
+                    }
+                });
+            });
+            
+            const selectedCat = document.querySelector('input[name="category"]:checked');
+            if (selectedCat) {
+                updateVisibility(selectedCat.value);
+            }
         });
 
         function calculateMaxParticipants() {
@@ -1600,3 +2277,4 @@
 </body>
 
 </html>
+

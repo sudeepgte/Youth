@@ -61,7 +61,6 @@
             <a th:href="@{/profile}" class="sidebar-link"><i class="fas fa-user"></i> Profile</a>
             <a th:href="@{/wallet}" class="sidebar-link active"><i class="fas fa-wallet"></i> Wallet</a>
             <a th:href="@{/games}" class="sidebar-link"><i class="fas fa-gamepad"></i> Games</a>
-            <a th:href="@{/music}" class="sidebar-link"><i class="fas fa-music"></i> Music</a>
             <a th:href="@{/logout}" class="sidebar-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </aside>
 
@@ -110,7 +109,7 @@
                 <form th:action="@{/wallet/add}" method="POST">
                     <div style="margin-bottom: 16px;">
                         <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px;">Amount (&#8377;)</label>
-                        <input type="number" name="amount" min="1" step="1" placeholder="e.g., 500" required style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--bg-color); color: var(--text-primary);">
+                        <input type="number" name="amount" min="1" step="any" placeholder="e.g., 500" required style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--bg-color); color: var(--text-primary);">
                     </div>
                     <button type="submit" style="width: 100%; padding: 12px; background: #10B981; border: none; color: white; font-weight: 600; border-radius: 8px; cursor: pointer;">Proceed to Pay</button>
                 </form>
@@ -129,9 +128,14 @@
                 <form th:action="@{/wallet/withdraw}" method="POST">
                     <div style="margin-bottom: 16px;">
                         <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px;">Amount to Withdraw (&#8377;)</label>
-                        <input type="number" name="amount" min="1" step="1" placeholder="e.g., 500" required style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--bg-color); color: var(--text-primary);">
+                        <input type="number" name="amount" min="1" step="any" placeholder="e.g., 500" required style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--bg-color); color: var(--text-primary);">
                     </div>
-                    <button type="submit" style="width: 100%; padding: 12px; background: var(--accent); border: none; color: white; font-weight: 600; border-radius: 8px; cursor: pointer;">Withdraw</button>
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px;">Transfer To (UPI ID / Bank A/C)</label>
+                        <input type="text" name="accountDetails" placeholder="e.g., yourname@upi" required style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--bg-color); color: var(--text-primary);">
+                        <p style="font-size: 11px; color: var(--text-muted); margin-top: 6px;">Withdrawals are usually processed within 24 hours.</p>
+                    </div>
+                    <button type="submit" style="width: 100%; padding: 12px; background: var(--accent); border: none; color: white; font-weight: 600; border-radius: 8px; cursor: pointer;">Withdraw to Account</button>
                 </form>
             </div>
         </div>

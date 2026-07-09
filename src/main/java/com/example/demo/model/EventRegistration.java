@@ -43,6 +43,15 @@ public class EventRegistration {
     private String college;
     private String yearOfStudy;
 
+    // Ladies Party specific fields
+    private Integer age;
+    private String city;
+    private String emergencyContactName;
+    private String emergencyContactMobile;
+    private String dietaryPreference;
+    @Column(length = 500)
+    private String specialRequests;
+
     // Attendance tracking
     private boolean attendanceMarked = false;
     private LocalDateTime attendedAt;
@@ -145,6 +154,25 @@ public class EventRegistration {
 
     public String getFinalistDescription() { return finalistDescription; }
     public void setFinalistDescription(String finalistDescription) { this.finalistDescription = finalistDescription; }
+
+    // Ladies Party Getters/Setters
+    public Integer getAge() { return age; }
+    public void setAge(Integer age) { this.age = age; }
+
+    public String getCity() { return city; }
+    public void setCity(String city) { this.city = city; }
+
+    public String getEmergencyContactName() { return emergencyContactName; }
+    public void setEmergencyContactName(String emergencyContactName) { this.emergencyContactName = emergencyContactName; }
+
+    public String getEmergencyContactMobile() { return emergencyContactMobile; }
+    public void setEmergencyContactMobile(String emergencyContactMobile) { this.emergencyContactMobile = emergencyContactMobile; }
+
+    public String getDietaryPreference() { return dietaryPreference; }
+    public void setDietaryPreference(String dietaryPreference) { this.dietaryPreference = dietaryPreference; }
+
+    public String getSpecialRequests() { return specialRequests; }
+    public void setSpecialRequests(String specialRequests) { this.specialRequests = specialRequests; }
 
     @PrePersist
     protected void onCreate() {

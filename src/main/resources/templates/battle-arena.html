@@ -845,7 +845,6 @@
             <a th:href="@{/reels}" class="sidebar-link"><i class="fas fa-film"></i> Reels</a>
             <a th:href="@{/profile}" class="sidebar-link"><i class="fas fa-user"></i> Profile</a>
             <a th:href="@{/games}" class="sidebar-link"><i class="fas fa-gamepad"></i> Games</a>
-            <a th:href="@{/music}" class="sidebar-link"><i class="fas fa-music"></i> Music</a>
             <a th:href="@{/logout}" class="sidebar-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </aside>
 
@@ -872,6 +871,7 @@
                 <span th:if="${param.error[0] == 'not_participant'}">You need to join this battle first.</span>
                 <span th:if="${param.error[0] == 'unauthorized'}">You are not authorized to perform this action.</span>
                 <span th:if="${param.error[0] == 'empty_submission'}">Please upload a file or provide a valid URL for your submission.</span>
+                <span th:if="${param.error[0] == 'insufficient_funds'}">Insufficient funds in your wallet to pay the entry fee!</span>
             </div>
 
             <!-- ──────────────────────────────────────── -->
@@ -902,7 +902,7 @@
                              th:attr="onclick='copyCode(\'' + ${battle.roomCode} + '\')'">ABC123</div>
                     </div>
                     <div class="battle-detail-info">
-                        <span><i class="fas fa-clock"></i> <span th:text="${battle.durationHours}">24</span>h Duration</span>
+                        <span><i class="fas fa-clock"></i> <span th:if="${battle.durationMinutes != null}" th:text="${battle.durationMinutes} + 'm'"></span><span th:if="${battle.durationMinutes == null}" th:text="${battle.durationHours} + 'h'"></span> Duration</span>
                         <span id="countdownContainer" th:if="${(battle.status == 'ACTIVE' and battle.endsAt != null) or (battle.status == 'VOTING' and battle.votingEndsAt != null)}"
                               th:attr="data-endtime=${battle.status == 'ACTIVE' ? battle.endsAt : battle.votingEndsAt}">
                             <i class="fas fa-stopwatch" style="color:var(--arena-primary);"></i>
@@ -989,6 +989,16 @@
                         </div>
                     </div>
 
+                    <!-- Live Arena Button -->
+                    <div th:if="${battle.status == 'ACTIVE'}" style="margin-bottom: 16px;">
+                        <a th:href="@{'/battles/' + ${battle.id} + '/live'}" 
+                           style="display:inline-flex; align-items:center; gap:8px; padding:12px 24px; background:linear-gradient(135deg, #ef4444, #dc2626); color:white; border-radius:12px; font-weight:700; text-decoration:none; font-size:14px; box-shadow: 0 0 20px rgba(239,68,68,0.4); animation: pulse-live 2s infinite;">
+                            <i class="fas fa-broadcast-tower"></i>
+                            <span th:if="${isCreator || isParticipant}">🔴 Go Live</span>
+                            <span th:if="${!isCreator and !isParticipant}">👁️ Watch Live</span>
+                        </a>
+                    </div>
+
                     <!-- Creator Actions -->
                     <div th:if="${isCreator}" style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;">
                         <form th:if="${battle.status == 'WAITING'}" th:action="@{'/battles/' + ${battle.id} + '/start'}" method="POST">
@@ -1064,6 +1074,15 @@
                                 
                                 <form th:if="${!p.checkedIn and isCreator}" th:action="@{'/battles/' + ${battle.id} + '/checkin/' + ${p.id}}" method="POST" style="margin:0;">
                                     <button type="submit" class="btn-arena btn-arena-secondary btn-arena-sm" style="padding:4px 8px; font-size:10px;"><i class="fas fa-qrcode"></i> Check In</button>
+                                </form>
+                            </div>
+
+                            <!-- Direct Vote Button (ACTIVE or VOTING phase) -->
+                            <div th:if="${(battle.status == 'ACTIVE' or battle.status == 'VOTING')}" style="display:flex; align-items:center; margin-left: auto; gap: 8px;">
+                                <form th:if="${!hasVoted}" th:action="@{'/battles/' + ${battle.id} + '/vote-participant/' + ${p.id}}" method="POST" style="margin:0;">
+                                    <button type="submit" class="btn-arena btn-arena-primary btn-arena-sm" style="padding:4px 8px; font-size:10px;">
+                                        <i class="fas fa-thumbs-up"></i> Vote
+                                    </button>
                                 </form>
                             </div>
                         </div>
@@ -1278,15 +1297,15 @@
                                 </form>
                             </div>
 
-                            <!-- Vote Button (during VOTING phase) -->
-                            <div th:if="${battle.status == 'VOTING' and !hasVoted}" style="margin-top:14px;">
+                            <!-- Vote Button (during ACTIVE or VOTING phase) -->
+                            <div th:if="${(battle.status == 'ACTIVE' or battle.status == 'VOTING') and !hasVoted}" style="margin-top:14px;">
                                 <form th:action="@{'/battles/' + ${battle.id} + '/vote/' + ${sub.id}}" method="POST">
                                     <button type="submit" class="btn-arena btn-arena-primary btn-arena-sm" style="width:100%; justify-content:center;">
                                         <i class="fas fa-thumbs-up"></i> Vote for <span th:text="${sub.user.username}">User</span>
                                     </button>
                                 </form>
                             </div>
-                            <div th:if="${battle.status == 'VOTING' and hasVoted}" style="margin-top:14px; text-align:center;">
+                            <div th:if="${(battle.status == 'ACTIVE' or battle.status == 'VOTING') and hasVoted}" style="margin-top:14px; text-align:center;">
                                 <span style="font-size:12px; color:var(--text-muted); font-weight:700;"><i class="fas fa-check"></i> You've voted</span>
                             </div>
                         </div>
@@ -1335,37 +1354,62 @@
 
                 <!-- ─── WINNER ANNOUNCEMENT ─── -->
                 <div th:if="${(battle.status == 'COMPLETED' or battle.status == 'TIE') and battle.winner != null}" class="winner-section" id="winner-display" style="padding: 20px;">
-                    <div class="winner-trophy" style="font-size: 48px; margin-bottom: 10px;">🏆</div>
-                    <div style="font-size:14px; color:var(--text-muted); font-weight:700; margin-bottom:8px;" th:text="${battle.status == 'TIE' ? 'IT\'S A TIE!' : '1ST PLACE'}">1ST PLACE</div>
-                    <div class="winner-name" th:text="${battle.winner.username}">Winner Name</div>
-                    <div class="winner-reward">
-                        <i class="fas fa-bolt"></i> +<span th:text="${battle.winnerXp}">500</span> XP
-                        <span style="margin:0 6px; opacity:0.3;">|</span>
-                        <i class="fas fa-coins"></i> +100 Coins
-                        <span th:if="${battle.prize1 != null and battle.prize1 > 0}">
-                            <span style="margin:0 6px; opacity:0.3;">|</span>
-                            <i class="fas fa-rupee-sign" style="color:#10B981;"></i> <span th:text="${battle.prize1}" style="color:#10B981;">0</span>
-                        </span>
+                    <div class="winner-trophy" style="font-size: 64px; margin-bottom: 15px;">🏆</div>
+                    <div style="font-size:18px; color:var(--text-primary); font-weight:900; margin-bottom:20px; text-transform: uppercase;">
+                        <span th:if="${battle.status == 'TIE'}">It's a Tie!</span>
+                        <span th:if="${battle.status != 'TIE'}">Battle Winners</span>
                     </div>
 
-                    <!-- 2nd and 3rd place -->
-                    <div style="display: flex; justify-content: center; gap: 20px; margin-top: 20px; flex-wrap: wrap;">
-                        <div th:if="${battle.winner2 != null}" style="background: rgba(255,255,255,0.5); padding: 15px; border-radius: 12px; border: 1px solid rgba(15,23,42,0.1); flex: 1; min-width: 120px;">
-                            <div style="font-size:24px; margin-bottom:5px;">🥈</div>
-                            <div style="font-size:12px; color:var(--text-muted); font-weight:700;" th:text="${battle.status == 'TIE' ? 'TIED WINNER' : '2ND PLACE'}">2ND PLACE</div>
-                            <div style="font-size:16px; font-weight:800; color:var(--text-primary);" th:text="${battle.winner2.username}">User 2</div>
-                            <div th:if="${battle.prize2 != null and battle.prize2 > 0}" style="font-size:13px; color:#10B981; font-weight:700; margin-top:6px;">
-                                <i class="fas fa-rupee-sign"></i> <span th:text="${battle.prize2}">0</span>
+                    <!-- 1st Place -->
+                    <div style="background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.2); border-radius: 12px; padding: 15px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <div style="font-size: 24px;">🥇</div>
+                            <div style="text-align: left;">
+                                <div style="font-size: 12px; color: var(--text-muted); font-weight: 700;">1ST PLACE</div>
+                                <div style="font-size: 20px; font-weight: 900; color: var(--text-primary);" th:text="${battle.winner.username}">Winner</div>
                             </div>
                         </div>
-                        <div th:if="${battle.winner3 != null}" style="background: rgba(255,255,255,0.5); padding: 15px; border-radius: 12px; border: 1px solid rgba(15,23,42,0.1); flex: 1; min-width: 120px;">
-                            <div style="font-size:24px; margin-bottom:5px;">🥉</div>
-                            <div style="font-size:12px; color:var(--text-muted); font-weight:700;">3RD PLACE</div>
-                            <div style="font-size:16px; font-weight:800; color:var(--text-primary);" th:text="${battle.winner3.username}">User 3</div>
-                            <div th:if="${battle.prize3 != null and battle.prize3 > 0}" style="font-size:13px; color:#10B981; font-weight:700; margin-top:6px;">
-                                <i class="fas fa-rupee-sign"></i> <span th:text="${battle.prize3}">0</span>
+                        <div th:if="${battle.prize1 != null}" style="text-align: right; color: #10B981;">
+                            <div style="font-size: 12px; font-weight: 700;">PRIZE</div>
+                            <div style="font-size: 20px; font-weight: 900;"><i class="fas fa-rupee-sign"></i> <span th:text="${battle.prize1}">0</span></div>
+                        </div>
+                    </div>
+
+                    <!-- 2nd Place -->
+                    <div th:if="${battle.winner2 != null}" style="background: rgba(255,255,255,0.6); border: 1px solid rgba(15,23,42,0.1); border-radius: 12px; padding: 15px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <div style="font-size: 24px;">🥈</div>
+                            <div style="text-align: left;">
+                                <div style="font-size: 12px; color: var(--text-muted); font-weight: 700;" th:text="${battle.status == 'TIE' ? 'TIED WINNER' : '2ND PLACE'}">2ND PLACE</div>
+                                <div style="font-size: 18px; font-weight: 800; color: var(--text-primary);" th:text="${battle.winner2.username}">User 2</div>
                             </div>
                         </div>
+                        <div th:if="${(battle.status == 'TIE' ? battle.prize1 : battle.prize2) != null}" style="text-align: right; color: #10B981;">
+                            <div style="font-size: 12px; font-weight: 700;">PRIZE</div>
+                            <div style="font-size: 18px; font-weight: 800;"><i class="fas fa-rupee-sign"></i> <span th:text="${battle.status == 'TIE' ? battle.prize1 : battle.prize2}">0</span></div>
+                        </div>
+                    </div>
+
+                    <!-- 3rd Place -->
+                    <div th:if="${battle.winner3 != null}" style="background: rgba(255,255,255,0.6); border: 1px solid rgba(15,23,42,0.1); border-radius: 12px; padding: 15px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <div style="font-size: 24px;">🥉</div>
+                            <div style="text-align: left;">
+                                <div style="font-size: 12px; color: var(--text-muted); font-weight: 700;">3RD PLACE</div>
+                                <div style="font-size: 18px; font-weight: 800; color: var(--text-primary);" th:text="${battle.winner3.username}">User 3</div>
+                            </div>
+                        </div>
+                        <div th:if="${battle.prize3 != null}" style="text-align: right; color: #10B981;">
+                            <div style="font-size: 12px; font-weight: 700;">PRIZE</div>
+                            <div style="font-size: 18px; font-weight: 800;"><i class="fas fa-rupee-sign"></i> <span th:text="${battle.prize3}">0</span></div>
+                        </div>
+                    </div>
+
+                    <!-- General Rewards (XP / Coins for winning) -->
+                    <div class="winner-reward" style="font-size: 14px; color: var(--text-muted); font-weight: 600; margin-top: 15px;">
+                        <i class="fas fa-bolt" style="color: #F59E0B;"></i> +<span th:text="${battle.winnerXp}">500</span> XP
+                        <span style="margin:0 12px; opacity:0.3;">|</span>
+                        <i class="fas fa-coins" style="color: #EAB308;"></i> +100 Coins
                     </div>
                 </div>
             </div>
@@ -1412,7 +1456,7 @@
                             </div>
                             <div class="battle-card-meta">
                                 <span th:if="${b.mode == 'OFFLINE'}"><i class="fas fa-calendar-alt"></i> <span th:text="${b.eventDate}">Date</span></span>
-                                <span th:if="${b.mode != 'OFFLINE'}"><i class="fas fa-clock"></i> <span th:text="${b.durationHours}">24</span>h</span>
+                                <span th:if="${b.mode != 'OFFLINE'}"><i class="fas fa-clock"></i> <span th:if="${b.durationMinutes != null}" th:text="${b.durationMinutes} + 'm'"></span><span th:if="${b.durationMinutes == null}" th:text="${b.durationHours} + 'h'"></span></span>
                                 <span><i class="fas fa-users"></i> <span th:text="${b.participants.size()}">0</span>/<span th:text="${b.maxParticipants}">10</span></span>
                                 <span><i class="fas fa-trophy"></i> <span th:text="${b.winnerXp}">500</span> XP</span>
                             </div>
@@ -1439,7 +1483,10 @@
                             </div>
                             <h3 th:text="${b.title}">Battle Title</h3>
                             <div class="battle-card-meta">
-                                <span th:if="${b.winner != null}"><i class="fas fa-crown" style="color:#FFD700;"></i> <span th:text="${b.winner.username}">Winner</span></span>
+                                <span th:if="${b.winner != null}">
+                                    <i class="fas fa-crown" style="color:#FFD700;"></i> <span th:text="${b.winner.username}">Winner</span>
+                                    <span th:if="${b.prize1 != null}" style="color:#10B981; font-weight:700; margin-left:4px;">(<i class="fas fa-rupee-sign" style="font-size:10px;"></i><span th:text="${b.prize1}">0</span>)</span>
+                                </span>
                                 <span><i class="fas fa-users"></i> <span th:text="${b.participants.size()}">0</span> participants</span>
                             </div>
                             <div class="battle-card-footer">
@@ -1627,18 +1674,32 @@
                         </div>
 
                         <div class="arena-field">
-                            <label>Duration (Hours)</label>
-                            <select id="durationSelect" name="durationHours" onchange="toggleCustomDuration(this.value)">
-                                <option value="1">1 Hour &ndash; Speed Round &#9889;</option>
-                                <option value="6">6 Hours</option>
-                                <option value="12">12 Hours</option>
-                                <option value="24" selected>24 Hours</option>
-                                <option value="48">48 Hours</option>
-                                <option value="72">72 Hours</option>
-                                <option value="custom">Custom...</option>
-                            </select>
-                            <div id="customDurationContainer" style="display:none; margin-top:10px;">
-                                <input type="number" id="customDurationInput" placeholder="Enter custom hours..." min="1" max="720" />
+                            <label>Duration</label>
+                            <div style="display:flex; gap: 10px; margin-bottom: 10px;">
+                                <label style="display:flex; align-items:center; gap: 5px;"><input type="radio" name="durationType" value="hours" checked onchange="toggleDurationType()"> Hours</label>
+                                <label style="display:flex; align-items:center; gap: 5px;"><input type="radio" name="durationType" value="minutes" onchange="toggleDurationType()"> Minutes (Live)</label>
+                            </div>
+                            <div id="durationHoursWrapper">
+                                <select id="durationSelect" name="durationHours" onchange="toggleCustomDuration(this.value)">
+                                    <option value="1">1 Hour &ndash; Speed Round &#9889;</option>
+                                    <option value="6">6 Hours</option>
+                                    <option value="12">12 Hours</option>
+                                    <option value="24" selected>24 Hours</option>
+                                    <option value="48">48 Hours</option>
+                                    <option value="72">72 Hours</option>
+                                    <option value="custom">Custom...</option>
+                                </select>
+                                <div id="customDurationContainer" style="display:none; margin-top:10px;">
+                                    <input type="number" id="customDurationInput" placeholder="Enter custom hours..." min="1" max="720" />
+                                </div>
+                            </div>
+                            <div id="durationMinutesWrapper" style="display:none;">
+                                <select id="durationMinutesSelect" name="durationMinutes">
+                                    <option value="1">1 Minute</option>
+                                    <option value="3">3 Minutes</option>
+                                    <option value="5" selected>5 Minutes</option>
+                                    <option value="10">10 Minutes</option>
+                                </select>
                             </div>
                         </div>
                         <div class="arena-field">
@@ -1952,6 +2013,44 @@
             }
             return true;
         }
+        function toggleDurationType() {
+            const type = document.querySelector('input[name="durationType"]:checked').value;
+            const hWrap = document.getElementById('durationHoursWrapper');
+            const mWrap = document.getElementById('durationMinutesWrapper');
+            const hSelect = document.getElementById('durationSelect');
+            const mSelect = document.getElementById('durationMinutesSelect');
+            
+            const pSelect = document.getElementById('participantsSelect');
+            const customPartInput = document.getElementById('customParticipantsInput');
+            const prize3Input = document.querySelector('input[name="prize3"]');
+
+            if(type === 'hours') {
+                hWrap.style.display = 'block';
+                mWrap.style.display = 'none';
+                hSelect.setAttribute('name', 'durationHours');
+                mSelect.removeAttribute('name');
+                
+                // Restore settings
+                pSelect.disabled = false;
+                customPartInput.disabled = false;
+                prize3Input.disabled = false;
+            } else {
+                hWrap.style.display = 'none';
+                mWrap.style.display = 'block';
+                mSelect.setAttribute('name', 'durationMinutes');
+                hSelect.removeAttribute('name');
+                
+                // Enforce Live Battle rules (1v1, No 3rd Prize)
+                pSelect.value = "2";
+                pSelect.disabled = true;
+                customPartInput.disabled = true;
+                
+                prize3Input.value = "0";
+                prize3Input.disabled = true;
+                
+                toggleCustomParticipants("2");
+            }
+        }
     </script>
     <style>
         @keyframes fadeInOut {
@@ -1959,6 +2058,10 @@
             20% { opacity: 1; transform: translateX(-50%) translateY(0); }
             80% { opacity: 1; }
             100% { opacity: 0; }
+        }
+        @keyframes pulse-live {
+            0%, 100% { box-shadow: 0 0 20px rgba(239,68,68,0.4); }
+            50% { box-shadow: 0 0 30px rgba(239,68,68,0.7); }
         }
     </style>
 </body>

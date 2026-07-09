@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.transaction.annotation.Transactional;
 import jakarta.servlet.http.HttpSession;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -24,6 +25,9 @@ public class BattleController {
     @Autowired private BattleVoteRepository voteRepository;
     @Autowired private UserRepository userRepository;
     @Autowired private HttpServletRequest httpServletRequest;
+    @Autowired private BattleLiveCommentRepository liveCommentRepository;
+    @Autowired private BattleLikeRepository battleLikeRepository;
+    @Autowired private BattleGiftRepository battleGiftRepository;
 
     private User getUserFromSession(HttpSession session) {
         Object authUser = httpServletRequest.getAttribute("authenticatedUser");
@@ -158,6 +162,7 @@ public class BattleController {
             @RequestParam(required = false, defaultValue = "0.0") Double prize3,
             @RequestParam(required = false, defaultValue = "70.0") Double judgeWeight,
             @RequestParam(required = false, defaultValue = "30.0") Double audienceWeight,
+            HttpServletRequest request,
             HttpSession session) {
 
         User user = getUserFromSession(session);
@@ -166,11 +171,20 @@ public class BattleController {
 
         // Prizes are real money now, not deducting from virtual coins.
 
+        // Creator pays entry fee if applicable
+        if (entryFee != null && entryFee > 0) {
+            Double balance = user.getWalletBalance() != null ? user.getWalletBalance() : 0.0;
+            if (balance < entryFee) {
+                return "redirect:/battles?error=insufficient_funds";
+            }
+            user.setWalletBalance(balance - entryFee);
+            userRepository.save(user);
+        }
+
         Battle battle = new Battle();
         battle.setTitle(title);
         battle.setCategory(category);
         battle.setDurationHours(durationHours);
-        battle.setMaxParticipants(Math.min(Math.max(maxParticipants, 2), 100));
         battle.setMode(mode);
         battle.setEntryFee(entryFee);
         battle.setPrize1(prize1);
@@ -183,6 +197,19 @@ public class BattleController {
             battle.setJudgeWeight(judgeWeight);
             battle.setAudienceWeight(audienceWeight);
         }
+        
+        String durationMinutesStr = request.getParameter("durationMinutes");
+        if (durationMinutesStr != null && !durationMinutesStr.isEmpty()) {
+            try {
+                battle.setDurationMinutes(Integer.parseInt(durationMinutesStr));
+                // Enforce Live rules
+                battle.setMaxParticipants(2);
+                battle.setPrize3(0.0);
+            } catch (NumberFormatException e) { /* ignore */ }
+        } else {
+            battle.setMaxParticipants(Math.min(Math.max(maxParticipants, 2), 100));
+        }
+        
         battle.setCreator(user);
         battle.setStatus("WAITING");
         battleRepository.save(battle);
@@ -295,7 +322,11 @@ public class BattleController {
 
         battle.setStatus("ACTIVE");
         battle.setStartedAt(LocalDateTime.now());
-        battle.setEndsAt(LocalDateTime.now().plusHours(battle.getDurationHours()));
+        if (battle.getDurationMinutes() != null && battle.getDurationMinutes() > 0) {
+            battle.setEndsAt(battle.getStartedAt().plusMinutes(battle.getDurationMinutes()));
+        } else {
+            battle.setEndsAt(battle.getStartedAt().plusHours(battle.getDurationHours()));
+        }
         battleRepository.save(battle);
 
         return "redirect:/battles/" + id;
@@ -443,11 +474,53 @@ public class BattleController {
 
         Battle battle = battleRepository.findById(id).orElse(null);
         if (battle == null) return "redirect:/battles";
-        if (!"VOTING".equals(battle.getStatus())) return "redirect:/battles/" + id;
+        if (!"VOTING".equals(battle.getStatus()) && !"ACTIVE".equals(battle.getStatus())) return "redirect:/battles/" + id;
         if (voteRepository.existsByBattleAndVoter(battle, user)) return "redirect:/battles/" + id + "?error=already_voted";
 
         BattleSubmission sub = submissionRepository.findById(submissionId).orElse(null);
         if (sub == null || !sub.getBattle().getId().equals(id)) return "redirect:/battles/" + id;
+
+        BattleVote vote = new BattleVote();
+        vote.setBattle(battle);
+        vote.setVoter(user);
+        vote.setSubmission(sub);
+        voteRepository.save(vote);
+
+        sub.setVoteCount(sub.getVoteCount() + 1);
+        submissionRepository.save(sub);
+
+        return "redirect:/battles/" + id + "?voted=true";
+    }
+
+    // ─── Cast Vote For Participant (Offline/Direct) ─────────
+    @RequestMapping(value = "/{id}/vote-participant/{participantId}", method = RequestMethod.POST)
+    public String castVoteForParticipant(@PathVariable Long id, @PathVariable Long participantId, HttpSession session) {
+        User user = getUserFromSession(session);
+        if (user == null) return "redirect:/login";
+        user = userRepository.findById(user.getId()).orElse(user);
+
+        Battle battle = battleRepository.findById(id).orElse(null);
+        if (battle == null) return "redirect:/battles";
+        if (!"ACTIVE".equals(battle.getStatus()) && !"VOTING".equals(battle.getStatus())) {
+             return "redirect:/battles/" + id;
+        }
+        if (voteRepository.existsByBattleAndVoter(battle, user)) {
+             return "redirect:/battles/" + id + "?error=already_voted";
+        }
+
+        BattleParticipant participant = participantRepository.findById(participantId).orElse(null);
+        if (participant == null || !participant.getBattle().getId().equals(id)) return "redirect:/battles/" + id;
+
+        // Check if this participant already has a submission
+        BattleSubmission sub = submissionRepository.findByBattleAndUser(battle, participant.getUser()).orElse(null);
+        if (sub == null) {
+            sub = new BattleSubmission();
+            sub.setBattle(battle);
+            sub.setUser(participant.getUser());
+            sub.setSubmissionUrl("Direct Vote");
+            sub.setDescription("Direct participant vote");
+            sub = submissionRepository.save(sub);
+        }
 
         BattleVote vote = new BattleVote();
         vote.setBattle(battle);
@@ -519,6 +592,20 @@ public class BattleController {
     }
 
     private void completeBattle(Battle battle) {
+        if ("OFFLINE".equals(battle.getMode())) {
+            List<BattleParticipant> participants = participantRepository.findByBattle(battle);
+            for (BattleParticipant p : participants) {
+                if (!submissionRepository.existsByBattleAndUser(battle, p.getUser())) {
+                    BattleSubmission sub = new BattleSubmission();
+                    sub.setBattle(battle);
+                    sub.setUser(p.getUser());
+                    sub.setSubmissionUrl("Direct Vote");
+                    sub.setDescription("Auto-generated submission for offline participant");
+                    submissionRepository.save(sub);
+                }
+            }
+        }
+        
         List<BattleSubmission> subs = submissionRepository.findByBattleOrderByVoteCountDesc(battle);
         if ("OFFLINE".equals(battle.getMode())) {
             final double jw = battle.getJudgeWeight() != null ? battle.getJudgeWeight() : 70.0;
@@ -545,8 +632,26 @@ public class BattleController {
 
         if (isTie) {
             battle.setStatus("TIE");
-            battle.setWinner(subs.get(0).getUser());
-            battle.setWinner2(subs.get(1).getUser());
+            User winner1 = subs.get(0).getUser();
+            User winner2 = subs.get(1).getUser();
+            battle.setWinner(winner1);
+            battle.setWinner2(winner2);
+            
+            if (winner1 != null) {
+                User dbWinner1 = userRepository.findById(winner1.getId()).orElse(winner1);
+                if (battle.getPrize1() != null && battle.getPrize1() > 0) {
+                    dbWinner1.addWalletBalance(battle.getPrize1());
+                }
+                userRepository.save(dbWinner1);
+            }
+            if (winner2 != null) {
+                User dbWinner2 = userRepository.findById(winner2.getId()).orElse(winner2);
+                if (battle.getPrize1() != null && battle.getPrize1() > 0) {
+                    dbWinner2.addWalletBalance(battle.getPrize1());
+                }
+                userRepository.save(dbWinner2);
+            }
+            
             battleRepository.save(battle);
             return;
         }
@@ -560,6 +665,9 @@ public class BattleController {
                 User dbWinner = userRepository.findById(winner.getId()).orElse(winner);
                 dbWinner.setXp((dbWinner.getXp() != null ? dbWinner.getXp() : 0) + battle.getWinnerXp());
                 dbWinner.addCoins(100); // Base gamification 100
+                if (battle.getPrize1() != null && battle.getPrize1() > 0) {
+                    dbWinner.addWalletBalance(battle.getPrize1());
+                }
                 updateLevel(dbWinner);
                 userRepository.save(dbWinner);
             }
@@ -569,7 +677,10 @@ public class BattleController {
             battle.setWinner2(winner2);
             if (winner2 != null) {
                 User dbWinner2 = userRepository.findById(winner2.getId()).orElse(winner2);
-                // Real money prize, not adding to virtual coins
+                if (battle.getPrize2() != null && battle.getPrize2() > 0) {
+                    dbWinner2.addWalletBalance(battle.getPrize2());
+                }
+                userRepository.save(dbWinner2);
             }
         }
         if (subs.size() > 2) {
@@ -577,7 +688,10 @@ public class BattleController {
             battle.setWinner3(winner3);
             if (winner3 != null) {
                 User dbWinner3 = userRepository.findById(winner3.getId()).orElse(winner3);
-                // Real money prize, not adding to virtual coins
+                if (battle.getPrize3() != null && battle.getPrize3() > 0) {
+                    dbWinner3.addWalletBalance(battle.getPrize3());
+                }
+                userRepository.save(dbWinner3);
             }
         }
         battle.setStatus("COMPLETED");
@@ -591,5 +705,88 @@ public class BattleController {
         else if (xp >= 1000) user.setLevel("Silver");
         else if (xp >= 500) user.setLevel("Bronze");
         else user.setLevel("Novice");
+    }
+    @GetMapping("/{id}/live")
+    public String liveBattle(@PathVariable Long id, HttpSession session, Model model) {
+        User user = getUserFromSession(session);
+        if (user == null) return "redirect:/login";
+        user = userRepository.findById(user.getId()).orElse(user);
+        
+        Battle battle = battleRepository.findById(id).orElse(null);
+        if (battle == null) return "redirect:/battles";
+        if (!"ACTIVE".equals(battle.getStatus())) return "redirect:/battles/" + id;
+        
+        // Determine user role
+        boolean isCreator = battle.getCreator().getId().equals(user.getId());
+        boolean isParticipant = participantRepository.existsByBattleAndUser(battle, user);
+        String userRole = isCreator ? "HOST" : (isParticipant ? "PARTICIPANT" : "AUDIENCE");
+        
+        // Get participants list
+        java.util.List<BattleParticipant> participants = participantRepository.findByBattle(battle);
+        
+        // Get existing comments
+        java.util.List<BattleLiveComment> comments = liveCommentRepository.findByBattleOrderBySentAtAsc(battle);
+        
+        // Get counts
+        long likeCount = battleLikeRepository.countByBattle(battle);
+        long giftCount = battleGiftRepository.countByBattle(battle);
+        boolean hasLiked = battleLikeRepository.existsByBattleAndUser(battle, user);
+        boolean hasVoted = voteRepository.existsByBattleAndVoter(battle, user);
+        
+        // Category device requirements
+        java.util.Map<String, String> deviceReqs = new java.util.HashMap<>();
+        deviceReqs.put("Dance", "camera,mic");
+        deviceReqs.put("Singing", "mic");
+        deviceReqs.put("Fashion Show", "camera");
+        deviceReqs.put("Fashion", "camera");
+        deviceReqs.put("Acting", "camera,mic");
+        deviceReqs.put("Comedy", "camera,mic");
+        deviceReqs.put("Drawing", "camera");
+        deviceReqs.put("Art", "camera");
+        deviceReqs.put("Instrument", "camera,mic");
+        deviceReqs.put("Music", "camera,mic");
+        deviceReqs.put("Gaming", "screen");
+        deviceReqs.put("Coding", "screen");
+        String devices = deviceReqs.getOrDefault(battle.getCategory(), "camera,mic");
+        
+        model.addAttribute("battle", battle);
+        model.addAttribute("user", user);
+        model.addAttribute("userRole", userRole);
+        model.addAttribute("participants", participants);
+        model.addAttribute("comments", comments);
+        model.addAttribute("likeCount", likeCount);
+        model.addAttribute("giftCount", giftCount);
+        model.addAttribute("hasLiked", hasLiked);
+        model.addAttribute("hasVoted", hasVoted);
+        model.addAttribute("devices", devices);
+        model.addAttribute("endsAtStr", battle.getEndsAt() != null ? battle.getEndsAt().toString() : null);
+        
+        // Set battle as live
+        battle.setIsLive(true);
+        battleRepository.save(battle);
+        
+        return "battle-live";
+    }
+
+    @PostMapping("/{id}/leave")
+    public String leaveBattle(@PathVariable Long id, HttpSession session, RedirectAttributes redirectAttributes) {
+        User user = getUserFromSession(session);
+        if (user == null) return "redirect:/login";
+        user = userRepository.findById(user.getId()).orElse(user);
+        
+        Battle battle = battleRepository.findById(id).orElse(null);
+        if (battle == null) return "redirect:/battles";
+        
+        // Remove participant
+        java.util.List<BattleParticipant> participants = participantRepository.findByBattle(battle);
+        for (BattleParticipant p : participants) {
+            if (p.getUser().getId().equals(user.getId())) {
+                participantRepository.delete(p);
+                break;
+            }
+        }
+        
+        redirectAttributes.addFlashAttribute("success", "You have left the battle.");
+        return "redirect:/battles";
     }
 }
