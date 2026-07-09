@@ -90,7 +90,7 @@
                 </select>
                 <select class="form-input" name="trackId" style="flex:1; min-width: 220px;">
                     <option value="">Select your music (optional)</option>
-                    <option th:each="t : ${approvedTracks}" th:value="${t.id}" th:text="${t.title + ' â€” ' + t.artistName}">Track</option>
+                    <option th:each="t : ${approvedTracks}" th:value="${t.id}" th:text="${t.title + ' &mdash; ' + t.artistName}">Track</option>
                 </select>
                 <input class="form-input" name="localTitle" placeholder="Local song title (optional)" style="flex:1; min-width: 220px;">
                 <input class="form-input" name="localArtistName" placeholder="Local artist name (optional)" style="flex:1; min-width: 220px;">
@@ -112,7 +112,7 @@
                 <input class="form-input" name="code" placeholder="Enter room code (e.g., A2K9QF)" required style="flex:1; min-width: 220px; text-transform: uppercase;">
                 <select class="form-input" name="trackId" style="flex:1; min-width: 220px;">
                     <option value="">Select your music (optional)</option>
-                    <option th:each="t : ${approvedTracks}" th:value="${t.id}" th:text="${t.title + ' â€” ' + t.artistName}">Track</option>
+                    <option th:each="t : ${approvedTracks}" th:value="${t.id}" th:text="${t.title + ' &mdash; ' + t.artistName}">Track</option>
                 </select>
                 <input class="form-input" name="localTitle" placeholder="Local song title (optional)" style="flex:1; min-width: 220px;">
                 <input class="form-input" name="localArtistName" placeholder="Local artist name (optional)" style="flex:1; min-width: 220px;">

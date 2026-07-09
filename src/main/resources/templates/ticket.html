@@ -512,20 +512,20 @@
                 <div class="ticket-field">
                     <label>Email</label>
                     <div class="val" style="font-size:12px;"
-                        th:text="${canSeePII ? (registration.email != null ? registration.email : 'â€”') : 'â€¢â€¢â€¢â€¢@â€¢â€¢â€¢â€¢.com'}">email@email.com</div>
+                        th:text="${canSeePII ? (registration.email != null ? registration.email : '&mdash;') : '&bull;&bull;&bull;&bull;@&bull;&bull;&bull;&bull;.com'}">email@email.com</div>
                 </div>
                 <div class="ticket-field">
                     <label>Phone</label>
-                    <div class="val" th:text="${canSeePII ? (registration.phone != null ? registration.phone : 'â€”') : 'â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢'}">Phone</div>
+                    <div class="val" th:text="${canSeePII ? (registration.phone != null ? registration.phone : '&mdash;') : '&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;'}">Phone</div>
                 </div>
                 <div class="ticket-field">
                     <label>College / Org</label>
                     <div class="val" style="font-size:12px;"
-                        th:text="${registration.college != null ? registration.college : 'â€”'}">â€”</div>
+                        th:text="${registration.college != null ? registration.college : '&mdash;'}">&mdash;</div>
                 </div>
                 <div class="ticket-field">
                     <label>Year of Study</label>
-                    <div class="val" th:text="${registration.yearOfStudy != null ? registration.yearOfStudy : 'â€”'}">â€”
+                    <div class="val" th:text="${registration.yearOfStudy != null ? registration.yearOfStudy : '&mdash;'}">&mdash;
                     </div>
                 </div>
                 <div class="ticket-field">

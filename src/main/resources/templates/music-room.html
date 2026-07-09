@@ -41,7 +41,7 @@
                         style="padding:6px 10px; margin-left:8px; background: rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12);">
                     <i class="fas fa-copy"></i> Copy
                 </button>
-                <span style="opacity:0.55;"> â€¢ spectators can join with the same code and vote</span>
+                <span style="opacity:0.55;"> &bull; spectators can join with the same code and vote</span>
             </div>
             <div style="margin-top: 8px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
                 <span class="pill" title="Phase">
@@ -112,7 +112,7 @@
             <form th:action="@{/music/rooms/{code}/submit(code=${room.code},auth=${auth})}" method="post" style="display:flex; gap: 10px; flex-wrap:wrap;">
                 <select class="form-input" name="trackId" required style="flex:1; min-width: 220px;">
                     <option value="" disabled selected>Select an approved track</option>
-                    <option th:each="t : ${approvedTracks}" th:value="${t.id}" th:text="${t.title + ' â€” ' + t.artistName}">Track</option>
+                    <option th:each="t : ${approvedTracks}" th:value="${t.id}" th:text="${t.title + ' &mdash; ' + t.artistName}">Track</option>
                 </select>
                 <button class="nav-btn" type="submit" style="padding: 10px 14px;">
                     <i class="fas fa-paper-plane"></i> Submit
@@ -137,7 +137,7 @@
                         <div style="font-weight: 900; font-size: 14px;" th:text="${s.track.title}">Title</div>
                         <div style="color: rgba(255,255,255,0.55); font-size: 12px;">
                             <span th:text="${s.track.artistName}">Artist</span>
-                            <span style="opacity:0.6;"> â€¢ </span>
+                            <span style="opacity:0.6;"> &bull; </span>
                             submitted by <span th:text="${s.submittedBy != null ? s.submittedBy.username : 'Unknown'}">user</span>
                         </div>
                     </div>

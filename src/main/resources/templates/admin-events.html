@@ -931,7 +931,7 @@
                         <div class="meta-row">
                             <i class="fas fa-users"></i>
                             <span>Max <strong
-                                    th:text="${event.maxParticipants != null ? event.maxParticipants : 'â€”'}">100</strong>
+                                    th:text="${event.maxParticipants != null ? event.maxParticipants : '&mdash;'}">100</strong>
                                 participants</span>
                         </div>
                     </div>
@@ -949,7 +949,7 @@
                             <i class="fas fa-eye"></i> View
                         </a>
 
-                        <!-- Attendance Button â€” highlighted for ONGOING events -->
+                        <!-- Attendance Button &mdash; highlighted for ONGOING events -->
                         <a th:href="@{'/events/admin/' + ${event.id} + '/attendance'}" class="action-btn" th:style="${event.status == 'ONGOING'} ?
                                'background:rgba(245,158,11,0.2);border-color:rgba(245,158,11,0.4);color:#f59e0b;animation:pulse-att 1.5s infinite;' :
                                'background:rgba(99,102,241,0.12);border-color:rgba(99,102,241,0.25);color:#a5b4fc;'">

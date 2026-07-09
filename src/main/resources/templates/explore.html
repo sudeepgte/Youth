@@ -302,6 +302,41 @@
         .fr-btn-accept { background: var(--accent); color: #fff; }
         .fr-btn-reject { background: #f1f5f9; color: var(--text-secondary); }
         .fr-btn:hover { opacity: 0.8; }
+
+        /* ── Profile Preview Modal ── */
+        .preview-modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(8px);
+            display: none; align-items: center; justify-content: center; z-index: 1000;
+            opacity: 0; transition: opacity 0.3s ease;
+        }
+        .preview-modal-overlay.active { display: flex; opacity: 1; }
+        .preview-modal {
+            background: #fff; border-radius: 24px; padding: 30px;
+            width: 90%; max-width: 400px; text-align: center;
+            transform: scale(0.9); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative; box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        .preview-modal-overlay.active .preview-modal { transform: scale(1); }
+        .preview-modal-close {
+            position: absolute; top: 15px; right: 15px; background: none; border: none;
+            font-size: 20px; color: var(--text-muted); cursor: pointer; transition: 0.2s;
+        }
+        .preview-modal-close:hover { color: #f84464; }
+        .preview-avatar {
+            width: 90px; height: 90px; border-radius: 50%; margin: 0 auto 15px;
+            object-fit: cover; border: 3px solid #f0f4f8; display: flex;
+            align-items: center; justify-content: center; font-size: 32px;
+            font-weight: bold; color: #fff; background: linear-gradient(135deg, #f84464, #ff8c69);
+        }
+        .preview-stats {
+            display: flex; justify-content: space-around; margin: 20px 0; padding-top: 20px;
+            border-top: 1px solid var(--glass-border);
+        }
+        .preview-stat { display: flex; flex-direction: column; gap: 4px; }
+        .preview-stat span:first-child { font-weight: 800; font-size: 18px; color: var(--text-primary); }
+        .preview-stat span:last-child { font-size: 12px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+        .preview-private-lock { margin: 30px 0 10px; color: var(--text-muted); }
     </style>
     <script th:src="@{/js/tab-support.js}"></script>
 </head>
@@ -414,7 +449,8 @@
 
             <!-- Server-rendered initial cards (all users) -->
             <div th:each="u : ${allUsers}"
-                 class="person-card"
+                 class="person-card" style="cursor: pointer;"
+                 th:onclick="'openProfilePreview(' + ${u.id} + ')'"
                  th:attr="data-username=${u.username}, data-college=${u.collegeName != null ? u.collegeName : ''}">
 
                 <div class="person-avatar">
@@ -425,7 +461,7 @@
                 </div>
 
                 <div class="person-name">
-                    <a th:href="@{'/profile/' + ${u.username}}" th:text="${u.username}">Username</a>
+                    <a th:href="@{'/profile/' + ${u.username}}" th:text="${u.username}" onclick="event.stopPropagation()">Username</a>
                 </div>
 
                 <div class="person-college" th:if="${u.collegeName != null and !u.collegeName.isEmpty()}">
@@ -439,7 +475,7 @@
                     <span th:text="${followersCount.get(u.id) != null ? followersCount.get(u.id) : 0}">0</span> followers
                 </div>
 
-                <div th:id="'fw-' + ${u.id}">
+                <div th:id="'fw-' + ${u.id}" onclick="event.stopPropagation()">
                     <button th:if="${followingUserIds != null and followingUserIds.contains(u.id)}"
                         class="person-follow-btn following" disabled>
                         <i class="fas fa-user-check"></i> Following
@@ -562,7 +598,100 @@
                 console.error(err);
             }
         }
+
+        /* ─── Profile Preview Modal Logic ─── */
+        async function openProfilePreview(userId) {
+            const overlay = document.getElementById('profilePreviewOverlay');
+            overlay.classList.add('active');
+            const content = document.getElementById('previewContent');
+            
+            // Show loading skeleton
+            content.innerHTML = `
+                <div class="skeleton" style="width:90px; height:90px; border-radius:50%; margin:0 auto 15px;"></div>
+                <div class="skeleton" style="width:150px; height:20px; margin:0 auto 10px;"></div>
+                <div class="skeleton" style="width:100px; height:15px; margin:0 auto 20px;"></div>
+                <div class="skeleton" style="width:100%; height:60px;"></div>
+            `;
+            
+            try {
+                const res = await fetch('/api/users/preview/' + userId);
+                if (res.ok) {
+                    const data = await res.json();
+                    
+                    let avatarHtml = '';
+                    if (data.profilePhotoUrl) {
+                        avatarHtml = `<img src="${data.profilePhotoUrl}" class="preview-avatar" alt="Avatar">`;
+                    } else {
+                        avatarHtml = `<div class="preview-avatar">${data.username.substring(0, 2).toUpperCase()}</div>`;
+                    }
+                    
+                    let statsHtml = '';
+                    if (data.isPrivateAndNotFollowing) {
+                        statsHtml = `
+                            <div class="preview-private-lock">
+                                <i class="fas fa-lock" style="font-size: 40px; margin-bottom:15px;"></i>
+                                <h3 style="margin:0; font-size:16px;">This Account is Private</h3>
+                                <p style="font-size:13px; margin-top:5px;">Follow to see their posts and reels.</p>
+                            </div>
+                        `;
+                    } else {
+                        statsHtml = `
+                            <div class="preview-stats">
+                                <div class="preview-stat">
+                                    <span>${data.postsCount || 0}</span>
+                                    <span>Posts</span>
+                                </div>
+                                <div class="preview-stat">
+                                    <span>${data.reelsCount || 0}</span>
+                                    <span>Reels</span>
+                                </div>
+                                <div class="preview-stat">
+                                    <span>${data.followersCount || 0}</span>
+                                    <span>Followers</span>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    
+                    content.innerHTML = `
+                        ${avatarHtml}
+                        <h2 style="margin:0 0 5px; font-size:20px;">
+                            <a href="/profile/${data.username}" style="color:var(--text-primary); text-decoration:none;">${data.username}</a>
+                        </h2>
+                        ${data.collegeName ? `<p style="margin:0; color:var(--primary); font-size:13px;"><i class="fas fa-university"></i> ${data.collegeName}</p>` : ''}
+                        <div style="margin-top:15px; margin-bottom: 5px;">
+                            <a href="/profile/${data.username}" style="display:inline-block; padding:8px 20px; background:var(--gradient-1); color:white; text-decoration:none; border-radius:99px; font-weight:bold; font-size:13px; transition: 0.2s;">View Full Profile</a>
+                        </div>
+                        ${statsHtml}
+                    `;
+                } else {
+                    content.innerHTML = `<p style="color:red; padding: 30px 0;">Could not load profile preview.</p>`;
+                }
+            } catch (err) {
+                console.error(err);
+                content.innerHTML = `<p style="color:red; padding: 30px 0;">Error loading profile preview.</p>`;
+            }
+        }
+        
+        function closeProfilePreview(event) {
+            if (event) {
+                if (event.target === document.getElementById('profilePreviewOverlay') || event.target.closest('.preview-modal-close')) {
+                    document.getElementById('profilePreviewOverlay').classList.remove('active');
+                }
+            } else {
+                document.getElementById('profilePreviewOverlay').classList.remove('active');
+            }
+        }
     </script>
+
+    <!-- Profile Preview Modal HTML -->
+    <div class="preview-modal-overlay" id="profilePreviewOverlay" onclick="closeProfilePreview(event)">
+        <div class="preview-modal" onclick="event.stopPropagation()">
+            <button class="preview-modal-close" onclick="closeProfilePreview(event)"><i class="fas fa-times"></i></button>
+            <div id="previewContent">
+            </div>
+        </div>
+    </div>
 
     <div th:replace="~{fragments/modals :: createPostModal}"></div>
 </body>

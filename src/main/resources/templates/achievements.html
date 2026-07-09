@@ -738,8 +738,8 @@
                             <i th:class="${ach.position == 'Winner'} ? 'fas fa-trophy' : 'fas fa-medal'"></i>
                         </div>
                         <div class="award-info">
-                            <p th:text="${ach.position} + ' â€¢ ' + ${#temporals.format(ach.event.dateTime, 'MMM yyyy')}">
-                                WINNER â€¢ MAR 2025</p>
+                            <p th:text="${ach.position} + ' &bull; ' + ${#temporals.format(ach.event.dateTime, 'MMM yyyy')}">
+                                WINNER &bull; MAR 2025</p>
                             <h4 th:text="${ach.event.title}">Event Title</h4>
                             <div class="award-xp">
                                 <i class="fas fa-bolt"></i>

@@ -39,6 +39,7 @@ public class User implements Serializable {
     private String aboutMe;
     private String skills;
     private String collegeName;
+    private boolean privateAccount = false;
 
     // Gamification & Ranking
     private Integer xp = 0;
@@ -201,6 +202,14 @@ public class User implements Serializable {
 
     public void setCollegeName(String collegeName) {
         this.collegeName = collegeName;
+    }
+
+    public boolean isPrivateAccount() {
+        return privateAccount;
+    }
+
+    public void setPrivateAccount(boolean privateAccount) {
+        this.privateAccount = privateAccount;
     }
 
     @JsonIgnore
