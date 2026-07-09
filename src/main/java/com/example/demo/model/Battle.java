@@ -65,6 +65,11 @@ public class Battle {
     private Double judgeWeight = 70.0;
     private Double audienceWeight = 30.0;
 
+    private Integer durationMinutes; // For live battles (1, 3, 5, 10 min)
+    private Integer likeCount = 0;
+    private Integer giftCount = 0;
+    private Boolean isLive = false;
+
     @JsonIgnore
     @OneToMany(mappedBy = "battle", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BattleParticipant> participants = new ArrayList<>();
@@ -76,6 +81,18 @@ public class Battle {
     @JsonIgnore
     @OneToMany(mappedBy = "battle", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BattleVote> votes = new ArrayList<>();
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "battle", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BattleLiveComment> comments = new ArrayList<>();
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "battle", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BattleLike> likes = new ArrayList<>();
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "battle", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BattleGift> gifts = new ArrayList<>();
 
     @PrePersist
     public void prePersist() {
@@ -177,4 +194,16 @@ public class Battle {
 
     public Double getPrize3() { return prize3; }
     public void setPrize3(Double prize3) { this.prize3 = prize3; }
+
+    public Integer getDurationMinutes() { return durationMinutes; }
+    public void setDurationMinutes(Integer durationMinutes) { this.durationMinutes = durationMinutes; }
+
+    public Integer getLikeCount() { return likeCount; }
+    public void setLikeCount(Integer likeCount) { this.likeCount = likeCount; }
+
+    public Integer getGiftCount() { return giftCount; }
+    public void setGiftCount(Integer giftCount) { this.giftCount = giftCount; }
+
+    public Boolean getIsLive() { return isLive; }
+    public void setIsLive(Boolean isLive) { this.isLive = isLive; }
 }

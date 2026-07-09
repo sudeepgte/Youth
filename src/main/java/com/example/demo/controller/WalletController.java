@@ -62,7 +62,9 @@ public class WalletController {
     }
 
     @PostMapping("/withdraw")
-    public String withdrawFunds(@RequestParam("amount") Double amount, HttpSession session, RedirectAttributes redirectAttributes) {
+    public String withdrawFunds(@RequestParam("amount") Double amount, 
+                                @RequestParam(value="accountDetails", required=false) String accountDetails, 
+                                HttpSession session, RedirectAttributes redirectAttributes) {
         User user = getUserFromSession(session);
         if (user == null) return "redirect:/login";
 
@@ -72,7 +74,9 @@ public class WalletController {
             if (user.getWalletBalance() >= amount) {
                 user.deductWalletBalance(amount);
                 userRepository.save(user);
-                redirectAttributes.addFlashAttribute("success", "Successfully withdrew ₹" + amount + " from your wallet.");
+                
+                String accountStr = accountDetails != null && !accountDetails.isEmpty() ? " to " + accountDetails : "";
+                redirectAttributes.addFlashAttribute("success", "Successfully initiated withdrawal of ₹" + amount + accountStr + ". It will be processed shortly.");
             } else {
                 redirectAttributes.addFlashAttribute("error", "Insufficient balance.");
             }

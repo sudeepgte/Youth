@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="'Live Battle — ' + ${battle.title}">Live Battle</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/battle-live.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+</head>
+<body style="background: #0f0f23; margin: 0; overflow-x: hidden;">
+
+<div class="live-container">
+
+    <!-- ═══════════════════════════════════════════════
+         HEADER BAR
+         ═══════════════════════════════════════════════ -->
+    <div class="live-header">
+        <div class="live-header-left">
+            <a th:href="@{'/battles/' + ${battle.id}}" class="live-back-btn">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <div class="live-header-info">
+                <div class="live-header-title" th:text="${battle.title}">Battle Title</div>
+                <div class="live-header-meta">
+                    <span class="live-category-badge" th:text="${battle.category}">Category</span>
+                </div>
+            </div>
+        </div>
+        <div class="live-header-right">
+            <span class="live-badge">LIVE</span>
+            <span class="live-viewer-count">
+                <i class="fas fa-eye"></i>
+                <span id="viewer-count">0</span>
+            </span>
+            <span class="live-timer">
+                <i class="fas fa-clock"></i>
+                <span id="battle-timer">--:--</span>
+            </span>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════
+         MAIN CONTENT (Video + Chat)
+         ═══════════════════════════════════════════════ -->
+    <div class="live-main">
+
+        <!-- Left: Video Stage -->
+        <div class="live-stage">
+
+            <!-- Video Area -->
+            <div class="live-video-area">
+
+                <!-- Participant A Video Box -->
+                <div class="live-video-box" id="video-box-a">
+                    <div th:if="${#lists.size(participants) > 0}">
+                        <video id="local-video"
+                               th:if="${participants[0].user.id == user.id}"
+                               autoplay playsinline muted></video>
+                        <video id="remote-video-a"
+                               th:if="${participants[0].user.id != user.id}"
+                               autoplay playsinline></video>
+                    </div>
+                    <!-- Placeholder if no video yet -->
+                    <div class="live-video-placeholder" id="placeholder-a">
+                        <img th:if="${#lists.size(participants) > 0}"
+                             th:src="${participants[0].user.profilePhotoUrl != null and !participants[0].user.profilePhotoUrl.isEmpty()} ? ${participants[0].user.profilePhotoUrl} : 'https://ui-avatars.com/api/?name=' + ${participants[0].user.username} + '&background=22D3EE&color=0f0f23&size=160'"
+                             alt="">
+                        <img th:if="${#lists.size(participants) == 0}"
+                             src="https://ui-avatars.com/api/?name=?&background=1a1a2e&color=64748b&size=160"
+                             alt="">
+                        <span th:if="${#lists.size(participants) > 0}" th:text="${participants[0].user.username}">Waiting...</span>
+                        <span th:if="${#lists.size(participants) == 0}">Waiting for participant...</span>
+                        <div class="spinner"></div>
+                    </div>
+                    <!-- Overlay -->
+                    <div class="live-video-overlay">
+                        <div class="live-video-username" th:if="${#lists.size(participants) > 0}">
+                            <img th:src="${participants[0].user.profilePhotoUrl != null and !participants[0].user.profilePhotoUrl.isEmpty()} ? ${participants[0].user.profilePhotoUrl} : 'https://ui-avatars.com/api/?name=' + ${participants[0].user.username} + '&background=22D3EE&color=0f0f23&size=56'"
+                                 alt="">
+                            <span th:text="${participants[0].user.username}">User A</span>
+                        </div>
+                        <div class="live-video-votes" th:if="${#lists.size(participants) > 0}">
+                            <i class="fas fa-star"></i>
+                            <span th:id="'votes-' + ${participants[0].user.id}">0 votes</span>
+                        </div>
+                    </div>
+                    <!-- Camera/Mic Indicators -->
+                    <div class="live-video-indicators" th:if="${#lists.size(participants) > 0}">
+                        <span class="active" th:id="'cam-indicator-' + ${participants[0].user.id}"><i class="fas fa-video"></i></span>
+                        <span class="active" th:id="'mic-indicator-' + ${participants[0].user.id}"><i class="fas fa-microphone"></i></span>
+                    </div>
+                </div>
+
+                <!-- VS Badge -->
+                <div class="live-vs-badge">VS</div>
+
+                <!-- Participant B Video Box -->
+                <div class="live-video-box" id="video-box-b">
+                    <div th:if="${#lists.size(participants) > 1}">
+                        <video id="local-video-b"
+                               th:if="${participants[1].user.id == user.id}"
+                               autoplay playsinline muted></video>
+                        <video id="remote-video-b"
+                               th:if="${participants[1].user.id != user.id}"
+                               autoplay playsinline></video>
+                    </div>
+                    <!-- Placeholder if no video yet -->
+                    <div class="live-video-placeholder" id="placeholder-b">
+                        <img th:if="${#lists.size(participants) > 1}"
+                             th:src="${participants[1].user.profilePhotoUrl != null and !participants[1].user.profilePhotoUrl.isEmpty()} ? ${participants[1].user.profilePhotoUrl} : 'https://ui-avatars.com/api/?name=' + ${participants[1].user.username} + '&background=ec4899&color=0f0f23&size=160'"
+                             alt="">
+                        <img th:if="${#lists.size(participants) <= 1}"
+                             src="https://ui-avatars.com/api/?name=?&background=1a1a2e&color=64748b&size=160"
+                             alt="">
+                        <span th:if="${#lists.size(participants) > 1}" th:text="${participants[1].user.username}">Waiting...</span>
+                        <span th:if="${#lists.size(participants) <= 1}">Waiting for opponent...</span>
+                        <div class="spinner"></div>
+                    </div>
+                    <!-- Overlay -->
+                    <div class="live-video-overlay">
+                        <div class="live-video-username" th:if="${#lists.size(participants) > 1}">
+                            <img th:src="${participants[1].user.profilePhotoUrl != null and !participants[1].user.profilePhotoUrl.isEmpty()} ? ${participants[1].user.profilePhotoUrl} : 'https://ui-avatars.com/api/?name=' + ${participants[1].user.username} + '&background=ec4899&color=0f0f23&size=56'"
+                                 alt="">
+                            <span th:text="${participants[1].user.username}">User B</span>
+                        </div>
+                        <div class="live-video-votes" th:if="${#lists.size(participants) > 1}">
+                            <i class="fas fa-star"></i>
+                            <span th:id="'votes-' + ${participants[1].user.id}">0 votes</span>
+                        </div>
+                    </div>
+                    <!-- Camera/Mic Indicators -->
+                    <div class="live-video-indicators" th:if="${#lists.size(participants) > 1}">
+                        <span class="active" th:id="'cam-indicator-' + ${participants[1].user.id}"><i class="fas fa-video"></i></span>
+                        <span class="active" th:id="'mic-indicator-' + ${participants[1].user.id}"><i class="fas fa-microphone"></i></span>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ═══════════════════════════════════════════
+                 PARTICIPANT CONTROLS (HOST or PARTICIPANT only)
+                 ═══════════════════════════════════════════ -->
+            <div class="live-controls" th:if="${userRole == 'HOST' or userRole == 'PARTICIPANT'}">
+                <button id="cam-btn" class="live-control-btn active" onclick="toggleCamera()" title="Toggle Camera">
+                    <i class="fas fa-video"></i>
+                </button>
+                <button id="mic-btn" class="live-control-btn active" onclick="toggleMic()" title="Toggle Microphone">
+                    <i class="fas fa-microphone"></i>
+                </button>
+                <button id="screen-btn" class="live-control-btn" onclick="shareScreen()" title="Share Screen">
+                    <i class="fas fa-desktop"></i>
+                </button>
+                <button class="live-control-btn danger" onclick="leaveBattle()" title="Leave Battle">
+                    <i class="fas fa-phone-slash"></i> Leave
+                </button>
+                <button th:if="${userRole == 'HOST'}" class="live-control-btn end-btn" onclick="endBattle()" title="End Battle">
+                    <i class="fas fa-flag-checkered"></i> End Battle
+                </button>
+            </div>
+
+            <!-- ═══════════════════════════════════════════
+                 AUDIENCE INTERACTION BAR
+                 ═══════════════════════════════════════════ -->
+            <div class="live-interaction-bar">
+                <!-- Like -->
+                <button class="live-interaction-btn like-btn" onclick="sendLike()" id="like-btn">
+                    <i class="fas fa-heart"></i>
+                    <span id="like-count" th:text="${likeCount}">0</span>
+                </button>
+
+                <!-- Gift -->
+                <button class="live-interaction-btn gift-btn" onclick="toggleGiftPicker()">
+                    <i class="fas fa-gift"></i> Gift
+                    <span id="gift-count" th:text="${giftCount}">0</span>
+                </button>
+
+                <!-- Vote A -->
+                <button th:if="${#lists.size(participants) > 0}"
+                        class="live-interaction-btn vote-btn"
+                        onclick="voteForParticipant(this.getAttribute('data-userid'))"
+                        th:data-userid="${participants[0].user.id}"
+                        th:disabled="${hasVoted}">
+                    <i class="fas fa-thumbs-up"></i>
+                    Vote <span th:text="${participants[0].user.username}">A</span>
+                </button>
+
+                <!-- Vote B -->
+                <button th:if="${#lists.size(participants) > 1}"
+                        class="live-interaction-btn vote-btn"
+                        onclick="voteForParticipant(this.getAttribute('data-userid'))"
+                        th:data-userid="${participants[1].user.id}"
+                        th:disabled="${hasVoted}">
+                    <i class="fas fa-thumbs-up"></i>
+                    Vote <span th:text="${participants[1].user.username}">B</span>
+                </button>
+
+                <!-- Share -->
+                <button class="live-interaction-btn share-btn" id="share-btn" onclick="shareBattle()">
+                    <i class="fas fa-share"></i> Share
+                </button>
+            </div>
+
+        </div>
+
+        <!-- ═══════════════════════════════════════════════
+             LIVE CHAT PANEL
+             ═══════════════════════════════════════════════ -->
+        <div class="live-chat-panel">
+            <div class="live-chat-header">
+                <i class="fas fa-comments"></i> Live Chat
+            </div>
+
+            <!-- Messages Area -->
+            <div class="live-chat-messages" id="chat-messages">
+                <!-- Existing comments from server -->
+                <div th:each="c : ${comments}" class="live-chat-msg">
+                    <img th:src="${c.user.profilePhotoUrl != null and !c.user.profilePhotoUrl.isEmpty()} ? ${c.user.profilePhotoUrl} : 'https://ui-avatars.com/api/?name=' + ${c.user.username} + '&background=22D3EE&color=0f0f23&size=48'"
+                         alt="">
+                    <div class="chat-content">
+                        <span class="chat-username" th:text="${c.user.username}">User</span>
+                        <span class="chat-text" th:text="${c.message}">Message</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Input -->
+            <div class="live-chat-input">
+                <input type="text" id="chat-input" placeholder="Say something..." maxlength="200" autocomplete="off">
+                <button onclick="sendComment()">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     GIFT PICKER PANEL (Floating)
+     ═══════════════════════════════════════════════════════ -->
+<div class="live-gift-picker" id="gift-picker">
+    <div class="live-gift-picker-header">
+        <h4><i class="fas fa-gift"></i> Send a Gift</h4>
+        <span>
+            <i class="fas fa-coins"></i>
+            <span th:text="${user.coins}">0</span> coins
+        </span>
+    </div>
+    <div class="live-gift-recipient">
+        Sending to: <strong id="gift-recipient-name">Select contestant</strong>
+    </div>
+
+    <!-- Contestant Selector (click to pick who gets the gift) -->
+    <div style="display:flex; gap:8px; margin-bottom:14px; justify-content:center;">
+        <button th:if="${#lists.size(participants) > 0}"
+                class="live-interaction-btn"
+                onclick="selectGiftRecipient(this.getAttribute('data-userid'), this.getAttribute('data-username'))"
+                th:data-userid="${participants[0].user.id}"
+                th:data-username="${participants[0].user.username}"
+                style="flex:1; justify-content:center;">
+            <span th:text="${participants[0].user.username}">User A</span>
+        </button>
+        <button th:if="${#lists.size(participants) > 1}"
+                class="live-interaction-btn"
+                onclick="selectGiftRecipient(this.getAttribute('data-userid'), this.getAttribute('data-username'))"
+                th:data-userid="${participants[1].user.id}"
+                th:data-username="${participants[1].user.username}"
+                style="flex:1; justify-content:center;">
+            <span th:text="${participants[1].user.username}">User B</span>
+        </button>
+    </div>
+
+    <div class="live-gift-grid">
+        <div class="live-gift-item" onclick="sendGift('ROSE')">
+            <span class="gift-emoji">🌹</span>
+            <span class="gift-name">Rose</span>
+            <span class="gift-cost"><i class="fas fa-coins"></i> 10</span>
+        </div>
+        <div class="live-gift-item" onclick="sendGift('FIRE')">
+            <span class="gift-emoji">🔥</span>
+            <span class="gift-name">Fire</span>
+            <span class="gift-cost"><i class="fas fa-coins"></i> 20</span>
+        </div>
+        <div class="live-gift-item" onclick="sendGift('GIFT_BOX')">
+            <span class="gift-emoji">🎁</span>
+            <span class="gift-name">Gift Box</span>
+            <span class="gift-cost"><i class="fas fa-coins"></i> 50</span>
+        </div>
+        <div class="live-gift-item" onclick="sendGift('DIAMOND')">
+            <span class="gift-emoji">💎</span>
+            <span class="gift-name">Diamond</span>
+            <span class="gift-cost"><i class="fas fa-coins"></i> 100</span>
+        </div>
+        <div class="live-gift-item" onclick="sendGift('CROWN')">
+            <span class="gift-emoji">👑</span>
+            <span class="gift-name">Crown</span>
+            <span class="gift-cost"><i class="fas fa-coins"></i> 200</span>
+        </div>
+    </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     JAVASCRIPT — Core Logic
+     ═══════════════════════════════════════════════════════════ -->
+<script th:inline="javascript">
+    /* ─── Global State ──────────────────────────────────── */
+    const battleId = /*[[${battle.id}]]*/ 0;
+    const userId = /*[[${user.id}]]*/ 0;
+    const username = /*[[${user.username}]]*/ '';
+    const userRole = /*[[${userRole}]]*/ 'AUDIENCE';
+    const devices = /*[[${devices}]]*/ 'camera,mic';
+
+    let stompClient = null;
+    let localStream = null;
+    let peerConnections = {};
+    let cameraOn = true;
+    let micOn = true;
+    let hasLiked = /*[[${hasLiked}]]*/ false;
+    let hasVoted = /*[[${hasVoted}]]*/ false;
+    let selectedContestant = null;
+    
+    function escapeHtml(unsafe) {
+        if (!unsafe) return '';
+        return String(unsafe)
+             .replace(/&/g, "&amp;")
+             .replace(/</g, "&lt;")
+             .replace(/>/g, "&gt;")
+             .replace(/"/g, "&quot;")
+             .replace(/'/g, "&#039;");
+    }
+
+    /* ─── 1. STOMP WebSocket Connection ─────────────────── */
+    (function connectStomp() {
+        const socket = new SockJS('/ws');
+        stompClient = Stomp.over(socket);
+        stompClient.debug = null;
+
+        stompClient.connect({}, function(frame) {
+            // Subscribe to all battle channels
+            stompClient.subscribe('/topic/battle/' + battleId + '/comments', onCommentReceived);
+            stompClient.subscribe('/topic/battle/' + battleId + '/likes', onLikeReceived);
+            stompClient.subscribe('/topic/battle/' + battleId + '/gifts', onGiftReceived);
+            stompClient.subscribe('/topic/battle/' + battleId + '/votes', onVoteReceived);
+            stompClient.subscribe('/topic/battle/' + battleId + '/status', onStatusReceived);
+            stompClient.subscribe('/topic/battle/' + battleId + '/signal', onSignalReceived);
+            stompClient.subscribe('/topic/battle/' + battleId + '/participants', onParticipantUpdate);
+
+            // Announce join
+            stompClient.send('/app/battle/' + battleId + '/viewer-join', {}, '{}');
+
+            // If participant, start WebRTC
+            if (userRole === 'HOST' || userRole === 'PARTICIPANT') {
+                startLocalMedia();
+            } else {
+                // Audience members ask who is broadcasting
+                sendSignal({ type: 'who-is-broadcasting', userId: userId });
+            }
+        }, function(error) {
+            console.error('STOMP connection error:', error);
+            setTimeout(connectStomp, 3000);
+        });
+    })();
+
+    /* ─── 2. WebRTC Media ───────────────────────────────── */
+    async function startLocalMedia() {
+        const constraints = {};
+        if (devices.includes('camera')) constraints.video = true;
+        if (devices.includes('mic')) constraints.audio = true;
+
+        if (devices.includes('screen')) {
+            try {
+                localStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+            } catch(e) {
+                console.error('Screen share failed', e);
+                return;
+            }
+        } else {
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia(constraints);
+            } catch(e) {
+                console.error('Media access failed', e);
+                return;
+            }
+        }
+
+        // Show local video
+        const localVideo = document.getElementById('local-video') || document.getElementById('local-video-b');
+        if (localVideo) {
+            localVideo.srcObject = localStream;
+            // Hide placeholder for local video box
+            const box = localVideo.closest('.live-video-box');
+            if (box) {
+                const placeholder = box.querySelector('.live-video-placeholder');
+                if (placeholder) placeholder.style.display = 'none';
+            }
+        }
+
+        // Notify other participants that we're broadcasting
+        sendSignal({ type: 'broadcaster-ready', userId: userId });
+    }
+
+    function toggleCamera() {
+        if (!localStream) return;
+        const videoTracks = localStream.getVideoTracks();
+        videoTracks.forEach(function(t) { t.enabled = !t.enabled; });
+        cameraOn = !cameraOn;
+        const btn = document.getElementById('cam-btn');
+        btn.classList.toggle('active', cameraOn);
+        btn.innerHTML = cameraOn
+            ? '<i class="fas fa-video"></i>'
+            : '<i class="fas fa-video-slash"></i>';
+        if (stompClient) {
+            stompClient.send('/app/battle/' + battleId + '/media-status', {},
+                JSON.stringify({ camera: cameraOn, mic: micOn }));
+        }
+    }
+
+    function toggleMic() {
+        if (!localStream) return;
+        const audioTracks = localStream.getAudioTracks();
+        audioTracks.forEach(function(t) { t.enabled = !t.enabled; });
+        micOn = !micOn;
+        var btn = document.getElementById('mic-btn');
+        btn.classList.toggle('active', micOn);
+        btn.innerHTML = micOn
+            ? '<i class="fas fa-microphone"></i>'
+            : '<i class="fas fa-microphone-slash"></i>';
+        if (stompClient) {
+            stompClient.send('/app/battle/' + battleId + '/media-status', {},
+                JSON.stringify({ camera: cameraOn, mic: micOn }));
+        }
+    }
+
+    async function shareScreen() {
+        try {
+            const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+            const localVideo = document.getElementById('local-video') || document.getElementById('local-video-b');
+            if (localVideo) {
+                localVideo.srcObject = screenStream;
+            }
+            // Replace tracks in peer connections
+            const videoTrack = screenStream.getVideoTracks()[0];
+            Object.values(peerConnections).forEach(function(pc) {
+                const sender = pc.getSenders().find(function(s) { return s.track && s.track.kind === 'video'; });
+                if (sender) sender.replaceTrack(videoTrack);
+            });
+            // When screen share stops, revert to camera
+            videoTrack.onended = function() {
+                if (localStream) {
+                    const camTrack = localStream.getVideoTracks()[0];
+                    if (localVideo) localVideo.srcObject = localStream;
+                    Object.values(peerConnections).forEach(function(pc) {
+                        const sender = pc.getSenders().find(function(s) { return s.track && s.track.kind === 'video'; });
+                        if (sender && camTrack) sender.replaceTrack(camTrack);
+                    });
+                }
+            };
+        } catch(e) {
+            console.error('Screen share failed', e);
+        }
+    }
+
+    /* ─── 3. WebRTC Peer Connection ─────────────────────── */
+    const ICE_SERVERS = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
+
+    function createPeerConnection(remoteUserId) {
+        const pc = new RTCPeerConnection(ICE_SERVERS);
+        peerConnections[remoteUserId] = pc;
+
+        // Add local tracks
+        if (localStream) {
+            localStream.getTracks().forEach(function(track) {
+                pc.addTrack(track, localStream);
+            });
+        }
+
+        // Handle incoming remote tracks
+        pc.ontrack = function(event) {
+            // Find the correct remote video element
+            var remoteVideo = document.getElementById('remote-video-a');
+            if (!remoteVideo || remoteVideo.srcObject) {
+                remoteVideo = document.getElementById('remote-video-b');
+            }
+            if (remoteVideo && event.streams[0]) {
+                remoteVideo.srcObject = event.streams[0];
+                // Hide placeholder
+                var box = remoteVideo.closest('.live-video-box');
+                if (box) {
+                    var placeholder = box.querySelector('.live-video-placeholder');
+                    if (placeholder) placeholder.style.display = 'none';
+                }
+            }
+        };
+
+        // Handle ICE candidates
+        pc.onicecandidate = function(event) {
+            if (event.candidate) {
+                sendSignal({
+                    type: 'candidate',
+                    candidate: event.candidate,
+                    targetUserId: remoteUserId,
+                    userId: userId
+                });
+            }
+        };
+
+        pc.onconnectionstatechange = function() {
+            console.log('Peer connection state:', pc.connectionState);
+        };
+
+        return pc;
+    }
+
+    async function onSignalReceived(message) {
+        var data = JSON.parse(message.body);
+
+        // Ignore our own signals
+        if (data.userId === userId) return;
+
+        if (data.type === 'who-is-broadcasting' && localStream) {
+            // We have a stream, tell them we are ready
+            sendSignal({ type: 'broadcaster-ready', userId: userId, targetUserId: data.userId });
+        }
+        else if (data.type === 'broadcaster-ready' && (data.targetUserId === undefined || data.targetUserId === userId)) {
+            // A broadcaster is ready, request their stream
+            sendSignal({ type: 'viewer-request', targetUserId: data.userId, userId: userId });
+        }
+        else if (data.type === 'viewer-request' && data.targetUserId === userId && localStream) {
+            // Someone requested our stream, create offer
+            var pc = createPeerConnection(data.userId);
+            var offer = await pc.createOffer();
+            await pc.setLocalDescription(offer);
+            sendSignal({
+                type: 'offer',
+                offer: offer,
+                targetUserId: data.userId,
+                userId: userId
+            });
+        }
+        else if (data.type === 'offer' && data.targetUserId === userId) {
+            var pc2 = createPeerConnection(data.userId);
+            await pc2.setRemoteDescription(new RTCSessionDescription(data.offer));
+            var answer = await pc2.createAnswer();
+            await pc2.setLocalDescription(answer);
+            sendSignal({
+                type: 'answer',
+                answer: answer,
+                targetUserId: data.userId,
+                userId: userId
+            });
+        }
+        else if (data.type === 'answer' && data.targetUserId === userId) {
+            var pc3 = peerConnections[data.userId];
+            if (pc3) await pc3.setRemoteDescription(new RTCSessionDescription(data.answer));
+        }
+        else if (data.type === 'candidate' && data.targetUserId === userId) {
+            var pc4 = peerConnections[data.userId];
+            if (pc4) await pc4.addIceCandidate(new RTCIceCandidate(data.candidate));
+        }
+    }
+
+    function sendSignal(data) {
+        if (stompClient && stompClient.connected) {
+            stompClient.send('/app/battle/' + battleId + '/signal', {}, JSON.stringify(data));
+        }
+    }
+
+    /* ─── 4. Live Chat ──────────────────────────────────── */
+    function sendComment() {
+        var input = document.getElementById('chat-input');
+        var msg = input.value.trim();
+        if (!msg || !stompClient) return;
+        stompClient.send('/app/battle/' + battleId + '/comment', {},
+            JSON.stringify({ message: msg }));
+        input.value = '';
+    }
+
+    function onCommentReceived(message) {
+        var data = JSON.parse(message.body);
+        var messagesDiv = document.getElementById('chat-messages');
+        var msgEl = document.createElement('div');
+        msgEl.className = 'live-chat-msg';
+
+        var avatarUrl = data.profilePhotoUrl || ('https://ui-avatars.com/api/?name=' + encodeURIComponent(data.username) + '&background=22D3EE&color=0f0f23&size=48');
+        msgEl.innerHTML =
+            '<img src="' + avatarUrl + '" alt="">' +
+            '<div class="chat-content">' +
+                '<span class="chat-username">' + escapeHtml(data.username) + '</span>' +
+                '<span class="chat-text">' + escapeHtml(data.message) + '</span>' +
+            '</div>';
+
+        messagesDiv.appendChild(msgEl);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    // Enter key to send
+    document.addEventListener('DOMContentLoaded', function() {
+        var input = document.getElementById('chat-input');
+        if (input) {
+            input.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') sendComment();
+            });
+        }
+        // Auto-scroll chat to bottom on load
+        var messagesDiv = document.getElementById('chat-messages');
+        if (messagesDiv) {
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+    });
+
+    /* ─── 5. Likes ──────────────────────────────────────── */
+    function sendLike() {
+        if (!stompClient) return;
+        stompClient.send('/app/battle/' + battleId + '/like', {}, '{}');
+        createFloatingHeart();
+        // Visual feedback
+        var likeBtn = document.getElementById('like-btn');
+        likeBtn.classList.add('liked');
+        setTimeout(function() { likeBtn.classList.remove('liked'); }, 400);
+    }
+
+    function onLikeReceived(message) {
+        var data = JSON.parse(message.body);
+        document.getElementById('like-count').textContent = data.likeCount;
+    }
+
+    function createFloatingHeart() {
+        var container = document.querySelector('.live-video-area');
+        if (!container) return;
+        var heart = document.createElement('div');
+        var hearts = ['❤️', '💖', '💕', '💗', '💜'];
+        heart.innerHTML = hearts[Math.floor(Math.random() * hearts.length)];
+        heart.style.cssText = 'position:absolute; bottom:20%; font-size:' + (20 + Math.random() * 14) + 'px; animation: float-heart 2s ease-out forwards; left:' + (Math.random() * 80 + 10) + '%; z-index:100; pointer-events:none;';
+        container.appendChild(heart);
+        setTimeout(function() { heart.remove(); }, 2000);
+    }
+
+    /* ─── 6. Gifts ──────────────────────────────────────── */
+    function toggleGiftPicker() {
+        document.getElementById('gift-picker').classList.toggle('show');
+    }
+
+    function selectGiftRecipient(recipientUserId, recipientUsername) {
+        selectedContestant = { userId: recipientUserId, username: recipientUsername };
+        document.getElementById('gift-recipient-name').textContent = recipientUsername;
+    }
+
+    function sendGift(giftType) {
+        if (!stompClient || !selectedContestant) {
+            alert('Please select a contestant to send the gift to!');
+            return;
+        }
+        stompClient.send('/app/battle/' + battleId + '/gift', {},
+            JSON.stringify({
+                giftType: giftType,
+                recipientId: selectedContestant.userId
+            }));
+        document.getElementById('gift-picker').classList.remove('show');
+        createFloatingGift(giftType);
+    }
+
+    function onGiftReceived(message) {
+        var data = JSON.parse(message.body);
+        document.getElementById('gift-count').textContent = data.totalGifts;
+        createFloatingGift(data.giftType);
+
+        // Show gift notification in chat
+        var messagesDiv = document.getElementById('chat-messages');
+        var msgEl = document.createElement('div');
+        msgEl.className = 'live-chat-msg gift-msg';
+        var giftEmojis = { ROSE: '🌹', FIRE: '🔥', GIFT_BOX: '🎁', DIAMOND: '💎', CROWN: '👑' };
+        msgEl.innerHTML =
+            '<div class="chat-content">' +
+                '<span class="chat-gift">' +
+                    (giftEmojis[data.giftType] || '🎁') + ' ' +
+                    escapeHtml(data.senderUsername) + ' sent ' +
+                    data.giftType.toLowerCase().replace('_', ' ') + ' to ' +
+                    escapeHtml(data.recipientUsername) +
+                '</span>' +
+            '</div>';
+        messagesDiv.appendChild(msgEl);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    function createFloatingGift(giftType) {
+        var giftEmojis = { ROSE: '🌹', FIRE: '🔥', GIFT_BOX: '🎁', DIAMOND: '💎', CROWN: '👑' };
+        var container = document.querySelector('.live-video-area');
+        if (!container) return;
+        var gift = document.createElement('div');
+        gift.innerHTML = giftEmojis[giftType] || '🎁';
+        gift.style.cssText = 'position:absolute; bottom:30%; font-size:40px; animation: float-gift 3s ease-out forwards; left:' + (Math.random() * 60 + 20) + '%; z-index:100; pointer-events:none;';
+        container.appendChild(gift);
+        setTimeout(function() { gift.remove(); }, 3000);
+    }
+
+    /* ─── 7. Voting ─────────────────────────────────────── */
+    function voteForParticipant(participantUserId) {
+        if (hasVoted) {
+            alert('You have already voted!');
+            return;
+        }
+        if (!stompClient) return;
+        stompClient.send('/app/battle/' + battleId + '/live-vote', {},
+            JSON.stringify({ participantUserId: participantUserId }));
+        hasVoted = true;
+        // Disable vote buttons
+        document.querySelectorAll('.vote-btn').forEach(function(btn) {
+            btn.disabled = true;
+            btn.style.opacity = '0.5';
+        });
+    }
+
+    function onVoteReceived(message) {
+        var leaderboard = JSON.parse(message.body);
+        leaderboard.forEach(function(entry) {
+            var el = document.getElementById('votes-' + entry.userId);
+            if (el) el.textContent = entry.voteCount + ' votes';
+        });
+    }
+
+    /* ─── 8. Timer ──────────────────────────────────────── */
+    function startTimer() {
+        var endsAtStr = /*[[${endsAtStr}]]*/ null;
+        if (!endsAtStr) {
+            document.getElementById('battle-timer').textContent = '∞';
+            return;
+        }
+        var endsAt = new Date(endsAtStr).getTime();
+
+        function updateTimer() {
+            var now = new Date().getTime();
+            var diff = endsAt - now;
+            if (diff <= 0) {
+                document.getElementById('battle-timer').textContent = '00:00';
+                
+                // Auto-end battle when timer reaches 0
+                if (userRole === 'HOST' && !window.battleEndedTriggered) {
+                    window.battleEndedTriggered = true;
+                    endBattle(true);
+                }
+                return;
+            }
+            var hours = Math.floor(diff / 3600000);
+            var minutes = Math.floor((diff % 3600000) / 60000);
+            var seconds = Math.floor((diff % 60000) / 1000);
+            if (hours > 0) {
+                document.getElementById('battle-timer').textContent =
+                    String(hours).padStart(2, '0') + ':' +
+                    String(minutes).padStart(2, '0') + ':' +
+                    String(seconds).padStart(2, '0');
+            } else {
+                document.getElementById('battle-timer').textContent =
+                    String(minutes).padStart(2, '0') + ':' +
+                    String(seconds).padStart(2, '0');
+            }
+        }
+
+        updateTimer();
+        setInterval(updateTimer, 1000);
+    }
+    startTimer();
+
+    /* ─── 9. Share ──────────────────────────────────────── */
+    function shareBattle() {
+        var url = window.location.href;
+        navigator.clipboard.writeText(url).then(function() {
+            var btn = document.getElementById('share-btn');
+            btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+            setTimeout(function() {
+                btn.innerHTML = '<i class="fas fa-share"></i> Share';
+            }, 2000);
+        });
+    }
+
+    /* ─── 10. Status Updates ────────────────────────────── */
+    function onStatusReceived(message) {
+        var data = JSON.parse(message.body);
+        if (data.viewerCount !== undefined) {
+            document.getElementById('viewer-count').textContent = data.viewerCount;
+        }
+        if (data.status === 'ENDED' || data.status === 'COMPLETED') {
+            // Redirect back to battle page
+            window.location.href = '/battles/' + battleId;
+        }
+    }
+
+    function onParticipantUpdate(message) {
+        var data = JSON.parse(message.body);
+        var camIndicator = document.getElementById('cam-indicator-' + data.userId);
+        var micIndicator = document.getElementById('mic-indicator-' + data.userId);
+        if (camIndicator) {
+            camIndicator.className = data.camera ? 'active' : '';
+        }
+        if (micIndicator) {
+            micIndicator.className = data.mic ? 'active' : '';
+        }
+    }
+
+    /* ─── 11. Leave / End Battle ────────────────────────── */
+    function leaveBattle() {
+        if (!confirm('Are you sure you want to leave the battle?')) return;
+        cleanup();
+        window.location.href = '/battles/' + battleId;
+    }
+
+    function endBattle(isAuto) {
+        if (!isAuto && !confirm('Are you sure you want to end this battle? This will stop the live stream for everyone.')) return;
+        if (stompClient && stompClient.connected) {
+            stompClient.send('/app/battle/' + battleId + '/end-battle', {}, '{}');
+        }
+        cleanup();
+        // Give backend time to process end-battle before redirecting to see winner card
+        setTimeout(function() {
+            window.location.href = '/battles/' + battleId;
+        }, 1000);
+    }
+
+    /* ─── 12. Cleanup ───────────────────────────────────── */
+    function cleanup() {
+        if (stompClient && stompClient.connected) {
+            try {
+                stompClient.send('/app/battle/' + battleId + '/viewer-leave', {}, '{}');
+                stompClient.disconnect();
+            } catch(e) { /* ignore */ }
+        }
+        if (localStream) {
+            localStream.getTracks().forEach(function(t) { t.stop(); });
+        }
+        Object.values(peerConnections).forEach(function(pc) { pc.close(); });
+        peerConnections = {};
+    }
+
+    window.addEventListener('beforeunload', cleanup);
+
+    /* ─── Utility ───────────────────────────────────────── */
+    function escapeHtml(text) {
+        var div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // Close gift picker when clicking outside
+    document.addEventListener('click', function(e) {
+        var picker = document.getElementById('gift-picker');
+        var giftBtn = document.querySelector('.gift-btn');
+        if (picker && picker.classList.contains('show') &&
+            !picker.contains(e.target) && !giftBtn.contains(e.target)) {
+            picker.classList.remove('show');
+        }
+    });
+</script>
+
+</body>
+</html>

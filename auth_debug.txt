@@ -807,3 +807,104 @@ redirecting to /login?error=timeout
 AuthInterceptor Debug Log
 token is NULL!
 redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token found = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJBYXNpZiBLaGFuIiwiaWF0IjoxNzgzNTcxODkyLCJleHAiOjE3ODM2MDc4OTJ9.fqmBW5evA9zfXmrSDWOP4Qnad1nsgf24GbHZo4bfjDQ
+Exception caught: JWT signature does not match locally computed signature. JWT validity cannot be asserted and should not be trusted.
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token found = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJQcmFrcnV0aGkiLCJpYXQiOjE3ODM1NzI2MTIsImV4cCI6MTc4MzYwODYxMn0.yDIWOiAjeMt9N9jfQv4xesEif626_n8ziJzehyxkFqM
+Exception caught: JWT signature does not match locally computed signature. JWT validity cannot be asserted and should not be trusted.
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token found = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzaGFpeWFkIiwiaWF0IjoxNzgzNTcyOTI4LCJleHAiOjE3ODM2MDg5Mjh9.kHvdmPRvzyFPcISNCuaseAqVl-Bb_77VmmCwMPrOeCM
+Exception caught: JWT signature does not match locally computed signature. JWT validity cannot be asserted and should not be trusted.
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token found = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJBYXNpZiBLaGFuIiwiaWF0IjoxNzgzNTczNTExLCJleHAiOjE3ODM2MDk1MTF9.bg28Ybj1uaJqox7IVJz4fZRMc9_hlm3hWhlTKzWu0DY
+Exception caught: JWT signature does not match locally computed signature. JWT validity cannot be asserted and should not be trusted.
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token found = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJBYXNpZiBLaGFuIiwiaWF0IjoxNzgzNTc1NjYwLCJleHAiOjE3ODM2MTE2NjB9.mxwkacG92DWV0AohBxdc108gW4U4ZEOqYSHzFUXrewY
+Exception caught: JWT signature does not match locally computed signature. JWT validity cannot be asserted and should not be trusted.
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token found = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJBYXNpZiBLaGFuIiwiaWF0IjoxNzgzNTc2MDA5LCJleHAiOjE3ODM2MTIwMDl9.IkI7ZMNr0t2VvGVtR1znj2zwOkUQFWdjIIFjSbqY3yw
+Exception caught: JWT signature does not match locally computed signature. JWT validity cannot be asserted and should not be trusted.
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token found = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJBYXNpZiBLaGFuIiwiaWF0IjoxNzgzNTc3NTE2LCJleHAiOjE3ODM2MTM1MTZ9.YljQTql5UKvzoJowwS6KIOuYaWDU7BERn8D62x8e5dI
+Exception caught: JWT signature does not match locally computed signature. JWT validity cannot be asserted and should not be trusted.
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token found = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJBYXNpZiBLaGFuIiwiaWF0IjoxNzgzNTc3NzcxLCJleHAiOjE3ODM2MTM3NzF9.qFIgFX4NOD9SHll1rlkSrWST2fBczFjIK2ZyEHZKeyk
+Exception caught: JWT signature does not match locally computed signature. JWT validity cannot be asserted and should not be trusted.
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token found = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJBYXNpZiBLaGFuIiwiaWF0IjoxNzgzNTc3ODQ0LCJleHAiOjE3ODM2MTM4NDR9.ahh8AW_nmq06Qa49OcXIUSyy-7_0mQcHpdi7lIVtKc0
+Exception caught: JWT signature does not match locally computed signature. JWT validity cannot be asserted and should not be trusted.
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token found = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJBYXNpZiBLaGFuIiwiaWF0IjoxNzgzNTgzMDg5LCJleHAiOjE3ODM2MTkwODl9.kCR8Uhv_B5eWhlPs0S5j6TeMoe189LwWQNu0FMpKYtc
+Exception caught: JWT signature does not match locally computed signature. JWT validity cannot be asserted and should not be trusted.
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token found = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzaGFpeWFkIiwiaWF0IjoxNzgzNTgzMTY0LCJleHAiOjE3ODM2MTkxNjR9.ppi-VJBm_S4EPCQCnCe0GceGJCkOEqxaAGsIYR73ZQo
+Exception caught: JWT signature does not match locally computed signature. JWT validity cannot be asserted and should not be trusted.
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token found = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJBYXNpZiBLaGFuIiwiaWF0IjoxNzgzNTg2NzEwLCJleHAiOjE3ODM2MjI3MTB9.xTdVyNmWGtyIvDiivy_7SWHQmpoTzQvEb7k2pqoMa1M
+Exception caught: JWT signature does not match locally computed signature. JWT validity cannot be asserted and should not be trusted.
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token found = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzaGFpeWFkIiwiaWF0IjoxNzgzNTg2OTEyLCJleHAiOjE3ODM2MjI5MTJ9.LQh5fJZNheLVQI3P5mmaBFjjhFCXHVXA2a_mEY9y7Bs
+Exception caught: JWT signature does not match locally computed signature. JWT validity cannot be asserted and should not be trusted.
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token found = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJBYXNpZiBLaGFuIiwiaWF0IjoxNzgzNTg4MTQ5LCJleHAiOjE3ODM2MjQxNDl9.v6lKwlkaB6bHsGkDPbZtE4umOpe7yv2aFM03fBWMCXI
+Exception caught: JWT signature does not match locally computed signature. JWT validity cannot be asserted and should not be trusted.
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token found = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzaGFpeWFkIiwiaWF0IjoxNzgzNTg4MjgxLCJleHAiOjE3ODM2MjQyODF9.MlVC0N8BBeH6yB2tBWGQfLOcIRLf8mElP3KKSXylj_k
+Exception caught: JWT signature does not match locally computed signature. JWT validity cannot be asserted and should not be trusted.
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token found = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJBYXNpZiBLaGFuIiwiaWF0IjoxNzgzNTg4ODIwLCJleHAiOjE3ODM2MjQ4MjB9.XsJWPGvmg6Ozr48D1s413r9MiQlWFRf8tHGBNgSStKc
+Exception caught: JWT signature does not match locally computed signature. JWT validity cannot be asserted and should not be trusted.
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token found = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJBYXNpZiBLaGFuIiwiaWF0IjoxNzgzNTkwNDE5LCJleHAiOjE3ODM2MjY0MTl9.7bBIbC0Tta7B-jPFIvEhndOUDcNfiTizp9kJMKwBo6k
+Exception caught: JWT signature does not match locally computed signature. JWT validity cannot be asserted and should not be trusted.
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token found = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJBYXNpZiBLaGFuIiwiaWF0IjoxNzgzNTkwNjIwLCJleHAiOjE3ODM2MjY2MjB9.0X4oudVzvxExt1ONGvqsWVpS6vMu69CRLqYMreUQKIg
+Exception caught: JWT signature does not match locally computed signature. JWT validity cannot be asserted and should not be trusted.
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token found = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzaGFpeWFkIiwiaWF0IjoxNzgzNTg4ODk4LCJleHAiOjE3ODM2MjQ4OTh9.QjM0v-IoAtSE1Ivi_RurlFS1ROmCG10d1CCzGSleB-k
+Exception caught: JWT signature does not match locally computed signature. JWT validity cannot be asserted and should not be trusted.
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token found = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJQcmFrcnV0aGkiLCJpYXQiOjE3ODM1ODkyMjMsImV4cCI6MTc4MzYyNTIyM30.dDJhajdaD0kdxMFQ_1vcHu6O0xm9lsPfqfvXmhGsPLE
+Exception caught: JWT signature does not match locally computed signature. JWT validity cannot be asserted and should not be trusted.
+redirecting to /login?error=timeout
