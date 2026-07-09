@@ -53,15 +53,22 @@ public class UnoWebSocketController {
         int playerIndex = room.players.size();
         room.addPlayer(playerName);
 
-        // If 2 players joined, start automatically for this demo
-        if (room.players.size() == 2 && room.status.equals("waiting")) {
-            room.startGame();
-        }
+        // keep in waiting state so players can see the lobby
 
         broadcastState(room);
         Map<String, Object> resp = new HashMap<>(room.toStateMap(playerIndex));
         resp.put("playerIndex", playerIndex);
         return resp;
+    }
+
+    @MessageMapping("/uno/{roomId}/start")
+    public void startGame(@DestinationVariable String roomId) {
+        UnoRoom room = rooms.get(roomId);
+        if (room == null) return;
+        if (room.players.size() > 1 && room.status.equals("waiting")) {
+            room.startGame();
+            broadcastState(room);
+        }
     }
 
     @MessageMapping("/uno/{roomId}/play")

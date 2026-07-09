@@ -845,15 +845,52 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
         }
 
         function initMultiplayer() {
-            document.getElementById('lobbyOverlay').style.display = 'none';
+            document.getElementById('lobbyOverlay').style.display = 'flex';
             document.getElementById('overlay').style.display = 'none';
             document.getElementById('roomInfo').style.display = 'block';
             document.getElementById('displayRoomId').innerText = state.roomId;
             
-            if (rafId) cancelAnimationFrame(rafId);
-            render();
-            
+            renderLobbyWaiting();
             connectWebSocket();
+        }
+
+        function renderLobbyWaiting() {
+            const overlay = document.getElementById('lobbyOverlay');
+            if (!overlay) return;
+            
+            let playersHtml = '';
+            for (let i = 0; i < 4; i++) {
+                if (state.playerTypes[i] === 'human') {
+                    playersHtml += `<div style="color: ${COLORS[i]}; font-size: 16px; margin-bottom: 8px; font-weight: bold;">Player ${i+1}: <span style="color: #fff; font-weight: normal;">${NAMES[i]}</span> ${i === state.playerIndex ? '(You)' : ''}</div>`;
+                }
+            }
+            
+            let btnHtml = '';
+            let activeCount = state.activeSlots ? state.activeSlots.length : 1;
+            if (state.playerIndex === 0 && activeCount > 1) {
+                btnHtml = `<button class="btn-lobby" onclick="startMultiplayerGame()" style="background: linear-gradient(135deg, #2dc653 0%, #1d7bcf 100%); margin-top: 20px;">START BATTLE</button>`;
+            } else {
+                btnHtml = `<p style="color: #888; text-align: center; margin-top: 20px;">Waiting for host to start...</p>`;
+            }
+            
+            overlay.innerHTML = `
+                <h1 style="color: #f7b731;">GAME LOBBY</h1>
+                <div class="lobby-card" style="text-align: left; max-width: 450px;">
+                    <div style="text-align: center; font-size: 48px; letter-spacing: 12px; color: #f7b731; font-family: monospace; background: rgba(0,0,0,0.8); padding: 10px; border-radius: 12px; margin-bottom: 20px;">${state.roomId}</div>
+                    <div style="background: rgba(0,0,0,0.5); padding: 20px; border-radius: 12px;">
+                        <h3 style="margin-top: 0; color: #f7b731; margin-bottom: 15px;">Players Joined:</h3>
+                        ${playersHtml || '<p style="color: #888;">Waiting for players...</p>'}
+                    </div>
+                    ${btnHtml}
+                </div>
+                <button style="background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 10px 20px; border-radius: 8px; margin-top: 20px; cursor: pointer;" onclick="window.location.href='/games'">Leave</button>
+            `;
+        }
+
+        function startMultiplayerGame() {
+            if (stompClient && state.roomId) {
+                stompClient.send("/app/ludo/" + state.roomId + "/start", {}, "{}");
+            }
         }
 
         function connectWebSocket() {
@@ -906,8 +943,11 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
             if (slotIdx !== -1) state.currentSlotIndex = slotIdx;
 
             if (state.status === 'waiting' && roomState.status === 'active') {
+                document.getElementById('lobbyOverlay').style.display = 'none';
                 if (rafId) cancelAnimationFrame(rafId);
                 render();
+            } else if (roomState.status === 'waiting' && state.roomId) {
+                renderLobbyWaiting();
             }
             if (state.status === 'finished' || roomState.status === 'finished') {
                 state.status = 'finished';

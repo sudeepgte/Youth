@@ -49,10 +49,20 @@ public class RpsWebSocketController {
         if (room.player2 != null) return Map.of("error", "Room is full");
 
         room.player2 = playerName;
-        room.status = "active";
+        // Keep status as "waiting" so lobby is shown for both
 
         messagingTemplate.convertAndSend("/topic/rps/" + roomId, (Object) room.toHiddenStateMap());
         return Map.of("roomId", roomId, "playerNum", "2");
+    }
+
+    @MessageMapping("/rps/{roomId}/start")
+    public void startGame(@DestinationVariable String roomId) {
+        RpsRoom room = rooms.get(roomId);
+        if (room == null) return;
+        if (room.player1 != null && room.player2 != null) {
+            room.status = "active";
+            messagingTemplate.convertAndSend("/topic/rps/" + roomId, (Object) room.toHiddenStateMap());
+        }
     }
 
     @MessageMapping("/rps/{roomId}/choice")

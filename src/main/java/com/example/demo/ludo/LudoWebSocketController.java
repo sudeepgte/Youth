@@ -61,12 +61,24 @@ public class LudoWebSocketController {
         if (slot == -1) return Map.of("error", "Room is full");
 
         room.players.get(slot).name = playerName;
-        room.status = "active";
+        // keep status as waiting
 
         messagingTemplate.convertAndSend("/topic/ludo/" + roomId, (Object) room.toStateMap());
         Map<String, Object> resp = new HashMap<>(room.toStateMap());
         resp.put("playerIndex", slot);
         return resp;
+    }
+
+    @MessageMapping("/ludo/{roomId}/start")
+    public void startGame(@DestinationVariable String roomId) {
+        LudoRoom room = rooms.get(roomId);
+        if (room == null) return;
+        
+        long count = room.players.stream().filter(p -> !p.name.isEmpty()).count();
+        if (count > 1) {
+            room.status = "active";
+            messagingTemplate.convertAndSend("/topic/ludo/" + roomId, (Object) room.toStateMap());
+        }
     }
 
     @MessageMapping("/ludo/{roomId}/roll")
