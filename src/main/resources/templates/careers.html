@@ -1,0 +1,53 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/template :: head('Careers | Zentrix')}">
+    <meta charset="UTF-8">
+</head>
+
+<body>
+
+    <div th:replace="~{fragments/template :: navbar('about')}"></div>
+
+    <section class="container" style="padding-top: 100px; padding-bottom: 80px; opacity: 1 !important; visibility: visible !important;">
+        <div class="split-layout" style="display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 60px; align-items: center;">
+            <div class="content-side">
+                <div class="pill pill-blue" style="margin-bottom: 24px;"><i class="fa-solid fa-circle-info"></i> Careers</div>
+                <h1 style="font-size: 42px; font-weight: 900; margin-bottom: 24px; color: #111; line-height: 1.1;">Providing the best <span style="color: var(--primary);">experiences.</span></h1>
+                
+                <div class="about-text" style="font-size: 16px; color: var(--text-secondary); line-height: 1.8; display: flex; flex-direction: column; gap: 18px;">
+                    <p>
+                        Zentrix is a modern, feature-rich web application designed to bring people together through communication, entertainment, and interactive experiences. Our platform combines real-time chat, social media features like posts and reels, event management, and engaging activities such as online games.
+                    </p>
+                    <p>
+                        We aim to provide users with a seamless and secure digital environment where they can connect, share, and explore new opportunities. With a strong backend powered by Java and Spring Boot, and an intuitive user interface, Zentrix ensures reliability, performance, and user satisfaction.
+                    </p>
+                    <p style="font-weight: 800; color: #111;">
+                        Our mission is to build a dynamic platform that enhances digital interaction while maintaining simplicity and innovation.
+                    </p>
+                </div>
+
+                <div style="margin-top: 40px; display: flex; gap: 16px;">
+                    <a th:href="@{/register}" class="btn btn-primary" style="padding: 14px 28px; border-radius: 14px;">Join Zentrix Now</a>
+
+
+                    <a th:href="@{/support}" class="btn btn-outline" style="padding: 14px 28px; border-radius: 14px;">Contact Community</a>
+
+                </div>
+            </div>
+            
+            <div class="media-side">
+                <div style="border-radius: 30px; overflow: hidden; box-shadow: 0 30px 70px rgba(0,0,0,0.12); border: 1px solid rgba(0,0,0,0.04);">
+                    <img src="https://images.openai.com/static-rsc-4/QsTjw6zTxJImq5FwCkYrx7APzbFBLizzIdysGwAuR8F8ku5xuaOawqLZpZfox0gO6MK4qc_Ts7L3kWrnEk5-2MkIdL5i5n_gqDZPaJK8OoLSl_5yFzFCOhKrP5ztM3ROpx7O5TJ5jknmYvbBsnL2etTI4eCyDQLePlvOkWv4A8S7XK8I52uQGIotSlS-RadM?purpose=fullsize" 
+                         alt="Careers at Zentrix" style="width: 100%; height: 550px; object-fit: cover;">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer th:replace="~{fragments/template :: footer}"></footer>
+
+</body>
+
+</html>

@@ -1,3 +1,7 @@
+﻿function getContextPath() {
+    const path = window.location.pathname;
+    return path.startsWith('/zentrix') ? '/' + path.split('/')[1] : '';
+}
 /**
  * game-rewards.js
  * Shared utility to handle awarding Zentrix coins after playing/winning games.
@@ -13,7 +17,7 @@ const GameRewards = {
         console.log(`[GameRewards] Reporting ${result} for ${gameName}` + (score ? ` with score ${score}` : ''));
         
         try {
-            const response = await fetch('/api/games/reward', {
+            const response = await fetch(getContextPath() + '/api/games/reward', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ gameName, result, score: score.toString() })
@@ -37,7 +41,7 @@ const GameRewards = {
     /** Fetch and show coin history in a modal */
     showHistory: async function() {
         try {
-            const response = await fetch('/api/games/history');
+            const response = await fetch(getContextPath() + '/api/games/history');
             if (!response.ok) throw new Error("Failed to fetch history");
             const history = await response.json();
             this.renderHistoryModal(history);
@@ -87,7 +91,7 @@ const GameRewards = {
             <div style="padding: 15px 20px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: space-between;">
                 <div>
                     <div style="font-weight: 700; font-size: 14px; color: #fff;">${t.source}</div>
-                    <div style="font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 2px;">${t.reason} • ${new Date(t.timestamp).toLocaleDateString()}</div>
+                    <div style="font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 2px;">${t.reason} â€¢ ${new Date(t.timestamp).toLocaleDateString()}</div>
                 </div>
                 <div style="color: #FFC107; font-weight: 900; font-size: 16px;">+${t.amount} <i class="fas fa-coins"></i></div>
             </div>
@@ -187,3 +191,5 @@ const GameRewards = {
         }, 4000);
     }
 };
+
+

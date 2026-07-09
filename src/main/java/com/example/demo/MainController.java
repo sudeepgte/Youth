@@ -218,6 +218,44 @@ public class MainController {
         return "redirect:/home?thoughtShared=true";
     }
 
+    @GetMapping("/featured-events")
+    public String featuredEvents() {
+        return "redirect:/home#featured-events";
+    }
+
+    @GetMapping("/categories")
+    public String categories() {
+        return "redirect:/home#categories";
+    }
+
+    @GetMapping("/about-us")
+    public String aboutUs(Model model, HttpSession session, HttpServletRequest request) {
+        validateSessionOnPublicPage(session, request);
+        model.addAttribute("user", getUserFromSession(session));
+        return "about";
+    }
+
+    @GetMapping("/careers")
+    public String careers(Model model, HttpSession session, HttpServletRequest request) {
+        validateSessionOnPublicPage(session, request);
+        model.addAttribute("user", getUserFromSession(session));
+        return "careers";
+    }
+
+    @GetMapping("/privacy-policy")
+    public String privacyPolicy(Model model, HttpSession session, HttpServletRequest request) {
+        validateSessionOnPublicPage(session, request);
+        model.addAttribute("user", getUserFromSession(session));
+        return "privacy";
+    }
+
+    @GetMapping("/terms-of-service")
+    public String termsOfService(Model model, HttpSession session, HttpServletRequest request) {
+        validateSessionOnPublicPage(session, request);
+        model.addAttribute("user", getUserFromSession(session));
+        return "terms";
+    }
+
     @GetMapping("/features")
     public String features() {
         return "features";

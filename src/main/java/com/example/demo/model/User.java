@@ -60,6 +60,10 @@ public class User implements Serializable {
 
     // Zentrix Coins & Rewards
     private Integer coins = 0;
+    
+    @Column(name = "wallet_balance")
+    private Double walletBalance = 0.0;
+
     private LocalDate lastLoginDate;
 
     // Music reward bookkeeping (Option C MVP)
@@ -260,6 +264,21 @@ public class User implements Serializable {
     public Integer getCoins() { return coins != null ? coins : 0; }
     public void setCoins(Integer coins) { this.coins = coins; }
     public void addCoins(int amount) { this.coins = getCoins() + amount; }
+
+    public Double getWalletBalance() { return walletBalance != null ? walletBalance : 0.0; }
+    public void setWalletBalance(Double walletBalance) { this.walletBalance = walletBalance; }
+    public void addWalletBalance(Double amount) {
+        if (this.walletBalance == null) this.walletBalance = 0.0;
+        this.walletBalance += amount;
+    }
+    public boolean deductWalletBalance(Double amount) {
+        if (this.walletBalance == null) this.walletBalance = 0.0;
+        if (this.walletBalance >= amount) {
+            this.walletBalance -= amount;
+            return true;
+        }
+        return false;
+    }
 
     public LocalDate getLastLoginDate() { return lastLoginDate; }
     public void setLastLoginDate(LocalDate lastLoginDate) { this.lastLoginDate = lastLoginDate; }

@@ -36,6 +36,8 @@ public class ReelApiController {
             @RequestParam("video") MultipartFile video,
             @ModelAttribute Reel reelMetadata) {
         try {
+
+
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -62,6 +64,8 @@ public class ReelApiController {
             @RequestParam("userId") Long userId,
             @RequestBody Map<String, Object> interactionData) {
         try {
+
+
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -75,3 +79,4 @@ public class ReelApiController {
         }
     }
 }
+

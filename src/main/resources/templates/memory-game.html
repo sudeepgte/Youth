@@ -185,6 +185,7 @@
             const [bestScore, setBestScore] = useState(null);
             const [isLocked, setIsLocked] = useState(false);
             const [showVictory, setShowVictory] = useState(false);
+            const [showInstructions, setShowInstructions] = useState(true);
             const [finalMovesCount, setFinalMovesCount] = useState(0);
 
             useEffect(() => {
@@ -274,6 +275,40 @@
                     </div>
 
                     <button className="btn-restart" onClick={initializeGame}>Restart Game</button>
+
+                    {showInstructions && (
+                        <div className="victory-overlay" style={{
+                            position: 'fixed',
+                            inset: 0,
+                            background: 'rgba(10, 10, 12, 0.95)',
+                            backdropFilter: 'blur(12px)',
+                            zIndex: 10000,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontFamily: "'Inter', sans-serif"
+                        }}>
+                            <div className="victory-card" style={{
+                                background: 'rgba(255, 255, 255, 0.04)',
+                                padding: '40px 60px',
+                                borderRadius: '28px',
+                                border: '1px solid rgba(255, 255, 255, 0.08)',
+                                textAlign: 'center',
+                                boxShadow: '0 25px 60px rgba(0,0,0,0.6)',
+                                animation: 'modalPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                                maxWidth: '420px',
+                                width: '90%'
+                            }}>
+                                <div style={{ fontSize: '64px', marginBottom: '15px' }}>🧠</div>
+                                <h1 style={{ fontSize: '28px', fontWeight: '900', color: '#fbcc15', margin: '0 0 10px 0', textTransform: 'uppercase', letterSpacing: '2px' }}>How to Play</h1>
+                                <p style={{ fontSize: '16px', color: '#94a3b8', margin: '0 0 30px 0', lineHeight: '1.5' }}>
+                                    Click on the cards to reveal the icons. Match all pairs with the fewest moves possible to win!
+                                </p>
+                                <button className="btn-restart" style={{ marginTop: 0, width: '100%' }} onClick={() => setShowInstructions(false)}>Got It, Let's Play!</button>
+                            </div>
+                        </div>
+                    )}
 
                     {showVictory && (
                         <div className="victory-overlay" style={{
