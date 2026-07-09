@@ -1,6 +1,8 @@
 package com.example.demo.controller;
 
 import com.example.demo.model.Event;
+import com.example.demo.model.LadiesPartyDetails;
+import com.example.demo.repository.LadiesPartyDetailsRepository;
 import com.example.demo.model.EventRegistration;
 import com.example.demo.model.User;
 import com.example.demo.model.EventSeatTier;
@@ -12,12 +14,20 @@ import com.example.demo.repository.EventRepository;
 import com.example.demo.repository.EventRegistrationRepository;
 import com.example.demo.repository.EventSeatTierRepository;
 import com.example.demo.repository.VoteRepository;
+import com.example.demo.repository.LadiesPartyDetailsRepository;
+import com.example.demo.repository.AdventureDetailsRepository;
+import com.example.demo.repository.TrekkingDetailsRepository;
+import com.example.demo.repository.BikeRidingDetailsRepository;
+import com.example.demo.model.LadiesPartyDetails;
+import com.example.demo.model.AdventureDetails;
+import com.example.demo.model.TrekkingDetails;
+import com.example.demo.model.BikeRidingDetails;
+import com.example.demo.model.TrekkingDetails;
 import com.example.demo.service.RewardService;
 import com.example.demo.service.SecretRewardService;
 import com.example.demo.repository.UserRewardRepository;
 import com.example.demo.model.SecretRewardPartner;
 import com.example.demo.model.UserReward;
-import com.example.demo.repository.UserRewardRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -68,6 +78,18 @@ public class EventController {
 
     @Autowired
     private RewardService rewardService;
+
+    @Autowired
+    private LadiesPartyDetailsRepository ladiesPartyDetailsRepository;
+
+    @Autowired
+    private AdventureDetailsRepository adventureDetailsRepository;
+
+    @Autowired
+    private TrekkingDetailsRepository trekkingDetailsRepository;
+
+    @Autowired
+    private BikeRidingDetailsRepository bikeRidingDetailsRepository;
 
     @Autowired
     private SecretRewardService secretRewardService;
@@ -292,7 +314,7 @@ public class EventController {
         
         // Use -1 for unlimited spots
         Integer totalCapacity = event.getMaxParticipants();
-        if (event.getSeatTiers() != null && !event.getSeatTiers().isEmpty()) {
+        if (event.getSeatTiers() != null && !event.getSeatTiers().isEmpty() && event.getTotalRows() > 0) {
             totalCapacity = event.getSeatTiers().stream().mapToInt(EventSeatTier::getCapacity).sum();
             // sync maxParticipants for UI consistency if needed
         }
@@ -303,7 +325,7 @@ public class EventController {
 
         // Calculate minimum starting price for available seats
         Double minStartingPrice = null;
-        if (event.getSeatTiers() != null && !event.getSeatTiers().isEmpty()) {
+        if (event.getSeatTiers() != null && !event.getSeatTiers().isEmpty() && event.getTotalRows() > 0) {
             for (EventSeatTier tier : event.getSeatTiers()) {
                 int capacity = tier.getCapacity() != null ? tier.getCapacity() : 0;
                 int registered = tier.getRegisteredCount() != null ? tier.getRegisteredCount() : 0;
@@ -312,6 +334,15 @@ public class EventController {
                         minStartingPrice = tier.getPrice();
                     }
                 }
+            }
+        } else {
+            // For non-seated events, parse the base price
+            try {
+                if (spotsLeft != 0 && event.getPrice() != null && !event.getPrice().equalsIgnoreCase("Free")) {
+                    minStartingPrice = Double.parseDouble(event.getPrice().replaceAll("[^0-9.]", ""));
+                }
+            } catch (Exception e) {
+                // Ignore parsing errors
             }
         }
         
@@ -371,6 +402,17 @@ public class EventController {
 
         List<EventSeat> seats = event.getSeats();
         seats.sort(Comparator.comparing(EventSeat::getRowLabel).thenComparing(EventSeat::getSeatNumber));
+
+        // Fetch category-specific details based on the event's category
+        if ("House Party".equalsIgnoreCase(event.getCategory())) {
+            ladiesPartyDetailsRepository.findByEvent(event).ifPresent(lpd -> model.addAttribute("housePartyDetails", lpd));
+        } else if ("Adventure".equalsIgnoreCase(event.getCategory())) {
+            adventureDetailsRepository.findByEvent(event).ifPresent(ad -> model.addAttribute("adventureDetails", ad));
+        } else if ("Trekking".equalsIgnoreCase(event.getCategory())) {
+            trekkingDetailsRepository.findByEvent(event).ifPresent(td -> model.addAttribute("trekkingDetails", td));
+        } else if ("Bike Riding".equalsIgnoreCase(event.getCategory())) {
+            bikeRidingDetailsRepository.findByEvent(event).ifPresent(bd -> model.addAttribute("bikeRidingDetails", bd));
+        }
 
         model.addAttribute("event", event);
         model.addAttribute("seats", seats);
@@ -491,6 +533,12 @@ public class EventController {
             @RequestParam(required = false) String selectedTier,
             @RequestParam(required = false) List<Long> selectedSeatIds,
             @RequestParam(defaultValue = "1") Integer quantity,
+            @RequestParam(required = false) Integer lp_age,
+            @RequestParam(required = false) String lp_city,
+            @RequestParam(required = false) String lp_emergencyContactName,
+            @RequestParam(required = false) String lp_emergencyContactMobile,
+            @RequestParam(required = false) String lp_dietaryPreference,
+            @RequestParam(required = false) String lp_specialRequests,
             HttpSession session) {
         User user = getUserFromSession(session);
         if (user == null) return "redirect:/login";
@@ -502,6 +550,10 @@ public class EventController {
         if (selectedSeatIds != null && !selectedSeatIds.isEmpty()) {
             quantity = selectedSeatIds.size();
         }
+        
+        if ("House Party".equalsIgnoreCase(event.getCategory())) {
+            LadiesPartyDetails lpd = ladiesPartyDetailsRepository.findByEvent(event).orElse(null);
+        }
 
         // Store reg info in session temporarily for paid flow
         session.setAttribute("regFullName", fullName);
@@ -512,17 +564,23 @@ public class EventController {
         session.setAttribute("regTier", selectedTier);
         session.setAttribute("regSeatIds", selectedSeatIds);
         session.setAttribute("regQuantity", quantity);
+        session.setAttribute("lp_age", lp_age);
+        session.setAttribute("lp_city", lp_city);
+        session.setAttribute("lp_emergencyContactName", lp_emergencyContactName);
+        session.setAttribute("lp_emergencyContactMobile", lp_emergencyContactMobile);
+        session.setAttribute("lp_dietaryPreference", lp_dietaryPreference);
+        session.setAttribute("lp_specialRequests", lp_specialRequests);
 
         if ("Paid".equalsIgnoreCase(event.getEntryFeeType()) || (event.getPrice() != null && !event.getPrice().equalsIgnoreCase("Free"))) {
             User dbUser = userRepository.findById(user.getId()).orElse(user);
             if (dbUser.isHasFreeEntry()) {
                 dbUser.setHasFreeEntry(false);
                 userRepository.save(dbUser);
-                return completeRegistration(event, dbUser, "FREE", fullName, email, phone, college, yearOfStudy, selectedTier, selectedSeatIds, quantity);
+                return completeRegistration(event, dbUser, "FREE", fullName, email, phone, college, yearOfStudy, selectedTier, selectedSeatIds, quantity, session);
             }
             return "redirect:/events/" + id + "/payment";
         } else {
-            return completeRegistration(event, user, "FREE", fullName, email, phone, college, yearOfStudy, selectedTier, selectedSeatIds, quantity);
+            return completeRegistration(event, user, "FREE", fullName, email, phone, college, yearOfStudy, selectedTier, selectedSeatIds, quantity, session);
         }
     }
 
@@ -611,7 +669,7 @@ public class EventController {
             paymentStatus = "PAID (DISCOUNTED)";
         }
 
-        return completeRegistration(event, dbUser, paymentStatus, fullName, email, phone, college, yearOfStudy, selectedTier, selectedSeatIds, quantity);
+        return completeRegistration(event, dbUser, paymentStatus, fullName, email, phone, college, yearOfStudy, selectedTier, selectedSeatIds, quantity, session);
     }
 
     // ─────────────────────────────────────────────────────────
@@ -733,6 +791,7 @@ public class EventController {
             @RequestParam(required = false, defaultValue = "0.0") Double vipPrice,
             @RequestParam(required = false, defaultValue = "0.0") Double regularPrice,
             @RequestParam(required = false, defaultValue = "false") boolean finalVotingEnabled,
+            HttpServletRequest request,
             HttpSession session) {
 
         if (!isAdmin(session)) return "redirect:/login";
@@ -833,6 +892,159 @@ public class EventController {
         generateSeatGrid(event);
 
         eventRepository.save(event);
+        
+        if ("House Party".equalsIgnoreCase(category)) {
+            LadiesPartyDetails lpd = new LadiesPartyDetails();
+            lpd.setEvent(event);
+            lpd.setTheme(request.getParameter("lp_theme"));
+            lpd.setPartyType(request.getParameter("lp_partyType"));
+            lpd.setDressCode(request.getParameter("lp_dressCode"));
+            lpd.setAgeGroup(request.getParameter("lp_ageGroup"));
+            lpd.setVenueName(request.getParameter("lp_venueName"));
+            lpd.setActivities(request.getParameter("lp_activities"));
+            
+            ladiesPartyDetailsRepository.save(lpd);
+        }
+
+        if ("Adventure".equalsIgnoreCase(category)) {
+            AdventureDetails ad = new AdventureDetails();
+            ad.setEvent(event);
+            ad.setAdventureType(request.getParameter("adv_type"));
+            ad.setDifficultyLevel(request.getParameter("adv_difficulty"));
+            ad.setAdventureDuration(request.getParameter("adv_duration"));
+            
+            try {
+                if(request.getParameter("adv_distance") != null && !request.getParameter("adv_distance").isBlank())
+                    ad.setDistanceCovered(Double.parseDouble(request.getParameter("adv_distance")));
+            } catch(Exception e) {}
+            
+            ad.setElevation(request.getParameter("adv_elevation"));
+            ad.setFitnessLevelRequired(request.getParameter("adv_fitness"));
+            
+            try {
+                if(request.getParameter("adv_minAge") != null && !request.getParameter("adv_minAge").isBlank())
+                    ad.setMinAge(Integer.parseInt(request.getParameter("adv_minAge")));
+            } catch(Exception e) {}
+            
+            try {
+                if(request.getParameter("adv_maxAge") != null && !request.getParameter("adv_maxAge").isBlank())
+                    ad.setMaxAge(Integer.parseInt(request.getParameter("adv_maxAge")));
+            } catch(Exception e) {}
+            
+            String[] safetyEquipments = request.getParameterValues("adv_safetyEquipment");
+            if (safetyEquipments != null && safetyEquipments.length > 0) {
+                ad.setSafetyEquipment(String.join(", ", safetyEquipments));
+            }
+            
+            ad.setThingsToBring(request.getParameter("adv_thingsToBring"));
+            ad.setMedicalCertificateRequired("Yes".equalsIgnoreCase(request.getParameter("adv_medical")));
+            ad.setProfessionalGuideAvailable("Yes".equalsIgnoreCase(request.getParameter("adv_guide")));
+            ad.setInsuranceIncluded("Yes".equalsIgnoreCase(request.getParameter("adv_insurance")));
+            ad.setEmergencyRescueSupport("Yes".equalsIgnoreCase(request.getParameter("adv_rescue")));
+            ad.setFoodIncluded(request.getParameter("adv_food"));
+            ad.setStayIncluded(request.getParameter("adv_stay"));
+            ad.setTransportationIncluded("Yes".equalsIgnoreCase(request.getParameter("adv_transport")));
+            ad.setPhotographyIncluded("Yes".equalsIgnoreCase(request.getParameter("adv_photography")));
+            
+            adventureDetailsRepository.save(ad);
+        }
+
+        if ("Trekking".equalsIgnoreCase(category)) {
+            TrekkingDetails td = new TrekkingDetails();
+            td.setEvent(event);
+            td.setTrekType(request.getParameter("trek_type"));
+            td.setTrekDifficulty(request.getParameter("trek_difficulty"));
+            
+            try {
+                if(request.getParameter("trek_distance") != null && !request.getParameter("trek_distance").isBlank())
+                    td.setTrekDistance(Double.parseDouble(request.getParameter("trek_distance")));
+            } catch(Exception e) {}
+            
+            td.setEstimatedDuration(request.getParameter("trek_duration"));
+            td.setMaxElevation(request.getParameter("trek_elevation"));
+            td.setTrailType(request.getParameter("trek_trailType"));
+            td.setFitnessLevel(request.getParameter("trek_fitness"));
+            
+            try {
+                if(request.getParameter("trek_minAge") != null && !request.getParameter("trek_minAge").isBlank())
+                    td.setMinAge(Integer.parseInt(request.getParameter("trek_minAge")));
+            } catch(Exception e) {}
+            
+            try {
+                if(request.getParameter("trek_maxAge") != null && !request.getParameter("trek_maxAge").isBlank())
+                    td.setMaxAge(Integer.parseInt(request.getParameter("trek_maxAge")));
+            } catch(Exception e) {}
+            
+            td.setReportingPoint(request.getParameter("trek_reportingPoint"));
+            td.setReportingTime(request.getParameter("trek_reportingTime"));
+            td.setDepartureTime(request.getParameter("trek_departureTime"));
+            td.setReturnTime(request.getParameter("trek_returnTime"));
+            
+            String[] inclusions = request.getParameterValues("trek_inclusions");
+            if (inclusions != null && inclusions.length > 0) {
+                td.setTrekInclusions(String.join(", ", inclusions));
+            }
+            
+            td.setParticipantsMustCarry(request.getParameter("trek_mustCarry"));
+            td.setMedicalCertificateRequired("Yes".equalsIgnoreCase(request.getParameter("trek_medical")));
+            td.setEmergencyRescueSupport("Yes".equalsIgnoreCase(request.getParameter("trek_rescue")));
+            td.setForestPermissionRequired("Yes".equalsIgnoreCase(request.getParameter("trek_forest")));
+            td.setMobileNetworkAvailability(request.getParameter("trek_network"));
+            td.setWashroomFacility("Yes".equalsIgnoreCase(request.getParameter("trek_washroom")));
+            td.setDrinkingWaterAvailability("Yes".equalsIgnoreCase(request.getParameter("trek_drinkingWater")));
+            td.setTrekSchedule(request.getParameter("trek_schedule"));
+            
+            trekkingDetailsRepository.save(td);
+        }
+
+        if ("Bike Riding".equalsIgnoreCase(category)) {
+            BikeRidingDetails bd = new BikeRidingDetails();
+            bd.setEvent(event);
+            bd.setRideType(request.getParameter("bike_type"));
+            
+            String[] bikeTypes = request.getParameterValues("bike_allowed");
+            if (bikeTypes != null && bikeTypes.length > 0) {
+                bd.setBikeTypeAllowed(String.join(", ", bikeTypes));
+            }
+            
+            bd.setMinEngineCapacity(request.getParameter("bike_engine"));
+            bd.setRidingExperience(request.getParameter("bike_experience"));
+            bd.setStartPoint(request.getParameter("bike_startPoint"));
+            bd.setDestination(request.getParameter("bike_destination"));
+            
+            try {
+                if(request.getParameter("bike_distance") != null && !request.getParameter("bike_distance").isBlank())
+                    bd.setTotalDistance(Double.parseDouble(request.getParameter("bike_distance")));
+            } catch(Exception e) {}
+            
+            bd.setEstimatedDuration(request.getParameter("bike_duration"));
+            bd.setReportingTime(request.getParameter("bike_reportingTime"));
+            bd.setRideStartTime(request.getParameter("bike_startTime"));
+            bd.setEstimatedFinishTime(request.getParameter("bike_finishTime"));
+            
+            String[] safetyGears = request.getParameterValues("bike_safety");
+            if (safetyGears != null && safetyGears.length > 0) {
+                bd.setSafetyGearMandatory(String.join(", ", safetyGears));
+            }
+            
+            String[] supports = request.getParameterValues("bike_support");
+            if (supports != null && supports.length > 0) {
+                bd.setSupportAvailable(String.join(", ", supports));
+            }
+            
+            String[] inclusions = request.getParameterValues("bike_inclusions");
+            if (inclusions != null && inclusions.length > 0) {
+                bd.setRideInclusions(String.join(", ", inclusions));
+            }
+            
+            bd.setRiderRequirements(request.getParameter("bike_requirements"));
+            bd.setFuelPolicy(request.getParameter("bike_fuel"));
+            bd.setRideDifficulty(request.getParameter("bike_difficulty"));
+            bd.setRoadType(request.getParameter("bike_road"));
+            
+            bikeRidingDetailsRepository.save(bd);
+        }
+
         return "redirect:/events/admin/manage?created=true";
     }
 
@@ -1251,7 +1463,7 @@ public class EventController {
     private String completeRegistration(Event event, User user, String paymentStatus,
                                          String fullName, String email, String phone,
                                          String college, String yearOfStudy, String selectedTier,
-                                         List<Long> selectedSeatIds, Integer quantity) {
+                                         List<Long> selectedSeatIds, Integer quantity, HttpSession session) {
         
         if (quantity == null || quantity < 1) quantity = 1;
 
@@ -1313,6 +1525,23 @@ public class EventController {
         reg.setYearOfStudy(yearOfStudy);
         reg.setQuantity(quantity);
         reg.setTotalPrice(totalPrice);
+        
+        try {
+            if (session.getAttribute("lp_age") != null) reg.setAge((Integer) session.getAttribute("lp_age"));
+            if (session.getAttribute("lp_city") != null) reg.setCity((String) session.getAttribute("lp_city"));
+            if (session.getAttribute("lp_emergencyContactName") != null) reg.setEmergencyContactName((String) session.getAttribute("lp_emergencyContactName"));
+            if (session.getAttribute("lp_emergencyContactMobile") != null) reg.setEmergencyContactMobile((String) session.getAttribute("lp_emergencyContactMobile"));
+            if (session.getAttribute("lp_dietaryPreference") != null) reg.setDietaryPreference((String) session.getAttribute("lp_dietaryPreference"));
+            if (session.getAttribute("lp_specialRequests") != null) reg.setSpecialRequests((String) session.getAttribute("lp_specialRequests"));
+            
+            session.removeAttribute("lp_age");
+            session.removeAttribute("lp_city");
+            session.removeAttribute("lp_emergencyContactName");
+            session.removeAttribute("lp_emergencyContactMobile");
+            session.removeAttribute("lp_dietaryPreference");
+            session.removeAttribute("lp_specialRequests");
+        } catch (Exception e) {}
+        
         eventRegistrationRepository.save(reg);
         eventRepository.save(event); // Save the incremented tier count
         rewardService.awardRegistration(user); // Award coins for registering 🍪

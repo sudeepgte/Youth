@@ -47,7 +47,8 @@
         }
 
         /* Prevent overrides on specific colorful elements */
-        .btn-nav.primary, .status-dot.upcoming, .status-dot.completed, .badge-free {
+        /* Prevent overrides on specific colorful elements */
+        .btn-nav.primary, .status-dot.upcoming, .status-dot.completed {
             color: #fff !important; 
         }
         .badge-paid { color: var(--primary) !important; }
@@ -804,7 +805,6 @@
         <aside class="sidebar">
             <a th:href="@{/admin}" class="sidebar-link"><i class="fas fa-chart-line" style="color: inherit;"></i> Overview</a>
             <a th:href="@{/events/admin/manage}" class="sidebar-link active"><i class="fas fa-calendar-alt" style="color: inherit;"></i> Manage Events</a>
-            <a th:href="@{/admin/music}" class="sidebar-link"><i class="fas fa-music" style="color: inherit;"></i> Review Music</a>
             <a th:href="@{/admin/battles}" class="sidebar-link"><i class="fas fa-fire" style="color: inherit;"></i> Manage Battles</a>
             <a th:href="@{/events/admin/create}" class="sidebar-link"><i class="fas fa-plus-circle" style="color: inherit;"></i> Create Event</a>
             
@@ -929,7 +929,7 @@
                         <div class="meta-row">
                             <i class="fas fa-calendar-alt"></i>
                             <span
-                                th:text="${event.dateTime != null ? #temporals.format(event.dateTime, 'MMM dd, yyyy Â· hh:mm a') : 'TBA'}">Date</span>
+                                th:text="${event.dateTime != null ? #temporals.format(event.dateTime, 'MMM dd, yyyy - hh:mm a') : 'TBA'}">Date</span>
                         </div>
                         <div class="meta-row">
                             <i class="fas fa-map-marker-alt"></i>
@@ -938,7 +938,7 @@
                         <div class="meta-row">
                             <i class="fas fa-users"></i>
                             <span>Max <strong
-                                    th:text="${event.maxParticipants != null ? event.maxParticipants : 'â€”'}">100</strong>
+                                    th:text="${event.maxParticipants != null ? event.maxParticipants : 'Unlimited'}">100</strong>
                                 participants</span>
                         </div>
                     </div>
@@ -956,10 +956,10 @@
                             <i class="fas fa-eye"></i> View
                         </a>
 
-                        <!-- Attendance Button â€” highlighted for ONGOING events -->
+                        <!-- Attendance Button -->
                         <a th:href="@{'/events/admin/' + ${event.id} + '/attendance'}" class="action-btn" th:style="${event.status == 'ONGOING'} ?
-                               'background:rgba(245,158,11,0.2);border-color:rgba(245,158,11,0.4);color:#f59e0b;animation:pulse-att 1.5s infinite;' :
-                               'background:rgba(99,102,241,0.12);border-color:rgba(99,102,241,0.25);color:#a5b4fc;'">
+                               'background:rgba(245,158,11,0.2);border-color:rgba(245,158,11,0.4);color:#d97706;animation:pulse-att 1.5s infinite;' :
+                               'background:rgba(99,102,241,0.12);border-color:rgba(99,102,241,0.25);color:#4338ca;'">
                             <i class="fas fa-clipboard-check"></i> Attendance
                         </a>
 
@@ -1090,3 +1090,4 @@
 </body>
 
 </html>
+

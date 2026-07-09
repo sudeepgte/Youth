@@ -379,9 +379,6 @@
                 <a href="#users-section" onclick="document.getElementById('users-section').scrollIntoView({behavior: 'smooth'})" class="sidebar-subtab">
                     <i class="fas fa-users"></i> Total Users <b th:text="${users.size()}">0</b>
                 </a>
-                <a href="/admin/music" class="sidebar-subtab">
-                    <i class="fas fa-music"></i> Review Music
-                </a>
                 <a href="/events/admin/manage" class="sidebar-subtab">
                     <i class="fas fa-calendar-check"></i> Total Events <b th:text="${totalEvents}">0</b>
                 </a>
@@ -406,7 +403,6 @@
             </div>
 
             <a th:href="@{/events/admin/manage}" class="sidebar-link"><i class="fas fa-calendar-alt" style="color: inherit;"></i> Manage Events</a>
-            <a th:href="@{/admin/music}" class="sidebar-link"><i class="fas fa-music" style="color: inherit;"></i> Review Music</a>
             <a th:href="@{/admin/battles}" class="sidebar-link"><i class="fas fa-fire" style="color: inherit;"></i> Manage Battles</a>
             <a th:href="@{/events/admin/create}" class="sidebar-link"><i class="fas fa-plus-circle" style="color: inherit;"></i> Create Event</a>
             
@@ -428,15 +424,6 @@
                 <div>
                     <h3 style="font-size: 24px; color: #fff;" th:text="${users.size()}">0</h3>
                     <span style="color: #94a3b8; font-size: 14px;">Total Users</span>
-                </div>
-            </div>
-            <div class="stat-card" style="cursor:pointer;" onclick="location.href='/admin/music'">
-                <div class="stat-icon" style="background: rgba(59,130,246,0.12);">
-                    <i class="fas fa-music" style="color:#3b82f6;"></i>
-                </div>
-                <div>
-                    <h3 style="font-size: 24px; color: #fff;">Review</h3>
-                    <span style="color: #94a3b8; font-size: 14px;">Music uploads</span>
                 </div>
             </div>
             <div class="stat-card" style="cursor:pointer;" onclick="location.href='/events/admin/manage'">
@@ -770,3 +757,4 @@
 </body>
 
 </html>
+

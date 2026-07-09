@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
@@ -55,7 +55,6 @@
             <a th:href="@{/reels}" class="sidebar-link"><i class="fas fa-film"></i> Reels</a>
             <a th:href="@{/profile}" class="sidebar-link"><i class="fas fa-user"></i> Profile</a>
             <a th:href="@{/games}" class="sidebar-link"><i class="fas fa-gamepad"></i> Games</a>
-            <a th:href="@{/music}" class="sidebar-link active"><i class="fas fa-music"></i> Music</a>
             <a href="javascript:void(0)" class="sidebar-link" onclick="openCreateModal()"><i class="fas fa-plus-circle" style="color: var(--accent);"></i> Create Post</a>
             <a th:href="@{/logout}" class="sidebar-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </aside>
@@ -90,7 +89,7 @@
                 </select>
                 <select class="form-input" name="trackId" style="flex:1; min-width: 220px;">
                     <option value="">Select your music (optional)</option>
-                    <option th:each="t : ${approvedTracks}" th:value="${t.id}" th:text="${t.title + ' â€” ' + t.artistName}">Track</option>
+                    <option th:each="t : ${approvedTracks}" th:value="${t.id}" th:text="${t.title + ' — ' + t.artistName}">Track</option>
                 </select>
                 <input class="form-input" name="localTitle" placeholder="Local song title (optional)" style="flex:1; min-width: 220px;">
                 <input class="form-input" name="localArtistName" placeholder="Local artist name (optional)" style="flex:1; min-width: 220px;">
@@ -112,7 +111,7 @@
                 <input class="form-input" name="code" placeholder="Enter room code (e.g., A2K9QF)" required style="flex:1; min-width: 220px; text-transform: uppercase;">
                 <select class="form-input" name="trackId" style="flex:1; min-width: 220px;">
                     <option value="">Select your music (optional)</option>
-                    <option th:each="t : ${approvedTracks}" th:value="${t.id}" th:text="${t.title + ' â€” ' + t.artistName}">Track</option>
+                    <option th:each="t : ${approvedTracks}" th:value="${t.id}" th:text="${t.title + ' — ' + t.artistName}">Track</option>
                 </select>
                 <input class="form-input" name="localTitle" placeholder="Local song title (optional)" style="flex:1; min-width: 220px;">
                 <input class="form-input" name="localArtistName" placeholder="Local artist name (optional)" style="flex:1; min-width: 220px;">
