@@ -225,88 +225,7 @@
             }
         }
 
-        .mobile-nav-drawer {
-            display: none;
-        }
-        .mobile-nav-backdrop {
-            display: none;
-        }
 
-        /* Mobile Hamburger & Drawer Styles */
-        @media (max-width: 768px) {
-            .nav-hamburger {
-                display: block !important;
-            }
-            .navbar-inner .nav-links,
-            .navbar-inner .nav-actions {
-                display: none !important;
-            }
-            .mobile-nav-drawer {
-                position: fixed;
-                top: 0;
-                right: -280px;
-                width: 280px;
-                height: 100vh;
-                background: #090e1a; /* Sleek dark aesthetic */
-                border-left: 1px solid rgba(255, 255, 255, 0.1);
-                box-shadow: -10px 0 40px rgba(0, 0, 0, 0.5);
-                z-index: 1005;
-                display: flex !important;
-                flex-direction: column;
-                padding: 100px 24px 40px;
-                gap: 30px;
-                transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-                box-sizing: border-box;
-            }
-            .mobile-nav-drawer.open {
-                right: 0;
-            }
-            .mobile-nav-drawer .nav-links {
-                display: flex !important;
-                flex-direction: column !important;
-                gap: 20px !important;
-                align-items: flex-start !important;
-                width: 100% !important;
-            }
-            .mobile-nav-drawer .nav-links a {
-                font-size: 16px !important;
-                font-weight: 700 !important;
-                color: #ffffff !important;
-                width: 100% !important;
-                padding: 10px 0 !important;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-                display: block;
-                font-family: 'Outfit', sans-serif;
-            }
-            .mobile-nav-drawer .nav-actions {
-                display: flex !important;
-                flex-direction: column !important;
-                gap: 12px !important;
-                width: 100% !important;
-                margin-top: auto;
-            }
-            .mobile-nav-drawer .nav-actions a {
-                width: 100% !important;
-                padding: 12px !important;
-                justify-content: center !important;
-                box-sizing: border-box;
-            }
-            .mobile-nav-backdrop {
-                position: fixed;
-                inset: 0;
-                background: rgba(0, 0, 0, 0.5);
-                backdrop-filter: blur(4px);
-                z-index: 1002;
-                opacity: 0;
-                pointer-events: none;
-                transition: opacity 0.3s ease;
-                display: block !important;
-            }
-            .mobile-nav-backdrop.open {
-                opacity: 1;
-                pointer-events: all;
-            }
-        }
     </style>
 
     <!-- Hero Section -->
@@ -505,7 +424,7 @@
                             <div style="font-size: 15px; font-weight: 900; color: #111;">
                                 <span th:text="${event.price != null ? event.price : 'Free'}">Free</span>
                             </div>
-                            <a th:href="${session.user != null} ? '/events/' + ${event.id} : '/login'"
+                            <a th:href="${session.user != null} ? @{/events/{id}(id=${event.id})} : @{/login}"
                                 class="btn btn-primary" style="padding: 10px 20px; font-size: 13px; border-radius: 12px; font-weight: 800; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);">
                                 <i class="fas fa-ticket-alt"></i> Book Now
                             </a>

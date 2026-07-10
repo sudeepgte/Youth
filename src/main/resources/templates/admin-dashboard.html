@@ -379,25 +379,25 @@
                 <a href="#users-section" onclick="document.getElementById('users-section').scrollIntoView({behavior: 'smooth'})" class="sidebar-subtab">
                     <i class="fas fa-users"></i> Total Users <b th:text="${users.size()}">0</b>
                 </a>
-                <a href="/events/admin/manage" class="sidebar-subtab">
+                <a th:href="@{/events/admin/manage}" class="sidebar-subtab">
                     <i class="fas fa-calendar-check"></i> Total Events <b th:text="${totalEvents}">0</b>
                 </a>
-                <a href="/events/admin/manage?status=UPCOMING" class="sidebar-subtab">
+                <a th:href="@{/events/admin/manage(status='UPCOMING')}" class="sidebar-subtab">
                     <i class="fas fa-hourglass-start"></i> Upcoming Events <b th:text="${upcomingEvents}">0</b>
                 </a>
-                <a href="/events/admin/manage?status=ONGOING" class="sidebar-subtab">
+                <a th:href="@{/events/admin/manage(status='ONGOING')}" class="sidebar-subtab">
                     <i class="fas fa-circle-notch"></i> Ongoing Events <b th:text="${ongoingEvents}">0</b>
                 </a>
-                <a href="/events/admin/manage?status=VOTING" class="sidebar-subtab">
+                <a th:href="@{/events/admin/manage(status='VOTING')}" class="sidebar-subtab">
                     <i class="fas fa-vote-yea"></i> Active Polls <b th:text="${votingCount}">0</b>
                 </a>
-                <a href="/admin/battles" class="sidebar-subtab">
+                <a th:href="@{/admin/battles}" class="sidebar-subtab">
                     <i class="fas fa-fire"></i> Total Battles <b th:text="${totalBattles}">0</b>
                 </a>
-                <a href="/admin/battles" class="sidebar-subtab">
+                <a th:href="@{/admin/battles}" class="sidebar-subtab">
                     <i class="fas fa-play"></i> Running Battles <b th:text="${runningBattles}">0</b>
                 </a>
-                <a href="/admin/battles" class="sidebar-subtab">
+                <a th:href="@{/admin/battles}" class="sidebar-subtab">
                     <i class="fas fa-user-plus"></i> Battle Joins <b th:text="${totalJoinedUsers}">0</b>
                 </a>
             </div>

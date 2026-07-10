@@ -339,6 +339,10 @@
         .preview-private-lock { margin: 30px 0 10px; color: var(--text-muted); }
     </style>
     <script th:src="@{/js/tab-support.js}"></script>
+    <script th:inline="javascript">
+        var ctxPath = /*[[@{/}]]*/ '/';
+        if(ctxPath.endsWith('/')) ctxPath = ctxPath.slice(0, -1);
+    </script>
 </head>
 
 <body>
@@ -550,14 +554,14 @@
             const btnEl       = wrapper.querySelector('button');
             const isRequested = btnEl && btnEl.innerText.trim().includes('Requested');
             const endpoint    = isRequested
-                ? `/profile/${userId}/cancel-follow/ajax`
-                : `/profile/${userId}/follow/ajax`;
+                ? ctxPath + `/profile/${userId}/cancel-follow/ajax`
+                : ctxPath + `/profile/${userId}/follow/ajax`;
             const original = wrapper.innerHTML;
             wrapper.innerHTML = `<button class="person-follow-btn requested" disabled>...</button>`;
             try {
                 const res  = await fetch(endpoint, { method: 'POST' });
                 if (res.status === 401) {
-                    window.location.href = '/login?expired=true';
+                    window.location.href = ctxPath + '/login?expired=true';
                     return;
                 }
                 if (!res.ok) throw new Error(await res.text() || 'Failed');
@@ -578,7 +582,7 @@
         /* ─── Accept / Reject Follow Request AJAX ─── */
         async function respondToRequest(requestId, accept) {
             const row = document.getElementById('fr-row-' + requestId);
-            const endpoint = `/profile/follow-request/${requestId}/${accept ? 'accept' : 'reject'}/ajax`;
+            const endpoint = ctxPath + `/profile/follow-request/${requestId}/${accept ? 'accept' : 'reject'}/ajax`;
             
             try {
                 const res = await fetch(endpoint, { method: 'POST' });
@@ -613,7 +617,7 @@
             `;
             
             try {
-                const res = await fetch('/api/users/preview/' + userId);
+                const res = await fetch(ctxPath + '/api/users/preview/' + userId);
                 if (res.ok) {
                     const data = await res.json();
                     
@@ -655,11 +659,11 @@
                     content.innerHTML = `
                         ${avatarHtml}
                         <h2 style="margin:0 0 5px; font-size:20px;">
-                            <a href="/profile/${data.username}" style="color:var(--text-primary); text-decoration:none;">${data.username}</a>
+                            <a href="${ctxPath}/profile/${data.username}" style="color:var(--text-primary); text-decoration:none;">${data.username}</a>
                         </h2>
                         ${data.collegeName ? `<p style="margin:0; color:var(--primary); font-size:13px;"><i class="fas fa-university"></i> ${data.collegeName}</p>` : ''}
                         <div style="margin-top:15px; margin-bottom: 5px;">
-                            <a href="/profile/${data.username}" style="display:inline-block; padding:8px 20px; background:var(--gradient-1); color:white; text-decoration:none; border-radius:99px; font-weight:bold; font-size:13px; transition: 0.2s;">View Full Profile</a>
+                            <a href="${ctxPath}/profile/${data.username}" style="display:inline-block; padding:8px 20px; background:var(--gradient-1); color:white; text-decoration:none; border-radius:99px; font-weight:bold; font-size:13px; transition: 0.2s;">View Full Profile</a>
                         </div>
                         ${statsHtml}
                     `;
