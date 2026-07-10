@@ -7,24 +7,83 @@
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             background-color: var(--bg-color);
             color: var(--text-primary);
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
+            padding: 96px 16px 32px;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 16px;
+            z-index: 10;
+        }
+
+        .back-link a {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 700;
+            background: rgba(255,255,255,0.9);
+            padding: 10px 16px;
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+            font-size: 14px;
         }
 
         .register-container {
-            background-color: rgba(255, 255, 255, 0.8);
+            background-color: rgba(255, 255, 255, 0.9);
             padding: 2rem;
             border-radius: 10px;
             border: 1px solid var(--glass-border);
             box-shadow: 0 18px 60px rgba(55, 65, 81, 0.16);
             width: 100%;
-            max-width: 400px;
+            max-width: 440px;
+            margin: 0 auto;
+        }
+
+        @media (min-width: 768px) {
+            .register-container {
+                max-width: 480px;
+                padding: 2.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 84px 12px 24px;
+                align-items: flex-start;
+            }
+
+            .register-container {
+                padding: 1.5rem;
+                border-radius: 8px;
+                max-width: 100%;
+            }
+
+            .back-link {
+                top: 12px;
+                left: 12px;
+            }
+
+            .back-link a {
+                padding: 8px 12px;
+                font-size: 13px;
+            }
         }
 
         .register-container h2 {
@@ -51,7 +110,7 @@
             background-color: #fff;
             color: var(--text-primary);
             box-sizing: border-box;
-            font-size: 15px;
+            font-size: 16px;
             transition: all 0.3s ease;
         }
 
@@ -99,8 +158,8 @@
     </style>
 </head>
 <body>
-    <div style="position: absolute; top: 30px; left: 30px; z-index: 10;">
-        <a th:href="@{/home}" style="display: inline-flex; align-items: center; gap: 8px; color: var(--text-primary); text-decoration: none; font-weight: 700; background: rgba(255,255,255,0.8); padding: 10px 16px; border-radius: 12px; border: 1px solid var(--glass-border); box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: transform 0.2s;">
+    <div class="back-link">
+        <a th:href="@{/home}">
             <i class="fas fa-arrow-left"></i> Back to Website
         </a>
     </div>
