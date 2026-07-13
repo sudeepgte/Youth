@@ -25,7 +25,10 @@ public class AuthInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        String path = request.getRequestURI();
+        String path = request.getRequestURI().substring(request.getContextPath().length());
+        if (path.isEmpty()) {
+            path = "/";
+        }
         
         // Skip public paths and game/socket endpoints
         if (path.equals("/") || path.equals("/home") || path.equals("/login") || 
@@ -80,7 +83,7 @@ public class AuthInterceptor implements HandlerInterceptor {
                 if (isAjaxRequest(request)) {
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 } else {
-                    response.sendRedirect("/login?expired=true");
+                    response.sendRedirect(request.getContextPath() + "/login?expired=true");
                 }
                 return false;
             }
@@ -129,7 +132,7 @@ public class AuthInterceptor implements HandlerInterceptor {
             return false;
         }
 
-        response.sendRedirect("/login?error=timeout");
+        response.sendRedirect(request.getContextPath() + "/login?error=timeout");
         return false;
     }
 
@@ -143,7 +146,7 @@ public class AuthInterceptor implements HandlerInterceptor {
      * Determines if a request is an AJAX or API request.
      */
     private boolean isAjaxRequest(HttpServletRequest request) {
-        String path = request.getRequestURI();
+        String path = request.getRequestURI().substring(request.getContextPath().length());
         String requestedWith = request.getHeader("X-Requested-With");
         return "XMLHttpRequest".equals(requestedWith) || 
                path.startsWith("/api/") || 

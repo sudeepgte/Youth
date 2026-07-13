@@ -15,6 +15,8 @@ public interface EventRegistrationRepository extends JpaRepository<EventRegistra
     List<EventRegistration> findByUser(User user);
     List<EventRegistration> findByEvent(Event event);
     long countByEvent(Event event);
+    @org.springframework.data.jpa.repository.Query("SELECT COALESCE(SUM(r.quantity), 0L) FROM EventRegistration r WHERE r.event = :event")
+    long sumQuantityByEvent(@org.springframework.data.repository.query.Param("event") Event event);
     long countByEventAndAttendanceMarked(Event event, boolean marked);
     long countByUser(User user);
     long countByUserAndPosition(User user, String position);

@@ -68,7 +68,7 @@
                  SEARCH + CATEGORY FILTER BAR
             ═══════════════════════════════════════════════════════ -->
             <div class="events-search-wrap">
-                <form id="eventsFilterForm" method="GET" action="/events" class="events-search-form">
+                <form id="eventsFilterForm" method="GET" th:action="@{/events}" class="events-search-form">
 
                     <!-- Location / Keyword Search -->
                     <div class="search-input-group">
@@ -289,8 +289,7 @@
         // Submit form with selected category pill value
         function setCategory(cat) {
             document.getElementById('categoryInput').value = cat;
-            const searchVal = document.getElementById('searchInput') ? document.getElementById('searchInput').value : '';
-            window.location.href = '/events?category=' + encodeURIComponent(cat) + (searchVal ? '&search=' + encodeURIComponent(searchVal) : '');
+            document.getElementById('eventsFilterForm').submit();
         }
 
         // Show/hide clear button based on input content

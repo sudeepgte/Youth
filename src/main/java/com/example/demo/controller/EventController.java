@@ -309,7 +309,7 @@ public class EventController {
             }
         }
         boolean isRegistered = !userRegs.isEmpty();
-        long dbRegistrationCount = eventRegistrationRepository.countByEvent(event);
+        long dbRegistrationCount = eventRegistrationRepository.sumQuantityByEvent(event);
         long registrationCount = dbRegistrationCount;
         
         // Use -1 for unlimited spots
@@ -1469,7 +1469,7 @@ public class EventController {
 
         // Enforce seat limit in backend
         if (event.getMaxParticipants() != null && event.getMaxParticipants() > 0) {
-            long currentCount = eventRegistrationRepository.countByEvent(event);
+            long currentCount = eventRegistrationRepository.sumQuantityByEvent(event);
             if (currentCount + quantity > event.getMaxParticipants()) {
                 return "redirect:/events/" + event.getId() + "?error=full";
             }

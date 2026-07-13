@@ -62,7 +62,8 @@ public class UserExploreApiController {
         User currentUser = null;
         Object sessionUser = session.getAttribute("user");
         if (sessionUser instanceof User) {
-            currentUser = (User) sessionUser;
+            User sUser = (User) sessionUser;
+            currentUser = userRepository.findById(sUser.getId()).orElse(null);
         }
 
         User targetUser = userRepository.findById(id).orElse(null);

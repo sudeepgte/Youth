@@ -58,10 +58,10 @@
                 <div class="live-video-box" id="video-box-a">
                     <div th:if="${#lists.size(participants) > 0}">
                         <video id="local-video"
-                               th:if="${participants[0].user.id == user.id}"
+                               th:if="${participants[0].user.id.equals(user.id)}"
                                autoplay playsinline muted></video>
                         <video id="remote-video-a"
-                               th:if="${participants[0].user.id != user.id}"
+                               th:if="${!participants[0].user.id.equals(user.id)}"
                                autoplay playsinline></video>
                     </div>
                     <!-- Placeholder if no video yet -->
@@ -102,10 +102,10 @@
                 <div class="live-video-box" id="video-box-b">
                     <div th:if="${#lists.size(participants) > 1}">
                         <video id="local-video-b"
-                               th:if="${participants[1].user.id == user.id}"
+                               th:if="${participants[1].user.id.equals(user.id)}"
                                autoplay playsinline muted></video>
                         <video id="remote-video-b"
-                               th:if="${participants[1].user.id != user.id}"
+                               th:if="${!participants[1].user.id.equals(user.id)}"
                                autoplay playsinline></video>
                     </div>
                     <!-- Placeholder if no video yet -->
@@ -315,6 +315,10 @@
     const username = /*[[${user.username}]]*/ '';
     const userRole = /*[[${userRole}]]*/ 'AUDIENCE';
     const devices = /*[[${devices}]]*/ 'camera,mic';
+    
+    // Dynamic endpoints respecting context path
+    const wsUrl = /*[[@{/ws}]]*/ '/ws';
+    const battleBaseUrl = /*[[@{/battles/}]]*/ '/battles/';
 
     let stompClient = null;
     let localStream = null;
@@ -337,7 +341,7 @@
 
     /* ─── 1. STOMP WebSocket Connection ─────────────────── */
     (function connectStomp() {
-        const socket = new SockJS('/ws');
+        const socket = new SockJS(wsUrl);
         stompClient = Stomp.over(socket);
         stompClient.debug = null;
 
@@ -378,13 +382,19 @@
                 localStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
             } catch(e) {
                 console.error('Screen share failed', e);
+                alert('Screen share failed: ' + e.message);
                 return;
             }
         } else {
             try {
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    alert('Camera/Mic access not supported! Please use HTTPS or localhost.');
+                    return;
+                }
                 localStream = await navigator.mediaDevices.getUserMedia(constraints);
             } catch(e) {
                 console.error('Media access failed', e);
+                alert('Media access failed: ' + (e.message || e.name || e));
                 return;
             }
         }
@@ -406,7 +416,10 @@
     }
 
     function toggleCamera() {
-        if (!localStream) return;
+        if (!localStream) {
+            alert("Camera not available or access denied.");
+            return;
+        }
         const videoTracks = localStream.getVideoTracks();
         videoTracks.forEach(function(t) { t.enabled = !t.enabled; });
         cameraOn = !cameraOn;
@@ -422,7 +435,10 @@
     }
 
     function toggleMic() {
-        if (!localStream) return;
+        if (!localStream) {
+            alert("Microphone not available or access denied.");
+            return;
+        }
         const audioTracks = localStream.getAudioTracks();
         audioTracks.forEach(function(t) { t.enabled = !t.enabled; });
         micOn = !micOn;
@@ -786,7 +802,7 @@
         }
         if (data.status === 'ENDED' || data.status === 'COMPLETED') {
             // Redirect back to battle page
-            window.location.href = '/battles/' + battleId;
+            window.location.href = battleBaseUrl + battleId;
         }
     }
 
@@ -804,9 +820,10 @@
 
     /* ─── 11. Leave / End Battle ────────────────────────── */
     function leaveBattle() {
-        if (!confirm('Are you sure you want to leave the battle?')) return;
-        cleanup();
-        window.location.href = '/battles/' + battleId;
+        if (confirm("Are you sure you want to leave the battle?")) {
+            cleanup();
+            window.location.href = battleBaseUrl + battleId;
+        }
     }
 
     function endBattle(isAuto) {
@@ -815,10 +832,7 @@
             stompClient.send('/app/battle/' + battleId + '/end-battle', {}, '{}');
         }
         cleanup();
-        // Give backend time to process end-battle before redirecting to see winner card
-        setTimeout(function() {
-            window.location.href = '/battles/' + battleId;
-        }, 1000);
+        window.location.href = battleBaseUrl + battleId;
     }
 
     /* ─── 12. Cleanup ───────────────────────────────────── */
