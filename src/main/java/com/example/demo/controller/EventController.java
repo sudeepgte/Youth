@@ -747,12 +747,18 @@ public class EventController {
     //  ADMIN: Manage Events
     // ─────────────────────────────────────────────────────────
     @RequestMapping(value = "/admin/manage", method = RequestMethod.GET)
-    public String adminManageEvents(Model model, HttpSession session) {
+    public String adminManageEvents(@RequestParam(required = false) String status, Model model, HttpSession session) {
         if (!isAdmin(session)) return "redirect:/login";
 
-        List<Event> events = eventRepository.findAll();
+        List<Event> events;
+        if (status != null && !status.isEmpty()) {
+            events = eventRepository.findByStatusOrderByCreatedAtDesc(status);
+        } else {
+            events = eventRepository.findAll();
+        }
+        
         model.addAttribute("events", events);
-        model.addAttribute("totalEvents", events.size());
+        model.addAttribute("totalEvents", eventRepository.count());
         model.addAttribute("upcomingCount", eventRepository.countByStatus("UPCOMING"));
         model.addAttribute("ongoingCount", eventRepository.countByStatus("ONGOING"));
         model.addAttribute("completedCount", eventRepository.countByStatus("COMPLETED"));

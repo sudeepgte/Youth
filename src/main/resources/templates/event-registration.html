@@ -178,11 +178,15 @@
             gap: 32px;
             padding: 40px 30px 80px;
         }
+        
+        .detail-layout > div {
+            min-width: 0;
+        }
 
         /* ── Info Grid (Redesigned) ── */
         .event-details-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
             gap: 16px;
             margin-bottom: 36px;
         }
@@ -516,9 +520,10 @@
             margin: 40px 0;
             background: rgba(255, 255, 255, 0.02);
             border-radius: 20px;
-            padding: 40px;
+            padding: 40px 20px;
             border: 1px solid rgba(255, 255, 255, 0.05);
             text-align: center;
+            overflow-x: auto;
         }
 
         .screen-display {
@@ -1028,6 +1033,8 @@
         @media (max-width: 768px) {
             .detail-layout {
                 grid-template-columns: 1fr;
+                padding: 20px 15px 80px;
+                gap: 24px;
             }
 
             .hero-title {
@@ -1035,7 +1042,16 @@
             }
 
             .event-hero {
-                height: 320px;
+                height: 400px;
+            }
+            
+            .hero-content {
+                padding: 0 20px 25px;
+            }
+            
+            .hero-nav {
+                top: 80px;
+                left: 20px;
             }
 
             .register-card {

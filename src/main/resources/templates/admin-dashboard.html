@@ -345,6 +345,32 @@
                 display: block;
             }
         }
+
+        @media (max-width: 576px) {
+            .dashboard-navbar {
+                padding: 0 12px !important;
+                gap: 8px !important;
+            }
+            .dashboard-logo {
+                font-size: 18px !important;
+            }
+            .dashboard-nav-links {
+                gap: 8px !important;
+            }
+            .dashboard-nav-links a.btn {
+                padding: 6px 12px !important;
+                font-size: 12px !important;
+            }
+            .dashboard-nav-links a.btn i {
+                display: none; /* Hide icons in navbar buttons on small screens to save space */
+            }
+            .data-table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+                -webkit-overflow-scrolling: touch;
+            }
+        }
     </style>
 </head>
 
