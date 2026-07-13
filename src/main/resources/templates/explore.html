@@ -475,12 +475,12 @@
                 <div class="person-meta">
                     <span th:text="${u.level != null ? u.level : 'Novice'}">Novice</span>
                     &bull;
-                    <span th:text="${followersCount.get(u.id) != null ? followersCount.get(u.id) : 0}">0</span> followers
+                    <span th:id="'followers-count-' + ${u.id}" th:text="${followersCount.get(u.id) != null ? followersCount.get(u.id) : 0}">0</span> followers
                 </div>
 
                 <div th:id="'fw-' + ${u.id}" onclick="event.stopPropagation()">
                     <button th:if="${followingUserIds != null and followingUserIds.contains(u.id)}"
-                        class="person-follow-btn following" disabled>
+                        class="person-follow-btn following" th:onclick="'followUserAjax(' + ${u.id} + ', this)'">
                         <i class="fas fa-user-check"></i> Following
                     </button>
                     <button th:if="${followingUserIds != null and !followingUserIds.contains(u.id) and requestedUserIds != null and requestedUserIds.contains(u.id)}"
@@ -547,17 +547,35 @@
             filterCards();
         }
 
-        /* ─── Follow / Unfollow AJAX (same as dashboard) ─── */
+        /* ─── Follow / Unfollow AJAX ─── */
         async function followUserAjax(userId, btn) {
             const wrapper = document.getElementById('fw-' + userId);
             if (!wrapper) return;
             const btnEl       = wrapper.querySelector('button');
             const isRequested = btnEl && btnEl.innerText.trim().includes('Requested');
-            const endpoint    = isRequested
-                ? ctxPath + `/profile/${userId}/cancel-follow/ajax`
-                : ctxPath + `/profile/${userId}/follow/ajax`;
+            const isFollowing = btnEl && btnEl.innerText.trim().includes('Following');
+
+            let endpoint = ctxPath + `/profile/${userId}/follow/ajax`;
+            if (isRequested) {
+                endpoint = ctxPath + `/profile/${userId}/cancel-follow/ajax`;
+            } else if (isFollowing) {
+                if (!confirm("Are you sure you want to unfollow this user?")) {
+                    return;
+                }
+                endpoint = ctxPath + `/profile/${userId}/unfollow/ajax`;
+            }
+
             const original = wrapper.innerHTML;
-            wrapper.innerHTML = `<button class="person-follow-btn requested" disabled>...</button>`;
+
+            // Optimistic update / Disable button
+            if (isRequested) {
+                wrapper.innerHTML = `<button class="person-follow-btn follow" disabled><i class="fas fa-user-plus"></i> Follow</button>`;
+            } else if (isFollowing) {
+                wrapper.innerHTML = `<button class="person-follow-btn following" disabled><i class="fas fa-user-check"></i> Following</button>`;
+            } else {
+                wrapper.innerHTML = `<button class="person-follow-btn requested" disabled>...</button>`;
+            }
+
             try {
                 const res  = await fetch(endpoint, { method: 'POST' });
                 if (res.status === 401) {
@@ -566,16 +584,33 @@
                 }
                 if (!res.ok) throw new Error(await res.text() || 'Failed');
                 const data = await res.json();
+                
                 if (data.status === 'FOLLOWING') {
-                    wrapper.innerHTML = `<button class="person-follow-btn following" disabled><i class="fas fa-user-check"></i> Following</button>`;
+                    wrapper.innerHTML = `<button class="person-follow-btn following" onclick="followUserAjax(${userId},this)"><i class="fas fa-user-check"></i> Following</button>`;
+                    // Update follower count
+                    const countEl = document.getElementById('followers-count-' + userId);
+                    if (countEl) {
+                        let current = parseInt(countEl.innerText) || 0;
+                        countEl.innerText = current + 1;
+                    }
                 } else if (data.status === 'REQUESTED') {
                     wrapper.innerHTML = `<button class="person-follow-btn requested" onclick="followUserAjax(${userId},this)">Requested</button>`;
                 } else {
+                    // Canceled/Unfollowed status: 'FOLLOW'
                     wrapper.innerHTML = `<button class="person-follow-btn follow" onclick="followUserAjax(${userId},this)"><i class="fas fa-user-plus"></i> Follow</button>`;
+                    // Decrement follower count if it was unfollowed
+                    if (isFollowing) {
+                        const countEl = document.getElementById('followers-count-' + userId);
+                        if (countEl) {
+                            let current = parseInt(countEl.innerText) || 0;
+                            countEl.innerText = Math.max(0, current - 1);
+                        }
+                    }
                 }
             } catch (err) {
                 console.error(err);
                 wrapper.innerHTML = original;
+                alert('Action failed: ' + err.message);
             }
         }
 

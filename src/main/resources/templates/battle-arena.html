@@ -1432,6 +1432,60 @@
                     </div>
                 </div>
 
+                <!-- Mobile widgets (visible only on mobile/tablet below Battle Arena banner) -->
+                <div class="mobile-widgets" style="margin-top: 20px; margin-bottom: 20px; display: none;">
+                    <!-- Colleges in Battle Widget -->
+                    <div class="widget-card">
+                        <div class="widget-header">
+                            <h3 th:if="${battle == null}">🏫 Colleges in Battle</h3>
+                            <h3 th:if="${battle != null and isCreator}">🏫 Students by College</h3>
+                            <h3 th:if="${battle != null and !isCreator}">🏫 Colleges Competing</h3>
+                        </div>
+                        <!-- College list when data exists -->
+                        <div th:if="${battleColleges != null and !battleColleges.isEmpty()}" style="display:flex; flex-direction:column; gap:10px;">
+                            <div th:each="entry : ${battleColleges}" style="display:flex; align-items:center; gap:10px; padding:8px 12px; background:rgba(139,92,246,0.04); border:1px solid rgba(139,92,246,0.1); border-radius:12px; transition:all 0.2s;">
+                                <div style="width:34px; height:34px; border-radius:10px; background:linear-gradient(135deg,#8B5CF6,#6366F1); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                                    <i class="fas fa-university" style="color:#fff; font-size:14px;"></i>
+                                </div>
+                                <div style="flex:1; min-width:0;">
+                                    <div style="font-size:12px; font-weight:800; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" th:text="${entry.key}">College Name</div>
+                                    <div style="font-size:10px; color:var(--text-muted); font-weight:700;">
+                                        <span th:text="${entry.value}">0</span> 
+                                        <span th:text="${entry.value == 1} ? 'student' : 'students'">students</span>
+                                    </div>
+                                </div>
+                                <div style="background:linear-gradient(135deg,#8B5CF6,#6366F1); color:#fff; font-size:11px; font-weight:900; padding:3px 10px; border-radius:20px; flex-shrink:0;" th:text="${entry.value}">0</div>
+                            </div>
+                        </div>
+                        <!-- Empty state -->
+                        <div th:if="${battleColleges == null or battleColleges.isEmpty()}" style="text-align:center; padding:16px 8px;">
+                            <i class="fas fa-university" style="font-size:28px; color:rgba(139,92,246,0.25); margin-bottom:8px; display:block;"></i>
+                            <div style="font-size:12px; color:var(--text-muted); font-weight:700;">No college data yet</div>
+                            <div style="font-size:10px; color:var(--text-muted); margin-top:4px;">College names appear when users with a college in their profile join battles</div>
+                        </div>
+                    </div>
+
+                    <!-- Categories Widget -->
+                    <div class="widget-card">
+                        <div class="widget-header">
+                            <h3>🎯 Categories</h3>
+                        </div>
+                        <div style="display:flex; flex-wrap:wrap; gap:6px;">
+                            <span style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(59,130,246,0.1); color:#3B82F6; border:1px solid rgba(59,130,246,0.15);">Coding</span>
+                            <span style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(139,92,246,0.1); color:#8B5CF6; border:1px solid rgba(139,92,246,0.15);">Music</span>
+                            <span style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(236,72,153,0.1); color:#EC4899; border:1px solid rgba(236,72,153,0.15);">Dance</span>
+                            <span style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(34,211,238,0.1); color:#22D3EE; border:1px solid rgba(34,211,238,0.15);">Photography</span>
+                            <span style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(249,115,22,0.1); color:#F97316; border:1px solid rgba(249,115,22,0.15);">Singing</span>
+                            <span style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(248,68,100,0.1); color:#F84464; border:1px solid rgba(248,68,100,0.15);">Video</span>
+                            <span style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(16,185,129,0.1); color:#10B981; border:1px solid rgba(16,185,129,0.15);">Drawing</span>
+                            <span style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(245,158,11,0.1); color:#F59E0B; border:1px solid rgba(245,158,11,0.15);">Fitness</span>
+                            <span style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(99,102,241,0.1); color:#6366F1; border:1px solid rgba(99,102,241,0.15);">Gaming</span>
+                            <span style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(252,211,77,0.1); color:#D97706; border:1px solid rgba(252,211,77,0.15);">Meme</span>
+                            <span style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(167,139,250,0.1); color:#7C3AED; border:1px solid rgba(167,139,250,0.15);">AI Prompt</span>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Tabs -->
                 <div class="arena-tabs">
                     <button class="arena-tab active" onclick="showTab('active', this)"><i class="fas fa-fire"></i> Active Battles</button>
@@ -1505,6 +1559,7 @@
                     </div>
                 </div>
             </div>
+
         </main>
 
         <!-- Right Sidebar -->

@@ -602,6 +602,36 @@ public class ProfileController {
         return (referer != null) ? "redirect:" + referer : "redirect:/profile";
     }
 
+    @Transactional
+    @RequestMapping(value = "/{id}/unfollow/ajax", method = RequestMethod.POST)
+    @ResponseBody
+    public org.springframework.http.ResponseEntity<?> unfollowUserAjax(@PathVariable Long id, HttpSession session) {
+        User currentUser = (User) session.getAttribute("user");
+        if (currentUser == null) {
+            return org.springframework.http.ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
+        }
+
+        User dbTargetUser = userRepository.findById(id).orElse(null);
+        User dbCurrentUser = userRepository.findById(currentUser.getId()).orElse(null);
+
+        if (dbCurrentUser != null && dbTargetUser != null) {
+            // Remove from both sides to ensure consistency
+            dbTargetUser.getFollowers().remove(dbCurrentUser);
+            dbCurrentUser.getFollowing().remove(dbTargetUser);
+            userRepository.save(dbTargetUser);
+            userRepository.save(dbCurrentUser);
+
+            // Clean up follow notification
+            notificationRepository.deleteByActorAndUserAndType(dbCurrentUser, dbTargetUser, "FOLLOW_ACCEPT");
+
+            // Refresh session user
+            session.setAttribute("user", dbCurrentUser);
+
+            return org.springframework.http.ResponseEntity.ok(java.util.Map.of("status", "FOLLOW"));
+        }
+        return org.springframework.http.ResponseEntity.badRequest().build();
+    }
+
     @RequestMapping(value = "/api/users/search", method = RequestMethod.GET)
     @ResponseBody
     public List<Map<String, Object>> searchUsers(@RequestParam String q) {
