@@ -9,9 +9,45 @@
 
     <div th:replace="~{fragments/template :: navbar('support')}"></div>
 
+    <style>
+        .split-layout {
+            display: grid; 
+            grid-template-columns: 1.2fr 0.8fr; 
+            gap: 40px; 
+            align-items: start;
+        }
+        .form-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        @media (max-width: 768px) {
+            .split-layout {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+            .form-grid-2 {
+                grid-template-columns: 1fr;
+            }
+            .contact-image-side {
+                margin-top: 20px;
+            }
+            .contact-image-side img {
+                height: 250px !important;
+            }
+            section.container {
+                padding-top: 40px !important;
+                padding-bottom: 40px !important;
+                padding-left: 20px !important;
+                padding-right: 20px !important;
+            }
+        }
+    </style>
+
     <!-- Unified Support Layout -->
     <section class="container" style="padding-top: 100px; padding-bottom: 80px; opacity: 1 !important; visibility: visible !important;">
-        <div class="split-layout" style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 40px; align-items: start;">
+        <div class="split-layout">
             
             <!-- Left: Form and Info -->
             <div class="contact-form-side">
@@ -38,19 +74,19 @@
                         <i class="fa-solid fa-check-circle"></i> Message sent successfully!
                     </div>
                     <form th:action="@{/contact}" method="POST">
-                        <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                        <div class="form-grid-2">
                             <div class="form-group" style="margin-bottom: 0;">
                                 <label style="display: block; margin-bottom: 6px; font-size: 11px; font-weight: 800; color: #666; text-transform: uppercase;">Full Name</label>
-                                <input type="text" name="name" required class="form-input" placeholder="Your name" style="background: #f8fafc; border-color: #e2e8f0; height: 45px;">
+                                <input type="text" name="name" required class="form-input" placeholder="Your name" style="background: #f8fafc; border-color: #e2e8f0; height: 45px; width: 100%; box-sizing: border-box;">
                             </div>
                             <div class="form-group" style="margin-bottom: 0;">
                                 <label style="display: block; margin-bottom: 6px; font-size: 11px; font-weight: 800; color: #666; text-transform: uppercase;">Email</label>
-                                <input type="email" name="email" required class="form-input" placeholder="your@email.com" style="background: #f8fafc; border-color: #e2e8f0; height: 45px;">
+                                <input type="email" name="email" required class="form-input" placeholder="your@email.com" style="background: #f8fafc; border-color: #e2e8f0; height: 45px; width: 100%; box-sizing: border-box;">
                             </div>
                         </div>
                         <div class="form-group" style="margin-bottom: 16px;">
                             <label style="display: block; margin-bottom: 6px; font-size: 11px; font-weight: 800; color: #666; text-transform: uppercase;">Subject</label>
-                            <select name="subject" required class="form-input" style="background: #f8fafc; border-color: #e2e8f0; height: 45px;">
+                            <select name="subject" required class="form-input" style="background: #f8fafc; border-color: #e2e8f0; height: 45px; width: 100%; box-sizing: border-box;">
                                 <option value="General Inquiry">General Inquiry</option>
                                 <option value="Feedback">Feedback</option>
                                 <option value="Support Request">Support Request</option>
@@ -58,9 +94,9 @@
                         </div>
                         <div class="form-group" style="margin-bottom: 24px;">
                             <label style="display: block; margin-bottom: 6px; font-size: 11px; font-weight: 800; color: #666; text-transform: uppercase;">Message</label>
-                            <textarea name="message" required class="form-input" rows="4" placeholder="How can we help you?" style="background: #f8fafc; border-color: #e2e8f0; resize: none;"></textarea>
+                            <textarea name="message" required class="form-input" rows="4" placeholder="How can we help you?" style="background: #f8fafc; border-color: #e2e8f0; resize: none; width: 100%; box-sizing: border-box;"></textarea>
                         </div>
-                        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 14px; font-weight: 800; border-radius: 12px;">Submit Inquiry</button>
+                        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 14px; font-weight: 800; border-radius: 12px; box-sizing: border-box;">Submit Inquiry</button>
                     </form>
                 </div>
             </div>

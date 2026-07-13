@@ -48,7 +48,7 @@
 		and ${active} != 'support'
 		and ${active} != 'events'
 		and ${active} != 'event-details'
-		? ' has-topbar' : '') + (${active} == 'home' ? ' navbar-home' : '')">
+		? ' has-topbar' : '') + ' navbar-home' + (${active} != 'home' ? ' solid-bg' : '')">
             <div class="nav-shell navbar-inner" style="display: flex; align-items: center; justify-content: space-between; width: 100%; height: 100%; padding: 0;">
                 
                 <a class="logo" th:href="@{/home}" style="font-size: 22px; font-weight: 900; color: #0f172a; text-decoration: none; font-family: 'Outfit', sans-serif; letter-spacing: -0.5px; z-index: 1010; display: flex; align-items: center; gap: 6px;">
@@ -67,7 +67,7 @@
                     <div class="nav-links">
                         <a th:href="@{/home}" th:classappend="${active} == 'home' ? ' active' : ''">Home</a>
                         <a th:href="@{/featured-events}">Events</a>
-                        <a th:href="@{/games}" th:if="${active} != 'home'" th:classappend="${active} == 'games' ? ' active' : ''">Games</a>
+                        <a th:href="@{/games}" th:classappend="${active} == 'games' ? ' active' : ''">Games</a>
 						<a th:href="@{/about-us}"
 						   th:classappend="${active} == 'about' ? ' active' : ''">
 						    About Us
@@ -138,6 +138,19 @@
                     }
                 }
             }
+
+            document.addEventListener("DOMContentLoaded", function() {
+                if (window.location.hash === '#featured-events' || window.location.hash === '#contact') {
+                    document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+                    if (window.location.hash === '#featured-events') {
+                        const eventLinks = Array.from(document.querySelectorAll('.nav-links a')).filter(a => a.textContent.trim() === 'Events');
+                        eventLinks.forEach(link => link.classList.add('active'));
+                    } else if (window.location.hash === '#contact') {
+                        const contactLinks = Array.from(document.querySelectorAll('.nav-links a')).filter(a => a.textContent.trim() === 'Contact');
+                        contactLinks.forEach(link => link.classList.add('active'));
+                    }
+                }
+            });
         </script>
     </header>
 

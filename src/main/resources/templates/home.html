@@ -152,6 +152,10 @@
             .container {
                 padding: 40px 16px !important;
             }
+            .feature-grid {
+                grid-template-columns: 1fr !important;
+                gap: 24px !important;
+            }
             .section-header {
                 flex-direction: column;
                 align-items: flex-start !important;
@@ -193,20 +197,57 @@
                 flex-direction: column !important;
                 align-items: stretch !important;
                 text-align: center !important;
-                padding: 20px !important;
+                padding: 0 !important; /* Full bleed image */
+                min-height: auto !important;
+                overflow: hidden !important;
             }
             .feature-media {
                 width: 100% !important;
-                height: 180px !important;
-                margin: 0 auto 16px !important;
-                border-radius: 16px !important;
+                height: auto !important; 
+                aspect-ratio: auto !important;
+                margin: 0 !important;
+                border-radius: 0 !important;
             }
             .feature-media img {
                 width: 100% !important;
-                height: 100% !important;
-                object-fit: cover !important;
+                height: auto !important;
+                object-fit: contain !important;
+                display: block !important;
             }
+            /* Restrict height for Elite Badges so they aren't fully zoomed vertically */
+            a[href$="/achievements"] .feature-media {
+                height: 250px !important;
+                background-color: #f8fafc;
+            }
+            a[href$="/achievements"] .feature-media img {
+                height: 100% !important;
+                object-fit: contain !important;
+            }
+
+            /* Make Reels horizontal and cropped to match Discovery Feed box size */
+            a[href$="/reels"] .feature-media {
+                height: auto !important;
+                aspect-ratio: 2.35 / 1 !important; /* Matches the ultra-wide cinematic ratio of Discovery Feed */
+            }
+            a[href$="/reels"] .feature-media img {
+                height: 100% !important;
+                object-fit: cover !important; /* Crops the image to fill the box */
+                object-position: top !important; /* Anchors the top of the image to keep heads and bodies visible, cropping legs */
+            }
+            
+            /* Make Organizer image horizontal on mobile */
+            #organizers .surface {
+                padding: 24px !important; /* Reduces the massive 60px inline padding so content can expand */
+                border-radius: 24px !important;
+            }
+            #organizers img {
+                height: 220px !important; /* Overrides inline 350px height to make it horizontal */
+                object-position: center !important;
+                width: 100% !important;
+            }
+            
             .feature-text {
+                padding: 24px 20px !important;
                 display: flex !important;
                 flex-direction: column !important;
                 align-items: center !important;

@@ -518,6 +518,10 @@ header .navbar.navbar-home .btn-primary:hover {
     transform: translateY(-2px);
 }
 
+header .navbar.navbar-home.solid-bg {
+    background: rgba(0, 0, 0, 0.95) !important;
+}
+
 /* Scrolled Home Page Navbar - transitions to sleek blurred dark/glass */
 header .navbar.navbar-home.scrolled {
     background: rgba(0, 0, 0, 0.95) !important;
