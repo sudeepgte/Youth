@@ -797,6 +797,8 @@ public class EventController {
             @RequestParam(required = false, defaultValue = "0.0") Double vipPrice,
             @RequestParam(required = false, defaultValue = "0.0") Double regularPrice,
             @RequestParam(required = false, defaultValue = "false") boolean finalVotingEnabled,
+            @RequestParam(required = false) Double latitude,
+            @RequestParam(required = false) Double longitude,
             HttpServletRequest request,
             HttpSession session) {
 
@@ -814,6 +816,8 @@ public class EventController {
         event.setEventMode(eventMode);
         event.setMeetingLink(meetingLink);
         event.setFinalVotingEnabled(finalVotingEnabled);
+        event.setLatitude(latitude);
+        event.setLongitude(longitude);
 
         // Secret Rewards Binding
         event.setEnableSecretRewards(formEvent.isEnableSecretRewards());
@@ -1087,6 +1091,8 @@ public class EventController {
             @RequestParam(required = false, defaultValue = "0.0") Double vipPrice,
             @RequestParam(required = false, defaultValue = "0.0") Double regularPrice,
             @RequestParam(required = false, defaultValue = "false") boolean finalVotingEnabled,
+            @RequestParam(required = false) Double latitude,
+            @RequestParam(required = false) Double longitude,
             HttpSession session) {
 
         if (!isAdmin(session)) return "redirect:/login";
@@ -1102,6 +1108,8 @@ public class EventController {
         event.setStatus(status);
         event.setMeetingLink(meetingLink);
         event.setFinalVotingEnabled(finalVotingEnabled);
+        event.setLatitude(latitude);
+        event.setLongitude(longitude);
 
         if ("Free".equals(entryFeeType)) {
             event.setPrice("Free");

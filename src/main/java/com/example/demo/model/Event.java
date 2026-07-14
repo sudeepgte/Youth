@@ -73,6 +73,10 @@ public class Event {
     // Final Voting Phase Option
     private boolean finalVotingEnabled = false;
 
+    // Heatmap Geolocation
+    private Double latitude;
+    private Double longitude;
+
     public Event() {
     }
 
@@ -301,6 +305,12 @@ public class Event {
 
     public boolean isFinalVotingEnabled() { return finalVotingEnabled; }
     public void setFinalVotingEnabled(boolean finalVotingEnabled) { this.finalVotingEnabled = finalVotingEnabled; }
+
+    public Double getLatitude() { return latitude; }
+    public void setLatitude(Double latitude) { this.latitude = latitude; }
+
+    public Double getLongitude() { return longitude; }
+    public void setLongitude(Double longitude) { this.longitude = longitude; }
 
     public List<EventRegistration> getRegistrations() { return registrations; }
     public void setRegistrations(List<EventRegistration> registrations) { this.registrations = registrations; }
