@@ -2484,7 +2484,7 @@
                     const data = JSON.parse(msg.body);
                     if (activeConversationId === data.conversationId) {
                         const seenIndicator = document.getElementById('seenIndicator');
-                        seenIndicator.innerText = 'Seen Â· ' + formatTime(data.seenAt);
+                        seenIndicator.innerText = 'Seen \u00B7 ' + formatTime(data.seenAt);
                         seenIndicator.style.display = 'block';
                     }
                 });
@@ -2532,6 +2532,9 @@
                         activeConversationId = null;
                     }
                 });
+            }, function (error) {
+                console.warn('STOMP connection error or disconnect. Retrying in 5 seconds...', error);
+                setTimeout(connectWebSocket, 5000);
             });
         }
 
@@ -2638,7 +2641,7 @@
                 </div>
                 <div class="conv-info">
                     <div class="conv-name">${convName}</div>
-                    <div class="conv-preview">${previewText} Â· ${formatTime(c.lastMessageTime)}</div>
+                    <div class="conv-preview">${previewText} \u00B7 ${formatTime(c.lastMessageTime)}</div>
                 </div>
                 <div class="unread-dot"></div>
             `;
@@ -2950,7 +2953,7 @@
             if (deletedForMe.includes(msg.id)) return;
 
             const container = document.getElementById('messagesArea');
-            const isSent = msg.sender.id == currentUser.id;
+            const isSent = msg.sender && msg.sender.id == currentUser.id;
 
             const wrapper = document.createElement('div');
             const isVanish = msg.isVanish || msg.vanish;

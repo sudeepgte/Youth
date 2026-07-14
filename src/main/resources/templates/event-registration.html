@@ -1716,8 +1716,8 @@
                     <p>
                         <i class="fas fa-calendar-alt" style="color:#f84464;"></i>
                         <span
-                            th:text="${event.dateTime != null ? #temporals.format(event.dateTime, 'MMM dd, yyyy Â· hh:mm a') : 'TBA'}">Date</span>
-                        &nbsp;Â·&nbsp;
+                            th:text="${event.dateTime != null ? #temporals.format(event.dateTime, 'MMM dd, yyyy - hh:mm a') : 'TBA'}">Date</span>
+                        &nbsp;&middot;&nbsp;
                         <span id="modalPriceDisplay" th:text="${event.price != null ? #strings.replace(event.price, '$', '&#8377;') : 'Free'}"
                             style="color:#10b981; font-weight:700;">Free</span>
                     </p>
