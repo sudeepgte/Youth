@@ -592,17 +592,15 @@ public class BattleController {
     }
 
     private void completeBattle(Battle battle) {
-        if ("OFFLINE".equals(battle.getMode())) {
-            List<BattleParticipant> participants = participantRepository.findByBattle(battle);
-            for (BattleParticipant p : participants) {
-                if (!submissionRepository.existsByBattleAndUser(battle, p.getUser())) {
-                    BattleSubmission sub = new BattleSubmission();
-                    sub.setBattle(battle);
-                    sub.setUser(p.getUser());
-                    sub.setSubmissionUrl("Direct Vote");
-                    sub.setDescription("Auto-generated submission for offline participant");
-                    submissionRepository.save(sub);
-                }
+        List<BattleParticipant> participants = participantRepository.findByBattle(battle);
+        for (BattleParticipant p : participants) {
+            if (!submissionRepository.existsByBattleAndUser(battle, p.getUser())) {
+                BattleSubmission sub = new BattleSubmission();
+                sub.setBattle(battle);
+                sub.setUser(p.getUser());
+                sub.setSubmissionUrl("Direct Vote");
+                sub.setDescription("Auto-generated submission");
+                submissionRepository.save(sub);
             }
         }
         
