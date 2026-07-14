@@ -845,6 +845,8 @@
             <a th:href="@{/reels}" class="sidebar-link"><i class="fas fa-film"></i> Reels</a>
             <a th:href="@{/profile}" class="sidebar-link"><i class="fas fa-user"></i> Profile</a>
             <a th:href="@{/games}" class="sidebar-link"><i class="fas fa-gamepad"></i> Games</a>
+            <a th:href="@{/wallet}" class="sidebar-link"><i class="fas fa-wallet"></i> Wallet</a>
+            <a href="javascript:void(0)" class="sidebar-link" onclick="openCreateModal()"><i class="fas fa-plus-circle" style="color: var(--accent);"></i> Create Post</a>
             <a th:href="@{/logout}" class="sidebar-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </aside>
 
@@ -2119,6 +2121,21 @@
             50% { box-shadow: 0 0 30px rgba(239,68,68,0.7); }
         }
     </style>
+    <div th:replace="~{fragments/modals :: createPostModal}"></div>
+    <div class="overlay" id="overlay" onclick="closeAllModals()"></div>
+
+    <script>
+        function closeAllModals() {
+            document.querySelectorAll('.modal').forEach(m => {
+                m.classList.remove('open');
+                m.style.display = 'none';
+            });
+            document.querySelectorAll('.overlay').forEach(o => {
+                o.classList.remove('open');
+                o.style.display = 'none';
+            });
+        }
+    </script>
 </body>
 </html>
 

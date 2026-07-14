@@ -358,14 +358,17 @@ header .navbar .btn-outline {
     display: none;
 }
 
-/* Mobile Hamburger & Drawer Styles */
 @media (max-width: 768px) {
     .nav-hamburger {
         display: block !important;
     }
-    .navbar-inner .nav-links,
+    .navbar-inner .nav-links:not(.minimalist-links),
     .navbar-inner .nav-actions {
         display: none !important;
+    }
+    .navbar-inner .nav-links.minimalist-links {
+        display: flex !important;
+        margin-left: auto;
     }
     .mobile-nav-drawer {
         position: fixed;
@@ -1574,6 +1577,10 @@ input[type="file"].form-input::file-selector-button:hover {
 }
 
 @media (max-width: 768px) {
+    .container {
+        padding: 20px 15px !important;
+    }
+
     .dashboard-container {
         grid-template-columns: 1fr;
         padding: 0 10px;
@@ -1590,15 +1597,17 @@ input[type="file"].form-input::file-selector-button:hover {
 
     .sidebar {
         position: fixed !important;
-        top: 0;
+        top: var(--dashboard-nav-height) !important;
+        bottom: 0 !important;
         left: -280px;
         width: 260px;
-        height: 100vh !important;
+        height: auto !important;
         background: var(--bg-color);
         z-index: 1000;
         transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         box-shadow: 4px 0 25px rgba(0,0,0,0.5);
-        padding-top: calc(var(--dashboard-nav-height) + 20px) !important;
+        padding-top: 15px !important;
+        padding-bottom: 120px !important;
         padding-left: 15px !important;
         padding-right: 15px !important;
         flex-direction: column !important;
@@ -1645,13 +1654,15 @@ input[type="file"].form-input::file-selector-button:hover {
 /* Sidebar */
 .sidebar {
     position: sticky;
-    top: 90px;
-    height: calc(100vh - 100px);
+    top: var(--dashboard-nav-height);
+    height: calc(100vh - var(--dashboard-nav-height));
     align-self: start;
     display: flex;
     flex-direction: column;
     gap: 15px;
     overflow-y: auto;
+    padding-top: 15px;
+    padding-bottom: 20px;
 }
 .sidebar::-webkit-scrollbar {
     width: 6px;
@@ -2698,5 +2709,35 @@ input[type="file"].form-input::file-selector-button:hover {
 /* Hide mobile-specific widgets by default on desktop view */
 .mobile-widgets {
     display: none;
+}
+
+/* Reductions and link hides for narrow viewports (e.g. iPhone SE) */
+@media (max-width: 480px) {
+    .dashboard-nav-links a[href*="dashboard"],
+    .dashboard-nav-links a[href*="messages"],
+    .dashboard-nav-links a:has(.fa-home),
+    .dashboard-nav-links a:has(.fa-comment-dots),
+    .dashboard-nav-links a:has(.fa-house) {
+        display: none !important;
+    }
+    .dashboard-navbar {
+        padding: 0 6px !important;
+        gap: 4px !important;
+    }
+    .dashboard-logo {
+        font-size: 15px !important;
+    }
+    .dashboard-nav-links {
+        gap: 3px !important;
+    }
+    .dashboard-nav-links a {
+        width: 32px !important;
+        height: 32px !important;
+    }
+    .coin-nav {
+        padding: 4px 6px !important;
+        font-size: 11px !important;
+        gap: 4px !important;
+    }
 }
 

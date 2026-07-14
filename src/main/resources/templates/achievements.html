@@ -665,6 +665,7 @@
             <a th:href="@{/reels}" class="sidebar-link"><i class="fas fa-film"></i> Reels</a>
             <a th:href="@{/profile}" class="sidebar-link"><i class="fas fa-user"></i> Profile</a>
             <a th:href="@{/games}" class="sidebar-link"><i class="fas fa-gamepad"></i> Games</a>
+            <a th:href="@{/wallet}" class="sidebar-link"><i class="fas fa-wallet"></i> Wallet</a>
             <a href="javascript:void(0)" class="sidebar-link" onclick="openCreateModal()"><i class="fas fa-plus-circle" style="color: var(--accent);"></i> Create Post</a>
             <a th:href="@{/logout}" class="sidebar-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </aside>
@@ -756,51 +757,53 @@
             </div>
 
             <!-- Global Leaderboard Table -->
-            <table class="lb-table">
-                <thead>
-                    <tr>
-                        <th style="text-align:center;">Rank</th>
-                        <th>User</th>
-                        <th>Tier</th>
-                        <th>Experience</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr th:each="player, iter : ${leaderboard}" class="lb-row">
-                        <td class="rank"
-                            th:classappend="${iter.index == 0} ? 'rank-1' : (${iter.index == 1} ? 'rank-2' : (${iter.index == 2} ? 'rank-3' : ''))"
-                            th:text="${iter.index + 1}">
-                        </td>
-                        <td>
-                            <div class="u-flex">
-                                <img th:src="${player.profilePhotoUrl != null ? player.profilePhotoUrl : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100'}"
-                                    alt="user">
-                                <div>
-                                    <div th:text="${player.username}">Name</div>
-                                    <span th:text="${player.email}">email</span>
+            <div style="width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.08); margin-top: 20px; margin-bottom: 20px;">
+                <table class="lb-table" style="border: none; margin-bottom: 0;">
+                    <thead>
+                        <tr>
+                            <th style="text-align:center;">Rank</th>
+                            <th>User</th>
+                            <th>Tier</th>
+                            <th>Experience</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="player, iter : ${leaderboard}" class="lb-row">
+                            <td class="rank"
+                                th:classappend="${iter.index == 0} ? 'rank-1' : (${iter.index == 1} ? 'rank-2' : (${iter.index == 2} ? 'rank-3' : ''))"
+                                th:text="${iter.index + 1}">
+                            </td>
+                            <td>
+                                <div class="u-flex">
+                                    <img th:src="${player.profilePhotoUrl != null ? player.profilePhotoUrl : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100'}"
+                                        alt="user">
+                                    <div>
+                                        <div th:text="${player.username}">Name</div>
+                                        <span th:text="${player.email}">email</span>
+                                    </div>
                                 </div>
-                            </div>
-                        </td>
-                        <td>
-                            <span class="lvl-badge"
-                                th:classappend="${player.level == 'Platinum'} ? 'c-platinum' : (${player.level == 'Gold'} ? 'c-gold' : (${player.level == 'Silver'} ? 'c-silver' : (${player.level == 'Bronze'} ? 'c-bronze' : 'c-novice')))">
-                                <i class="fas"
-                                    th:classappend="${player.level == 'Platinum'} ? 'fa-gem' : 
-                                                              (${player.level == 'Gold'} ? 'fa-crown' : 
-                                                              (${player.level == 'Silver'} ? 'fa-award' : 
-                                                              (${player.level == 'Bronze'} ? 'fa-medal' : 'fa-user-astronaut')))"></i>
-                                <span th:text="${player.level != null ? player.level : 'Novice'}">Novice</span>
-                            </span>
-                        </td>
-                        <td>
-                            <div class="xp-score">
-                                <i class="fas fa-bolt"></i>
-                                <span th:text="${player.xp != null ? player.xp : 0}"></span>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+                            </td>
+                            <td>
+                                <span class="lvl-badge"
+                                    th:classappend="${player.level == 'Platinum'} ? 'c-platinum' : (${player.level == 'Gold'} ? 'c-gold' : (${player.level == 'Silver'} ? 'c-silver' : (${player.level == 'Bronze'} ? 'c-bronze' : 'c-novice')))">
+                                    <i class="fas"
+                                        th:classappend="${player.level == 'Platinum'} ? 'fa-gem' : 
+                                                                  (${player.level == 'Gold'} ? 'fa-crown' : 
+                                                                  (${player.level == 'Silver'} ? 'fa-award' : 
+                                                                  (${player.level == 'Bronze'} ? 'fa-medal' : 'fa-user-astronaut')))"></i>
+                                    <span th:text="${player.level != null ? player.level : 'Novice'}">Novice</span>
+                                </span>
+                            </td>
+                            <td>
+                                <div class="xp-score">
+                                    <i class="fas fa-bolt"></i>
+                                    <span th:text="${player.xp != null ? player.xp : 0}"></span>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
 
         </main>
     </div>
