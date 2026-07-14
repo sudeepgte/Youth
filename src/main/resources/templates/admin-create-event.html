@@ -1590,9 +1590,16 @@
                         <div class="field-group">
                             <label>Venue / Location <span class="required">*</span></label>
                             <input type="text" name="venue" id="venueInput" th:value="${event.venue}"
-                                placeholder="e.g. Main Hall, Block A" required>
+                                placeholder="e.g. BTM Layout 1st Stage, Bengaluru" required onblur="geocodeVenue()">
+                            <button type="button" class="btn btn-outline" style="margin-top: 12px; width: 100%; border: 1px dashed #64748b; color: #475569; border-radius: 8px; padding: 10px;" onclick="useCurrentLocation()">
+                                <i class="fas fa-map-marker-alt"></i> Use My Current Location
+                            </button>
+                            <div id="locationStatus" style="font-size: 11px; color: #10b981; margin-top: 5px; display: none;"><i class="fas fa-check-circle"></i> Location detected automatically</div>
                         </div>
                     </div>
+                    
+                    <input type="hidden" name="latitude" id="latitudeInput" th:value="${event.latitude}">
+                    <input type="hidden" name="longitude" id="longitudeInput" th:value="${event.longitude}">
                 </div>
 
                 <!-- SECTION 4: Event Mode -->
@@ -2293,6 +2300,82 @@
             if (item) item.remove();
         }
 
+        async function geocodeVenue() {
+            const venue = document.getElementById('venueInput').value;
+            if (!venue) return;
+            const statusEl = document.getElementById('locationStatus');
+            statusEl.style.display = 'block';
+            statusEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Finding location...';
+            statusEl.style.color = '#ef4444'; // Red until confirmed
+
+            let parts = venue.split(',').map(p => p.trim()).filter(p => p.length > 0);
+            
+            while(parts.length > 0) {
+                let query = parts.join(', ');
+                try {
+                    let r = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(query));
+                    let data = await r.json();
+                    if (data && data.length > 0) {
+                        document.getElementById('latitudeInput').value = data[0].lat;
+                        document.getElementById('longitudeInput').value = data[0].lon;
+                        statusEl.innerHTML = '<i class="fas fa-check-circle"></i> Coordinates grabbed: ' + query;
+                        statusEl.style.color = '#10b981';
+                        return; // Successfully found and mapped
+                    }
+                } catch (e) {
+                    console.error('Geocoding error:', e);
+                }
+                // Fallback: Drop the first (most specific) part and try again
+                parts.shift();
+            }
+            
+            // If completely unfound
+            statusEl.innerHTML = '<i class="fas fa-exclamation-circle"></i> Location not found. Try simplifying it.';
+            statusEl.style.color = '#f59e0b';
+        }
+
+        function useCurrentLocation() {
+            if ("geolocation" in navigator) {
+                const btn = document.querySelector('button[onclick="useCurrentLocation()"]');
+                const orig = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Locating...';
+                
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    document.getElementById('latitudeInput').value = lat;
+                    document.getElementById('longitudeInput').value = lon;
+                    
+                    fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lon)
+                        .then(r => r.json())
+                        .then(data => {
+                            if (data && data.display_name) {
+                                let vInput = document.getElementById('venueInput');
+                                if (!vInput.value.trim()) {
+                                    vInput.value = data.display_name;
+                                }
+                            }
+                            btn.innerHTML = orig;
+                            const statusEl = document.getElementById('locationStatus');
+                            statusEl.style.display = 'block';
+                            statusEl.innerHTML = '<i class="fas fa-check-circle"></i> Precise current location acquired';
+                            statusEl.style.color = '#10b981';
+                        })
+                        .catch(e => {
+                            btn.innerHTML = orig;
+                            let vInput = document.getElementById('venueInput');
+                            if (!vInput.value.trim()) {
+                                vInput.value = "Current Location";
+                            }
+                        });
+                }, function(error) {
+                    btn.innerHTML = orig;
+                    alert("Please allow location access to use this feature.");
+                });
+            } else {
+                alert("Geolocation is not supported by your browser.");
+            }
+        }
     </script>
 </body>
 
