@@ -40,6 +40,9 @@ public class BattleLiveWebSocketController {
     @Autowired
     private BattleSubmissionRepository submissionRepository;
 
+    @Autowired
+    private BattleParticipantRepository participantRepository;
+
     // Track online viewers per battle (in-memory)
     private final ConcurrentHashMap<Long, Set<Long>> battleViewers = new ConcurrentHashMap<>();
 
@@ -229,7 +232,6 @@ public class BattleLiveWebSocketController {
         payload.put("username", user.getUsername());
         messagingTemplate.convertAndSend("/topic/battle/" + battleId + "/participants", (Object) payload);
     }
-
     // 9. End Battle & Determine Winners
     @MessageMapping("/battle/{battleId}/end-battle")
     public void endBattle(@DestinationVariable Long battleId, Principal principal) {
@@ -241,6 +243,19 @@ public class BattleLiveWebSocketController {
         if (!battle.getCreator().getId().equals(userId)) return;
         
         if ("COMPLETED".equals(battle.getStatus())) return; // Already ended
+
+        // Auto-generate submissions for any participant who doesn't have one
+        java.util.List<BattleParticipant> participants = participantRepository.findByBattle(battle);
+        for (BattleParticipant p : participants) {
+            if (!submissionRepository.existsByBattleAndUser(battle, p.getUser())) {
+                BattleSubmission sub = new BattleSubmission();
+                sub.setBattle(battle);
+                sub.setUser(p.getUser());
+                sub.setSubmissionUrl("Live Battle");
+                sub.setDescription("Live battle participant");
+                submissionRepository.save(sub);
+            }
+        }
 
         // Calculate winners based on votes
         java.util.List<BattleSubmission> subs = submissionRepository.findByBattleOrderByVoteCountDesc(battle);
