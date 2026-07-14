@@ -81,6 +81,15 @@ public class LudoWebSocketController {
         }
     }
 
+    @MessageMapping("/ludo/{roomId}/leave")
+    public void leaveGame(@DestinationVariable String roomId) {
+        LudoRoom room = rooms.get(roomId);
+        if (room == null) return;
+        room.status = "opponent_left";
+        messagingTemplate.convertAndSend("/topic/ludo/" + roomId, (Object) room.toStateMap());
+        rooms.remove(roomId);
+    }
+
     @MessageMapping("/ludo/{roomId}/roll")
     public void rollDice(@DestinationVariable String roomId, Map<String, Object> payload) {
         LudoRoom room = rooms.get(roomId);

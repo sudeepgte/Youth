@@ -65,6 +65,15 @@ public class RpsWebSocketController {
         }
     }
 
+    @MessageMapping("/rps/{roomId}/leave")
+    public void leaveGame(@DestinationVariable String roomId, Map<String, Object> payload) {
+        RpsRoom room = rooms.get(roomId);
+        if (room == null) return;
+        room.status = "opponent_left";
+        messagingTemplate.convertAndSend("/topic/rps/" + roomId, (Object) room.toHiddenStateMap());
+        rooms.remove(roomId);
+    }
+
     @MessageMapping("/rps/{roomId}/choice")
     public void makeChoice(@DestinationVariable String roomId, Map<String, Object> payload) {
         RpsRoom room = rooms.get(roomId);

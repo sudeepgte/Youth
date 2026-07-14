@@ -285,10 +285,28 @@
             }
             
             const url = URL.createObjectURL(f);
-            wrap.style.display = 'block';
-            wrap.innerHTML = f.type.startsWith('video')
-                ? `<video src="${url}" controls style="width:100%; max-height:180px; border-radius:8px;"></video>`
-                : `<img src="${url}" style="width:100%; max-height:180px; border-radius:8px;">`;
+            
+            if (f.type.startsWith('video')) {
+                const videoEl = document.createElement('video');
+                videoEl.preload = 'metadata';
+                videoEl.src = url;
+                videoEl.onloadedmetadata = function() {
+                    const duration = videoEl.duration;
+                    const postType = document.getElementById('postTypeInput').value;
+                    if (postType === 'REEL' && duration > 60) {
+                        alert('Reel video duration cannot exceed 1 minute!');
+                        inp.value = '';
+                        wrap.innerHTML = '';
+                        wrap.style.display = 'none';
+                        return;
+                    }
+                    wrap.style.display = 'block';
+                    wrap.innerHTML = `<video src="${url}" controls style="width:100%; max-height:180px; border-radius:8px;"></video>`;
+                };
+            } else {
+                wrap.style.display = 'block';
+                wrap.innerHTML = `<img src="${url}" style="width:100%; max-height:180px; border-radius:8px;">`;
+            }
         }
 
         /* ===== Post Type Selector ===== */
