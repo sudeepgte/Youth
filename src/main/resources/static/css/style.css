@@ -362,11 +362,11 @@ header .navbar .btn-outline {
     .nav-hamburger {
         display: block !important;
     }
-    .navbar-inner .nav-links:not(.minimalist-links),
-    .navbar-inner .nav-actions {
+    .navbar-inner > .nav-links:not(.minimalist-links),
+    .navbar-inner > .nav-actions {
         display: none !important;
     }
-    .navbar-inner .nav-links.minimalist-links {
+    .navbar-inner > .nav-links.minimalist-links {
         display: flex !important;
         margin-left: auto;
     }
