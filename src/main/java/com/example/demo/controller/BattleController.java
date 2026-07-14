@@ -243,8 +243,12 @@ public class BattleController {
             return "redirect:/battles/" + battle.getId();
         }
 
+        if (!"WAITING".equals(battle.getStatus())) {
+            return "redirect:/battles/" + battle.getId() + "?error=already_started";
+        }
+
         long count = participantRepository.countByBattle(battle);
-        if (count >= battle.getMaxParticipants()) return "redirect:/battles?error=full";
+        if (count >= battle.getMaxParticipants()) return "redirect:/battles/" + battle.getId() + "?error=full";
 
         if (battle.getEntryFee() != null && battle.getEntryFee() > 0) {
             return "redirect:/battles/" + battle.getId() + "/pay";
@@ -266,6 +270,10 @@ public class BattleController {
             return "redirect:/battles/" + battle.getId();
         }
 
+        if (!"WAITING".equals(battle.getStatus())) {
+            return "redirect:/battles/" + battle.getId() + "?error=already_started";
+        }
+
         model.addAttribute("battle", battle);
         model.addAttribute("user", user);
         return "payment";
@@ -284,8 +292,12 @@ public class BattleController {
             return "redirect:/battles/" + battle.getId();
         }
 
+        if (!"WAITING".equals(battle.getStatus())) {
+            return "redirect:/battles/" + battle.getId() + "?error=already_started";
+        }
+
         long count = participantRepository.countByBattle(battle);
-        if (count >= battle.getMaxParticipants()) return "redirect:/battles?error=full";
+        if (count >= battle.getMaxParticipants()) return "redirect:/battles/" + battle.getId() + "?error=full";
 
         // In a real app, verify payment status from gateway here.
         // For MVP, we assume the mock payment was successful.

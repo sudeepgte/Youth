@@ -867,6 +867,7 @@
                 <span th:if="${param.error[0] == 'not_found'}">Battle not found. Check your room code.</span>
                 <span th:if="${param.error[0] == 'full'}">This battle is full!</span>
                 <span th:if="${param.error[0] == 'ended'}">This battle has ended.</span>
+                <span th:if="${param.error[0] == 'already_started'}">Joining is closed — this battle has already started.</span>
                 <span th:if="${param.error[0] == 'already_voted'}">You've already voted in this battle.</span>
                 <span th:if="${param.error[0] == 'already_submitted'}">You've already submitted your entry.</span>
                 <span th:if="${param.error[0] == 'not_active'}">This battle isn't accepting submissions right now.</span>
@@ -1003,7 +1004,8 @@
 
                     <!-- Creator Actions -->
                     <div th:if="${isCreator}" style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;">
-                        <form th:if="${battle.status == 'WAITING'}" th:action="@{'/battles/' + ${battle.id} + '/start'}" method="POST">
+                        <form th:if="${battle.status == 'WAITING'}" th:action="@{'/battles/' + ${battle.id} + '/start'}" method="POST"
+                              th:onsubmit="${participants.size() < battle.maxParticipants} ? 'return confirm(\'Only ' + ${participants.size()} + ' of ' + ${battle.maxParticipants} + ' spots are filled. Starting now will close joining for everyone else. Start anyway?\');' : null">
                             <button type="submit" class="btn-arena btn-arena-green btn-arena-sm"><i class="fas fa-play"></i> Start Battle</button>
                         </form>
                         <form th:if="${battle.status == 'ACTIVE'}" th:action="@{'/battles/' + ${battle.id} + '/start-voting'}" method="POST">
@@ -1035,6 +1037,13 @@
                                 <i class="fas fa-id-card"></i> Register &amp; Get QR Pass
                             </button>
                         </form>
+                    </div>
+
+                    <!-- Non-Participant: Battle already progressed past WAITING, joining closed -->
+                    <div th:if="${!isParticipant and !isCreator and battle.status != 'WAITING' and battle.status != 'COMPLETED'}"
+                         style="display:flex; align-items:center; gap:10px; background:rgba(148,163,184,0.12); border:1px solid rgba(148,163,184,0.3); border-radius:12px; padding:12px 16px; margin-bottom:16px; color:var(--text-secondary); font-size:13px; font-weight:600;">
+                        <i class="fas fa-lock" style="color:var(--text-muted);"></i>
+                        <span>Joining is closed &mdash; this battle has already started.</span>
                     </div>
 
                     <!-- Participants -->
