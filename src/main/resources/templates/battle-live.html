@@ -325,6 +325,7 @@
     let peerConnections = {};
     let cameraOn = true;
     let micOn = true;
+    let pendingViewerRequests = [];
     let hasLiked = /*[[${hasLiked}]]*/ false;
     let hasVoted = /*[[${hasVoted}]]*/ false;
     let selectedContestant = null;
@@ -382,22 +383,24 @@
                 localStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
             } catch(e) {
                 console.error('Screen share failed', e);
-                alert('Screen share failed: ' + e.message);
+                showMediaError('Screen share failed: ' + e.message);
                 return;
             }
         } else {
             try {
                 if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                    alert('Camera/Mic access not supported! Please use HTTPS or localhost.');
+                    showMediaError('Camera/Mic access not supported. Please use HTTPS or a supported browser.');
                     return;
                 }
                 localStream = await navigator.mediaDevices.getUserMedia(constraints);
             } catch(e) {
                 console.error('Media access failed', e);
-                alert('Media access failed: ' + (e.message || e.name || e));
+                showMediaError('Could not access camera/microphone: ' + (e.message || e.name || e));
                 return;
             }
         }
+
+        hideMediaError();
 
         // Show local video
         const localVideo = document.getElementById('local-video') || document.getElementById('local-video-b');
@@ -413,6 +416,46 @@
 
         // Notify other participants that we're broadcasting
         sendSignal({ type: 'broadcaster-ready', userId: userId });
+
+        // Answer any viewer-requests that arrived before our media was ready
+        // (race condition: a peer can ask for our stream before getUserMedia resolves)
+        if (pendingViewerRequests.length) {
+            const queued = pendingViewerRequests;
+            pendingViewerRequests = [];
+            for (const requesterId of queued) {
+                await sendOfferTo(requesterId);
+            }
+        }
+    }
+
+    async function sendOfferTo(remoteUserId) {
+        const pc = createPeerConnection(remoteUserId);
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        sendSignal({
+            type: 'offer',
+            offer: offer,
+            targetUserId: remoteUserId,
+            userId: userId
+        });
+    }
+
+    function showMediaError(message) {
+        let banner = document.getElementById('media-error-banner');
+        if (!banner) {
+            banner = document.createElement('div');
+            banner.id = 'media-error-banner';
+            banner.style.cssText = 'position:fixed; top:16px; left:50%; transform:translateX(-50%); z-index:2000; background:#DC2626; color:#fff; padding:12px 18px; border-radius:10px; font-size:13px; font-weight:600; display:flex; align-items:center; gap:12px; box-shadow:0 8px 24px rgba(0,0,0,0.3); max-width:90vw;';
+            document.body.appendChild(banner);
+        }
+        banner.innerHTML = '<i class="fas fa-video-slash"></i><span>' + escapeHtml(message) + '</span>' +
+            '<button onclick="startLocalMedia()" style="background:#fff; color:#DC2626; border:none; border-radius:6px; padding:6px 12px; font-weight:700; cursor:pointer;">Retry</button>';
+        banner.style.display = 'flex';
+    }
+
+    function hideMediaError() {
+        const banner = document.getElementById('media-error-banner');
+        if (banner) banner.style.display = 'none';
     }
 
     function toggleCamera() {
@@ -547,17 +590,17 @@
             // A broadcaster is ready, request their stream
             sendSignal({ type: 'viewer-request', targetUserId: data.userId, userId: userId });
         }
-        else if (data.type === 'viewer-request' && data.targetUserId === userId && localStream) {
-            // Someone requested our stream, create offer
-            var pc = createPeerConnection(data.userId);
-            var offer = await pc.createOffer();
-            await pc.setLocalDescription(offer);
-            sendSignal({
-                type: 'offer',
-                offer: offer,
-                targetUserId: data.userId,
-                userId: userId
-            });
+        else if (data.type === 'viewer-request' && data.targetUserId === userId) {
+            if (localStream) {
+                // Someone requested our stream, create offer
+                await sendOfferTo(data.userId);
+            } else if (userRole === 'HOST' || userRole === 'PARTICIPANT') {
+                // Our media isn't ready yet (e.g. still waiting on camera permission).
+                // Queue it and answer once startLocalMedia() finishes.
+                if (!pendingViewerRequests.includes(data.userId)) {
+                    pendingViewerRequests.push(data.userId);
+                }
+            }
         }
         else if (data.type === 'offer' && data.targetUserId === userId) {
             var pc2 = createPeerConnection(data.userId);
