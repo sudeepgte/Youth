@@ -72,7 +72,16 @@
                     stomp.subscribe(`/topic/chess/${rid}`, (m) => onMessage(JSON.parse(m.body)));
                     stomp.send(`/app/chess/${rid}/subscribe`, {}, "{}");
                 });
-                return () => stomp.disconnect();
+                const handleUnload = () => {
+                    if (stomp && stomp.connected) {
+                        stomp.send(`/app/chess/${rid}/leave`, {}, "{}");
+                    }
+                };
+                window.addEventListener('beforeunload', handleUnload);
+                return () => {
+                    window.removeEventListener('beforeunload', handleUnload);
+                    stomp.disconnect();
+                };
             }, [rid]);
             return {
                 sendMove: (data) => stompRef.current?.send(`/app/chess/${rid}/move`, {}, JSON.stringify(data)),
@@ -87,6 +96,16 @@
             const { sendMove, sendStart } = useChessSocket(roomId, (d) => setGs(d));
 
             if (!gs) return <div style={{ letterSpacing: 5 }}>SYNCING ARENA...</div>;
+
+            if (gs.status === 'opponent_left') {
+                return (
+                    <div style={{ background: "#2a1a08", padding: 40, borderRadius: 16, border: "1px solid #d4af3744", textAlign: "center" }}>
+                        <h2 style={{ color: "#d4af37" }}>OPPONENT LEFT</h2>
+                        <p style={{ color: "#fff", margin: "20px 0" }}>Opponent left the game! Arena closed.</p>
+                        <button className="btn" style={{ width: "100%" }} onClick={() => window.location.href='/games'}>BACK TO LOBBY</button>
+                    </div>
+                );
+            }
 
             const board = gs.board.map(row => row.map(c => c ? { color: c[0], type: c.slice(1) } : null));
             const myTurn = gs.turn === myColor;

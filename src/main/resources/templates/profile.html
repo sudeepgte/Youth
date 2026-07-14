@@ -683,11 +683,11 @@
                         </button>
                         <!-- Request Sent -->
                         <button
-                            th:if="${!isFollowing and followRequests != null and #lists.contains(followRequests.![sender.id], session.user.id)}"
+                            th:if="${!isFollowing and hasSentFollowRequest}"
                             class="btn-edit" th:onclick="'followUserAjax(' + ${user.id} + ', this)'">Requested</button>
                         <!-- Not Following & No Request -->
                         <button
-                            th:if="${!isFollowing and (followRequests == null or !#lists.contains(followRequests.![sender.id], session.user.id))}"
+                            th:if="${!isFollowing and !hasSentFollowRequest}"
                             th:onclick="'followUserAjax(' + ${user.id} + ', this)'" class="btn-follow">
                             <i class="fas fa-user-plus"></i> Follow
                         </button>

@@ -74,6 +74,15 @@ public class SnakeWebSocketController {
         }
     }
 
+    @MessageMapping("/snake/{roomId}/leave")
+    public void leaveGame(@DestinationVariable String roomId) {
+        SnakeRoom room = rooms.get(roomId);
+        if (room == null) return;
+        room.status = "opponent_left";
+        messagingTemplate.convertAndSend("/topic/snake/" + roomId, (Object) room.toStateMap());
+        rooms.remove(roomId);
+    }
+
     // WebSocket: Roll Dice (Sends roll value, then updates state)
     @MessageMapping("/snake/{roomId}/roll")
     public void rollDice(@DestinationVariable String roomId, SnakeRollMessage msg) {

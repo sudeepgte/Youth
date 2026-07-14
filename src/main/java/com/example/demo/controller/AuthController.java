@@ -32,17 +32,6 @@ public class AuthController {
 
 
 
-    @org.springframework.web.bind.annotation.ResponseBody
-    
-    @RequestMapping(value = "/debug-users", method = RequestMethod.GET)
-    public String debugUsers() {
-        StringBuilder sb = new StringBuilder();
-        for (User u : userRepository.findAll()) {
-            sb.append(u.getUsername()).append(":").append(u.getPassword()).append("\n");
-        }
-        return sb.toString();
-    }
-
     @RequestMapping(value = "/register", method = RequestMethod.GET)
     public String showRegistrationForm(Model model) {
         model.addAttribute("user", new User());

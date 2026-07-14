@@ -90,9 +90,25 @@
             <h3 style="font-size: 18px; font-weight: 800; margin: 30px 0 20px 0; color: var(--text-primary);"><i class="fas fa-history"></i> Recent Transactions</h3>
             
             <div style="background: var(--card-bg); border: 1px solid var(--glass-border); border-radius: 16px; overflow: hidden;">
-                <div style="text-align: center; padding: 40px 20px; color: var(--text-secondary);">
+                <!-- If transactions is empty -->
+                <div th:if="${#lists.isEmpty(transactions)}" style="text-align: center; padding: 40px 20px; color: var(--text-secondary);">
                     <i class="fas fa-receipt" style="font-size: 40px; opacity: 0.3; margin-bottom: 12px;"></i>
                     <p>No recent transactions.</p>
+                </div>
+                
+                <!-- If transactions is not empty -->
+                <div th:if="${not #lists.isEmpty(transactions)}">
+                    <div th:each="tx : ${transactions}" style="padding: 16px 20px; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center;">
+                        <div style="text-align: left;">
+                            <div style="font-weight: 700; font-size: 14px; color: var(--text-primary);" th:text="${tx.details}">Details</div>
+                            <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;" th:text="${#temporals.format(tx.timestamp, 'dd-MM-yyyy HH:mm')}">Date</div>
+                        </div>
+                        <div style="font-weight: 800; font-size: 16px;" 
+                             th:styleappend="${tx.type == 'DEPOSIT'} ? 'color: #10B981;' : 'color: #ef4444;'" 
+                             th:text="${tx.type == 'DEPOSIT' ? '+' : '-'} + ' ₹' + ${tx.amount}">
+                            Amount
+                        </div>
+                    </div>
                 </div>
             </div>
             

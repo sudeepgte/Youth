@@ -77,10 +77,11 @@
 						    Careers
 						</a>
                         <a th:href="@{/home} + '#contact'">Contact</a>
-						<a th:href="@{/faq}"
+							<a th:href="@{/faq}"
 						   th:classappend="${active} == 'faq' ? ' active' : ''">
 						    FAQs
 						</a>
+						<a href="javascript:void(0)" onclick="scrollToHeatmap()">Heat Map</a>
                     </div>
                     <div class="nav-actions">
                         <th:block th:if="${session.user == null}">
@@ -107,6 +108,7 @@
                 <a th:href="@{/careers}" style="margin-bottom: 10px; font-size: 14px; color: var(--text-secondary);">Careers</a>
                             <a th:href="@{/home} + '#contact'" onclick="toggleMobileNav()">Contact</a>
                             <a th:href="@{/faq}" onclick="toggleMobileNav()">FAQs</a>
+                            <a href="javascript:void(0)" onclick="toggleMobileNav(); scrollToHeatmap()">Heat Map</a>
                         </div>
                         <div class="nav-actions">
                             <th:block th:if="${session.user == null}">
@@ -149,6 +151,32 @@
                         const contactLinks = Array.from(document.querySelectorAll('.nav-links a')).filter(a => a.textContent.trim() === 'Contact');
                         contactLinks.forEach(link => link.classList.add('active'));
                     }
+                }
+            });
+
+            function scrollToHeatmap() {
+                var section = document.getElementById('event-heatmap');
+                if (section) {
+                    var rect = section.getBoundingClientRect();
+                    var isInView = rect.top >= -100 && rect.top <= window.innerHeight * 0.5;
+                    if (isInView) {
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    } else {
+                        section.scrollIntoView({ behavior: 'smooth' });
+                    }
+                } else {
+                    var base = document.querySelector('a.logo');
+                    var href = base ? base.getAttribute('href') : '/home';
+                    window.location.href = href + '#event-heatmap';
+                }
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                if (window.location.hash === '#event-heatmap') {
+                    setTimeout(function() {
+                        var el = document.getElementById('event-heatmap');
+                        if (el) el.scrollIntoView({ behavior: 'smooth' });
+                    }, 500);
                 }
             });
         </script>

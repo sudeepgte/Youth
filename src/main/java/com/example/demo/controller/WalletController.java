@@ -1,7 +1,9 @@
 package com.example.demo.controller;
 
 import com.example.demo.model.User;
+import com.example.demo.model.WalletTransaction;
 import com.example.demo.repository.UserRepository;
+import com.example.demo.repository.WalletTransactionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -10,6 +12,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 @Controller
 @RequestMapping("/wallet")
@@ -17,6 +22,9 @@ public class WalletController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private WalletTransactionRepository walletTransactionRepository;
 
     @Autowired
     private HttpServletRequest httpServletRequest;
@@ -43,7 +51,9 @@ public class WalletController {
             return "redirect:/login";
         }
         user = userRepository.findById(user.getId()).orElse(user);
+        List<WalletTransaction> transactions = walletTransactionRepository.findByUserOrderByTimestampDesc(user);
         model.addAttribute("user", user);
+        model.addAttribute("transactions", transactions);
         return "wallet";
     }
 
@@ -56,6 +66,11 @@ public class WalletController {
             user = userRepository.findById(user.getId()).orElse(user);
             user.addWalletBalance(amount);
             userRepository.save(user);
+            
+            // Save transaction
+            WalletTransaction tx = new WalletTransaction(user, amount, "DEPOSIT", "Added funds via payment");
+            walletTransactionRepository.save(tx);
+            
             redirectAttributes.addFlashAttribute("success", "Successfully added ₹" + amount + " to your wallet.");
         }
         return "redirect:/wallet";
@@ -76,6 +91,16 @@ public class WalletController {
                 userRepository.save(user);
                 
                 String accountStr = accountDetails != null && !accountDetails.isEmpty() ? " to " + accountDetails : "";
+                
+                // Save transaction
+                WalletTransaction tx = new WalletTransaction(
+                    user, 
+                    amount, 
+                    "WITHDRAWAL", 
+                    "Withdrawal request" + accountStr
+                );
+                walletTransactionRepository.save(tx);
+                
                 redirectAttributes.addFlashAttribute("success", "Successfully initiated withdrawal of ₹" + amount + accountStr + ". It will be processed shortly.");
             } else {
                 redirectAttributes.addFlashAttribute("error", "Insufficient balance.");

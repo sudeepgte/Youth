@@ -2279,7 +2279,7 @@
         }
 
         function sendSticker(stickerUrl) {
-            if (!stompClient || !activeConversationId) return;
+            if (!stompClient || !stompClient.connected || !activeConversationId) return;
             const conv = conversationsData.find(c => c.id == activeConversationId);
             const isGroup = conv && conv.type === 'GROUP';
             const payload = {
@@ -2532,9 +2532,30 @@
                         activeConversationId = null;
                     }
                 });
+
+                if (activeConversationId) {
+                    subscribeToGroupTyping(activeConversationId);
+                }
             }, function (error) {
                 console.warn('STOMP connection error or disconnect. Retrying in 5 seconds...', error);
                 setTimeout(connectWebSocket, 5000);
+            });
+        }
+
+        function subscribeToGroupTyping(convId) {
+            if (!stompClient || !stompClient.connected) return;
+            if (window.typingSubscription) {
+                try {
+                    window.typingSubscription.unsubscribe();
+                } catch (e) {
+                    console.warn('[WARN] Failed to unsubscribe dynamic subscription:', e);
+                }
+            }
+            window.typingSubscription = stompClient.subscribe('/topic/chat.' + convId + '.typing', function (msg) {
+                const data = JSON.parse(msg.body);
+                if (data.senderId != currentUser.id) {
+                    showTypingIndicator(data.isTyping);
+                }
             });
         }
 
@@ -2753,13 +2774,7 @@
                 
                 // Subscribe to typing topic for groups
                 if (activeConversationId) {
-                    if (window.typingSubscription) window.typingSubscription.unsubscribe();
-                    window.typingSubscription = stompClient.subscribe('/topic/chat.' + activeConversationId + '.typing', function (msg) {
-                        const data = JSON.parse(msg.body);
-                        if (data.senderId != currentUser.id) {
-                            showTypingIndicator(data.isTyping);
-                        }
-                    });
+                    subscribeToGroupTyping(activeConversationId);
                 }
 
                 await loadMessages(conv.id);
@@ -3070,6 +3085,10 @@
 
         async function handleFileUpload(input) {
             console.log('[DEBUG] handleFileUpload called with input:', input);
+            if (!stompClient || !stompClient.connected) {
+                alert('Connection lost. Please wait until connection is re-established.');
+                return;
+            }
             if (!input.files || !input.files[0]) {
                 console.log('[DEBUG] No file selected.');
                 return;
@@ -3246,7 +3265,7 @@
         }
 
         function reactToMessage(messageId) {
-            if (!stompClient) return;
+            if (!stompClient || !stompClient.connected) return;
             const payload = {
                 messageId: messageId,
                 senderId: currentUser.id,
@@ -3280,7 +3299,10 @@
             if (!messageToDeleteId) return;
             
             if (type === 'everyone') {
-                if (!stompClient) return;
+                if (!stompClient || !stompClient.connected) {
+                    alert('Connection lost. Cannot delete message for everyone.');
+                    return;
+                }
                 const payload = {
                     messageId: messageToDeleteId,
                     senderId: currentUser.id,
@@ -3304,7 +3326,7 @@
                 return;
             }
 
-            if (stompClient && activeRecipientId) {
+            if (stompClient && stompClient.connected && activeRecipientId) {
                 stompClient.send("/app/chat.typing", {}, JSON.stringify({
                     senderId: currentUser.id,
                     recipientId: activeRecipientId,
@@ -3482,6 +3504,10 @@
         }
 
         async function performForward(msgId, recipientId) {
+            if (!stompClient || !stompClient.connected) {
+                alert('Connection lost. Message cannot be forwarded.');
+                return;
+            }
             const bubble = document.getElementById(`msg-bubble-${msgId}`);
             if (!bubble) return;
 
@@ -3902,6 +3928,10 @@
 
         function toggleVanishMode() {
             if (!activeConversationId) return;
+            if (!stompClient || !stompClient.connected) {
+                alert('Connection lost. Please wait until connection is re-established.');
+                return;
+            }
             vanishActive = !vanishActive;
 
             const payload = {
@@ -4022,6 +4052,11 @@
                 document.body.setAttribute('data-theme', theme);
             }
             closeThemeModal();
+
+            if (!stompClient || !stompClient.connected) {
+                console.warn('STOMP disconnected. Theme could not be sent to server.');
+                return;
+            }
 
             // Persist theme choice
             const payload = {

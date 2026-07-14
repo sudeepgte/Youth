@@ -49,15 +49,40 @@
         .game-content h3 {
             margin: 0;
             font-size: 18px;
+            color: var(--text-primary) !important;
         }
 
         .game-content p {
             margin: 0;
             font-size: 14px;
             flex: 1;
-            opacity: 1;
-            color: var(--text-primary, #ffffff);
-            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+            opacity: 0.9;
+            color: var(--text-secondary) !important;
+        }
+
+        /* ── Lobby Modal Accessibility Overrides ── */
+        #room-modal {
+            color: #ffffff !important;
+        }
+        #room-modal h2,
+        #room-modal h3,
+        #room-modal p,
+        #room-modal span {
+            color: #ffffff !important;
+        }
+        #room-modal #modal-game-title {
+            color: #FFC107 !important;
+        }
+        #room-modal #lobby-display-code {
+            color: #FFC107 !important;
+        }
+        #room-modal button.btn-game.btn-play,
+        #room-modal button.btn-game.btn-invite {
+            color: #000000 !important;
+        }
+        #room-modal button.btn-game.btn-play i,
+        #room-modal button.btn-game.btn-invite i {
+            color: #000000 !important;
         }
 
         .game-content .game-footer {
@@ -268,7 +293,7 @@
             <!-- Chess -->
             <div class="game-card">
                 <div class="game-img-wrap">
-                    <img src="https://images.unsplash.com/photo-1580541832626-2a7156641e4d?q=80&w=2070&auto=format&fit=crop"
+                    <img src="https://images.unsplash.com/photo-1586165368502-1bad197a6461?q=80&w=1258&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                         class="game-img" alt="Chess">
                 </div>
                 <div class="game-content">

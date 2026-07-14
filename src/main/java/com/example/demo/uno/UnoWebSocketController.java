@@ -71,6 +71,15 @@ public class UnoWebSocketController {
         }
     }
 
+    @MessageMapping("/uno/{roomId}/leave")
+    public void leaveGame(@DestinationVariable String roomId) {
+        UnoRoom room = rooms.get(roomId);
+        if (room == null) return;
+        room.status = "opponent_left";
+        broadcastState(room);
+        rooms.remove(roomId);
+    }
+
     @MessageMapping("/uno/{roomId}/play")
     public void playCard(@DestinationVariable String roomId, Map<String, Object> payload) {
         UnoRoom room = rooms.get(roomId);

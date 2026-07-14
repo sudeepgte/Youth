@@ -85,6 +85,9 @@ public class ProfileController {
     @Autowired
     private com.example.demo.repository.UserActivityRepository userActivityRepository;
 
+    @Autowired
+    private com.example.demo.config.JwtUtil jwtUtil;
+
 
     @Transactional(readOnly = true)
     @RequestMapping(value = "/{username}", method = RequestMethod.GET)
@@ -140,6 +143,9 @@ public class ProfileController {
         model.addAttribute("userBadge", badge);
         boolean isFollowing = currentUser.getFollowing().contains(targetUser);
         model.addAttribute("isFollowing", isFollowing);
+
+        boolean hasSentFollowRequest = followRequestRepository.findBySenderAndReceiver(currentUser, targetUser).isPresent();
+        model.addAttribute("hasSentFollowRequest", hasSentFollowRequest);
 
         boolean isPrivateAndNotFollowing = targetUser.isPrivateAccount() && !isOwnProfile && !isFollowing;
         model.addAttribute("isPrivateAndNotFollowing", isPrivateAndNotFollowing);
@@ -254,7 +260,8 @@ public class ProfileController {
             @RequestParam(required = false) String skills,
             @RequestParam(required = false) String collegeName,
             @RequestParam(required = false, defaultValue = "false") boolean privateAccount,
-            HttpSession session) {
+            HttpSession session,
+            jakarta.servlet.http.HttpServletResponse response) {
         Object sessionUser = session.getAttribute("user");
         if (!(sessionUser instanceof User)) {
             return "redirect:/login";
@@ -264,6 +271,7 @@ public class ProfileController {
         try {
             User dbUser = userRepository.findById(user.getId()).orElse(null);
             if (dbUser != null) {
+                String oldUsername = dbUser.getUsername();
                 dbUser.setUsername(username);
                 dbUser.setEmail(email);
                 if (dob != null && !dob.trim().isEmpty()) {
@@ -286,6 +294,16 @@ public class ProfileController {
                     dbUser.setCollegeName(collegeName.length() > 255 ? collegeName.substring(0, 255) : collegeName);
                 dbUser.setPrivateAccount(privateAccount);
                 userRepository.save(dbUser);
+                
+                // If username is changed, generate a new token and update the client-side cookie
+                if (!oldUsername.equals(username)) {
+                    String newToken = jwtUtil.generateToken(username);
+                    jakarta.servlet.http.Cookie cookie = new jakarta.servlet.http.Cookie("jwtToken", newToken);
+                    cookie.setHttpOnly(true);
+                    cookie.setPath("/");
+                    response.addCookie(cookie);
+                }
+                
                 // Force reload with collections if needed, or just set the basic user
                 session.setAttribute("user", dbUser);
             }
