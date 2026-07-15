@@ -492,13 +492,8 @@ public class EventController {
             }
         }
 
-        // Apply HOLD
-        for (EventSeat seat : seatsToHold) {
-            seat.setStatus("HOLD");
-            seat.setHoldExpiresAt(now.plusMinutes(5));
-            seat.setBookedByUser(user);
-        }
-        eventSeatRepository.saveAll(seatsToHold);
+        // DO NOT APPLY HOLD. Seats remain open until payment is completed.
+        // The check above ensures they are available at the time of selection.
 
         response.put("success", true);
         return response;
@@ -1512,6 +1507,14 @@ public class EventController {
         // Individual Seats Check & Update
         if (selectedSeatIds != null && !selectedSeatIds.isEmpty()) {
             List<EventSeat> seatsToBook = eventSeatRepository.findAllById(selectedSeatIds);
+            
+            // Re-verify that none of the selected seats were booked by someone else during the payment flow
+            for (EventSeat seat : seatsToBook) {
+                if ("BOOKED".equals(seat.getStatus())) {
+                    return "redirect:/events/" + event.getId() + "?error=seat_unavailable";
+                }
+            }
+
             for (EventSeat seat : seatsToBook) {
                 seat.setStatus("BOOKED");
                 seat.setBookedByUser(user);
