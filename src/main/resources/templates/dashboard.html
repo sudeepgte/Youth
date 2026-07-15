@@ -916,28 +916,15 @@
                             comments yet.</div>
                     </div>
                     <!-- Emoji Selection Bar -->
-					<div class="emoji-bar"
-					     style="display:flex; gap:12px; margin-bottom:8px; overflow-x:auto; padding:4px 2px; scrollbar-width:none; -ms-overflow-style:none;">
+					<div class="emoji-bar">
 
-					    <span onclick="insertEmoji([[${post.id}]], '&#10084;&#65039;')" style="cursor:pointer;font-size:18px;">&#10084;&#65039;</span>
+					    <span th:onclick="'insertEmoji(' + ${post.id} + ', ''❤️'')'">❤️</span>
 
-					    <span onclick="insertEmoji([[${post.id}]], '&#128514;')" style="cursor:pointer;font-size:18px;">&#128514;</span>
+					    <span th:onclick="'insertEmoji(' + ${post.id} + ', ''😂'')'">😂</span>
 
-					    <span onclick="insertEmoji([[${post.id}]], '&#128293;')" style="cursor:pointer;font-size:18px;">&#128293;</span>
+					    <span th:onclick="'insertEmoji(' + ${post.id} + ', ''🔥'')'">🔥</span>
 
-					    <span onclick="insertEmoji([[${post.id}]], '&#128525;')" style="cursor:pointer;font-size:18px;">&#128525;</span>
-
-					    <span onclick="insertEmoji([[${post.id}]], '&#128079;')" style="cursor:pointer;font-size:18px;">&#128079;</span>
-
-					    <span onclick="insertEmoji([[${post.id}]], '&#128588;')" style="cursor:pointer;font-size:18px;">&#128588;</span>
-
-					    <span onclick="insertEmoji([[${post.id}]], '&#128546;')" style="cursor:pointer;font-size:18px;">&#128546;</span>
-
-					    <span onclick="insertEmoji([[${post.id}]], '&#128558;')" style="cursor:pointer;font-size:18px;">&#128558;</span>
-
-					    <span onclick="insertEmoji([[${post.id}]], '&#127881;')" style="cursor:pointer;font-size:18px;">&#127881;</span>
-
-					    <span onclick="insertEmoji([[${post.id}]], '&#128175;')" style="cursor:pointer;font-size:18px;">&#128175;</span>
+					    <span th:onclick="'insertEmoji(' + ${post.id} + ', ''😍'')'">😍</span>
 
 					</div>
                     <style>
