@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.transaction.annotation.Transactional;
+import com.example.demo.service.FeedAlgorithmService;
 
 import java.util.*;
 
@@ -26,6 +27,8 @@ public class PostInteractionController {
     private NotificationRepository notificationRepository;
     @Autowired
     private UserActivityRepository userActivityRepository;
+    @Autowired
+    private FeedAlgorithmService feedAlgorithmService;
 
     private User getUserFromSession(HttpSession session) {
         Object sessionUser = session.getAttribute("user");
@@ -86,6 +89,7 @@ public class PostInteractionController {
         }
 
         long count = postLikeRepository.countByPost(post);
+        feedAlgorithmService.evictFeedCache();
         Map<String, Object> resp = new HashMap<>();
         resp.put("liked", liked);
         resp.put("likeCount", count);
@@ -123,6 +127,7 @@ public class PostInteractionController {
             notificationRepository.save(new Notification(post.getUser(), user, msg, "COMMENT", post.getId()));
         }
 
+        feedAlgorithmService.evictFeedCache();
         Map<String, Object> resp = new HashMap<>();
         resp.put("id", comment.getId());
         resp.put("username", user.getUsername());
@@ -211,6 +216,7 @@ public class PostInteractionController {
             nowSaved = true;
         }
 
+        feedAlgorithmService.evictFeedCache();
         Map<String, Object> resp = new HashMap<>();
         resp.put("saved", nowSaved);
         return ResponseEntity.ok(resp);

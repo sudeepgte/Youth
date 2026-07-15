@@ -492,13 +492,8 @@ public class EventController {
             }
         }
 
-        // Apply HOLD
-        for (EventSeat seat : seatsToHold) {
-            seat.setStatus("HOLD");
-            seat.setHoldExpiresAt(now.plusMinutes(5));
-            seat.setBookedByUser(user);
-        }
-        eventSeatRepository.saveAll(seatsToHold);
+        // DO NOT APPLY HOLD. Seats remain open until payment is completed.
+        // The check above ensures they are available at the time of selection.
 
         response.put("success", true);
         return response;
@@ -747,12 +742,18 @@ public class EventController {
     //  ADMIN: Manage Events
     // ─────────────────────────────────────────────────────────
     @RequestMapping(value = "/admin/manage", method = RequestMethod.GET)
-    public String adminManageEvents(Model model, HttpSession session) {
+    public String adminManageEvents(@RequestParam(required = false) String status, Model model, HttpSession session) {
         if (!isAdmin(session)) return "redirect:/login";
 
-        List<Event> events = eventRepository.findAll();
+        List<Event> events;
+        if (status != null && !status.isEmpty()) {
+            events = eventRepository.findByStatusOrderByCreatedAtDesc(status);
+        } else {
+            events = eventRepository.findAll();
+        }
+        
         model.addAttribute("events", events);
-        model.addAttribute("totalEvents", events.size());
+        model.addAttribute("totalEvents", eventRepository.count());
         model.addAttribute("upcomingCount", eventRepository.countByStatus("UPCOMING"));
         model.addAttribute("ongoingCount", eventRepository.countByStatus("ONGOING"));
         model.addAttribute("completedCount", eventRepository.countByStatus("COMPLETED"));
@@ -791,6 +792,8 @@ public class EventController {
             @RequestParam(required = false, defaultValue = "0.0") Double vipPrice,
             @RequestParam(required = false, defaultValue = "0.0") Double regularPrice,
             @RequestParam(required = false, defaultValue = "false") boolean finalVotingEnabled,
+            @RequestParam(required = false) Double latitude,
+            @RequestParam(required = false) Double longitude,
             HttpServletRequest request,
             HttpSession session) {
 
@@ -808,6 +811,8 @@ public class EventController {
         event.setEventMode(eventMode);
         event.setMeetingLink(meetingLink);
         event.setFinalVotingEnabled(finalVotingEnabled);
+        event.setLatitude(latitude);
+        event.setLongitude(longitude);
 
         // Secret Rewards Binding
         event.setEnableSecretRewards(formEvent.isEnableSecretRewards());
@@ -1081,6 +1086,8 @@ public class EventController {
             @RequestParam(required = false, defaultValue = "0.0") Double vipPrice,
             @RequestParam(required = false, defaultValue = "0.0") Double regularPrice,
             @RequestParam(required = false, defaultValue = "false") boolean finalVotingEnabled,
+            @RequestParam(required = false) Double latitude,
+            @RequestParam(required = false) Double longitude,
             HttpSession session) {
 
         if (!isAdmin(session)) return "redirect:/login";
@@ -1096,6 +1103,8 @@ public class EventController {
         event.setStatus(status);
         event.setMeetingLink(meetingLink);
         event.setFinalVotingEnabled(finalVotingEnabled);
+        event.setLatitude(latitude);
+        event.setLongitude(longitude);
 
         if ("Free".equals(entryFeeType)) {
             event.setPrice("Free");
@@ -1498,6 +1507,14 @@ public class EventController {
         // Individual Seats Check & Update
         if (selectedSeatIds != null && !selectedSeatIds.isEmpty()) {
             List<EventSeat> seatsToBook = eventSeatRepository.findAllById(selectedSeatIds);
+            
+            // Re-verify that none of the selected seats were booked by someone else during the payment flow
+            for (EventSeat seat : seatsToBook) {
+                if ("BOOKED".equals(seat.getStatus())) {
+                    return "redirect:/events/" + event.getId() + "?error=seat_unavailable";
+                }
+            }
+
             for (EventSeat seat : seatsToBook) {
                 seat.setStatus("BOOKED");
                 seat.setBookedByUser(user);

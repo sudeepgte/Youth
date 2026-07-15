@@ -243,8 +243,12 @@ public class BattleController {
             return "redirect:/battles/" + battle.getId();
         }
 
+        if (!"WAITING".equals(battle.getStatus())) {
+            return "redirect:/battles/" + battle.getId() + "?error=already_started";
+        }
+
         long count = participantRepository.countByBattle(battle);
-        if (count >= battle.getMaxParticipants()) return "redirect:/battles?error=full";
+        if (count >= battle.getMaxParticipants()) return "redirect:/battles/" + battle.getId() + "?error=full";
 
         if (battle.getEntryFee() != null && battle.getEntryFee() > 0) {
             return "redirect:/battles/" + battle.getId() + "/pay";
@@ -266,6 +270,10 @@ public class BattleController {
             return "redirect:/battles/" + battle.getId();
         }
 
+        if (!"WAITING".equals(battle.getStatus())) {
+            return "redirect:/battles/" + battle.getId() + "?error=already_started";
+        }
+
         model.addAttribute("battle", battle);
         model.addAttribute("user", user);
         return "payment";
@@ -284,8 +292,12 @@ public class BattleController {
             return "redirect:/battles/" + battle.getId();
         }
 
+        if (!"WAITING".equals(battle.getStatus())) {
+            return "redirect:/battles/" + battle.getId() + "?error=already_started";
+        }
+
         long count = participantRepository.countByBattle(battle);
-        if (count >= battle.getMaxParticipants()) return "redirect:/battles?error=full";
+        if (count >= battle.getMaxParticipants()) return "redirect:/battles/" + battle.getId() + "?error=full";
 
         // In a real app, verify payment status from gateway here.
         // For MVP, we assume the mock payment was successful.
@@ -319,6 +331,9 @@ public class BattleController {
         if (battle == null) return "redirect:/battles";
         if (!battle.getCreator().getId().equals(user.getId())) return "redirect:/battles/" + id;
         if (!"WAITING".equals(battle.getStatus())) return "redirect:/battles/" + id;
+
+        long participantCount = participantRepository.countByBattle(battle);
+        if (participantCount < 2) return "redirect:/battles/" + id;
 
         battle.setStatus("ACTIVE");
         battle.setStartedAt(LocalDateTime.now());
@@ -434,6 +449,9 @@ public class BattleController {
         Battle battle = battleRepository.findById(id).orElse(null);
         if (battle == null) return "redirect:/battles";
         if (!"ACTIVE".equals(battle.getStatus())) return "redirect:/battles/" + id + "?error=not_active";
+        if (battle.getDurationMinutes() != null && battle.getDurationMinutes() > 0) {
+            return "redirect:/battles/" + id + "?error=unauthorized";
+        }
         if (!participantRepository.existsByBattleAndUser(battle, user)) return "redirect:/battles/" + id + "?error=not_participant";
         if (submissionRepository.existsByBattleAndUser(battle, user)) return "redirect:/battles/" + id + "?error=already_submitted";
 
@@ -592,17 +610,15 @@ public class BattleController {
     }
 
     private void completeBattle(Battle battle) {
-        if ("OFFLINE".equals(battle.getMode())) {
-            List<BattleParticipant> participants = participantRepository.findByBattle(battle);
-            for (BattleParticipant p : participants) {
-                if (!submissionRepository.existsByBattleAndUser(battle, p.getUser())) {
-                    BattleSubmission sub = new BattleSubmission();
-                    sub.setBattle(battle);
-                    sub.setUser(p.getUser());
-                    sub.setSubmissionUrl("Direct Vote");
-                    sub.setDescription("Auto-generated submission for offline participant");
-                    submissionRepository.save(sub);
-                }
+        List<BattleParticipant> participants = participantRepository.findByBattle(battle);
+        for (BattleParticipant p : participants) {
+            if (!submissionRepository.existsByBattleAndUser(battle, p.getUser())) {
+                BattleSubmission sub = new BattleSubmission();
+                sub.setBattle(battle);
+                sub.setUser(p.getUser());
+                sub.setSubmissionUrl("Direct Vote");
+                sub.setDescription("Auto-generated submission");
+                submissionRepository.save(sub);
             }
         }
         

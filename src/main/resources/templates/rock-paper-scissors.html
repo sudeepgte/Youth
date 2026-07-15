@@ -123,6 +123,17 @@
 
         function update(s) {
             document.getElementById('status').innerText = "ARENA ACTIVE";
+            if (s.status === 'opponent_left') {
+                document.getElementById('status').innerText = "OPPONENT LEFT";
+                document.getElementById('waitArea').style.display = 'none';
+                document.getElementById('gameArea').style.display = 'block';
+                document.getElementById('choiceGrid').style.display = 'none';
+                document.getElementById('waitingMsg').style.display = 'none';
+                document.getElementById('resultBlock').style.display = 'block';
+                document.getElementById('roundResult').innerText = "Opponent left the game! Arena closed.";
+                document.getElementById('nextBtn').style.display = 'none';
+                return;
+            }
             if (s.status === 'waiting') {
                 document.getElementById('status').innerText = "GAME LOBBY";
                 document.getElementById('waitArea').style.display = 'block';
@@ -177,6 +188,12 @@
         function startBattle() { stomp.send("/app/rps/" + rId + "/start", {}, "{}"); }
 
         init();
+        
+        window.addEventListener('beforeunload', () => {
+            if (stomp && stomp.connected && rId && pNum) {
+                stomp.send("/app/rps/" + rId + "/leave", {}, JSON.stringify({ playerNum: pNum }));
+            }
+        });
         // ]]>
     </script>
 </body>

@@ -42,7 +42,7 @@
             background: #ffffff !important;
         }
 
-        /* ✨ Hero ✨ */
+        /* âœ¨ Hero âœ¨ */
         .event-hero {
             position: relative;
             width: 100%;
@@ -140,7 +140,7 @@
             color: #fff;
         }
 
-        /* ── Status Badge ── */
+        /* â”€â”€ Status Badge â”€â”€ */
         .status-badge {
             display: inline-flex;
             align-items: center;
@@ -169,7 +169,7 @@
             border: 1px solid rgba(16, 185, 129, 0.3);
         }
 
-        /* ── Layout ── */
+        /* â”€â”€ Layout â”€â”€ */
         .detail-layout {
             max-width: 1100px;
             margin: 0 auto;
@@ -178,11 +178,15 @@
             gap: 32px;
             padding: 40px 30px 80px;
         }
+        
+        .detail-layout > div {
+            min-width: 0;
+        }
 
-        /* ── Info Grid (Redesigned) ── */
+        /* â”€â”€ Info Grid (Redesigned) â”€â”€ */
         .event-details-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
             gap: 16px;
             margin-bottom: 36px;
         }
@@ -243,7 +247,7 @@
             line-height: 1.2;
         }
 
-        /* ── About ── */
+        /* â”€â”€ About â”€â”€ */
         .about-section h2 {
             font-size: 1.2rem;
             font-weight: 700;
@@ -258,7 +262,7 @@
             opacity: 0.9;
         }
 
-        /* ── Organizer ── */
+        /* â”€â”€ Organizer â”€â”€ */
         .organizer-card {
             margin-top: 34px;
             padding: 22px;
@@ -294,7 +298,7 @@
             color: var(--text-muted);
         }
 
-        /* ── Related ── */
+        /* â”€â”€ Related â”€â”€ */
         .related-section {
             margin-top: 40px;
         }
@@ -351,7 +355,7 @@
             color: var(--text-muted);
         }
 
-        /* ── RIGHT STICKY CARD ── */
+        /* â”€â”€ RIGHT STICKY CARD â”€â”€ */
         .register-card {
             background: #fff;
             border: 1px solid rgba(0, 0, 0, 0.08);
@@ -516,9 +520,10 @@
             margin: 40px 0;
             background: rgba(255, 255, 255, 0.02);
             border-radius: 20px;
-            padding: 40px;
+            padding: 40px 20px;
             border: 1px solid rgba(255, 255, 255, 0.05);
             text-align: center;
+            overflow-x: auto;
         }
 
         .screen-display {
@@ -609,7 +614,8 @@
             /* Orange for Selected */
             border-color: #f97316;
             box-shadow: 0 0 15px rgba(249, 115, 22, 0.5);
-            color: #fff;
+            color: #000;
+            font-weight: 900;
         }
 
         .seat.hold {
@@ -817,7 +823,7 @@
             font-weight: 600;
         }
 
-        /* ── Registration Modal ── */
+        /* â”€â”€ Registration Modal â”€â”€ */
         .reg-modal-overlay {
             display: none;
             position: fixed;
@@ -866,8 +872,9 @@
         }
 
         .modal-head-left h2 {
-            font-size: 1.3rem;
+            font-size: 1.5rem;
             font-weight: 900;
+            color: #ffffff;
             margin-bottom: 4px;
         }
 
@@ -922,6 +929,7 @@
             font-size: 14px;
             font-weight: 700;
             margin-bottom: 2px;
+            color: #fff;
         }
 
         .modal-event-strip .ev-info p {
@@ -1028,6 +1036,8 @@
         @media (max-width: 768px) {
             .detail-layout {
                 grid-template-columns: 1fr;
+                padding: 20px 15px 80px;
+                gap: 24px;
             }
 
             .hero-title {
@@ -1035,7 +1045,16 @@
             }
 
             .event-hero {
-                height: 320px;
+                height: 400px;
+            }
+            
+            .hero-content {
+                padding: 0 20px 25px;
+            }
+            
+            .hero-nav {
+                top: 80px;
+                left: 20px;
             }
 
             .register-card {
@@ -1052,7 +1071,7 @@
 <body>
     <div th:replace="~{fragments/template :: navbar('event-details')}"></div>
 
-    <!-- ═══════════ HERO ═══════════ -->
+    <!-- â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull; HERO â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull; -->
     <div class="event-hero">
         <img th:src="${event.imageUrl}" alt="Event Banner"
             onerror="this.src='https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1400'">
@@ -1094,10 +1113,10 @@
         </div>
     </div>
 
-    <!-- ═══════════ DETAIL LAYOUT ═══════════ -->
+    <!-- â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull; DETAIL LAYOUT â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull; -->
     <div class="detail-layout">
 
-        <!-- ── LEFT: Info ── -->
+        <!-- â”€â”€ LEFT: Info â”€â”€ -->
         <div>
             <!-- Alerts -->
             <div th:if="${param.alreadyRegistered}" class="alert-already">
@@ -1151,7 +1170,7 @@
                     <div class="icon-wrap"><i class="fas fa-ticket-alt"></i></div>
                     <div class="detail-info">
                         <span>Price</span>
-                        <strong th:text="${event.price != null ? #strings.replace(event.price, '$', '&#8377;') : 'Free'}">Free</strong>
+                        <strong th:text="${event.price != null ? #strings.replace(event.price, '$', '₹') : 'Free'}">Free</strong>
                     </div>
                 </div>
             </div>
@@ -1451,7 +1470,7 @@
                                 th:classappend="${seat.status == 'BOOKED' ? 'booked' : (seat.status == 'HOLD' ? 'hold' : 'available')} + ' ' + ${#strings.toLowerCase(seat.seatType)}"
                                 th:attr="data-id=${seat.id}, data-price=${seat.price}, data-label=${seat.seatIdentifier}, data-tier=${seat.seatType}"
                                 onclick="toggleSeatSelection(this)"
-                                th:title="${seat.seatIdentifier} + ' - &#8377;' + ${seat.price} + ' (' + ${seat.seatType} + ')'"
+                                th:title="${seat.seatIdentifier} + ' - ₹' + ${seat.price} + ' (' + ${seat.seatType} + ')'"
                                 th:text="${seat.seatNumber}">
                                 1
                             </div>
@@ -1541,7 +1560,7 @@
 
         </div><!-- /left -->
 
-        <!-- ── RIGHT: Registration Card ── -->
+        <!-- â”€â”€ RIGHT: Registration Card â”€â”€ -->
         <div>
             <div class="register-card">
 
@@ -1551,12 +1570,12 @@
                     <div class="price-tag" th:classappend="${(event.entryFeeType == 'Paid' or (event.price != null and event.price != 'Free' and event.price != '0'))} ? 'paid' : 'free'">
                         <th:block th:if="${!#lists.isEmpty(event.seatTiers)}">
                             <span th:if="${startingPriceFormatted != 'Sold Out'}">Starting from <br>
-                                <span th:text="${startingPriceFormatted}">&#8377;100</span>
+                                <span th:text="${startingPriceFormatted}">₹100</span>
                             </span>
                             <span th:if="${startingPriceFormatted == 'Sold Out'}">Sold Out</span>
                         </th:block>
                         <span th:if="${#lists.isEmpty(event.seatTiers)}"
-                            th:text="${event.price != null ? #strings.replace(event.price, '$', '&#8377;') : 'Free'}">Free</span>
+                            th:text="${event.price != null ? #strings.replace(event.price, '$', '₹') : 'Free'}">Free</span>
                     </div>
                 </div>
 
@@ -1565,7 +1584,7 @@
                     <div class="tier-preview-label">Available Categories</div>
                     <div th:each="tier : ${event.seatTiers}" class="tier-pill-row">
                         <span th:text="${tier.tierName}" class="tier-name-pill">VIP</span>
-                        <span class="tier-price-pill" th:text="${'&#8377;' + tier.price}">&#8377;500</span>
+                        <span class="tier-price-pill" th:text="${'₹' + tier.price}">₹500</span>
                         <span class="tier-status-pill"
                             th:classappend="${tier.registeredCount >= tier.capacity} ? 'full' : 'avail'"
                             th:text="${tier.registeredCount >= tier.capacity ? 'Sold Out' : (tier.capacity - tier.registeredCount) + ' Left'}">
@@ -1678,14 +1697,14 @@
 
     </div><!-- /detail-layout -->
 
-    <!-- ═══════════ REGISTRATION INFO MODAL (students only) ═══════════ -->
+    <!-- â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull; REGISTRATION INFO MODAL (students only) â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull; -->
     <div th:if="${!isAdmin}" class="reg-modal-overlay" id="regModalOverlay">
         <div class="reg-modal">
 
             <!-- Modal Header -->
             <div class="modal-head">
                 <div class="modal-head-left">
-                    <h2>📋 Registration Details</h2>
+                    <h2><i class="fas fa-clipboard-list"></i> Registration Details</h2>
                     <p>Fill in your info to complete registration</p>
                 </div>
                 <button class="modal-close" onclick="closeRegModal()"><i class="fas fa-times"></i></button>
@@ -1700,9 +1719,9 @@
                     <p>
                         <i class="fas fa-calendar-alt" style="color:#f84464;"></i>
                         <span
-                            th:text="${event.dateTime != null ? #temporals.format(event.dateTime, 'MMM dd, yyyy Â· hh:mm a') : 'TBA'}">Date</span>
-                        &nbsp;Â·&nbsp;
-                        <span id="modalPriceDisplay" th:text="${event.price != null ? #strings.replace(event.price, '$', '&#8377;') : 'Free'}"
+                            th:text="${event.dateTime != null ? #temporals.format(event.dateTime, 'MMM dd, yyyy - hh:mm a') : 'TBA'}">Date</span>
+                        &nbsp;&middot;&nbsp;
+                        <span id="modalPriceDisplay" th:text="${event.price != null ? #strings.replace(event.price, '$', '₹') : 'Free'}"
                             style="color:#10b981; font-weight:700;">Free</span>
                     </p>
                 </div>
@@ -1844,21 +1863,21 @@
 
             </form>
 
-            <p class="modal-note">🔒 Your information is secure and used only for this event registration.</p>
+            <p class="modal-note">ðŸ”’ Your information is secure and used only for this event registration.</p>
         </div>
     </div>
 
-    <!-- ═══════════ BOOKING BAR (BMOS) ═══════════ -->
+    <!-- â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull; BOOKING BAR (BMOS) â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull; -->
     <div class="booking-bar" id="bookingBar">
         <div class="summary-left">
             <span class="booking-total-label">Selected Seats: <span id="selectedCount"
                     class="summary-pill">0</span></span>
-            <div id="selectedLabels" style="font-size: 14px; font-weight: 700; color: #fff; margin-top: 5px;"></div>
+            <div id="selectedLabels" style="font-size: 16px; font-weight: 800; color: #ffeb3b; margin-top: 8px; letter-spacing: 0.5px;"></div>
         </div>
         <div class="summary-right" style="display: flex; align-items: center; gap: 30px;">
             <div style="text-align: right;">
                 <span class="booking-total-label">Total Amount</span>
-                <div class="booking-total-amt" id="totalAmt">&#8377;0.00</div>
+                <div class="booking-total-amt" id="totalAmt">₹0.00</div>
             </div>
             <button class="btn-register" onclick="showRegModalWithSeats()" style="width: 240px; margin-bottom: 0;">
                 <i class="fas fa-arrow-right"></i> Proceed to Book
@@ -1903,7 +1922,7 @@
                 bar.classList.add('visible');
                 countLabel.innerText = selectedSeats.length;
                 labelsDiv.innerText = selectedSeats.map(s => s.label).join(', ');
-                priceDiv.innerText = '&#8377;' + totalPrice.toFixed(2);
+                priceDiv.innerText = '₹' + totalPrice.toFixed(2);
             } else {
                 bar.classList.remove('visible');
             }
@@ -1938,14 +1957,14 @@
                         // Add seats info to modal
                         const modalNote = document.querySelector('.modal-note');
                         if (modalNote) {
-                            modalNote.innerHTML = `<i class="fas fa-clock"></i> Seats held for 5 minutes.`;
+                            modalNote.innerHTML = `<i class="fas fa-check-circle"></i> Seats selected. Complete payment to secure them.`;
                         }
                         
                         // Update modal price and booking summary
                         updateBookingSummaryUI();
                         
                         const disp = document.getElementById('modalPriceDisplay');
-                        if (disp) disp.innerText = '&#8377;' + totalPrice.toFixed(2);
+                        if (disp) disp.innerText = '₹' + totalPrice.toFixed(2);
 
                         // Add hidden fields for seat IDs
                         const form = document.getElementById('regForm');
@@ -2020,7 +2039,7 @@
                         <span style="font-weight: 700; color: #fff;">${tier} Seats:</span><br>
                 `;
                 data.seats.forEach(s => {
-                    html += `<span style="color: rgba(255,255,255,0.7); display: block; padding-left: 10px;">&bull; ${s.label} (&#8377;${s.price})</span>`;
+                    html += `<span style="color: rgba(255,255,255,0.7); display: block; padding-left: 10px;">&bull; ${s.label} (₹${s.price})</span>`;
                 });
                 html += `</div>`;
             }
@@ -2029,7 +2048,7 @@
                 </div>
                 <div style="display: flex; justify-content: space-between; font-size: 1.1rem; font-weight: 700; color: #10b981;">
                     <span>Amount Paid:</span>
-                    <span>&#8377;${totalPrice.toFixed(2)}</span>
+                    <span>₹${totalPrice.toFixed(2)}</span>
                 </div>
             `;
             
@@ -2044,7 +2063,7 @@
             
             // If seat layout is active, display calculated price from layout
             if (selectedSeats && selectedSeats.length > 0) {
-                display.innerText = '&#8377;' + totalPrice.toFixed(2);
+                display.innerText = '₹' + totalPrice.toFixed(2);
                 updateBookingSummaryUI();
                 return;
             }
@@ -2096,7 +2115,7 @@
 
             if (price > 0) {
                 let total = price * quantity;
-                display.textContent = '&#8377;' + total.toLocaleString();
+                display.textContent = '₹' + total.toLocaleString();
                 display.style.color = '#10b981';
             } else {
                 display.textContent = 'Free';

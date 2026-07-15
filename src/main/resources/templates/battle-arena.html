@@ -845,6 +845,8 @@
             <a th:href="@{/reels}" class="sidebar-link"><i class="fas fa-film"></i> Reels</a>
             <a th:href="@{/profile}" class="sidebar-link"><i class="fas fa-user"></i> Profile</a>
             <a th:href="@{/games}" class="sidebar-link"><i class="fas fa-gamepad"></i> Games</a>
+            <a th:href="@{/wallet}" class="sidebar-link"><i class="fas fa-wallet"></i> Wallet</a>
+            <a href="javascript:void(0)" class="sidebar-link" onclick="openCreateModal()"><i class="fas fa-plus-circle" style="color: var(--accent);"></i> Create Post</a>
             <a th:href="@{/logout}" class="sidebar-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </aside>
 
@@ -865,6 +867,7 @@
                 <span th:if="${param.error[0] == 'not_found'}">Battle not found. Check your room code.</span>
                 <span th:if="${param.error[0] == 'full'}">This battle is full!</span>
                 <span th:if="${param.error[0] == 'ended'}">This battle has ended.</span>
+                <span th:if="${param.error[0] == 'already_started'}">Joining is closed — this battle has already started.</span>
                 <span th:if="${param.error[0] == 'already_voted'}">You've already voted in this battle.</span>
                 <span th:if="${param.error[0] == 'already_submitted'}">You've already submitted your entry.</span>
                 <span th:if="${param.error[0] == 'not_active'}">This battle isn't accepting submissions right now.</span>
@@ -1001,7 +1004,8 @@
 
                     <!-- Creator Actions -->
                     <div th:if="${isCreator}" style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;">
-                        <form th:if="${battle.status == 'WAITING'}" th:action="@{'/battles/' + ${battle.id} + '/start'}" method="POST">
+                        <form th:if="${battle.status == 'WAITING' and participants.size() >= 2}" th:action="@{'/battles/' + ${battle.id} + '/start'}" method="POST"
+                              th:onsubmit="${participants.size() < battle.maxParticipants} ? 'return confirm(\'Only ' + ${participants.size()} + ' of ' + ${battle.maxParticipants} + ' spots are filled. Starting now will close joining for everyone else. Start anyway?\');' : null">
                             <button type="submit" class="btn-arena btn-arena-green btn-arena-sm"><i class="fas fa-play"></i> Start Battle</button>
                         </form>
                         <form th:if="${battle.status == 'ACTIVE'}" th:action="@{'/battles/' + ${battle.id} + '/start-voting'}" method="POST">
@@ -1033,6 +1037,13 @@
                                 <i class="fas fa-id-card"></i> Register &amp; Get QR Pass
                             </button>
                         </form>
+                    </div>
+
+                    <!-- Non-Participant: Battle already progressed past WAITING, joining closed -->
+                    <div th:if="${!isParticipant and !isCreator and battle.status != 'WAITING' and battle.status != 'COMPLETED'}"
+                         style="display:flex; align-items:center; gap:10px; background:rgba(148,163,184,0.12); border:1px solid rgba(148,163,184,0.3); border-radius:12px; padding:12px 16px; margin-bottom:16px; color:var(--text-secondary); font-size:13px; font-weight:600;">
+                        <i class="fas fa-lock" style="color:var(--text-muted);"></i>
+                        <span>Joining is closed &mdash; this battle has already started.</span>
                     </div>
 
                     <!-- Participants -->
@@ -1091,7 +1102,7 @@
                 </div>
 
                 <!-- ─── SUBMISSION FORM (ACTIVE battles only, if participant & not submitted) ─── -->
-                <div th:if="${battle.status == 'ACTIVE' and isParticipant and !hasSubmitted}" class="battle-detail" id="submit-section">
+                <div th:if="${battle.status == 'ACTIVE' and isParticipant and !hasSubmitted and battle.durationMinutes == null}" class="battle-detail" id="submit-section">
                     <h3 style="font-size:18px; font-weight:900; color:#fff; margin-bottom:6px;">
                         <i class="fas fa-upload" style="color:#10B981;"></i> Upload Your Submission
                     </h3>
@@ -1226,7 +1237,7 @@
                 </div>
 
                 <!-- ─── SUBMISSIONS & VOTING ─── -->
-                <div th:if="${!submissions.isEmpty()}" class="battle-detail">
+                <div th:if="${!submissions.isEmpty() and battle.durationMinutes == null}" class="battle-detail">
                     <h3 style="font-size:18px; font-weight:900; color:#fff; margin-bottom:16px;">
                         <i class="fas fa-th-list" style="color:#3B82F6;"></i> Submissions
                         <span th:if="${battle.status == 'VOTING'}" style="font-size:12px; color:#3B82F6; font-weight:700; margin-left:8px;">— Vote for your favourite!</span>
@@ -1354,7 +1365,7 @@
 
                 <!-- ─── WINNER ANNOUNCEMENT ─── -->
                 <div th:if="${(battle.status == 'COMPLETED' or battle.status == 'TIE') and battle.winner != null}" class="winner-section" id="winner-display" style="padding: 20px;">
-                    <div class="winner-trophy" style="font-size: 64px; margin-bottom: 15px;">🏆</div>
+                    <div class="winner-trophy" style="font-size: 64px; margin-bottom: 15px;"><i class="fas fa-trophy" style="color: #FFD700;"></i></div>
                     <div style="font-size:18px; color:var(--text-primary); font-weight:900; margin-bottom:20px; text-transform: uppercase;">
                         <span th:if="${battle.status == 'TIE'}">It's a Tie!</span>
                         <span th:if="${battle.status != 'TIE'}">Battle Winners</span>
@@ -1363,7 +1374,7 @@
                     <!-- 1st Place -->
                     <div style="background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.2); border-radius: 12px; padding: 15px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
                         <div style="display: flex; align-items: center; gap: 15px;">
-                            <div style="font-size: 24px;">🥇</div>
+                            <div style="font-size: 24px;"><i class="fas fa-medal" style="color: #FFD700;"></i></div>
                             <div style="text-align: left;">
                                 <div style="font-size: 12px; color: var(--text-muted); font-weight: 700;">1ST PLACE</div>
                                 <div style="font-size: 20px; font-weight: 900; color: var(--text-primary);" th:text="${battle.winner.username}">Winner</div>
@@ -1378,7 +1389,7 @@
                     <!-- 2nd Place -->
                     <div th:if="${battle.winner2 != null}" style="background: rgba(255,255,255,0.6); border: 1px solid rgba(15,23,42,0.1); border-radius: 12px; padding: 15px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
                         <div style="display: flex; align-items: center; gap: 15px;">
-                            <div style="font-size: 24px;">🥈</div>
+                            <div style="font-size: 24px;"><i class="fas fa-medal" style="color: #C0C0C0;"></i></div>
                             <div style="text-align: left;">
                                 <div style="font-size: 12px; color: var(--text-muted); font-weight: 700;" th:text="${battle.status == 'TIE' ? 'TIED WINNER' : '2ND PLACE'}">2ND PLACE</div>
                                 <div style="font-size: 18px; font-weight: 800; color: var(--text-primary);" th:text="${battle.winner2.username}">User 2</div>
@@ -1393,7 +1404,7 @@
                     <!-- 3rd Place -->
                     <div th:if="${battle.winner3 != null}" style="background: rgba(255,255,255,0.6); border: 1px solid rgba(15,23,42,0.1); border-radius: 12px; padding: 15px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
                         <div style="display: flex; align-items: center; gap: 15px;">
-                            <div style="font-size: 24px;">🥉</div>
+                            <div style="font-size: 24px;"><i class="fas fa-medal" style="color: #CD7F32;"></i></div>
                             <div style="text-align: left;">
                                 <div style="font-size: 12px; color: var(--text-muted); font-weight: 700;">3RD PLACE</div>
                                 <div style="font-size: 18px; font-weight: 800; color: var(--text-primary);" th:text="${battle.winner3.username}">User 3</div>
@@ -1420,7 +1431,7 @@
             <div th:if="${battle == null}">
                 <!-- Hero Banner -->
                 <div class="arena-hero">
-                    <h1>⚔️ Battle Arena</h1>
+                    <h1>&#9876;&#65039; Battle Arena</h1>
                     <p>Challenge your friends in creative battles across Coding, Music, Dance, Photography, and more. Submit your work, let the community vote, and climb the leaderboard!</p>
                     <div class="arena-hero-actions">
                         <button class="btn-arena btn-arena-primary" onclick="openCreateBattle()">
@@ -1429,6 +1440,60 @@
                         <button class="btn-arena btn-arena-secondary" onclick="openJoinBattle()">
                             <i class="fas fa-door-open"></i> Join via Code
                         </button>
+                    </div>
+                </div>
+
+                <!-- Mobile widgets (visible only on mobile/tablet below Battle Arena banner) -->
+                <div class="mobile-widgets" style="margin-top: 20px; margin-bottom: 20px; display: none;">
+                    <!-- Colleges in Battle Widget -->
+                    <div class="widget-card">
+                        <div class="widget-header">
+                            <h3 th:if="${battle == null}"><i class="fas fa-university" style="margin-right: 6px;"></i> Colleges in Battle</h3>
+                            <h3 th:if="${battle != null and isCreator}"><i class="fas fa-university" style="margin-right: 6px;"></i> Students by College</h3>
+                            <h3 th:if="${battle != null and !isCreator}"><i class="fas fa-university" style="margin-right: 6px;"></i> Colleges Competing</h3>
+                        </div>
+                        <!-- College list when data exists -->
+                        <div th:if="${battleColleges != null and !battleColleges.isEmpty()}" style="display:flex; flex-direction:column; gap:10px;">
+                            <div th:each="entry : ${battleColleges}" style="display:flex; align-items:center; gap:10px; padding:8px 12px; background:rgba(139,92,246,0.04); border:1px solid rgba(139,92,246,0.1); border-radius:12px; transition:all 0.2s;">
+                                <div style="width:34px; height:34px; border-radius:10px; background:linear-gradient(135deg,#8B5CF6,#6366F1); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                                    <i class="fas fa-university" style="color:#fff; font-size:14px;"></i>
+                                </div>
+                                <div style="flex:1; min-width:0;">
+                                    <div style="font-size:12px; font-weight:800; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" th:text="${entry.key}">College Name</div>
+                                    <div style="font-size:10px; color:var(--text-muted); font-weight:700;">
+                                        <span th:text="${entry.value}">0</span> 
+                                        <span th:text="${entry.value == 1} ? 'student' : 'students'">students</span>
+                                    </div>
+                                </div>
+                                <div style="background:linear-gradient(135deg,#8B5CF6,#6366F1); color:#fff; font-size:11px; font-weight:900; padding:3px 10px; border-radius:20px; flex-shrink:0;" th:text="${entry.value}">0</div>
+                            </div>
+                        </div>
+                        <!-- Empty state -->
+                        <div th:if="${battleColleges == null or battleColleges.isEmpty()}" style="text-align:center; padding:16px 8px;">
+                            <i class="fas fa-university" style="font-size:28px; color:rgba(139,92,246,0.25); margin-bottom:8px; display:block;"></i>
+                            <div style="font-size:12px; color:var(--text-muted); font-weight:700;">No college data yet</div>
+                            <div style="font-size:10px; color:var(--text-muted); margin-top:4px;">College names appear when users with a college in their profile join battles</div>
+                        </div>
+                    </div>
+
+                    <!-- Categories Widget -->
+                    <div class="widget-card">
+                        <div class="widget-header">
+                            <h3><i class="fas fa-bullseye" style="margin-right: 6px;"></i> Categories</h3>
+                        </div>
+                        <div style="display:flex; flex-wrap:wrap; gap:6px;">
+                            <span style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(59,130,246,0.1); color:#3B82F6; border:1px solid rgba(59,130,246,0.15);">Coding</span>
+                            <span style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(139,92,246,0.1); color:#8B5CF6; border:1px solid rgba(139,92,246,0.15);">Music</span>
+                            <span style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(236,72,153,0.1); color:#EC4899; border:1px solid rgba(236,72,153,0.15);">Dance</span>
+                            <span style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(34,211,238,0.1); color:#22D3EE; border:1px solid rgba(34,211,238,0.15);">Photography</span>
+                            <span style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(249,115,22,0.1); color:#F97316; border:1px solid rgba(249,115,22,0.15);">Singing</span>
+                            <span style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(248,68,100,0.1); color:#F84464; border:1px solid rgba(248,68,100,0.15);">Video</span>
+                            <span style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(16,185,129,0.1); color:#10B981; border:1px solid rgba(16,185,129,0.15);">Drawing</span>
+                            <span style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(245,158,11,0.1); color:#F59E0B; border:1px solid rgba(245,158,11,0.15);">Fitness</span>
+                            <span style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(99,102,241,0.1); color:#6366F1; border:1px solid rgba(99,102,241,0.15);">Gaming</span>
+                            <span style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(252,211,77,0.1); color:#D97706; border:1px solid rgba(252,211,77,0.15);">Meme</span>
+                            <span style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(167,139,250,0.1); color:#7C3AED; border:1px solid rgba(167,139,250,0.15);">AI Prompt</span>
+                        </div>
                     </div>
                 </div>
 
@@ -1505,6 +1570,7 @@
                     </div>
                 </div>
             </div>
+
         </main>
 
         <!-- Right Sidebar -->
@@ -1512,9 +1578,9 @@
             <div class="widget-card">
                 <div class="widget-header">
                     <!-- Title changes based on context -->
-                    <h3 th:if="${battle == null}">🏫 Colleges in Battle</h3>
-                    <h3 th:if="${battle != null and isCreator}">🏫 Students by College</h3>
-                    <h3 th:if="${battle != null and !isCreator}">🏫 Colleges Competing</h3>
+                    <h3 th:if="${battle == null}"><i class="fas fa-university" style="margin-right: 6px;"></i> Colleges in Battle</h3>
+                    <h3 th:if="${battle != null and isCreator}"><i class="fas fa-university" style="margin-right: 6px;"></i> Students by College</h3>
+                    <h3 th:if="${battle != null and !isCreator}"><i class="fas fa-university" style="margin-right: 6px;"></i> Colleges Competing</h3>
                 </div>
 
                 <!-- College list when data exists -->
@@ -1547,7 +1613,7 @@
 
             <div class="widget-card">
                 <div class="widget-header">
-                    <h3>🎯 Categories</h3>
+                    <h3><i class="fas fa-bullseye" style="margin-right: 6px;"></i> Categories</h3>
                 </div>
                 <div style="display:flex; flex-wrap:wrap; gap:6px;">
                     <span style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(59,130,246,0.1); color:#3B82F6; border:1px solid rgba(59,130,246,0.15);">Coding</span>
@@ -1581,7 +1647,7 @@
 
             <!-- Step 1: Title & Category -->
             <div id="create-step-1">
-                <h2>⚔️ Create Battle</h2>
+                <h2>&#9876;&#65039; Create Battle</h2>
                 <p class="subtitle">Set up a creative challenge for your friends</p>
                 <form id="createBattleForm" th:action="@{/battles/create}" method="POST">
                     <div class="arena-field">
@@ -1592,23 +1658,23 @@
                         <label>Category</label>
                         <input type="hidden" name="category" id="selectedCategory" required />
                         <div class="category-grid">
-                            <div class="category-option" onclick="selectCategory(this, 'Coding')"><i class="fas fa-code"></i> Coding</div>
-                            <div class="category-option" onclick="selectCategory(this, 'Music')"><i class="fas fa-music"></i> Music</div>
-                            <div class="category-option" onclick="selectCategory(this, 'Dance')"><i class="fas fa-shoe-prints"></i> Dance</div>
-                            <div class="category-option" onclick="selectCategory(this, 'Photography')"><i class="fas fa-camera"></i> Photo</div>
-                            <div class="category-option" onclick="selectCategory(this, 'Singing')"><i class="fas fa-microphone"></i> Singing</div>
-                            <div class="category-option" onclick="selectCategory(this, 'Video Editing')"><i class="fas fa-video"></i> Video</div>
-                            <div class="category-option" onclick="selectCategory(this, 'Drawing')"><i class="fas fa-paint-brush"></i> Drawing</div>
-                            <div class="category-option" onclick="selectCategory(this, 'Fitness')"><i class="fas fa-dumbbell"></i> Fitness</div>
-                            <div class="category-option" onclick="selectCategory(this, 'Gaming')"><i class="fas fa-gamepad"></i> Gaming</div>
-                            <div class="category-option" onclick="selectCategory(this, 'Meme')"><i class="fas fa-laugh-squint"></i> Meme</div>
-                            <div class="category-option" onclick="selectCategory(this, 'AI Prompt')"><i class="fas fa-robot"></i> AI Prompt</div>
-                            <div class="category-option" onclick="selectCategory(this, 'Art')"><i class="fas fa-palette"></i> Art</div>
-                            <div class="category-option" onclick="selectCategory(this, 'Acting')"><i class="fas fa-theater-masks"></i> Acting</div>
-                            <div class="category-option" onclick="selectCategory(this, 'Fashion')"><i class="fas fa-tshirt"></i> Fashion</div>
-                            <div class="category-option" onclick="selectCategory(this, 'Cooking')"><i class="fas fa-utensils"></i> Cooking</div>
-                            <div class="category-option" onclick="selectCategory(this, 'Writing')"><i class="fas fa-pen-fancy"></i> Writing</div>
-                            <div class="category-option" onclick="selectCategory(this, 'Comedy')"><i class="fas fa-grin-tears"></i> Comedy</div>
+                            <div class="category-option" onclick="selectBattleCategory(this, 'Coding')"><i class="fas fa-code"></i> Coding</div>
+                            <div class="category-option" onclick="selectBattleCategory(this, 'Music')"><i class="fas fa-music"></i> Music</div>
+                            <div class="category-option" onclick="selectBattleCategory(this, 'Dance')"><i class="fas fa-shoe-prints"></i> Dance</div>
+                            <div class="category-option" onclick="selectBattleCategory(this, 'Photography')"><i class="fas fa-camera"></i> Photo</div>
+                            <div class="category-option" onclick="selectBattleCategory(this, 'Singing')"><i class="fas fa-microphone"></i> Singing</div>
+                            <div class="category-option" onclick="selectBattleCategory(this, 'Video Editing')"><i class="fas fa-video"></i> Video</div>
+                            <div class="category-option" onclick="selectBattleCategory(this, 'Drawing')"><i class="fas fa-paint-brush"></i> Drawing</div>
+                            <div class="category-option" onclick="selectBattleCategory(this, 'Fitness')"><i class="fas fa-dumbbell"></i> Fitness</div>
+                            <div class="category-option" onclick="selectBattleCategory(this, 'Gaming')"><i class="fas fa-gamepad"></i> Gaming</div>
+                            <div class="category-option" onclick="selectBattleCategory(this, 'Meme')"><i class="fas fa-laugh-squint"></i> Meme</div>
+                            <div class="category-option" onclick="selectBattleCategory(this, 'AI Prompt')"><i class="fas fa-robot"></i> AI Prompt</div>
+                            <div class="category-option" onclick="selectBattleCategory(this, 'Art')"><i class="fas fa-palette"></i> Art</div>
+                            <div class="category-option" onclick="selectBattleCategory(this, 'Acting')"><i class="fas fa-theater-masks"></i> Acting</div>
+                            <div class="category-option" onclick="selectBattleCategory(this, 'Fashion')"><i class="fas fa-tshirt"></i> Fashion</div>
+                            <div class="category-option" onclick="selectBattleCategory(this, 'Cooking')"><i class="fas fa-utensils"></i> Cooking</div>
+                            <div class="category-option" onclick="selectBattleCategory(this, 'Writing')"><i class="fas fa-pen-fancy"></i> Writing</div>
+                            <div class="category-option" onclick="selectBattleCategory(this, 'Comedy')"><i class="fas fa-grin-tears"></i> Comedy</div>
                         </div>
                     </div>
                     <button type="button" class="btn-arena btn-arena-primary" style="width:100%; justify-content:center; margin-top:6px;" onclick="goToStep2()">
@@ -1620,9 +1686,10 @@
                         <!-- Mode Selector -->
                         <div class="arena-field">
                             <label>Battle Mode</label>
-                            <select id="modeSelect" name="mode" onchange="toggleBattleMode(this.value)" style="padding:12px; font-size:14px; font-weight:700;">
-                                <option value="ONLINE" selected>🌐 Online (Default Web Submission)</option>
-                            </select>
+                            <div style="background:#F8FAFC; border:1.5px solid rgba(15,23,42,0.12); border-radius:12px; padding:12px; font-size:14px; font-weight:700; color:var(--text-primary);">
+                                &#127760; Online
+                            </div>
+                            <input type="hidden" name="mode" value="ONLINE" />
                         </div>
 
                         <!-- Offline Specific Fields (Hidden by default) -->
@@ -1638,7 +1705,7 @@
                                 </div>
                                 <div class="arena-field">
                                     <label>Event Time</label>
-                                    <input type="text" name="eventTime" placeholder="e.g. 10:00 AM â€“ 1:00 PM" />
+                                    <input type="text" name="eventTime" placeholder="e.g. 10:00 AM – 1:00 PM" />
                                 </div>
                             </div>
 
@@ -1658,7 +1725,7 @@
                             <label>Entry Fee (&#8377;)</label>
                             <input type="number" step="0.01" name="entryFee" min="0" placeholder="e.g. 50.00" required />
                         </div>
-                        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom: 20px;">
+                        <div id="prizesGrid" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom: 20px;">
                             <div class="arena-field" style="margin-bottom:0;">
                                 <label><i class="fas fa-trophy" style="color:#FFD700;"></i> 1st Prize (&#8377;)</label>
                                 <input type="number" step="0.01" name="prize1" min="0" placeholder="0" required />
@@ -1667,7 +1734,7 @@
                                 <label><i class="fas fa-trophy" style="color:#C0C0C0;"></i> 2nd Prize (&#8377;)</label>
                                 <input type="number" step="0.01" name="prize2" min="0" placeholder="0" required />
                             </div>
-                            <div class="arena-field" style="margin-bottom:0;">
+                            <div id="prize3Container" class="arena-field" style="margin-bottom:0;">
                                 <label><i class="fas fa-trophy" style="color:#cd7f32;"></i> 3rd Prize (&#8377;)</label>
                                 <input type="number" step="0.01" name="prize3" min="0" placeholder="0" required />
                             </div>
@@ -1837,7 +1904,7 @@
         }
 
         // ─── Category Selection ─────────────────────────
-        function selectCategory(el, category) {
+        function selectBattleCategory(el, category) {
             document.querySelectorAll('.category-option').forEach(c => c.classList.remove('selected'));
             el.classList.add('selected');
             document.getElementById('selectedCategory').value = category;
@@ -2033,6 +2100,11 @@
                 // Restore settings
                 pSelect.disabled = false;
                 customPartInput.disabled = false;
+                
+                const prizesGrid = document.getElementById('prizesGrid');
+                if (prizesGrid) prizesGrid.style.gridTemplateColumns = '1fr 1fr 1fr';
+                const prize3Container = document.getElementById('prize3Container');
+                if (prize3Container) prize3Container.style.display = 'block';
                 prize3Input.disabled = false;
             } else {
                 hWrap.style.display = 'none';
@@ -2045,6 +2117,10 @@
                 pSelect.disabled = true;
                 customPartInput.disabled = true;
                 
+                const prizesGrid = document.getElementById('prizesGrid');
+                if (prizesGrid) prizesGrid.style.gridTemplateColumns = '1fr 1fr';
+                const prize3Container = document.getElementById('prize3Container');
+                if (prize3Container) prize3Container.style.display = 'none';
                 prize3Input.value = "0";
                 prize3Input.disabled = true;
                 
@@ -2064,6 +2140,21 @@
             50% { box-shadow: 0 0 30px rgba(239,68,68,0.7); }
         }
     </style>
+    <div th:replace="~{fragments/modals :: createPostModal}"></div>
+    <div class="overlay" id="overlay" onclick="closeAllModals()"></div>
+
+    <script>
+        function closeAllModals() {
+            document.querySelectorAll('.modal').forEach(m => {
+                m.classList.remove('open');
+                m.style.display = 'none';
+            });
+            document.querySelectorAll('.overlay').forEach(o => {
+                o.classList.remove('open');
+                o.style.display = 'none';
+            });
+        }
+    </script>
 </body>
 </html>
 

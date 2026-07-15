@@ -1258,9 +1258,15 @@
             }
             body .content-main {
                 border-right: none !important;
-                height: calc(100vh - var(--dashboard-nav-height)) !important;
+                height: calc(100dvh - var(--dashboard-nav-height)) !important;
             }
-            .app-container { position: relative; border-left: none; border-right: none; }
+            .app-container { 
+                position: relative; 
+                border-left: none; 
+                border-right: none; 
+                height: calc(100dvh - var(--dashboard-nav-height)) !important;
+                overflow: hidden;
+            }
             .chat-sidebar { width: 100% !important; border-right: none; }
             
             .chat-main { 
@@ -1269,12 +1275,34 @@
                 top: 0; left: 0; right: 0; bottom: 0; 
                 z-index: 20; 
                 background: var(--bg-color); 
+                height: 100% !important;
+                overflow: hidden;
             }
             
             .app-container.mobile-chat-active .chat-sidebar { display: none !important; }
             .app-container.mobile-chat-active .chat-main { display: flex !important; width: 100% !important; }
             
             .mobile-back-btn { display: flex !important; }
+            
+            /* Input and Send button mobile layout enhancements */
+            .input-area {
+                padding: 10px 8px !important;
+                background: var(--bg-color) !important;
+                border-top: 1px solid var(--border-color) !important;
+            }
+            .input-container {
+                padding: 4px 8px !important;
+            }
+            .input-container input {
+                padding: 8px 6px !important;
+                font-size: 14px !important;
+            }
+            #sendBtn {
+                display: flex !important;
+            }
+            #voiceBtn {
+                display: none !important;
+            }
         }
 
         /* Modern Scrollbar */
@@ -1781,6 +1809,7 @@
             <a th:href="@{/reels}" class="sidebar-link"><i class="fas fa-film"></i> Reels</a>
             <a th:href="@{/profile}" class="sidebar-link"><i class="fas fa-user"></i> Profile</a>
             <a th:href="@{/games}" class="sidebar-link"><i class="fas fa-gamepad"></i> Games</a>
+            <a th:href="@{/wallet}" class="sidebar-link"><i class="fas fa-wallet"></i> Wallet</a>
             <a href="javascript:void(0)" class="sidebar-link" onclick="openCreateModal()"><i class="fas fa-plus-circle" style="color: var(--accent);"></i> Create Post</a>
             <a th:href="@{/logout}" class="sidebar-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </aside>
@@ -2187,7 +2216,8 @@
             currentUser: {
                 id: /*[[${currentUser.id}]]*/ 0,
                 username: /*[[${currentUser.username}]]*/ 'Unknown',
-                profilePicture: /*[[${currentUser.profilePicture}]]*/ null
+                profilePhotoUrl: /*[[${currentUser.profilePhotoUrl}]]*/ null,
+                profilePicture: /*[[${currentUser.profilePhotoUrl}]]*/ null
             },
             paths: {
                 conversations: /*[[@{/api/chat/conversations}]]*/ '/api/chat/conversations',
@@ -2278,7 +2308,7 @@
         }
 
         function sendSticker(stickerUrl) {
-            if (!stompClient || !activeConversationId) return;
+            if (!stompClient || !stompClient.connected || !activeConversationId) return;
             const conv = conversationsData.find(c => c.id == activeConversationId);
             const isGroup = conv && conv.type === 'GROUP';
             const payload = {
@@ -2483,7 +2513,7 @@
                     const data = JSON.parse(msg.body);
                     if (activeConversationId === data.conversationId) {
                         const seenIndicator = document.getElementById('seenIndicator');
-                        seenIndicator.innerText = 'Seen Â· ' + formatTime(data.seenAt);
+                        seenIndicator.innerText = 'Seen \u00B7 ' + formatTime(data.seenAt);
                         seenIndicator.style.display = 'block';
                     }
                 });
@@ -2531,6 +2561,30 @@
                         activeConversationId = null;
                     }
                 });
+
+                if (activeConversationId) {
+                    subscribeToGroupTyping(activeConversationId);
+                }
+            }, function (error) {
+                console.warn('STOMP connection error or disconnect. Retrying in 5 seconds...', error);
+                setTimeout(connectWebSocket, 5000);
+            });
+        }
+
+        function subscribeToGroupTyping(convId) {
+            if (!stompClient || !stompClient.connected) return;
+            if (window.typingSubscription) {
+                try {
+                    window.typingSubscription.unsubscribe();
+                } catch (e) {
+                    console.warn('[WARN] Failed to unsubscribe dynamic subscription:', e);
+                }
+            }
+            window.typingSubscription = stompClient.subscribe('/topic/chat.' + convId + '.typing', function (msg) {
+                const data = JSON.parse(msg.body);
+                if (data.senderId != currentUser.id) {
+                    showTypingIndicator(data.isTyping);
+                }
             });
         }
 
@@ -2620,8 +2674,8 @@
                     avatarHtml = `<div style="display:flex; flex-wrap:wrap; width:100%; height:100%;">
                         ${c.participants.slice(0, 4).map(p => `<div style="width:50%; height:50%; background:var(--avatar-bg); font-size:10px; display:flex; align-items:center; justify-content:center; border-radius:2px;">${p.username.charAt(0)}</div>`).join('')}
                     </div>`;
-                } else if (partner && partner.profilePicture) {
-                    avatarHtml = `<img src="${resolveUrl(partner.profilePicture)}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+                } else if (partner && (partner.profilePhotoUrl || partner.profilePicture)) {
+                    avatarHtml = `<img src="${resolveUrl(partner.profilePhotoUrl || partner.profilePicture)}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
                 } else {
                     avatarHtml = convName.charAt(0).toUpperCase();
                 }
@@ -2637,7 +2691,7 @@
                 </div>
                 <div class="conv-info">
                     <div class="conv-name">${convName}</div>
-                    <div class="conv-preview">${previewText} Â· ${formatTime(c.lastMessageTime)}</div>
+                    <div class="conv-preview">${previewText} \u00B7 ${formatTime(c.lastMessageTime)}</div>
                 </div>
                 <div class="unread-dot"></div>
             `;
@@ -2728,6 +2782,19 @@
 
                 const convName = conv.type === 'GROUP' ? conv.name : (partner ? partner.username : 'Direct Chat');
                 document.getElementById('activeUserName').innerText = convName;
+                
+                const statusEl = document.getElementById('activeUserStatus');
+                if (statusEl) {
+                    if (conv.type === 'GROUP') {
+                        statusEl.innerText = conv.participants.length + ' members';
+                    } else if (partner) {
+                        const isOnline = partner.lastActiveAt && (new Date() - new Date(partner.lastActiveAt) < 300000);
+                        statusEl.innerText = isOnline ? 'Active now' : 'Offline';
+                        statusEl.style.color = isOnline ? '#4ade80' : '#8696a0';
+                    } else {
+                        statusEl.innerText = '';
+                    }
+                }
                 updateManageGroupButton(conv);
 
                 const avatarEl = document.getElementById('activeAvatar');
@@ -2735,8 +2802,8 @@
                     avatarEl.innerHTML = `<div style="display:flex; flex-wrap:wrap; width:100%; height:100%;">
                         ${conv.participants.slice(0, 4).map(p => `<div style="width:50%; height:50%; background:var(--avatar-bg); font-size:10px; display:flex; align-items:center; justify-content:center; border-radius:2px;">${p.username.charAt(0)}</div>`).join('')}
                     </div>`;
-                } else if (partner && partner.profilePicture) {
-                    avatarEl.innerHTML = `<img src="${resolveUrl(partner.profilePicture)}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+                } else if (partner && (partner.profilePhotoUrl || partner.profilePicture)) {
+                    avatarEl.innerHTML = `<img src="${resolveUrl(partner.profilePhotoUrl || partner.profilePicture)}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
                 } else {
                     avatarEl.innerText = convName.charAt(0).toUpperCase();
                 }
@@ -2749,13 +2816,7 @@
                 
                 // Subscribe to typing topic for groups
                 if (activeConversationId) {
-                    if (window.typingSubscription) window.typingSubscription.unsubscribe();
-                    window.typingSubscription = stompClient.subscribe('/topic/chat.' + activeConversationId + '.typing', function (msg) {
-                        const data = JSON.parse(msg.body);
-                        if (data.senderId != currentUser.id) {
-                            showTypingIndicator(data.isTyping);
-                        }
-                    });
+                    subscribeToGroupTyping(activeConversationId);
                 }
 
                 await loadMessages(conv.id);
@@ -2949,7 +3010,7 @@
             if (deletedForMe.includes(msg.id)) return;
 
             const container = document.getElementById('messagesArea');
-            const isSent = msg.sender.id == currentUser.id;
+            const isSent = msg.sender && msg.sender.id == currentUser.id;
 
             const wrapper = document.createElement('div');
             const isVanish = msg.isVanish || msg.vanish;
@@ -3066,6 +3127,10 @@
 
         async function handleFileUpload(input) {
             console.log('[DEBUG] handleFileUpload called with input:', input);
+            if (!stompClient || !stompClient.connected) {
+                alert('Connection lost. Please wait until connection is re-established.');
+                return;
+            }
             if (!input.files || !input.files[0]) {
                 console.log('[DEBUG] No file selected.');
                 return;
@@ -3242,7 +3307,7 @@
         }
 
         function reactToMessage(messageId) {
-            if (!stompClient) return;
+            if (!stompClient || !stompClient.connected) return;
             const payload = {
                 messageId: messageId,
                 senderId: currentUser.id,
@@ -3276,7 +3341,10 @@
             if (!messageToDeleteId) return;
             
             if (type === 'everyone') {
-                if (!stompClient) return;
+                if (!stompClient || !stompClient.connected) {
+                    alert('Connection lost. Cannot delete message for everyone.');
+                    return;
+                }
                 const payload = {
                     messageId: messageToDeleteId,
                     senderId: currentUser.id,
@@ -3300,7 +3368,7 @@
                 return;
             }
 
-            if (stompClient && activeRecipientId) {
+            if (stompClient && stompClient.connected && activeRecipientId) {
                 stompClient.send("/app/chat.typing", {}, JSON.stringify({
                     senderId: currentUser.id,
                     recipientId: activeRecipientId,
@@ -3424,8 +3492,8 @@
                 item.className = 'search-result-item';
                 item.onclick = () => selectUserForChat(u);
 
-                const avatarHtml = u.profilePicture ?
-                    `<img src="${resolveUrl(u.profilePicture)}" style="width:100%; height:100%; object-fit:cover;">` :
+                const avatarHtml = (u.profilePhotoUrl || u.profilePicture) ?
+                    `<img src="${resolveUrl(u.profilePhotoUrl || u.profilePicture)}" style="width:100%; height:100%; object-fit:cover;">` :
                     u.username.charAt(0).toUpperCase();
 
                 item.innerHTML = `
@@ -3478,6 +3546,10 @@
         }
 
         async function performForward(msgId, recipientId) {
+            if (!stompClient || !stompClient.connected) {
+                alert('Connection lost. Message cannot be forwarded.');
+                return;
+            }
             const bubble = document.getElementById(`msg-bubble-${msgId}`);
             if (!bubble) return;
 
@@ -3898,6 +3970,10 @@
 
         function toggleVanishMode() {
             if (!activeConversationId) return;
+            if (!stompClient || !stompClient.connected) {
+                alert('Connection lost. Please wait until connection is re-established.');
+                return;
+            }
             vanishActive = !vanishActive;
 
             const payload = {
@@ -4018,6 +4094,11 @@
                 document.body.setAttribute('data-theme', theme);
             }
             closeThemeModal();
+
+            if (!stompClient || !stompClient.connected) {
+                console.warn('STOMP disconnected. Theme could not be sent to server.');
+                return;
+            }
 
             // Persist theme choice
             const payload = {

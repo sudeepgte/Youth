@@ -213,9 +213,9 @@
             flex: 1;
             text-align: center;
             padding: 14px;
-            background: rgba(255, 255, 255, 0.02);
+            background: var(--card-bg);
             border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--glass-border);
             transition: transform 0.2s;
         }
 
@@ -236,7 +236,7 @@
 
         .tier .t-req {
             font-size: 11px;
-            color: rgba(255, 255, 255, 0.3);
+            color: var(--text-muted);
         }
 
         .c-novice i {
@@ -281,8 +281,8 @@
         }
 
         .achievement-card {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: var(--card-bg);
+            border: 1px solid var(--glass-border);
             border-radius: 20px;
             padding: 24px;
             display: flex;
@@ -294,7 +294,7 @@
         .achievement-card:hover {
             transform: translateY(-5px);
             border-color: rgba(248, 68, 100, 0.4);
-            background: linear-gradient(135deg, rgba(248, 68, 100, 0.1), rgba(255, 255, 255, 0.02));
+            background: linear-gradient(135deg, rgba(248, 68, 100, 0.1), rgba(255, 255, 255, 0.5));
         }
 
         .award-icon {
@@ -323,12 +323,12 @@
             font-size: 15px;
             font-weight: 800;
             margin-bottom: 4px;
-            color: #fff;
+            color: var(--text-primary);
         }
 
         .award-info p {
             font-size: 11px;
-            color: rgba(255, 255, 255, 0.4);
+            color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 0.5px;
             margin-bottom: 8px;
@@ -344,12 +344,12 @@
         }
 
         .empty-achievements {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px dashed rgba(255, 255, 255, 0.1);
+            background: var(--card-bg);
+            border: 1px dashed var(--glass-border);
             border-radius: 20px;
             padding: 40px;
             text-align: center;
-            color: rgba(255, 255, 255, 0.3);
+            color: var(--text-muted);
         }
 
         .empty-achievements i {
@@ -363,36 +363,36 @@
         .lb-table {
             width: 100%;
             border-collapse: collapse;
-            background: rgba(255, 255, 255, 0.02);
+            background: var(--card-bg);
             border-radius: 16px;
             overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--glass-border);
         }
 
         .lb-table th {
             text-align: left;
             padding: 16px 20px;
-            background: rgba(255, 255, 255, 0.02);
+            background: rgba(0, 0, 0, 0.02);
             font-size: 11px;
             text-transform: uppercase;
-            color: rgba(255, 255, 255, 0.4);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--glass-border);
         }
 
         .lb-table td {
             padding: 16px 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
             transition: background 0.2s;
         }
 
         .lb-row:hover td {
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(0, 0, 0, 0.02);
         }
 
         .rank {
             font-weight: 900;
             font-size: 16px;
-            color: rgba(255, 255, 255, 0.4);
+            color: var(--text-muted);
             width: 50px;
             text-align: center;
         }
@@ -432,7 +432,7 @@
 
         .u-flex span {
             font-size: 11px;
-            color: rgba(255, 255, 255, 0.4);
+            color: var(--text-muted);
             font-weight: 500;
         }
 
@@ -458,38 +458,51 @@
         }
 
         .c-platinum {
-            color: #f8fafc;
-            background: rgba(248, 250, 252, 0.1);
-            border-color: rgba(248, 250, 252, 0.2);
-            box-shadow: 0 0 10px rgba(248, 250, 252, 0.1);
+            color: #475569;
+            background: rgba(71, 85, 105, 0.1);
+            border-color: rgba(71, 85, 105, 0.2);
+            box-shadow: 0 0 10px rgba(71, 85, 105, 0.05);
         }
 
         .c-gold {
-            color: #fbbf24;
-            background: rgba(251, 191, 36, 0.1);
-            border-color: rgba(251, 191, 36, 0.2);
-            box-shadow: 0 0 10px rgba(251, 191, 36, 0.1);
-        }
-
-        .c-silver {
-            color: #94a3b8;
-            background: rgba(148, 163, 184, 0.1);
-            border-color: rgba(148, 163, 184, 0.2);
-        }
-
-        .c-bronze {
             color: #d97706;
             background: rgba(217, 119, 6, 0.1);
             border-color: rgba(217, 119, 6, 0.2);
+            box-shadow: 0 0 10px rgba(217, 119, 6, 0.05);
+        }
+
+        .c-silver {
+            color: #475569;
+            background: rgba(71, 85, 105, 0.10);
+            border-color: rgba(71, 85, 105, 0.2);
+        }
+
+        .c-bronze {
+            color: #b45309;
+            background: rgba(180, 83, 9, 0.1);
+            border-color: rgba(180, 83, 9, 0.2);
         }
 
         .c-novice {
-            color: rgba(255, 255, 255, 0.4);
-            background: rgba(255, 255, 255, 0.05);
-            border-color: rgba(255, 255, 255, 0.1);
+            color: var(--text-muted);
+            background: rgba(15, 23, 42, 0.05);
+            border-color: rgba(15, 23, 42, 0.1);
         }
 
         /* ── Responsive ── */
+        @media (max-width: 920px) {
+            .dashboard-container {
+                grid-template-columns: 220px 1fr;
+                gap: 20px;
+            }
+            .content-area {
+                padding: 24px;
+            }
+            .achievements-grid {
+                grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            }
+        }
+
         @media (max-width: 768px) {
             .dashboard-container {
                 grid-template-columns: 1fr;
@@ -514,6 +527,7 @@
             .my-stats-card {
                 flex-direction: row;
                 align-items: center;
+                flex-wrap: wrap;
             }
             .my-stats-card img {
                 width: 50px;
@@ -528,14 +542,14 @@
             }
             .mystery-card {
                 flex-direction: column;
-                align-items: center;
+                align-items: stretch;
                 text-align: center;
             }
             .mystery-icon {
                 width: 50px;
                 height: 50px;
                 font-size: 22px;
-                margin-bottom: -5px;
+                margin: 0 auto 5px;
             }
             .mystery-info h3 {
                 justify-content: center;
@@ -560,9 +574,13 @@
             .lb-table th, .lb-table td {
                 padding: 12px 10px;
             }
+
             .lb-table th:nth-child(3), .lb-table td:nth-child(3) {
-                display: none; /* Hide Tier column on small mobile devices to save space */
+                display: table-cell; /* Show Tier column on mobile */
             }
+
+            /* Tier column is now shown on mobile */
+
             .u-flex {
                 gap: 8px;
             }
@@ -572,6 +590,13 @@
             }
             .u-flex div div {
                 font-size: 13px;
+                max-width: 100px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+            .u-flex span {
+                display: none !important; /* Hide email on mobile to prevent layout stretching */
             }
             .rank {
                 width: 30px;
@@ -607,6 +632,9 @@
                 grid-template-columns: repeat(2, 1fr);
                 gap: 10px;
             }
+            .badges-row .tier:last-child {
+                grid-column: span 2;
+            }
             .tier {
                 padding: 10px;
             }
@@ -615,6 +643,42 @@
             }
             .tier .t-name {
                 font-size: 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .u-flex span {
+                display: none; /* Hide emails on mobile under 480px to prevent layout pushing */
+            }
+            .u-flex div div {
+                max-width: 100px;
+            }
+            .my-stats-card {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                gap: 10px;
+            }
+            .xp-pill {
+                margin: 10px auto 0;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .content-area {
+                padding: 10px 5px;
+            }
+            .lb-header h1 {
+                font-size: 1.3rem;
+            }
+            .badges-row {
+                grid-template-columns: 1fr;
+            }
+            .badges-row .tier:last-child {
+                grid-column: auto;
+            }
+            .u-flex div div {
+                max-width: 80px;
             }
         }
     </style>
@@ -665,6 +729,7 @@
             <a th:href="@{/reels}" class="sidebar-link"><i class="fas fa-film"></i> Reels</a>
             <a th:href="@{/profile}" class="sidebar-link"><i class="fas fa-user"></i> Profile</a>
             <a th:href="@{/games}" class="sidebar-link"><i class="fas fa-gamepad"></i> Games</a>
+            <a th:href="@{/wallet}" class="sidebar-link"><i class="fas fa-wallet"></i> Wallet</a>
             <a href="javascript:void(0)" class="sidebar-link" onclick="openCreateModal()"><i class="fas fa-plus-circle" style="color: var(--accent);"></i> Create Post</a>
             <a th:href="@{/logout}" class="sidebar-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </aside>
@@ -756,51 +821,53 @@
             </div>
 
             <!-- Global Leaderboard Table -->
-            <table class="lb-table">
-                <thead>
-                    <tr>
-                        <th style="text-align:center;">Rank</th>
-                        <th>User</th>
-                        <th>Tier</th>
-                        <th>Experience</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr th:each="player, iter : ${leaderboard}" class="lb-row">
-                        <td class="rank"
-                            th:classappend="${iter.index == 0} ? 'rank-1' : (${iter.index == 1} ? 'rank-2' : (${iter.index == 2} ? 'rank-3' : ''))"
-                            th:text="${iter.index + 1}">
-                        </td>
-                        <td>
-                            <div class="u-flex">
-                                <img th:src="${player.profilePhotoUrl != null ? player.profilePhotoUrl : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100'}"
-                                    alt="user">
-                                <div>
-                                    <div th:text="${player.username}">Name</div>
-                                    <span th:text="${player.email}">email</span>
+            <div style="width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 16px; border: 1px solid var(--glass-border); margin-top: 20px; margin-bottom: 20px;">
+                <table class="lb-table" style="border: none; margin-bottom: 0;">
+                    <thead>
+                        <tr>
+                            <th style="text-align:center;">Rank</th>
+                            <th>User</th>
+                            <th>Tier</th>
+                            <th>Experience</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="player, iter : ${leaderboard}" class="lb-row">
+                            <td class="rank"
+                                th:classappend="${iter.index == 0} ? 'rank-1' : (${iter.index == 1} ? 'rank-2' : (${iter.index == 2} ? 'rank-3' : ''))"
+                                th:text="${iter.index + 1}">
+                            </td>
+                            <td>
+                                <div class="u-flex">
+                                    <img th:src="${player.profilePhotoUrl != null ? player.profilePhotoUrl : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100'}"
+                                        alt="user">
+                                    <div>
+                                        <div th:text="${player.username}">Name</div>
+                                        <span th:text="${player.email}">email</span>
+                                    </div>
                                 </div>
-                            </div>
-                        </td>
-                        <td>
-                            <span class="lvl-badge"
-                                th:classappend="${player.level == 'Platinum'} ? 'c-platinum' : (${player.level == 'Gold'} ? 'c-gold' : (${player.level == 'Silver'} ? 'c-silver' : (${player.level == 'Bronze'} ? 'c-bronze' : 'c-novice')))">
-                                <i class="fas"
-                                    th:classappend="${player.level == 'Platinum'} ? 'fa-gem' : 
-                                                              (${player.level == 'Gold'} ? 'fa-crown' : 
-                                                              (${player.level == 'Silver'} ? 'fa-award' : 
-                                                              (${player.level == 'Bronze'} ? 'fa-medal' : 'fa-user-astronaut')))"></i>
-                                <span th:text="${player.level != null ? player.level : 'Novice'}">Novice</span>
-                            </span>
-                        </td>
-                        <td>
-                            <div class="xp-score">
-                                <i class="fas fa-bolt"></i>
-                                <span th:text="${player.xp != null ? player.xp : 0}"></span>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+                            </td>
+                            <td>
+                                <span class="lvl-badge"
+                                    th:classappend="${player.level == 'Platinum'} ? 'c-platinum' : (${player.level == 'Gold'} ? 'c-gold' : (${player.level == 'Silver'} ? 'c-silver' : (${player.level == 'Bronze'} ? 'c-bronze' : 'c-novice')))">
+                                    <i class="fas"
+                                        th:classappend="${player.level == 'Platinum'} ? 'fa-gem' : 
+                                                                  (${player.level == 'Gold'} ? 'fa-crown' : 
+                                                                  (${player.level == 'Silver'} ? 'fa-award' : 
+                                                                  (${player.level == 'Bronze'} ? 'fa-medal' : 'fa-user-astronaut')))"></i>
+                                    <span th:text="${player.level != null ? player.level : 'Novice'}">Novice</span>
+                                </span>
+                            </td>
+                            <td>
+                                <div class="xp-score">
+                                    <i class="fas fa-bolt"></i>
+                                    <span th:text="${player.xp != null ? player.xp : 0}"></span>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
 
         </main>
     </div>

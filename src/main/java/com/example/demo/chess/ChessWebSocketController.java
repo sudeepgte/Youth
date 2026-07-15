@@ -76,6 +76,15 @@ public class ChessWebSocketController {
         }
     }
 
+    @MessageMapping("/chess/{roomId}/leave")
+    public void leaveGame(@DestinationVariable String roomId) {
+        ChessRoom room = rooms.get(roomId);
+        if (room == null) return;
+        room.status = "opponent_left";
+        messagingTemplate.convertAndSend("/topic/chess/" + roomId, (Object) room.toStateMap());
+        rooms.remove(roomId);
+    }
+
     // WebSocket: Make Move
     @MessageMapping("/chess/{roomId}/move")
     public void makeMove(@DestinationVariable String roomId, MoveMessage msg) {

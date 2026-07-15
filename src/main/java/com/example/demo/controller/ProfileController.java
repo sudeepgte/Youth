@@ -85,6 +85,9 @@ public class ProfileController {
     @Autowired
     private com.example.demo.repository.UserActivityRepository userActivityRepository;
 
+    @Autowired
+    private com.example.demo.config.JwtUtil jwtUtil;
+
 
     @Transactional(readOnly = true)
     @RequestMapping(value = "/{username}", method = RequestMethod.GET)
@@ -140,6 +143,9 @@ public class ProfileController {
         model.addAttribute("userBadge", badge);
         boolean isFollowing = currentUser.getFollowing().contains(targetUser);
         model.addAttribute("isFollowing", isFollowing);
+
+        boolean hasSentFollowRequest = followRequestRepository.findBySenderAndReceiver(currentUser, targetUser).isPresent();
+        model.addAttribute("hasSentFollowRequest", hasSentFollowRequest);
 
         boolean isPrivateAndNotFollowing = targetUser.isPrivateAccount() && !isOwnProfile && !isFollowing;
         model.addAttribute("isPrivateAndNotFollowing", isPrivateAndNotFollowing);
@@ -250,11 +256,13 @@ public class ProfileController {
             @RequestParam(required = false) String dob,
             @RequestParam(required = false) String gender,
             @RequestParam(required = false) String profilePhotoUrl,
+            @RequestParam(required = false) org.springframework.web.multipart.MultipartFile profilePhotoFile,
             @RequestParam(required = false) String aboutMe,
             @RequestParam(required = false) String skills,
             @RequestParam(required = false) String collegeName,
             @RequestParam(required = false, defaultValue = "false") boolean privateAccount,
-            HttpSession session) {
+            HttpSession session,
+            jakarta.servlet.http.HttpServletResponse response) {
         Object sessionUser = session.getAttribute("user");
         if (!(sessionUser instanceof User)) {
             return "redirect:/login";
@@ -264,6 +272,7 @@ public class ProfileController {
         try {
             User dbUser = userRepository.findById(user.getId()).orElse(null);
             if (dbUser != null) {
+                String oldUsername = dbUser.getUsername();
                 dbUser.setUsername(username);
                 dbUser.setEmail(email);
                 if (dob != null && !dob.trim().isEmpty()) {
@@ -276,8 +285,34 @@ public class ProfileController {
                 }
                 if (gender != null)
                     dbUser.setGender(gender);
-                if (profilePhotoUrl != null)
+
+                if (profilePhotoFile != null && !profilePhotoFile.isEmpty()) {
+                    String contentType = profilePhotoFile.getContentType();
+                    if (contentType != null && contentType.startsWith("image")) {
+                        try {
+                            String fileName = java.util.UUID.randomUUID().toString() + "_" + profilePhotoFile.getOriginalFilename();
+                            String uploadDir = "src/main/resources/static/uploads/";
+                            java.nio.file.Path uploadPath = java.nio.file.Paths.get(uploadDir);
+                            if (!java.nio.file.Files.exists(uploadPath)) {
+                                java.nio.file.Files.createDirectories(uploadPath);
+                            }
+                            String targetUploadDir = "target/classes/static/uploads/";
+                            java.nio.file.Path targetUploadPath = java.nio.file.Paths.get(targetUploadDir);
+                            if (!java.nio.file.Files.exists(targetUploadPath)) {
+                                java.nio.file.Files.createDirectories(targetUploadPath);
+                            }
+                            java.nio.file.Files.copy(profilePhotoFile.getInputStream(), uploadPath.resolve(fileName),
+                                    java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                            java.nio.file.Files.copy(profilePhotoFile.getInputStream(), targetUploadPath.resolve(fileName),
+                                    java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                            dbUser.setProfilePhotoUrl("/uploads/" + fileName);
+                        } catch (java.io.IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                } else if (profilePhotoUrl != null) {
                     dbUser.setProfilePhotoUrl(profilePhotoUrl.length() > 255 ? profilePhotoUrl.substring(0, 255) : profilePhotoUrl);
+                }
                 if (aboutMe != null)
                     dbUser.setAboutMe(aboutMe.length() > 1000 ? aboutMe.substring(0, 1000) : aboutMe);
                 if (skills != null)
@@ -286,6 +321,16 @@ public class ProfileController {
                     dbUser.setCollegeName(collegeName.length() > 255 ? collegeName.substring(0, 255) : collegeName);
                 dbUser.setPrivateAccount(privateAccount);
                 userRepository.save(dbUser);
+                
+                // If username is changed, generate a new token and update the client-side cookie
+                if (!oldUsername.equals(username)) {
+                    String newToken = jwtUtil.generateToken(username);
+                    jakarta.servlet.http.Cookie cookie = new jakarta.servlet.http.Cookie("jwtToken", newToken);
+                    cookie.setHttpOnly(true);
+                    cookie.setPath("/");
+                    response.addCookie(cookie);
+                }
+                
                 // Force reload with collections if needed, or just set the basic user
                 session.setAttribute("user", dbUser);
             }
@@ -600,6 +645,36 @@ public class ProfileController {
             session.setAttribute("user", dbCurrentUser);
         }
         return (referer != null) ? "redirect:" + referer : "redirect:/profile";
+    }
+
+    @Transactional
+    @RequestMapping(value = "/{id}/unfollow/ajax", method = RequestMethod.POST)
+    @ResponseBody
+    public org.springframework.http.ResponseEntity<?> unfollowUserAjax(@PathVariable Long id, HttpSession session) {
+        User currentUser = (User) session.getAttribute("user");
+        if (currentUser == null) {
+            return org.springframework.http.ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
+        }
+
+        User dbTargetUser = userRepository.findById(id).orElse(null);
+        User dbCurrentUser = userRepository.findById(currentUser.getId()).orElse(null);
+
+        if (dbCurrentUser != null && dbTargetUser != null) {
+            // Remove from both sides to ensure consistency
+            dbTargetUser.getFollowers().remove(dbCurrentUser);
+            dbCurrentUser.getFollowing().remove(dbTargetUser);
+            userRepository.save(dbTargetUser);
+            userRepository.save(dbCurrentUser);
+
+            // Clean up follow notification
+            notificationRepository.deleteByActorAndUserAndType(dbCurrentUser, dbTargetUser, "FOLLOW_ACCEPT");
+
+            // Refresh session user
+            session.setAttribute("user", dbCurrentUser);
+
+            return org.springframework.http.ResponseEntity.ok(java.util.Map.of("status", "FOLLOW"));
+        }
+        return org.springframework.http.ResponseEntity.badRequest().build();
     }
 
     @RequestMapping(value = "/api/users/search", method = RequestMethod.GET)

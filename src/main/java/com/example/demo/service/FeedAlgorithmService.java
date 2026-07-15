@@ -140,6 +140,11 @@ public class FeedAlgorithmService {
         postRepository.save(post);
     }
 
+    @CacheEvict(value = {"feed", "trending", "recommended"}, allEntries = true)
+    public void evictFeedCache() {
+        // Method to manually trigger eviction of all feed caches
+    }
+
     // ── Internal Scoring ────────────────────────────────────────────────────
 
     private double calcScore(Post p, Set<Long> followingIds, Set<Long> interactedAuthorIds,

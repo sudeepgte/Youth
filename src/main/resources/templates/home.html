@@ -23,25 +23,13 @@
             justify-content: center;
             overflow: hidden;
             margin-top: 0;
-            background: url('https://www.drivetrafficmedia.com/wp-content/uploads/2016/06/social-media-meetup-to-help-seo.jpg') no-repeat center center;
-            background-size: cover;
-            background-color: #0d1e3e; /* Fallback matching the macOS Sequoia tone */
-        }
-
-        .hero-bg-video {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            z-index: 1;
+            background: linear-gradient(135deg, #0b1528 0%, #1e1b4b 50%, #0d1e3e 100%);
         }
 
         .hero-video-overlay {
             position: absolute;
             inset: 0;
-            background: rgba(13, 30, 62, 0.45); /* Premium glassmorphic overlay for contrast */
+            background: rgba(13, 30, 62, 0.25); /* Premium glassmorphic overlay for contrast */
             z-index: 2;
         }
 
@@ -278,10 +266,6 @@
 
     <!-- Hero Section -->
     <section class="hero-lottie-section">
-        <!-- Background Video -->
-        <video autoplay loop muted playsinline class="hero-bg-video">
-            <source src="https://v1.pinimg.com/videos/iht/expMp4/26/fc/31/26fc318f8f7f56ae9a721cb1e58dd988_720w.mp4" type="video/mp4">
-        </video>
         <!-- Dark overlay to keep macOS dock extremely legible and premium -->
         <div class="hero-video-overlay"></div>
 
@@ -330,7 +314,7 @@
         <div class="feature-grid">
             <a class="feature-item reveal" th:href="@{/messages}">
                 <div class="feature-media">
-                    <img src="https://images.openai.com/static-rsc-4/8f5hqzs1t1WYBdG1_Qh2J9hf4rpwZcjV-2dsnlHCqPRQ8CpeB9QCyGYLUWrlalbsvZBcMYNixaLW2VVWxtJtBy9FhP7UPyuxdYr8lb70QnGxC2oYVM9KjX7QKJIDyBzbjfWS4C5we5XcDwd78boKd75QItf8oIagKepnamSDpLQdxWlUGSeypNfPeksqQEMr?purpose=fullsize"
+                    <img src="https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?q=80&w=800&auto=format&fit=crop"
                         alt="Real-time chat">
                 </div>
                 <div class="feature-text">
@@ -345,7 +329,7 @@
             </a>
             <a class="feature-item reveal" th:href="@{/dashboard}">
                 <div class="feature-media">
-                    <img src="https://images.openai.com/static-rsc-4/I2yVlMtcIKk4BAdQBKnkmCJA7yxYhCYrHQDtMyN4d_00YE_Y8iOpmV0e6U1R_OcMcj5LGKASruMRDgrU08RQosTJamwcjVFPlYTilt3HdW0DHphHwOtCqZkkrkJCgpjRpg6TM9utFk_FkM6t3k7stdwhXXQhEBGuINrrGCNF5igWAXCqv_2zAW3iOgK66lLC?purpose=fullsize"
+                    <img src="https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?q=80&w=800&auto=format&fit=crop"
                         alt="Discovery Feed">
                 </div>
                 <div class="feature-text">
@@ -360,7 +344,7 @@
             </a>
             <a class="feature-item reveal" th:href="@{/reels}">
                 <div class="feature-media">
-                    <img src="https://images.openai.com/static-rsc-4/9AJw0q6urbrbCbdwHdnLA3z9FSezNyKiYI8Bn8e9y1pBjquKHxfTgILbCGcizmMG7mv3PenxlbZcLxOEeb0a655_E6DK_k39UGJiWNXjdUNgzkdKYQtVJao8kkbyuFFQ3QZoikkwwpMNT2_U35MCUPab9akPduI56kgPglW2t-PmlXf7Kv9D_t18fUxw67TH?purpose=fullsize"
+                    <img src="https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?q=80&w=800&auto=format&fit=crop"
                         alt="Reels">
                 </div>
                 <div class="feature-text">
@@ -375,7 +359,7 @@
             </a>
             <a class="feature-item reveal" th:href="@{/events}">
                 <div class="feature-media">
-                    <img src="https://images.openai.com/static-rsc-4/HOqgBWLRRLbZCig4wBt5a1cmHTovXHqkkC665h4a6O804b4vYiZIH0O38tx6spX_1h1hQk7rn3rSJ7_1-ah8ZOU-ndUWS0nu9BBcgwwHGHsXGqeeExRmdgYs2bz6roIle9zalkDc_xCY3tpuRTKxKgHkDtBUBU8R9wK1WggwShTfwwaNxWRyyUIb9-npXR9z?purpose=fullsize"
+                    <img src="https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=800&auto=format&fit=crop"
                         alt="Local events">
                 </div>
                 <div class="feature-text">
@@ -392,7 +376,7 @@
             <!-- New Features -->
             <a class="feature-item reveal" th:href="@{/achievements}">
                 <div class="feature-media">
-                    <img src="https://images.openai.com/static-rsc-4/Tba901diyp0WM3Wg2kgGwyzRwgHfQ3kMp4NvdS1HyXG_MaggLsi7VEu5rJ0-AfNJWGJqkR_o60C-F4IAUbrItcQdkC2HiIHp-GCJ7TOFodjlO-hCoDBXlvm9FwCkrr_Y992uLa1O4jX8306mpl3CaUMScpaKbGiYBZOyn6b5wLr8qb2GMjOCBiP14c3pcQr0?purpose=fullsize"
+                    <img src="https://images.unsplash.com/photo-1578269174936-2709b5a5e06e?q=80&w=800&auto=format&fit=crop"
                         alt="Elite badges">
                 </div>
                 <div class="feature-text">
@@ -408,7 +392,7 @@
             </a>
             <a class="feature-item reveal" th:href="@{/games}">
                 <div class="feature-media">
-                    <img src="https://images.openai.com/static-rsc-4/OFPJGQFNps-xfB2336F_aEY-VXXAEFs8fTZ2SpniKDuhhHUUMA5BIWHYVxXL1PiDpANA8Ro7WeTrvkHyoeNPtMbOjyzOzWqZ0_ySf6PPWEEKI-NddJw5euRuwfVx1RZmJn4HzUUEAr8IOkfVgY-sWWZriXRtC7O6_NGa9J1bjgzTJkLJZl2irr6WNwSznGLt?purpose=fullsize"
+                    <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=800&auto=format&fit=crop"
                         alt="Global arenas">
                 </div>
                 <div class="feature-text">
@@ -524,7 +508,7 @@
             </a>
             <a th:href="@{/events}" class="category-card cat-yellow">
                 <div class="category-icon">
-                    <img src="https://images.openai.com/static-rsc-4/7vJOijI2a89kUbkkKGPE1civqgvqnF-D_w13F4AHwlfKmMTxi-A_i4ejlU66hYVhgT1juw-DIWDZ3X3xgaBx-iGqApFRFkBKauFlli5PpyHYPDuAJjbH2xIPkzbFki3iYukgMsVDBSE5RXf9I1SzoD39VDXjb20YPoYhQ4B0Fp_joULvx53arGpUO164Ft6e?purpose=fullsize"
+                    <img src="https://images.unsplash.com/photo-1585647347483-22b66260dfff?q=80&w=800&auto=format&fit=crop"
                         alt="Comedy category">
                 </div>
                 <div class="category-info">
@@ -656,7 +640,7 @@
             </div>
             <div class="media-side">
                 <div style="border-radius: 30px; overflow: hidden; box-shadow: var(--shadow-premium); border: 1px solid rgba(0,0,0,0.04);">
-                    <img src="https://images.openai.com/static-rsc-4/QsTjw6zTxJImq5FwCkYrx7APzbFBLizzIdysGwAuR8F8ku5xuaOawqLZpZfox0gO6MK4qc_Ts7L3kWrnEk5-2MkIdL5i5n_gqDZPaJK8OoLSl_5yFzFCOhKrP5ztM3ROpx7O5TJ5jknmYvbBsnL2etTI4eCyDQLePlvOkWv4A8S7XK8I52uQGIotSlS-RadM?purpose=fullsize" 
+                    <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=800&auto=format&fit=crop" 
                          alt="About Zentrix" style="width: 100%; height: 400px; object-fit: cover;">
                 </div>
             </div>
@@ -867,6 +851,366 @@
                 }
             });
         });
+    </script>
+
+    <!-- ==================== LIVE EVENT HEATMAP ==================== -->
+    <section class="container" id="event-heatmap" style="padding-bottom: 80px;">
+        <style>
+            .heatmap-section-header { margin-bottom: 32px; }
+            .heatmap-stats-grid {
+                display: grid;
+                grid-template-columns: repeat(5, 1fr);
+                gap: 16px;
+                margin-bottom: 24px;
+            }
+            .heatmap-stat-card {
+                background: #fff;
+                border: 1px solid rgba(0,0,0,0.06);
+                border-radius: 20px;
+                padding: 22px 18px;
+                text-align: center;
+                box-shadow: 0 8px 24px rgba(0,0,0,0.04);
+                transition: all 0.3s ease;
+                position: relative;
+                overflow: hidden;
+            }
+            .heatmap-stat-card::before {
+                content: '';
+                position: absolute;
+                top: 0; left: 0; right: 0;
+                height: 4px;
+                border-radius: 20px 20px 0 0;
+            }
+            .heatmap-stat-card:nth-child(1)::before { background: linear-gradient(90deg, #ef4444, #f97316); }
+            .heatmap-stat-card:nth-child(2)::before { background: linear-gradient(90deg, #3b82f6, #22d3ee); }
+            .heatmap-stat-card:nth-child(3)::before { background: linear-gradient(90deg, #8b5cf6, #a78bfa); }
+            .heatmap-stat-card:nth-child(4)::before { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+            .heatmap-stat-card:nth-child(5)::before { background: linear-gradient(90deg, #10b981, #34d399); }
+            .heatmap-stat-card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(0,0,0,0.08); }
+            .heatmap-stat-icon {
+                width: 48px; height: 48px;
+                border-radius: 14px;
+                display: flex; align-items: center; justify-content: center;
+                margin: 0 auto 12px;
+                font-size: 20px;
+            }
+            .heatmap-stat-card:nth-child(1) .heatmap-stat-icon { background: rgba(239,68,68,0.1); color: #ef4444; }
+            .heatmap-stat-card:nth-child(2) .heatmap-stat-icon { background: rgba(59,130,246,0.1); color: #3b82f6; }
+            .heatmap-stat-card:nth-child(3) .heatmap-stat-icon { background: rgba(139,92,246,0.1); color: #8b5cf6; }
+            .heatmap-stat-card:nth-child(4) .heatmap-stat-icon { background: rgba(245,158,11,0.1); color: #f59e0b; }
+            .heatmap-stat-card:nth-child(5) .heatmap-stat-icon { background: rgba(16,185,129,0.1); color: #10b981; }
+            .heatmap-stat-value { font-size: 32px; font-weight: 900; color: #0f172a; line-height: 1; }
+            .heatmap-stat-label { font-size: 13px; font-weight: 700; color: #64748b; margin-top: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+            .heatmap-filters {
+                display: flex; flex-wrap: wrap; gap: 10px;
+                margin-bottom: 20px;
+            }
+            .heatmap-filter-btn {
+                padding: 10px 22px;
+                border-radius: 12px;
+                border: 1.5px solid rgba(59,130,246,0.15);
+                background: #fff;
+                color: #334155;
+                font-size: 13px;
+                font-weight: 700;
+                cursor: pointer;
+                transition: all 0.25s ease;
+                white-space: nowrap;
+            }
+            .heatmap-filter-btn:hover { border-color: #3b82f6; color: #3b82f6; background: rgba(59,130,246,0.04); }
+            .heatmap-filter-btn.active {
+                background: linear-gradient(135deg, #3b82f6, #22d3ee);
+                color: #fff;
+                border-color: transparent;
+                box-shadow: 0 4px 14px rgba(59,130,246,0.3);
+            }
+
+            #heatmapMapContainer {
+                width: 100%;
+                height: 520px;
+                border-radius: 24px;
+                overflow: hidden;
+                border: 1px solid rgba(0,0,0,0.06);
+                box-shadow: 0 12px 40px rgba(0,0,0,0.06);
+                position: relative;
+                z-index: 1;
+            }
+            .heatmap-loading {
+                position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+                background: rgba(255,255,255,0.9);
+                display: flex; align-items: center; justify-content: center;
+                z-index: 1000;
+                border-radius: 24px;
+                font-weight: 800; color: #64748b; font-size: 15px;
+            }
+            .heatmap-loading i { margin-right: 10px; animation: spin 1s linear infinite; }
+            @keyframes spin { to { transform: rotate(360deg); } }
+
+            .heatmap-no-data {
+                text-align: center; padding: 60px 20px;
+                color: #94a3b8; font-weight: 600;
+            }
+            .heatmap-no-data i { font-size: 48px; margin-bottom: 16px; display: block; opacity: 0.3; }
+
+            .leaflet-popup-content-wrapper {
+                border-radius: 16px !important;
+                box-shadow: 0 12px 40px rgba(0,0,0,0.12) !important;
+                padding: 0 !important;
+            }
+            .leaflet-popup-content { margin: 0 !important; width: 260px !important; }
+            .heatmap-popup { padding: 18px; font-family: 'Outfit', sans-serif; }
+            .heatmap-popup h4 { font-size: 16px; font-weight: 800; color: #0f172a; margin: 0 0 12px 0; display: flex; align-items: center; gap: 8px; }
+            .heatmap-popup h4 i { color: #3b82f6; font-size: 14px; }
+            .heatmap-popup-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid rgba(0,0,0,0.04); font-size: 13px; }
+            .heatmap-popup-row:last-child { border-bottom: none; }
+            .heatmap-popup-row span:first-child { color: #64748b; font-weight: 600; }
+            .heatmap-popup-row span:last-child { font-weight: 800; color: #0f172a; }
+            .heatmap-popup-live { color: #ef4444 !important; }
+
+            @media (max-width: 1024px) {
+                .heatmap-stats-grid { grid-template-columns: repeat(3, 1fr); }
+            }
+            @media (max-width: 768px) {
+                .heatmap-stats-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+                .heatmap-stat-card { padding: 16px 12px; }
+                .heatmap-stat-value { font-size: 26px; }
+                .heatmap-stat-icon { width: 40px; height: 40px; font-size: 16px; }
+                #heatmapMapContainer { height: 400px; border-radius: 18px; }
+                .heatmap-filters { gap: 8px; }
+                .heatmap-filter-btn { padding: 8px 16px; font-size: 12px; }
+            }
+            @media (max-width: 480px) {
+                .heatmap-stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+                .heatmap-stat-card { padding: 14px 10px; border-radius: 16px; }
+                .heatmap-stat-value { font-size: 22px; }
+                .heatmap-stat-label { font-size: 11px; }
+                .heatmap-stat-icon { width: 36px; height: 36px; font-size: 14px; border-radius: 10px; margin-bottom: 8px; }
+                #heatmapMapContainer { height: 320px; border-radius: 16px; }
+                .heatmap-filter-btn { padding: 7px 14px; font-size: 11px; border-radius: 10px; }
+            }
+        </style>
+
+        <!-- Leaflet CSS -->
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+        <div class="heatmap-section-header">
+            <div class="pill pill-blue" style="margin-bottom: 16px;"><i class="fa-solid fa-earth-americas"></i> Live Heatmap</div>
+            <h2 style="font-size: 32px; font-weight: 900;">Event <span style="background: var(--gradient-1); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Heat Map</span></h2>
+            <p style="color: var(--text-secondary); margin-top: 4px;">See where events are happening across all locations in real time.</p>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="heatmap-stats-grid" id="heatmapStatsGrid">
+            <div class="heatmap-stat-card">
+                <div class="heatmap-stat-icon"><i class="fa-solid fa-bolt"></i></div>
+                <div class="heatmap-stat-value" id="hmStatLive">0</div>
+                <div class="heatmap-stat-label">Live Events</div>
+            </div>
+            <div class="heatmap-stat-card">
+                <div class="heatmap-stat-icon"><i class="fa-solid fa-calendar-day"></i></div>
+                <div class="heatmap-stat-value" id="hmStatToday">0</div>
+                <div class="heatmap-stat-label">Today's Events</div>
+            </div>
+            <div class="heatmap-stat-card">
+                <div class="heatmap-stat-icon"><i class="fa-solid fa-forward"></i></div>
+                <div class="heatmap-stat-value" id="hmStatTomorrow">0</div>
+                <div class="heatmap-stat-label">Tomorrow's Events</div>
+            </div>
+            <div class="heatmap-stat-card">
+                <div class="heatmap-stat-icon"><i class="fa-solid fa-calendar-week"></i></div>
+                <div class="heatmap-stat-value" id="hmStatWeek">0</div>
+                <div class="heatmap-stat-label">This Week</div>
+            </div>
+            <div class="heatmap-stat-card">
+                <div class="heatmap-stat-icon"><i class="fa-solid fa-calendar"></i></div>
+                <div class="heatmap-stat-value" id="hmStatMonth">0</div>
+                <div class="heatmap-stat-label">This Month</div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="heatmap-filters" id="heatmapFilters">
+            <button class="heatmap-filter-btn active" data-filter="all">All</button>
+            <button class="heatmap-filter-btn" data-filter="live"><i class="fa-solid fa-circle" style="color:#ef4444;font-size:8px;margin-right:4px;"></i> Live Now</button>
+            <button class="heatmap-filter-btn" data-filter="today">Today</button>
+            <button class="heatmap-filter-btn" data-filter="tomorrow">Tomorrow</button>
+            <button class="heatmap-filter-btn" data-filter="week">This Week</button>
+            <button class="heatmap-filter-btn" data-filter="month">This Month</button>
+        </div>
+
+        <!-- Map Container -->
+        <div style="position: relative;">
+            <div id="heatmapMapContainer"></div>
+            <div class="heatmap-loading" id="heatmapLoading">
+                <i class="fa-solid fa-spinner"></i> Loading heatmap data...
+            </div>
+        </div>
+    </section>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+
+    <script>
+    (function() {
+        var heatmapMap = null;
+        var heatLayer = null;
+        var markerGroup = null;
+        var currentFilter = 'all';
+        var contextPath = document.querySelector('meta[name="ctx"]')
+            ? document.querySelector('meta[name="ctx"]').content
+            : (window.location.pathname.substring(0, window.location.pathname.indexOf('/home')) || '');
+
+        function getApiBase() {
+            return contextPath + '/api/heatmap/events';
+        }
+
+        function initMap() {
+            if (heatmapMap) return;
+            heatmapMap = L.map('heatmapMapContainer', {
+                scrollWheelZoom: false,
+                zoomControl: true,
+                attributionControl: false
+            }).setView([20.5937, 78.9629], 5); // Default: India center
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 18
+            }).addTo(heatmapMap);
+
+            markerGroup = L.layerGroup().addTo(heatmapMap);
+
+            // Fix map rendering in hidden/scrolled containers
+            setTimeout(function() { heatmapMap.invalidateSize(); }, 300);
+        }
+
+        function loadHeatmapData(filter) {
+            var loadingEl = document.getElementById('heatmapLoading');
+            if (loadingEl) loadingEl.style.display = 'flex';
+
+            fetch(getApiBase() + '?filter=' + encodeURIComponent(filter))
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    updateStats(data.stats);
+                    updateMap(data);
+                    if (loadingEl) loadingEl.style.display = 'none';
+                })
+                .catch(function(err) {
+                    console.error('Heatmap fetch error:', err);
+                    if (loadingEl) loadingEl.style.display = 'none';
+                });
+        }
+
+        function updateStats(stats) {
+            var el;
+            el = document.getElementById('hmStatLive'); if (el) el.textContent = stats.live || 0;
+            el = document.getElementById('hmStatToday'); if (el) el.textContent = stats.today || 0;
+            el = document.getElementById('hmStatTomorrow'); if (el) el.textContent = stats.tomorrow || 0;
+            el = document.getElementById('hmStatWeek'); if (el) el.textContent = stats.week || 0;
+            el = document.getElementById('hmStatMonth'); if (el) el.textContent = stats.month || 0;
+        }
+
+        function updateMap(data) {
+            if (!heatmapMap) return;
+
+            // Clear existing
+            if (heatLayer) {
+                heatmapMap.removeLayer(heatLayer);
+                heatLayer = null;
+            }
+            markerGroup.clearLayers();
+
+            if (!data.heatPoints || data.heatPoints.length === 0) {
+                return;
+            }
+
+            // Add heat layer with green-yellow-orange-red gradient
+            heatLayer = L.heatLayer(data.heatPoints, {
+                radius: 35,
+                blur: 25,
+                maxZoom: 12,
+                max: Math.max.apply(null, data.heatPoints.map(function(p) { return p[2]; })) || 1,
+                gradient: {
+                    0.2: '#22c55e',
+                    0.4: '#eab308',
+                    0.65: '#f97316',
+                    1.0: '#ef4444'
+                }
+            }).addTo(heatmapMap);
+
+            // Add markers
+            var bounds = [];
+            data.markers.forEach(function(m) {
+                bounds.push([m.lat, m.lng]);
+
+                var icon = L.divIcon({
+                    className: 'heatmap-custom-marker',
+                    html: '<div style="width:36px;height:36px;background:linear-gradient(135deg,#3b82f6,#22d3ee);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:900;box-shadow:0 4px 14px rgba(59,130,246,0.4);border:3px solid #fff;">' + m.total + '</div>',
+                    iconSize: [36, 36],
+                    iconAnchor: [18, 18]
+                });
+
+                var popupHtml = '<div class="heatmap-popup" style="padding-bottom: 5px;">' +
+                    '<h4 style="margin: 0;"><i class="fa-solid fa-location-dot"></i> ' + escapeHtml(m.location) + '</h4>' +
+                    '</div>';
+
+                var marker = L.marker([m.lat, m.lng], { icon: icon })
+                    .bindPopup(popupHtml, { maxWidth: 280, closeButton: true })
+                    .addTo(markerGroup);
+
+                marker.on('click', function() {
+                    heatmapMap.setView([m.lat, m.lng], 17, { animate: true, duration: 0.5 });
+                });
+            });
+
+            // Fit bounds if markers exist
+            if (bounds.length > 0) {
+                if (bounds.length === 1) {
+                    heatmapMap.setView(bounds[0], 12);
+                } else {
+                    heatmapMap.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 });
+                }
+            }
+        }
+
+        function escapeHtml(text) {
+            var div = document.createElement('div');
+            div.appendChild(document.createTextNode(text));
+            return div.innerHTML;
+        }
+
+        // Filter button handlers
+        var filtersContainer = document.getElementById('heatmapFilters');
+        if (filtersContainer) {
+            filtersContainer.addEventListener('click', function(e) {
+                var btn = e.target.closest('.heatmap-filter-btn');
+                if (!btn) return;
+                filtersContainer.querySelectorAll('.heatmap-filter-btn').forEach(function(b) { b.classList.remove('active'); });
+                btn.classList.add('active');
+                currentFilter = btn.getAttribute('data-filter');
+                loadHeatmapData(currentFilter);
+            });
+        }
+
+        // IntersectionObserver: lazy-init map when section becomes visible
+        var section = document.getElementById('event-heatmap');
+        if (section && 'IntersectionObserver' in window) {
+            var observer = new IntersectionObserver(function(entries) {
+                entries.forEach(function(entry) {
+                    if (entry.isIntersecting) {
+                        initMap();
+                        loadHeatmapData(currentFilter);
+                        observer.unobserve(section);
+                    }
+                });
+            }, { rootMargin: '200px' });
+            observer.observe(section);
+        } else if (section) {
+            // Fallback
+            initMap();
+            loadHeatmapData(currentFilter);
+        }
+    })();
     </script>
 
     <!-- Footer -->

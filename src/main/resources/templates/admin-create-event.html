@@ -806,6 +806,26 @@
                 display: block;
             }
         }
+
+        @media (max-width: 576px) {
+            .dashboard-navbar {
+                padding: 0 12px !important;
+                gap: 8px !important;
+            }
+            .dashboard-logo {
+                font-size: 18px !important;
+            }
+            .dashboard-nav-links {
+                gap: 8px !important;
+            }
+            .dashboard-nav-links a.btn {
+                padding: 6px 12px !important;
+                font-size: 12px !important;
+            }
+            .dashboard-nav-links a.btn i {
+                display: none; /* Hide icons in navbar buttons on small screens to save space */
+            }
+        }
     </style>
 </head>
 
@@ -821,10 +841,10 @@
 
         <div class="dashboard-spacer"></div>
         <div class="dashboard-nav-links">
-            <a th:href="@{/dashboard}" class="btn btn-outline" style="border: 1px solid rgba(2, 132, 199, 0.4); color: #0284c7 !important; border-radius: 10px; padding: 8px 16px; text-decoration: none; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
+            <a th:href="@{/dashboard}" class="btn btn-outline" style="border: 1px solid rgba(2, 132, 199, 0.4); color: #0284c7 !important; border-radius: 10px; padding: 8px 16px; text-decoration: none; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; width: max-content;">
                 <i class="fas fa-arrow-left"></i> App
             </a>
-            <a th:href="@{/logout}" class="btn btn-primary" style="background: linear-gradient(135deg, #f84464, #ff6b9d); color: #fff !important; border-radius: 10px; padding: 8px 18px; text-decoration: none; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">Logout</a>
+            <a th:href="@{/logout}" class="btn btn-primary" style="background: linear-gradient(135deg, #f84464, #ff6b9d); color: #fff !important; border-radius: 10px; padding: 8px 18px; text-decoration: none; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; width: max-content;">Logout</a>
         </div>
     </nav>
 
@@ -892,7 +912,6 @@
                             <input type="radio" name="category" value="Gaming"
                                 th:checked="${event.category == 'Gaming'}" required>
                             <div class="cat-label">
-                                <span class="cat-icon">🎮</span>
                                 <span class="cat-name">Gaming</span>
                             </div>
                         </label>
@@ -900,14 +919,12 @@
                             <input type="radio" name="category" value="Talent"
                                 th:checked="${event.category == 'Talent'}">
                             <div class="cat-label">
-                                <span class="cat-icon">🎤</span>
                                 <span class="cat-name">Talent</span>
                             </div>
                         </label>
                         <label class="cat-btn">
                             <input type="radio" name="category" value="Tech" th:checked="${event.category == 'Tech'}">
                             <div class="cat-label">
-                                <span class="cat-icon">💻</span>
                                 <span class="cat-name">Tech</span>
                             </div>
                         </label>
@@ -915,7 +932,6 @@
                             <input type="radio" name="category" value="Sports"
                                 th:checked="${event.category == 'Sports'}">
                             <div class="cat-label">
-                                <span class="cat-icon">⚽</span>
                                 <span class="cat-name">Sports</span>
                             </div>
                         </label>
@@ -923,7 +939,6 @@
                             <input type="radio" name="category" value="Cultural"
                                 th:checked="${event.category == 'Cultural'}">
                             <div class="cat-label">
-                                <span class="cat-icon">🎭</span>
                                 <span class="cat-name">Cultural</span>
                             </div>
                         </label>
@@ -931,7 +946,6 @@
                             <input type="radio" name="category" value="Music"
                                 th:checked="${event.category == 'Music'}">
                             <div class="cat-label">
-                                <span class="cat-icon">🎵</span>
                                 <span class="cat-name">Music</span>
                             </div>
                         </label>
@@ -939,7 +953,6 @@
                             <input type="radio" name="category" value="Art"
                                 th:checked="${event.category == 'Art'}">
                             <div class="cat-label">
-                                <span class="cat-icon">🎨</span>
                                 <span class="cat-name">Art</span>
                             </div>
                         </label>
@@ -947,7 +960,6 @@
                             <input type="radio" name="category" value="House Party"
                                 th:checked="${event.category == 'House Party'}">
                             <div class="cat-label">
-                                <span class="cat-icon">💃</span>
                                 <span class="cat-name">House Party</span>
                             </div>
                         </label>
@@ -955,7 +967,6 @@
                             <input type="radio" name="category" value="Adventure"
                                 th:checked="${event.category == 'Adventure'}">
                             <div class="cat-label">
-                                <span class="cat-icon">⛰️</span>
                                 <span class="cat-name">Adventure</span>
                             </div>
                         </label>
@@ -963,7 +974,6 @@
                             <input type="radio" name="category" value="Trekking"
                                 th:checked="${event.category == 'Trekking'}">
                             <div class="cat-label">
-                                <span class="cat-icon">🥾</span>
                                 <span class="cat-name">Trekking</span>
                             </div>
                         </label>
@@ -971,7 +981,6 @@
                             <input type="radio" name="category" value="Bike Riding"
                                 th:checked="${event.category == 'Bike Riding'}">
                             <div class="cat-label">
-                                <span class="cat-icon">🏍️</span>
                                 <span class="cat-name">Bike Riding</span>
                             </div>
                         </label>
@@ -1570,9 +1579,16 @@
                         <div class="field-group">
                             <label>Venue / Location <span class="required">*</span></label>
                             <input type="text" name="venue" id="venueInput" th:value="${event.venue}"
-                                placeholder="e.g. Main Hall, Block A" required>
+                                placeholder="e.g. BTM Layout 1st Stage, Bengaluru" required onblur="geocodeVenue()">
+                            <button type="button" class="btn btn-outline" style="margin-top: 12px; width: 100%; border: 1px dashed #64748b; color: #475569; border-radius: 8px; padding: 10px;" onclick="useCurrentLocation()">
+                                <i class="fas fa-map-marker-alt"></i> Use My Current Location
+                            </button>
+                            <div id="locationStatus" style="font-size: 11px; color: #10b981; margin-top: 5px; display: none;"><i class="fas fa-check-circle"></i> Location detected automatically</div>
                         </div>
                     </div>
+                    
+                    <input type="hidden" name="latitude" id="latitudeInput" th:value="${event.latitude}">
+                    <input type="hidden" name="longitude" id="longitudeInput" th:value="${event.longitude}">
                 </div>
 
                 <!-- SECTION 4: Event Mode -->
@@ -1627,8 +1643,8 @@
                             </div>
                             <div id="paidAmountField">
                                 <input type="number" name="price" id="priceInput"
-                                    th:value="${event.price != null and !event.price.startsWith('F') ? event.price.replace('&#8377;','') : ''}"
-                                    placeholder="Enter amount in &#8377;" min="1" onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();">
+                                    th:value="${event.price != null and !event.price.startsWith('F') ? event.price.replace('₹','') : ''}"
+                                    placeholder="Enter amount in ₹" min="1" onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();">
                             </div>
                         </div>
 
@@ -1675,12 +1691,12 @@
                                     placeholder="e.g. 10" min="0" onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();">
                             </div>
                             <div class="field-group">
-                                <label>VIP Seat Price (&#8377;)</label>
+                                <label>VIP Seat Price (₹)</label>
                                 <input type="number" name="vipPrice" th:value="${event.vipPrice}" placeholder="500"
                                     min="0" onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();">
                             </div>
                             <div class="field-group">
-                                <label>Regular Seat Price (&#8377;)</label>
+                                <label>Regular Seat Price (₹)</label>
                                 <input type="number" name="regularPrice" th:value="${event.regularPrice}"
                                     placeholder="200" min="0" onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();">
                             </div>
@@ -1793,7 +1809,7 @@
                 <!-- SECTION 5.5: Secret Rewards -->
                 <div class="form-card">
                     <div class="section-label">
-                        <i class="fas fa-gift"></i> 🎁 Secret Reward Partner (Optional)
+                        <i class="fas fa-gift"></i> Secret Reward Partner (Optional)
                     </div>
                     
                     <div class="field-group">
@@ -1861,7 +1877,7 @@
     </div>
 
     <script>
-        // ── Paid fee toggle ──
+        // â”€â”€ Paid fee toggle â”€â”€
         function togglePaidField(radio) {
             const field = document.getElementById('paidAmountField');
             const input = document.getElementById('priceInput');
@@ -2087,7 +2103,7 @@
             }
         }
 
-        // ── Poster file live preview ──
+        // â”€â”€ Poster file live preview â”€â”€
         function previewImageFile(input) {
             const preview = document.getElementById('posterPreview');
             const img = document.getElementById('posterImg');
@@ -2104,7 +2120,7 @@
             }
         }
 
-        // ── Form validation ──
+        // â”€â”€ Form validation â”€â”€
         function validateForm() {
             const cat = document.querySelector('input[name="category"]:checked');
             if (!cat) { alert('Please select an event category.'); return false; }
@@ -2132,7 +2148,7 @@
         }
 
 
-        // ── Publish button animation ──
+        // â”€â”€ Publish button animation â”€â”€
         document.querySelector('form').addEventListener('submit', function () {
             if (!validateForm()) return false;
             const btn = document.getElementById('publishBtn');
@@ -2273,6 +2289,82 @@
             if (item) item.remove();
         }
 
+        async function geocodeVenue() {
+            const venue = document.getElementById('venueInput').value;
+            if (!venue) return;
+            const statusEl = document.getElementById('locationStatus');
+            statusEl.style.display = 'block';
+            statusEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Finding location...';
+            statusEl.style.color = '#ef4444'; // Red until confirmed
+
+            let parts = venue.split(',').map(p => p.trim()).filter(p => p.length > 0);
+            
+            while(parts.length > 0) {
+                let query = parts.join(', ');
+                try {
+                    let r = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(query));
+                    let data = await r.json();
+                    if (data && data.length > 0) {
+                        document.getElementById('latitudeInput').value = data[0].lat;
+                        document.getElementById('longitudeInput').value = data[0].lon;
+                        statusEl.innerHTML = '<i class="fas fa-check-circle"></i> Coordinates grabbed: ' + query;
+                        statusEl.style.color = '#10b981';
+                        return; // Successfully found and mapped
+                    }
+                } catch (e) {
+                    console.error('Geocoding error:', e);
+                }
+                // Fallback: Drop the first (most specific) part and try again
+                parts.shift();
+            }
+            
+            // If completely unfound
+            statusEl.innerHTML = '<i class="fas fa-exclamation-circle"></i> Location not found. Try simplifying it.';
+            statusEl.style.color = '#f59e0b';
+        }
+
+        function useCurrentLocation() {
+            if ("geolocation" in navigator) {
+                const btn = document.querySelector('button[onclick="useCurrentLocation()"]');
+                const orig = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Locating...';
+                
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    document.getElementById('latitudeInput').value = lat;
+                    document.getElementById('longitudeInput').value = lon;
+                    
+                    fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lon)
+                        .then(r => r.json())
+                        .then(data => {
+                            if (data && data.display_name) {
+                                let vInput = document.getElementById('venueInput');
+                                if (!vInput.value.trim()) {
+                                    vInput.value = data.display_name;
+                                }
+                            }
+                            btn.innerHTML = orig;
+                            const statusEl = document.getElementById('locationStatus');
+                            statusEl.style.display = 'block';
+                            statusEl.innerHTML = '<i class="fas fa-check-circle"></i> Precise current location acquired';
+                            statusEl.style.color = '#10b981';
+                        })
+                        .catch(e => {
+                            btn.innerHTML = orig;
+                            let vInput = document.getElementById('venueInput');
+                            if (!vInput.value.trim()) {
+                                vInput.value = "Current Location";
+                            }
+                        });
+                }, function(error) {
+                    btn.innerHTML = orig;
+                    alert("Please allow location access to use this feature.");
+                });
+            } else {
+                alert("Geolocation is not supported by your browser.");
+            }
+        }
     </script>
 </body>
 

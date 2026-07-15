@@ -23,6 +23,9 @@ public class AuthInterceptor implements HandlerInterceptor {
     @Autowired
     private TokenBlacklist tokenBlacklist;
 
+    @Autowired
+    private ActiveLoginRegistry activeLoginRegistry;
+
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         String path = request.getRequestURI().substring(request.getContextPath().length());
@@ -31,8 +34,8 @@ public class AuthInterceptor implements HandlerInterceptor {
         }
         
         // Skip public paths and game/socket endpoints
-        if (path.equals("/") || path.equals("/home") || path.equals("/login") || 
-            path.equals("/register") || path.equals("/about") || path.equals("/about-us") || path.equals("/careers") || path.equals("/privacy") || path.equals("/privacy-policy") || path.equals("/terms") || path.equals("/terms-of-service") || path.equals("/faq") || path.equals("/featured-events") || path.equals("/categories") || path.equals("/support") || path.equals("/contact") || path.equals("/debug-users") ||
+        if (path.equals("/") || path.equals("/home") || path.equals("/login") || path.equals("/forgot-password") || 
+            path.equals("/register") || path.equals("/about") || path.equals("/about-us") || path.equals("/careers") || path.equals("/privacy") || path.equals("/privacy-policy") || path.equals("/terms") || path.equals("/terms-of-service") || path.equals("/faq") || path.equals("/featured-events") || path.equals("/categories") || path.equals("/support") || path.equals("/contact") ||
             // Allow unauthenticated multiplayer room creation/join
             path.startsWith("/api/ludo/") ||
             path.startsWith("/api/snake/") ||
@@ -99,6 +102,25 @@ public class AuthInterceptor implements HandlerInterceptor {
                     User user = userRepository.findByUsername(username);
                     debugLog.append("user found = ").append(user != null).append("\n");
                     if (user != null && jwtUtil.validateToken(token, username)) {
+                        if (activeLoginRegistry.isUserAlreadyLoggedIn(username, token)) {
+                            debugLog.append("user is already logged in on another device!\n");
+                            writeDebug(debugLog.toString());
+                            jakarta.servlet.http.Cookie badCookie = new jakarta.servlet.http.Cookie("jwtToken", null);
+                            badCookie.setPath("/");
+                            badCookie.setHttpOnly(true);
+                            badCookie.setMaxAge(0);
+                            response.addCookie(badCookie);
+                            
+                            if (isAjaxRequest(request)) {
+                                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            } else {
+                                response.sendRedirect(request.getContextPath() + "/login?error=timeout");
+                            }
+                            return false;
+                        }
+                        
+                        activeLoginRegistry.updateActivity(username, token);
+
                         // Store user in request for controllers to use
                         request.setAttribute("authenticatedUser", user);
                         // Prevent browser from caching protected pages

@@ -193,6 +193,12 @@
                     });
                     stompClient.current.send(`/app/uno/${rId}/subscribe`, {}, "{}");
                 });
+
+                window.addEventListener('beforeunload', () => {
+                    if (stompClient.current && stompClient.current.connected) {
+                        stompClient.current.send(`/app/uno/${rId}/leave`, {}, "{}");
+                    }
+                });
             }, []);
 
             const handleStart = async (type, data) => {
@@ -257,6 +263,18 @@
             if (initializing) return <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: "#e0e0e0", background:"#060e0a", fontSize: 20, fontWeight: 700 }}>Initializing Match...</div>;
             if (!roomId) return <UnoLobby onStart={handleStart} />;
             if (!roomState || playerIndex === -1) return <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: "#e0e0e0", background:"#060e0a", fontSize: 20, fontWeight: 700 }}>Connecting to Table...</div>;
+
+            if (roomState.status === 'opponent_left') {
+                return (
+                    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "#060e0a" }}>
+                        <h2 style={{ color: "#d62828", fontSize: 32, letterSpacing: 4, textTransform: "uppercase", marginBottom: 10 }}>OPPONENT LEFT</h2>
+                        <div style={{ background: "#1e293b", padding: 30, borderRadius: 20, border: "1px solid #334155", width: "100%", maxWidth: 420, textAlign: "center" }}>
+                            <p style={{ color: "#fff", margin: "20px 0" }}>Opponent left the game! Arena closed.</p>
+                            <button style={{ background: "#d62828", width: "100%", padding: 14, borderRadius: 12, color: "#fff", fontWeight: 900, cursor: "pointer", border: "none" }} onClick={() => window.location.href = gamesUrl}>EXIT</button>
+                        </div>
+                    </div>
+                );
+            }
 
             const myData = roomState.players[playerIndex];
             if (!myData) return <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: "#e0e0e0", background:"#060e0a" }}>Syncing Player Data...</div>;
