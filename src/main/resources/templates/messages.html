@@ -2216,7 +2216,8 @@
             currentUser: {
                 id: /*[[${currentUser.id}]]*/ 0,
                 username: /*[[${currentUser.username}]]*/ 'Unknown',
-                profilePicture: /*[[${currentUser.profilePicture}]]*/ null
+                profilePhotoUrl: /*[[${currentUser.profilePhotoUrl}]]*/ null,
+                profilePicture: /*[[${currentUser.profilePhotoUrl}]]*/ null
             },
             paths: {
                 conversations: /*[[@{/api/chat/conversations}]]*/ '/api/chat/conversations',
@@ -2673,8 +2674,8 @@
                     avatarHtml = `<div style="display:flex; flex-wrap:wrap; width:100%; height:100%;">
                         ${c.participants.slice(0, 4).map(p => `<div style="width:50%; height:50%; background:var(--avatar-bg); font-size:10px; display:flex; align-items:center; justify-content:center; border-radius:2px;">${p.username.charAt(0)}</div>`).join('')}
                     </div>`;
-                } else if (partner && partner.profilePicture) {
-                    avatarHtml = `<img src="${resolveUrl(partner.profilePicture)}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+                } else if (partner && (partner.profilePhotoUrl || partner.profilePicture)) {
+                    avatarHtml = `<img src="${resolveUrl(partner.profilePhotoUrl || partner.profilePicture)}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
                 } else {
                     avatarHtml = convName.charAt(0).toUpperCase();
                 }
@@ -2801,8 +2802,8 @@
                     avatarEl.innerHTML = `<div style="display:flex; flex-wrap:wrap; width:100%; height:100%;">
                         ${conv.participants.slice(0, 4).map(p => `<div style="width:50%; height:50%; background:var(--avatar-bg); font-size:10px; display:flex; align-items:center; justify-content:center; border-radius:2px;">${p.username.charAt(0)}</div>`).join('')}
                     </div>`;
-                } else if (partner && partner.profilePicture) {
-                    avatarEl.innerHTML = `<img src="${resolveUrl(partner.profilePicture)}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+                } else if (partner && (partner.profilePhotoUrl || partner.profilePicture)) {
+                    avatarEl.innerHTML = `<img src="${resolveUrl(partner.profilePhotoUrl || partner.profilePicture)}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
                 } else {
                     avatarEl.innerText = convName.charAt(0).toUpperCase();
                 }
@@ -3491,8 +3492,8 @@
                 item.className = 'search-result-item';
                 item.onclick = () => selectUserForChat(u);
 
-                const avatarHtml = u.profilePicture ?
-                    `<img src="${resolveUrl(u.profilePicture)}" style="width:100%; height:100%; object-fit:cover;">` :
+                const avatarHtml = (u.profilePhotoUrl || u.profilePicture) ?
+                    `<img src="${resolveUrl(u.profilePhotoUrl || u.profilePicture)}" style="width:100%; height:100%; object-fit:cover;">` :
                     u.username.charAt(0).toUpperCase();
 
                 item.innerHTML = `
