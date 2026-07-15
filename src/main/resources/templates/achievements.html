@@ -575,7 +575,7 @@
                 padding: 12px 10px;
             }
             .lb-table th:nth-child(3), .lb-table td:nth-child(3) {
-                display: none; /* Hide Tier column on small mobile devices to save space */
+                display: table-cell; /* Show Tier column on mobile */
             }
             .u-flex {
                 gap: 8px;
@@ -586,18 +586,13 @@
             }
             .u-flex div div {
                 font-size: 13px;
-                max-width: 150px;
+                max-width: 100px;
                 overflow: hidden;
                 text-overflow: ellipsis;
                 white-space: nowrap;
             }
             .u-flex span {
-                font-size: 11px;
-                max-width: 150px;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                white-space: nowrap;
-                display: block;
+                display: none !important; /* Hide email on mobile to prevent layout stretching */
             }
             .rank {
                 width: 30px;
