@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 
 <head>
@@ -433,13 +433,30 @@
                 opacity: 0;
             }
         }
+        @media print {
+            body { background: #fff !important; padding: 0 !important; margin: 0 !important; }
+            .topbar, .success-header, .ticket-actions, .confetti-piece { display: none !important; }
+            .ticket-wrapper, .ticket { box-shadow: none !important; margin: 0 !important; width: 100% !important; max-width: 100% !important; }
+            .ticket { background: #fff !important; border: 2px solid #000 !important; }
+            .ticket::before, .ticket::after { display: none !important; }
+            .ticket-banner-overlay { display: none !important; }
+            .perforated { border-top: 2px dashed #000 !important; }
+            .perf-circle { background: #fff !important; border: 2px solid #000 !important; }
+            .ticket-id-value { background: none !important; -webkit-text-fill-color: #000 !important; }
+            .mini-qr { border: 1px solid #ccc !important; }
+            * { color: #000 !important; text-shadow: none !important; }
+            .ticket-cat, .ticket-status-badge { border: 1px solid #000 !important; background: transparent !important; }
+            /* Handle inline styles for selected tickets / rewards */
+            div[style*="border: 1px solid rgba(255,255,255,0.08)"] { border: 1px solid #ccc !important; }
+            span[style*="background: rgba(255,255,255,0.1)"] { border: 1px solid #000 !important; }
+        }
     </style>
 </head>
 
 <body>
     <!-- Topbar -->
     <div class="topbar">
-        <div class="brand">âš¡ Zentrix</div>
+        <div class="brand">Zentrix</div>
         <div class="nav-links">
             <a th:href="@{/events}">Browse Events</a>
             <a th:href="@{/dashboard}">Dashboard</a>
@@ -449,7 +466,7 @@
     <!-- â&bull;â&bull;â&bull;â&bull;â&bull; Success Header â&bull;â&bull;â&bull;â&bull;â&bull; -->
     <div class="success-header">
         <div class="success-icon-wrap"><i class="fas fa-check"></i></div>
-        <h1>You're Registered! ðŸŽ‰</h1>
+        <h1>You're Registered!</h1>
         <p th:if="${registration.paymentStatus == 'PAID'}">Payment confirmed &middot; Your ticket is ready below</p>
         <p th:if="${registration.paymentStatus != 'PAID'}">Registration successful &middot; Your free ticket is ready below</p>
     </div>
