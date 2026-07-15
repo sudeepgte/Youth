@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${user.username + ' • Wallet • Zentrix'}">Wallet</title>
+    <title th:text="${user.username + ' â€¢ Wallet â€¢ Zentrix'}">Wallet</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -28,7 +28,7 @@
             </a>
             <div class="profile-dropdown">
                 <a th:href="@{/profile}">
-                    <img th:src="${session.user != null and session.user.profilePhotoUrl != null} ? @{${session.user.profilePhotoUrl}} : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=1780&auto=format&fit=crop'" class="user-avatar" style="width: 32px; height: 32px; border: none;">
+                    <img th:src="${user != null and user.profilePhotoUrl != null and !user.profilePhotoUrl.isEmpty()} ? @{${user.profilePhotoUrl}} : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=1780&auto=format&fit=crop'" class="user-avatar" style="width: 32px; height: 32px; border: none;">
                 </a>
             </div>
         </div>
@@ -77,7 +77,7 @@
                 <div style="background: rgba(16, 185, 129, 0.1); border: 2px solid rgba(16, 185, 129, 0.3); border-radius: 24px; padding: 30px; width: 100%; max-width: 400px; margin-bottom: 30px;">
                     <h3 style="font-size: 14px; text-transform: uppercase; color: #10B981; font-weight: 700; letter-spacing: 1px; margin-bottom: 8px;">Current Balance</h3>
                     <div style="font-size: 48px; font-weight: 900; color: var(--text-primary); display: flex; justify-content: center; align-items: center; gap: 8px;">
-                        <span style="color: #10B981;">&#8377;</span> <span th:text="${user.walletBalance}">0.0</span>
+                        <span style="color: #10B981;">₹</span> <span th:text="${user.walletBalance}">0.0</span>
                     </div>
                 </div>
                 
@@ -125,7 +125,7 @@
             <div style="padding: 20px;">
                 <form th:action="@{/wallet/add}" method="POST">
                     <div style="margin-bottom: 16px;">
-                        <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px;">Amount (&#8377;)</label>
+                        <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px;">Amount (₹)</label>
                         <input type="number" name="amount" min="1" step="any" placeholder="e.g., 500" required style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--bg-color); color: var(--text-primary);">
                     </div>
                     <button type="submit" style="width: 100%; padding: 12px; background: #10B981; border: none; color: white; font-weight: 600; border-radius: 8px; cursor: pointer;">Proceed to Pay</button>
@@ -144,7 +144,7 @@
             <div style="padding: 20px;">
                 <form th:action="@{/wallet/withdraw}" method="POST">
                     <div style="margin-bottom: 16px;">
-                        <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px;">Amount to Withdraw (&#8377;)</label>
+                        <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px;">Amount to Withdraw (₹)</label>
                         <input type="number" name="amount" min="1" step="any" placeholder="e.g., 500" required style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--bg-color); color: var(--text-primary);">
                     </div>
                     <div style="margin-bottom: 20px;">

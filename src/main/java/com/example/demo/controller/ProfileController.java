@@ -256,6 +256,7 @@ public class ProfileController {
             @RequestParam(required = false) String dob,
             @RequestParam(required = false) String gender,
             @RequestParam(required = false) String profilePhotoUrl,
+            @RequestParam(required = false) org.springframework.web.multipart.MultipartFile profilePhotoFile,
             @RequestParam(required = false) String aboutMe,
             @RequestParam(required = false) String skills,
             @RequestParam(required = false) String collegeName,
@@ -284,8 +285,34 @@ public class ProfileController {
                 }
                 if (gender != null)
                     dbUser.setGender(gender);
-                if (profilePhotoUrl != null)
+
+                if (profilePhotoFile != null && !profilePhotoFile.isEmpty()) {
+                    String contentType = profilePhotoFile.getContentType();
+                    if (contentType != null && contentType.startsWith("image")) {
+                        try {
+                            String fileName = java.util.UUID.randomUUID().toString() + "_" + profilePhotoFile.getOriginalFilename();
+                            String uploadDir = "src/main/resources/static/uploads/";
+                            java.nio.file.Path uploadPath = java.nio.file.Paths.get(uploadDir);
+                            if (!java.nio.file.Files.exists(uploadPath)) {
+                                java.nio.file.Files.createDirectories(uploadPath);
+                            }
+                            String targetUploadDir = "target/classes/static/uploads/";
+                            java.nio.file.Path targetUploadPath = java.nio.file.Paths.get(targetUploadDir);
+                            if (!java.nio.file.Files.exists(targetUploadPath)) {
+                                java.nio.file.Files.createDirectories(targetUploadPath);
+                            }
+                            java.nio.file.Files.copy(profilePhotoFile.getInputStream(), uploadPath.resolve(fileName),
+                                    java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                            java.nio.file.Files.copy(profilePhotoFile.getInputStream(), targetUploadPath.resolve(fileName),
+                                    java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                            dbUser.setProfilePhotoUrl("/uploads/" + fileName);
+                        } catch (java.io.IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                } else if (profilePhotoUrl != null) {
                     dbUser.setProfilePhotoUrl(profilePhotoUrl.length() > 255 ? profilePhotoUrl.substring(0, 255) : profilePhotoUrl);
+                }
                 if (aboutMe != null)
                     dbUser.setAboutMe(aboutMe.length() > 1000 ? aboutMe.substring(0, 1000) : aboutMe);
                 if (skills != null)

@@ -912,7 +912,6 @@
                             <input type="radio" name="category" value="Gaming"
                                 th:checked="${event.category == 'Gaming'}" required>
                             <div class="cat-label">
-                                <span class="cat-icon">🎮</span>
                                 <span class="cat-name">Gaming</span>
                             </div>
                         </label>
@@ -920,14 +919,12 @@
                             <input type="radio" name="category" value="Talent"
                                 th:checked="${event.category == 'Talent'}">
                             <div class="cat-label">
-                                <span class="cat-icon">🎤</span>
                                 <span class="cat-name">Talent</span>
                             </div>
                         </label>
                         <label class="cat-btn">
                             <input type="radio" name="category" value="Tech" th:checked="${event.category == 'Tech'}">
                             <div class="cat-label">
-                                <span class="cat-icon">💻</span>
                                 <span class="cat-name">Tech</span>
                             </div>
                         </label>
@@ -935,7 +932,6 @@
                             <input type="radio" name="category" value="Sports"
                                 th:checked="${event.category == 'Sports'}">
                             <div class="cat-label">
-                                <span class="cat-icon">⚽</span>
                                 <span class="cat-name">Sports</span>
                             </div>
                         </label>
@@ -943,7 +939,6 @@
                             <input type="radio" name="category" value="Cultural"
                                 th:checked="${event.category == 'Cultural'}">
                             <div class="cat-label">
-                                <span class="cat-icon">🎭</span>
                                 <span class="cat-name">Cultural</span>
                             </div>
                         </label>
@@ -951,7 +946,6 @@
                             <input type="radio" name="category" value="Music"
                                 th:checked="${event.category == 'Music'}">
                             <div class="cat-label">
-                                <span class="cat-icon">🎵</span>
                                 <span class="cat-name">Music</span>
                             </div>
                         </label>
@@ -959,7 +953,6 @@
                             <input type="radio" name="category" value="Art"
                                 th:checked="${event.category == 'Art'}">
                             <div class="cat-label">
-                                <span class="cat-icon">🎨</span>
                                 <span class="cat-name">Art</span>
                             </div>
                         </label>
@@ -967,7 +960,6 @@
                             <input type="radio" name="category" value="House Party"
                                 th:checked="${event.category == 'House Party'}">
                             <div class="cat-label">
-                                <span class="cat-icon">💃</span>
                                 <span class="cat-name">House Party</span>
                             </div>
                         </label>
@@ -975,7 +967,6 @@
                             <input type="radio" name="category" value="Adventure"
                                 th:checked="${event.category == 'Adventure'}">
                             <div class="cat-label">
-                                <span class="cat-icon">⛰️</span>
                                 <span class="cat-name">Adventure</span>
                             </div>
                         </label>
@@ -983,7 +974,6 @@
                             <input type="radio" name="category" value="Trekking"
                                 th:checked="${event.category == 'Trekking'}">
                             <div class="cat-label">
-                                <span class="cat-icon">🥾</span>
                                 <span class="cat-name">Trekking</span>
                             </div>
                         </label>
@@ -991,7 +981,6 @@
                             <input type="radio" name="category" value="Bike Riding"
                                 th:checked="${event.category == 'Bike Riding'}">
                             <div class="cat-label">
-                                <span class="cat-icon">🏍️</span>
                                 <span class="cat-name">Bike Riding</span>
                             </div>
                         </label>
@@ -1654,8 +1643,8 @@
                             </div>
                             <div id="paidAmountField">
                                 <input type="number" name="price" id="priceInput"
-                                    th:value="${event.price != null and !event.price.startsWith('F') ? event.price.replace('&#8377;','') : ''}"
-                                    placeholder="Enter amount in &#8377;" min="1" onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();">
+                                    th:value="${event.price != null and !event.price.startsWith('F') ? event.price.replace('₹','') : ''}"
+                                    placeholder="Enter amount in ₹" min="1" onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();">
                             </div>
                         </div>
 
@@ -1702,12 +1691,12 @@
                                     placeholder="e.g. 10" min="0" onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();">
                             </div>
                             <div class="field-group">
-                                <label>VIP Seat Price (&#8377;)</label>
+                                <label>VIP Seat Price (₹)</label>
                                 <input type="number" name="vipPrice" th:value="${event.vipPrice}" placeholder="500"
                                     min="0" onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();">
                             </div>
                             <div class="field-group">
-                                <label>Regular Seat Price (&#8377;)</label>
+                                <label>Regular Seat Price (₹)</label>
                                 <input type="number" name="regularPrice" th:value="${event.regularPrice}"
                                     placeholder="200" min="0" onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();">
                             </div>
@@ -1820,7 +1809,7 @@
                 <!-- SECTION 5.5: Secret Rewards -->
                 <div class="form-card">
                     <div class="section-label">
-                        <i class="fas fa-gift"></i> 🎁 Secret Reward Partner (Optional)
+                        <i class="fas fa-gift"></i> Secret Reward Partner (Optional)
                     </div>
                     
                     <div class="field-group">
@@ -1888,7 +1877,7 @@
     </div>
 
     <script>
-        // ── Paid fee toggle ──
+        // â”€â”€ Paid fee toggle â”€â”€
         function togglePaidField(radio) {
             const field = document.getElementById('paidAmountField');
             const input = document.getElementById('priceInput');
@@ -2114,7 +2103,7 @@
             }
         }
 
-        // ── Poster file live preview ──
+        // â”€â”€ Poster file live preview â”€â”€
         function previewImageFile(input) {
             const preview = document.getElementById('posterPreview');
             const img = document.getElementById('posterImg');
@@ -2131,7 +2120,7 @@
             }
         }
 
-        // ── Form validation ──
+        // â”€â”€ Form validation â”€â”€
         function validateForm() {
             const cat = document.querySelector('input[name="category"]:checked');
             if (!cat) { alert('Please select an event category.'); return false; }
@@ -2159,7 +2148,7 @@
         }
 
 
-        // ── Publish button animation ──
+        // â”€â”€ Publish button animation â”€â”€
         document.querySelector('form').addEventListener('submit', function () {
             if (!validateForm()) return false;
             const btn = document.getElementById('publishBtn');

@@ -595,7 +595,7 @@
             </a>
             <div class="profile-dropdown">
                 <a th:href="@{/profile}" class="active">
-                    <img th:src="${session.user.profilePhotoUrl != null and !session.user.profilePhotoUrl.isEmpty()} ? @{${session.user.profilePhotoUrl}} : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=1780&auto=format&fit=crop'"
+                    <img th:src="${user != null and user.profilePhotoUrl != null and !user.profilePhotoUrl.isEmpty()} ? @{${user.profilePhotoUrl}} : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=1780&auto=format&fit=crop'"
                         class="user-avatar" style="width: 32px; height: 32px; border: none;">
                 </a>
                 <div class="dropdown-menu">
@@ -977,17 +977,34 @@
                     style="background:none; border:none; color:var(--text-secondary); font-size:20px;">&times;</button>
             </div>
             <div style="padding:20px;">
-                <form th:action="@{/profile/update}" method="post" onsubmit="return validateEditProfileForm(this)">
+                <form th:action="@{/profile/update}" method="post" enctype="multipart/form-data" onsubmit="return validateEditProfileForm(this)">
                     <div style="display:flex; align-items:center; gap:15px; margin-bottom:20px;">
-                        <img id="editAvatarPrev"
-                            th:src="${user.profilePhotoUrl != null and !user.profilePhotoUrl.isEmpty()} ? @{${user.profilePhotoUrl}} : ${'https://ui-avatars.com/api/?name='+user.username+'&background=e8427c&color=fff&size=200'}"
-                            style="width:70px; height:70px; border-radius:50%; object-fit:cover; border:2px solid var(--accent);">
+                        <div style="position:relative; width:70px; height:70px; cursor:pointer;" onclick="document.getElementById('profilePhotoFileInput').click()">
+                            <img id="editAvatarPrev"
+                                th:src="${user.profilePhotoUrl != null and !user.profilePhotoUrl.isEmpty()} ? @{${user.profilePhotoUrl}} : ${'https://ui-avatars.com/api/?name='+user.username+'&background=e8427c&color=fff&size=200'}"
+                                style="width:70px; height:70px; border-radius:50%; object-fit:cover; border:2px solid var(--accent); display:block;">
+                            <div style="position:absolute; bottom:0; right:0; width:24px; height:24px; border-radius:50%; background:var(--accent); display:flex; align-items:center; justify-content:center; border:2px solid #fff;">
+                                <i class="fas fa-camera" style="font-size:11px; color:#fff;"></i>
+                            </div>
+                            <input type="file" id="profilePhotoFileInput" name="profilePhotoFile" accept="image/*" style="display:none;" onchange="previewProfilePhoto(this)">
+                            <input type="hidden" name="profilePhotoUrl" th:value="${user.profilePhotoUrl}">
+                        </div>
                         <div style="flex:1;">
-                            <label style="font-size:12px; color:var(--text-secondary);">Photo URL</label>
-                            <input type="text" name="profilePhotoUrl" th:value="${user.profilePhotoUrl}" maxlength="255"
-                                class="form-input" style="padding:8px;" oninput="livePhoto(this.value)">
+                            <span style="font-size:13px; font-weight:700; color:var(--accent);">Change photo</span>
+                            <p style="font-size:11px; color:var(--text-secondary); margin-top:2px;">Tap your photo to upload a new one</p>
                         </div>
                     </div>
+                    <script>
+                        function previewProfilePhoto(input) {
+                            if (input.files && input.files[0]) {
+                                const reader = new FileReader();
+                                reader.onload = function(e) {
+                                    document.getElementById('editAvatarPrev').src = e.target.result;
+                                };
+                                reader.readAsDataURL(input.files[0]);
+                            }
+                        }
+                    </script>
                     <div class="form-group">
                         <label>Username</label>
                         <input type="text" name="username" th:value="${user.username}" class="form-input" maxlength="255" required>

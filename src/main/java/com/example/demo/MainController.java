@@ -665,7 +665,35 @@ public class MainController {
             model.addAttribute("achievements", List.of());
         }
 
-        List<User> leaderboard = userRepository.findAllByOrderByXpDesc();
+        List<User> leaderboard = userRepository.findAll();
+        leaderboard.sort((u1, u2) -> {
+            int w1 = 0;
+            if (u1.getLevel() != null) {
+                switch (u1.getLevel().trim().toLowerCase()) {
+                    case "platinum": w1 = 5; break;
+                    case "gold": w1 = 4; break;
+                    case "silver": w1 = 3; break;
+                    case "bronze": w1 = 2; break;
+                    case "novice": w1 = 1; break;
+                }
+            }
+            int w2 = 0;
+            if (u2.getLevel() != null) {
+                switch (u2.getLevel().trim().toLowerCase()) {
+                    case "platinum": w2 = 5; break;
+                    case "gold": w2 = 4; break;
+                    case "silver": w2 = 3; break;
+                    case "bronze": w2 = 2; break;
+                    case "novice": w2 = 1; break;
+                }
+            }
+            if (w1 != w2) {
+                return Integer.compare(w2, w1);
+            }
+            int xp1 = u1.getXp() != null ? u1.getXp() : 0;
+            int xp2 = u2.getXp() != null ? u2.getXp() : 0;
+            return Integer.compare(xp2, xp1);
+        });
         model.addAttribute("leaderboard", leaderboard);
 
         return "achievements";
