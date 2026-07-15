@@ -30,6 +30,9 @@ public class AuthController {
     @Autowired
     private TokenBlacklist tokenBlacklist;
 
+    @Autowired
+    private com.example.demo.config.ActiveLoginRegistry activeLoginRegistry;
+
 
 
     @RequestMapping(value = "/register", method = RequestMethod.GET)
@@ -82,6 +85,9 @@ public class AuthController {
         }
         User user = userRepository.findByUsername(username);
         if (user != null && user.getPassword().equals(password)) {
+            if (activeLoginRegistry.isUserAlreadyLoggedIn(username, null)) {
+                return "redirect:/login?error=already_logged_in";
+            }
             rewardService.awardDailyLogin(user); // Zen Coins Awarded here
             
             String token = jwtUtil.generateToken(username);
@@ -89,6 +95,8 @@ public class AuthController {
             cookie.setHttpOnly(true);
             cookie.setPath("/");
             response.addCookie(cookie);
+            
+            activeLoginRegistry.registerLogin(username, token);
             
             session.setAttribute("user", user);
             session.setAttribute("userId", user.getId());
@@ -104,11 +112,13 @@ public class AuthController {
             jakarta.servlet.http.HttpServletRequest request,
             jakarta.servlet.http.HttpServletResponse response) {
 
+        String tokenToRevoke = null;
         // ── 1. Blacklist the JWT from cookie (most common path) ──
         if (request.getCookies() != null) {
             for (jakarta.servlet.http.Cookie c : request.getCookies()) {
                 if ("jwtToken".equals(c.getName())) {
-                    tokenBlacklist.blacklist(c.getValue());
+                    tokenToRevoke = c.getValue();
+                    tokenBlacklist.blacklist(tokenToRevoke);
                     break;
                 }
             }
@@ -117,7 +127,15 @@ public class AuthController {
         // ── 2. Also blacklist any ?auth= token in the URL ──
         String queryToken = request.getParameter("auth");
         if (queryToken != null && !queryToken.isBlank()) {
+            tokenToRevoke = queryToken;
             tokenBlacklist.blacklist(queryToken);
+        }
+
+        if (tokenToRevoke != null) {
+            try {
+                String username = jwtUtil.extractUsername(tokenToRevoke);
+                activeLoginRegistry.removeLogin(username);
+            } catch (Exception e) {}
         }
 
         // ── 3. Destroy server-side session ──
@@ -131,5 +149,37 @@ public class AuthController {
         response.addCookie(cookie);
 
         return "redirect:/login?loggedOut=true";
+    }
+
+    @RequestMapping(value = "/forgot-password", method = RequestMethod.GET)
+    public String showForgotPasswordForm() {
+        return "forgot-password";
+    }
+
+    @RequestMapping(value = "/forgot-password", method = RequestMethod.POST)
+    public String resetPassword(
+            @org.springframework.web.bind.annotation.RequestParam String username,
+            @org.springframework.web.bind.annotation.RequestParam String email,
+            @org.springframework.web.bind.annotation.RequestParam String newPassword,
+            @org.springframework.web.bind.annotation.RequestParam String confirmPassword,
+            Model model) {
+
+        if (!newPassword.equals(confirmPassword)) {
+            return "redirect:/forgot-password?error=mismatch";
+        }
+
+        if (newPassword.length() < 8 || !newPassword.matches(".*[A-Z].*") || !newPassword.matches(".*[a-z].*") || !newPassword.matches(".*\\d.*") || !newPassword.matches(".*[@$!%*?&].*")) {
+            return "redirect:/forgot-password?error=weak_password";
+        }
+
+        User user = userRepository.findByUsername(username);
+        if (user == null || !email.equalsIgnoreCase(user.getEmail())) {
+            return "redirect:/forgot-password?error=not_found";
+        }
+
+        user.setPassword(newPassword);
+        userRepository.save(user);
+
+        return "redirect:/forgot-password?success=true";
     }
 }

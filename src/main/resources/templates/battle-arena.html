@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
@@ -24,7 +24,7 @@
             color: var(--text-primary);
         }
 
-        /* â”€â”€â”€ Hero Banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        /* ─── Hero Banner ──────────────────────────────── */
         .arena-hero {
             background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 50%, #020617 100%);
             border-radius: 24px;
@@ -82,7 +82,7 @@
             flex-wrap: wrap;
         }
 
-        /* â”€â”€â”€ Buttons â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        /* ─── Buttons ──────────────────────────────────── */
         .btn-arena {
             padding: 12px 24px;
             border-radius: 14px;
@@ -127,7 +127,7 @@
             border-radius: 10px;
         }
 
-        /* â”€â”€â”€ Tabs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        /* ─── Tabs ─────────────────────────────────────── */
         .arena-tabs {
             display: flex;
             gap: 6px;
@@ -160,7 +160,7 @@
             border: 1.5px solid rgba(248,68,100,0.18);
         }
 
-        /* â”€â”€â”€ Battle Cards Grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        /* ─── Battle Cards Grid ────────────────────────── */
         .battles-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
@@ -281,7 +281,7 @@
             border-color: rgba(217,119,6,0.5);
         }
 
-        /* â”€â”€â”€ Detail View â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        /* ─── Detail View ──────────────────────────────── */
         .battle-detail {
             background: var(--arena-card);
             border: 1px solid var(--arena-border);
@@ -318,7 +318,7 @@
             gap: 6px;
         }
 
-        /* â”€â”€â”€ Participants List â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        /* ─── Participants List ────────────────────────── */
         .participants-grid {
             display: flex;
             gap: 12px;
@@ -343,7 +343,7 @@
             border-radius: 50%;
         }
 
-        /* â”€â”€â”€ Submission Cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        /* ─── Submission Cards ─────────────────────────── */
         .submissions-list {
             display: grid;
             gap: 16px;
@@ -418,7 +418,7 @@
             color: #D97706;
         }
 
-        /* â”€â”€â”€ Leaderboard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        /* ─── Leaderboard ──────────────────────────────── */
         .leaderboard-section {
             background: linear-gradient(135deg, rgba(59,130,246,0.05) 0%, rgba(248,68,100,0.05) 100%);
             border: 1px solid rgba(59,130,246,0.12);
@@ -482,7 +482,7 @@
             gap: 4px;
         }
 
-        /* â”€â”€â”€ Winner Section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        /* ─── Winner Section ───────────────────────────── */
         .winner-section {
             background: linear-gradient(135deg, rgba(217,119,6,0.06) 0%, rgba(248,68,100,0.06) 100%);
             border: 1px solid rgba(217,119,6,0.15);
@@ -533,7 +533,7 @@
             margin-top: 12px;
         }
 
-        /* â”€â”€â”€ Modals â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        /* ─── Modals ───────────────────────────────────── */
         .arena-modal-overlay {
             display: none;
             position: fixed;
@@ -592,7 +592,7 @@
             color: var(--arena-primary);
         }
 
-        /* â”€â”€â”€ Form Fields â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        /* ─── Form Fields ──────────────────────────────── */
         .arena-field {
             margin-bottom: 20px;
         }
@@ -638,7 +638,7 @@
             color: var(--text-primary);
         }
 
-        /* â”€â”€â”€ Category Grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        /* ─── Category Grid ────────────────────────────── */
         .category-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -671,7 +671,7 @@
             margin-bottom: 5px;
         }
 
-        /* â”€â”€â”€ Steps Indicator â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        /* ─── Steps Indicator ──────────────────────────── */
         .steps-indicator {
             display: flex;
             gap: 8px;
@@ -691,7 +691,7 @@
             background: var(--arena-green);
         }
 
-        /* â”€â”€â”€ Empty State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        /* ─── Empty State ──────────────────────────────── */
         .arena-empty {
             text-align: center;
             padding: 60px 20px;
@@ -712,7 +712,7 @@
             font-size: 13px;
         }
 
-        /* â”€â”€â”€ Alert Messages â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        /* ─── Alert Messages ───────────────────────────── */
         .arena-alert {
             padding: 14px 18px;
             border-radius: 14px;
@@ -739,7 +739,7 @@
             color: #3B82F6;
         }
 
-        /* â”€â”€â”€ Join via Code â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        /* ─── Join via Code ────────────────────────────── */
         .join-form-inline {
             display: flex;
             gap: 10px;
@@ -770,7 +770,7 @@
             font-weight: 600;
         }
 
-        /* â”€â”€â”€ Confetti Animation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        /* ─── Confetti Animation ───────────────────────── */
         .confetti-container {
             position: fixed;
             inset: 0;
@@ -791,7 +791,7 @@
             100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
         }
 
-        /* â”€â”€â”€ Responsive â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        /* ─── Responsive ───────────────────────────────── */
         @media (max-width: 768px) {
             .battles-grid { grid-template-columns: 1fr; }
             .category-grid { grid-template-columns: repeat(3, 1fr); }
@@ -854,13 +854,13 @@
         <main class="social-feed" style="max-width: 100%; padding-bottom: 60px;">
             <!-- Alerts -->
             <div th:if="${param.deleted}" class="arena-alert arena-alert-success" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #EF4444;">
-                <i class="fas fa-trash-alt"></i> Battle has been deleted successfully! ðŸ—‘ï¸ 
+                <i class="fas fa-trash-alt"></i> Battle has been deleted successfully! 🗑️ 
             </div>
             <div th:if="${param.submitted}" class="arena-alert arena-alert-success">
-                <i class="fas fa-check-circle"></i> Your submission has been uploaded! ðŸŽ‰
+                <i class="fas fa-check-circle"></i> Your submission has been uploaded! 🎉
             </div>
             <div th:if="${param.voted}" class="arena-alert arena-alert-success">
-                <i class="fas fa-check-circle"></i> Your vote has been recorded! ðŸ—³ï¸ 
+                <i class="fas fa-check-circle"></i> Your vote has been recorded! 🗳️ 
             </div>
             <div th:if="${param.error}" class="arena-alert arena-alert-error">
                 <i class="fas fa-exclamation-circle"></i>
@@ -877,9 +877,9 @@
                 <span th:if="${param.error[0] == 'insufficient_funds'}">Insufficient funds in your wallet to pay the entry fee!</span>
             </div>
 
-            <!-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+            <!-- ──────────────────────────────────────── -->
             <!-- SINGLE BATTLE VIEW (when battle is in model) -->
-            <!-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+            <!-- ──────────────────────────────────────── -->
             <div th:if="${battle != null}">
                 <!-- Back Button -->
                 <a th:href="@{/battles}" style="display:inline-flex; align-items:center; gap:6px; color:var(--text-muted); font-size:13px; font-weight:700; text-decoration:none; margin-bottom:16px; transition:0.2s;"
@@ -916,10 +916,10 @@
                         <span><i class="fas fa-vote-yea"></i> <span th:text="${battle.votingType}">PUBLIC</span> Voting</span>
                         <span><i class="fas fa-trophy"></i> <span th:text="${battle.winnerXp}">500</span> XP Reward</span>
                         
-                        <span th:if="${battle.entryFee != null and battle.entryFee > 0}" style="color:#10B981; font-weight:700;"><i class="fas fa-ticket-alt"></i> â‚¹<span th:text="${battle.entryFee}">50</span> Entry Fee</span>
-                        <span th:if="${battle.prize1 != null and battle.prize1 > 0}"><i class="fas fa-trophy" style="color:#FFD700;"></i> 1st Prize: â‚¹<span th:text="${battle.prize1}">100</span></span>
-                        <span th:if="${battle.prize2 != null and battle.prize2 > 0}"><i class="fas fa-trophy" style="color:#C0C0C0;"></i> 2nd Prize: â‚¹<span th:text="${battle.prize2}">50</span></span>
-                        <span th:if="${battle.prize3 != null and battle.prize3 > 0}"><i class="fas fa-trophy" style="color:#cd7f32;"></i> 3rd Prize: â‚¹<span th:text="${battle.prize3}">25</span></span>
+                        <span th:if="${battle.entryFee != null and battle.entryFee > 0}" style="color:#10B981; font-weight:700;"><i class="fas fa-ticket-alt"></i> ₹<span th:text="${battle.entryFee}">50</span> Entry Fee</span>
+                        <span th:if="${battle.prize1 != null and battle.prize1 > 0}"><i class="fas fa-trophy" style="color:#FFD700;"></i> 1st Prize: ₹<span th:text="${battle.prize1}">100</span></span>
+                        <span th:if="${battle.prize2 != null and battle.prize2 > 0}"><i class="fas fa-trophy" style="color:#C0C0C0;"></i> 2nd Prize: ₹<span th:text="${battle.prize2}">50</span></span>
+                        <span th:if="${battle.prize3 != null and battle.prize3 > 0}"><i class="fas fa-trophy" style="color:#cd7f32;"></i> 3rd Prize: ₹<span th:text="${battle.prize3}">25</span></span>
                     </div>
 
                     <!-- Offline Event Details Block -->
@@ -942,7 +942,7 @@
                         </div>
                     </div>
 
-                    <!-- â”€â”€â”€ OFFLINE PARTICIPANT TICKET PASS â”€â”€â”€ -->
+                    <!-- ─── OFFLINE PARTICIPANT TICKET PASS ─── -->
                     <div th:if="${battle.mode == 'OFFLINE' and isParticipant and !participants.isEmpty() and #lists.size(participants.?[user.id == #vars.user.id]) > 0}" class="battle-detail" style="border:2px dashed var(--arena-primary); background:linear-gradient(135deg, rgba(248,68,100,0.02), rgba(255,255,255,1)); margin-bottom:20px; padding:16px; border-radius:14px;">
                         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
                             <div>
@@ -997,14 +997,14 @@
                         <a th:href="@{'/battles/' + ${battle.id} + '/live'}" 
                            style="display:inline-flex; align-items:center; gap:8px; padding:12px 24px; background:linear-gradient(135deg, #ef4444, #dc2626); color:white; border-radius:12px; font-weight:700; text-decoration:none; font-size:14px; box-shadow: 0 0 20px rgba(239,68,68,0.4); animation: pulse-live 2s infinite;">
                             <i class="fas fa-broadcast-tower"></i>
-                            <span th:if="${isCreator || isParticipant}">ðŸ”´ Go Live</span>
-                            <span th:if="${!isCreator and !isParticipant}">ðŸ‘ï¸ Watch Live</span>
+                            <span th:if="${isCreator || isParticipant}">🔴 Go Live</span>
+                            <span th:if="${!isCreator and !isParticipant}">👁️ Watch Live</span>
                         </a>
                     </div>
 
                     <!-- Creator Actions -->
                     <div th:if="${isCreator}" style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;">
-                        <form th:if="${battle.status == 'WAITING'}" th:action="@{'/battles/' + ${battle.id} + '/start'}" method="POST"
+                        <form th:if="${battle.status == 'WAITING' and participants.size() >= 2}" th:action="@{'/battles/' + ${battle.id} + '/start'}" method="POST"
                               th:onsubmit="${participants.size() < battle.maxParticipants} ? 'return confirm(\'Only ' + ${participants.size()} + ' of ' + ${battle.maxParticipants} + ' spots are filled. Starting now will close joining for everyone else. Start anyway?\');' : null">
                             <button type="submit" class="btn-arena btn-arena-green btn-arena-sm"><i class="fas fa-play"></i> Start Battle</button>
                         </form>
@@ -1101,8 +1101,8 @@
                     </div>
                 </div>
 
-                <!-- â”€â”€â”€ SUBMISSION FORM (ACTIVE battles only, if participant & not submitted) â”€â”€â”€ -->
-                <div th:if="${battle.status == 'ACTIVE' and isParticipant and !hasSubmitted}" class="battle-detail" id="submit-section">
+                <!-- ─── SUBMISSION FORM (ACTIVE battles only, if participant & not submitted) ─── -->
+                <div th:if="${battle.status == 'ACTIVE' and isParticipant and !hasSubmitted and battle.durationMinutes == null}" class="battle-detail" id="submit-section">
                     <h3 style="font-size:18px; font-weight:900; color:#fff; margin-bottom:6px;">
                         <i class="fas fa-upload" style="color:#10B981;"></i> Upload Your Submission
                     </h3>
@@ -1110,7 +1110,7 @@
 
                     <form th:action="@{'/battles/' + ${battle.id} + '/submit'}" method="POST" onsubmit="return validateSubmissionForm()">
 
-                        <!-- â&bull;â&bull; CATEGORY-SPECIFIC UPLOAD ZONE â&bull;â&bull; -->
+                        <!-- ══ CATEGORY-SPECIFIC UPLOAD ZONE ══ -->
                         <div class="arena-field">
                             <!-- Category-specific label with icon -->
                             <label style="display:flex; align-items:center; gap:6px;">
@@ -1236,11 +1236,11 @@
                     </form>
                 </div>
 
-                <!-- â”€â”€â”€ SUBMISSIONS & VOTING â”€â”€â”€ -->
-                <div th:if="${!submissions.isEmpty()}" class="battle-detail">
+                <!-- ─── SUBMISSIONS & VOTING ─── -->
+                <div th:if="${!submissions.isEmpty() and battle.durationMinutes == null}" class="battle-detail">
                     <h3 style="font-size:18px; font-weight:900; color:#fff; margin-bottom:16px;">
                         <i class="fas fa-th-list" style="color:#3B82F6;"></i> Submissions
-                        <span th:if="${battle.status == 'VOTING'}" style="font-size:12px; color:#3B82F6; font-weight:700; margin-left:8px;">â€” Vote for your favourite!</span>
+                        <span th:if="${battle.status == 'VOTING'}" style="font-size:12px; color:#3B82F6; font-weight:700; margin-left:8px;">— Vote for your favourite!</span>
                     </h3>
                     <div class="submissions-list">
                         <div th:each="sub,iter : ${submissions}" class="submission-card">
@@ -1323,7 +1323,7 @@
                     </div>
                 </div>
 
-                <!-- â”€â”€â”€ LEADERBOARD â”€â”€â”€ -->
+                <!-- ─── LEADERBOARD ─── -->
                 <div th:if="${!submissions.isEmpty() and (battle.status == 'VOTING' or battle.status == 'COMPLETED' or battle.status == 'TIE')}" class="leaderboard-section">
                     <h3><i class="fas fa-chart-bar"></i> Live Leaderboard</h3>
                     <div th:each="sub,iter : ${submissions}" class="leaderboard-row" style="display:flex; justify-content:space-between; align-items:center; padding:10px 16px; margin-bottom:8px; background:#fff; border:1px solid var(--arena-border); border-radius:12px;">
@@ -1363,9 +1363,9 @@
                     </div>
                 </div>
 
-                <!-- â”€â”€â”€ WINNER ANNOUNCEMENT â”€â”€â”€ -->
+                <!-- ─── WINNER ANNOUNCEMENT ─── -->
                 <div th:if="${(battle.status == 'COMPLETED' or battle.status == 'TIE') and battle.winner != null}" class="winner-section" id="winner-display" style="padding: 20px;">
-                    <div class="winner-trophy" style="font-size: 64px; margin-bottom: 15px;">ðŸ†</div>
+                    <div class="winner-trophy" style="font-size: 64px; margin-bottom: 15px;"><i class="fas fa-trophy" style="color: #FFD700;"></i></div>
                     <div style="font-size:18px; color:var(--text-primary); font-weight:900; margin-bottom:20px; text-transform: uppercase;">
                         <span th:if="${battle.status == 'TIE'}">It's a Tie!</span>
                         <span th:if="${battle.status != 'TIE'}">Battle Winners</span>
@@ -1374,7 +1374,7 @@
                     <!-- 1st Place -->
                     <div style="background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.2); border-radius: 12px; padding: 15px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
                         <div style="display: flex; align-items: center; gap: 15px;">
-                            <div style="font-size: 24px;">ðŸ¥‡</div>
+                            <div style="font-size: 24px;"><i class="fas fa-medal" style="color: #FFD700;"></i></div>
                             <div style="text-align: left;">
                                 <div style="font-size: 12px; color: var(--text-muted); font-weight: 700;">1ST PLACE</div>
                                 <div style="font-size: 20px; font-weight: 900; color: var(--text-primary);" th:text="${battle.winner.username}">Winner</div>
@@ -1389,7 +1389,7 @@
                     <!-- 2nd Place -->
                     <div th:if="${battle.winner2 != null}" style="background: rgba(255,255,255,0.6); border: 1px solid rgba(15,23,42,0.1); border-radius: 12px; padding: 15px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
                         <div style="display: flex; align-items: center; gap: 15px;">
-                            <div style="font-size: 24px;">ðŸ¥ˆ</div>
+                            <div style="font-size: 24px;"><i class="fas fa-medal" style="color: #C0C0C0;"></i></div>
                             <div style="text-align: left;">
                                 <div style="font-size: 12px; color: var(--text-muted); font-weight: 700;" th:text="${battle.status == 'TIE' ? 'TIED WINNER' : '2ND PLACE'}">2ND PLACE</div>
                                 <div style="font-size: 18px; font-weight: 800; color: var(--text-primary);" th:text="${battle.winner2.username}">User 2</div>
@@ -1404,7 +1404,7 @@
                     <!-- 3rd Place -->
                     <div th:if="${battle.winner3 != null}" style="background: rgba(255,255,255,0.6); border: 1px solid rgba(15,23,42,0.1); border-radius: 12px; padding: 15px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
                         <div style="display: flex; align-items: center; gap: 15px;">
-                            <div style="font-size: 24px;">ðŸ¥‰</div>
+                            <div style="font-size: 24px;"><i class="fas fa-medal" style="color: #CD7F32;"></i></div>
                             <div style="text-align: left;">
                                 <div style="font-size: 12px; color: var(--text-muted); font-weight: 700;">3RD PLACE</div>
                                 <div style="font-size: 18px; font-weight: 800; color: var(--text-primary);" th:text="${battle.winner3.username}">User 3</div>
@@ -1425,13 +1425,13 @@
                 </div>
             </div>
 
-            <!-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+            <!-- ──────────────────────────────────────── -->
             <!-- BATTLES LIST VIEW (when no single battle selected) -->
-            <!-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+            <!-- ──────────────────────────────────────── -->
             <div th:if="${battle == null}">
                 <!-- Hero Banner -->
                 <div class="arena-hero">
-                    <h1>âš”ï¸ Battle Arena</h1>
+                    <h1>&#9876;&#65039; Battle Arena</h1>
                     <p>Challenge your friends in creative battles across Coding, Music, Dance, Photography, and more. Submit your work, let the community vote, and climb the leaderboard!</p>
                     <div class="arena-hero-actions">
                         <button class="btn-arena btn-arena-primary" onclick="openCreateBattle()">
@@ -1448,9 +1448,9 @@
                     <!-- Colleges in Battle Widget -->
                     <div class="widget-card">
                         <div class="widget-header">
-                            <h3 th:if="${battle == null}">ðŸ« Colleges in Battle</h3>
-                            <h3 th:if="${battle != null and isCreator}">ðŸ« Students by College</h3>
-                            <h3 th:if="${battle != null and !isCreator}">ðŸ« Colleges Competing</h3>
+                            <h3 th:if="${battle == null}"><i class="fas fa-university" style="margin-right: 6px;"></i> Colleges in Battle</h3>
+                            <h3 th:if="${battle != null and isCreator}"><i class="fas fa-university" style="margin-right: 6px;"></i> Students by College</h3>
+                            <h3 th:if="${battle != null and !isCreator}"><i class="fas fa-university" style="margin-right: 6px;"></i> Colleges Competing</h3>
                         </div>
                         <!-- College list when data exists -->
                         <div th:if="${battleColleges != null and !battleColleges.isEmpty()}" style="display:flex; flex-direction:column; gap:10px;">
@@ -1479,7 +1479,7 @@
                     <!-- Categories Widget -->
                     <div class="widget-card">
                         <div class="widget-header">
-                            <h3>ðŸŽ¯ Categories</h3>
+                            <h3><i class="fas fa-bullseye" style="margin-right: 6px;"></i> Categories</h3>
                         </div>
                         <div style="display:flex; flex-wrap:wrap; gap:6px;">
                             <span style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(59,130,246,0.1); color:#3B82F6; border:1px solid rgba(59,130,246,0.15);">Coding</span>
@@ -1578,9 +1578,9 @@
             <div class="widget-card">
                 <div class="widget-header">
                     <!-- Title changes based on context -->
-                    <h3 th:if="${battle == null}">ðŸ« Colleges in Battle</h3>
-                    <h3 th:if="${battle != null and isCreator}">ðŸ« Students by College</h3>
-                    <h3 th:if="${battle != null and !isCreator}">ðŸ« Colleges Competing</h3>
+                    <h3 th:if="${battle == null}"><i class="fas fa-university" style="margin-right: 6px;"></i> Colleges in Battle</h3>
+                    <h3 th:if="${battle != null and isCreator}"><i class="fas fa-university" style="margin-right: 6px;"></i> Students by College</h3>
+                    <h3 th:if="${battle != null and !isCreator}"><i class="fas fa-university" style="margin-right: 6px;"></i> Colleges Competing</h3>
                 </div>
 
                 <!-- College list when data exists -->
@@ -1613,7 +1613,7 @@
 
             <div class="widget-card">
                 <div class="widget-header">
-                    <h3>ðŸŽ¯ Categories</h3>
+                    <h3><i class="fas fa-bullseye" style="margin-right: 6px;"></i> Categories</h3>
                 </div>
                 <div style="display:flex; flex-wrap:wrap; gap:6px;">
                     <span style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(59,130,246,0.1); color:#3B82F6; border:1px solid rgba(59,130,246,0.15);">Coding</span>
@@ -1632,9 +1632,9 @@
         </aside>
     </div>
 
-    <!-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+    <!-- ──────────────────────────────────────── -->
     <!-- CREATE BATTLE MODAL -->
-    <!-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+    <!-- ──────────────────────────────────────── -->
     <div class="arena-modal-overlay" id="createBattleModal">
         <div class="arena-modal">
             <button class="arena-modal-close" onclick="closeCreateBattle()">&times;</button>
@@ -1647,7 +1647,7 @@
 
             <!-- Step 1: Title & Category -->
             <div id="create-step-1">
-                <h2>âš”ï¸ Create Battle</h2>
+                <h2>&#9876;&#65039; Create Battle</h2>
                 <p class="subtitle">Set up a creative challenge for your friends</p>
                 <form id="createBattleForm" th:action="@{/battles/create}" method="POST">
                     <div class="arena-field">
@@ -1686,9 +1686,10 @@
                         <!-- Mode Selector -->
                         <div class="arena-field">
                             <label>Battle Mode</label>
-                            <select id="modeSelect" name="mode" onchange="toggleBattleMode(this.value)" style="padding:12px; font-size:14px; font-weight:700;">
-                                <option value="ONLINE" selected>ðŸŒ Online (Default Web Submission)</option>
-                            </select>
+                            <div style="background:#F8FAFC; border:1.5px solid rgba(15,23,42,0.12); border-radius:12px; padding:12px; font-size:14px; font-weight:700; color:var(--text-primary);">
+                                &#127760; Online
+                            </div>
+                            <input type="hidden" name="mode" value="ONLINE" />
                         </div>
 
                         <!-- Offline Specific Fields (Hidden by default) -->
@@ -1704,7 +1705,7 @@
                                 </div>
                                 <div class="arena-field">
                                     <label>Event Time</label>
-                                    <input type="text" name="eventTime" placeholder="e.g. 10:00 AM Ã¢â‚¬â€œ 1:00 PM" />
+                                    <input type="text" name="eventTime" placeholder="e.g. 10:00 AM – 1:00 PM" />
                                 </div>
                             </div>
 
@@ -1721,20 +1722,20 @@
                         </div>
 
                         <div class="arena-field">
-                            <label>Entry Fee (₹)</label>
+                            <label>Entry Fee (&#8377;)</label>
                             <input type="number" step="0.01" name="entryFee" min="0" placeholder="e.g. 50.00" required />
                         </div>
-                        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom: 20px;">
+                        <div id="prizesGrid" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom: 20px;">
                             <div class="arena-field" style="margin-bottom:0;">
-                                <label><i class="fas fa-trophy" style="color:#FFD700;"></i> 1st Prize (₹)</label>
+                                <label><i class="fas fa-trophy" style="color:#FFD700;"></i> 1st Prize (&#8377;)</label>
                                 <input type="number" step="0.01" name="prize1" min="0" placeholder="0" required />
                             </div>
                             <div class="arena-field" style="margin-bottom:0;">
-                                <label><i class="fas fa-trophy" style="color:#C0C0C0;"></i> 2nd Prize (₹)</label>
+                                <label><i class="fas fa-trophy" style="color:#C0C0C0;"></i> 2nd Prize (&#8377;)</label>
                                 <input type="number" step="0.01" name="prize2" min="0" placeholder="0" required />
                             </div>
-                            <div class="arena-field" style="margin-bottom:0;">
-                                <label><i class="fas fa-trophy" style="color:#cd7f32;"></i> 3rd Prize (₹)</label>
+                            <div id="prize3Container" class="arena-field" style="margin-bottom:0;">
+                                <label><i class="fas fa-trophy" style="color:#cd7f32;"></i> 3rd Prize (&#8377;)</label>
                                 <input type="number" step="0.01" name="prize3" min="0" placeholder="0" required />
                             </div>
                         </div>
@@ -1806,13 +1807,13 @@
         </div>
     </div>
 
-    <!-- â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull; -->
+    <!-- ═══════════════════════════════════════════════════ -->
     <!-- JOIN BATTLE MODAL -->
-    <!-- â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull; -->
+    <!-- ═══════════════════════════════════════════════════ -->
     <div class="arena-modal-overlay" id="joinBattleModal">
         <div class="arena-modal">
             <button class="arena-modal-close" onclick="closeJoinBattle()">&times;</button>
-            <h2>ðŸšª Join Battle</h2>
+            <h2>🚪 Join Battle</h2>
             <p class="subtitle">Enter the 6-character room code to join a battle</p>
             <form th:action="@{/battles/join}" method="POST">
                 <div class="arena-field">
@@ -1829,13 +1830,13 @@
         </div>
     </div>
 
-    <!-- â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull; -->
+    <!-- ═══════════════════════════════════════════════════ -->
     <!-- CONFETTI (for winner page) -->
-    <!-- â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull; -->
+    <!-- ═══════════════════════════════════════════════════ -->
     <div class="confetti-container" id="confettiContainer"></div>
 
     <script>
-        // â”€â”€â”€ Tab Switching â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ─── Tab Switching ──────────────────────────────
         function showTab(tab, btn) {
             document.getElementById('tab-active').style.display = tab === 'active' ? 'block' : 'none';
             document.getElementById('tab-completed').style.display = tab === 'completed' ? 'block' : 'none';
@@ -1843,7 +1844,7 @@
             btn.classList.add('active');
         }
 
-        // â”€â”€â”€ Offline Mode Settings Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ─── Offline Mode Settings Helpers ───────────────
         function toggleBattleMode(val) {
             document.getElementById('offlineFieldsContainer').style.display = val === 'OFFLINE' ? 'block' : 'none';
         }
@@ -1865,7 +1866,7 @@
             }
         }
 
-        // â”€â”€â”€ Modals â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ─── Modals ─────────────────────────────────────
         function openCreateBattle() { document.getElementById('createBattleModal').classList.add('show'); }
         function closeCreateBattle() { document.getElementById('createBattleModal').classList.remove('show'); goToStep1(); }
         function openJoinBattle() { document.getElementById('joinBattleModal').classList.add('show'); }
@@ -1878,7 +1879,7 @@
             });
         });
 
-        // â”€â”€â”€ Create Steps â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ─── Create Steps ───────────────────────────────
         function goToStep2() {
             const title = document.getElementById('battleTitle').value.trim();
             const category = document.getElementById('selectedCategory').value;
@@ -1902,14 +1903,14 @@
             document.getElementById('step-dot-1').classList.add('active');
         }
 
-        // â”€â”€â”€ Category Selection â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ─── Category Selection ─────────────────────────
         function selectBattleCategory(el, category) {
             document.querySelectorAll('.category-option').forEach(c => c.classList.remove('selected'));
             el.classList.add('selected');
             document.getElementById('selectedCategory').value = category;
         }
 
-        // â”€â”€â”€ Copy Room Code â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ─── Copy Room Code ─────────────────────────────
         function copyCode(code) {
             navigator.clipboard.writeText(code).then(() => {
                 const tooltip = document.createElement('div');
@@ -1920,7 +1921,7 @@
             });
         }
 
-        // â”€â”€â”€ Confetti for Winner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ─── Confetti for Winner ────────────────────────
         if (document.getElementById('winner-display')) {
             launchConfetti();
         }
@@ -1941,7 +1942,7 @@
             setTimeout(() => container.innerHTML = '', 5000);
         }
 
-        // â”€â”€â”€ Custom Option Toggles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ─── Custom Option Toggles ──────────────────────
         function toggleCustomDuration(val) {
             document.getElementById('customDurationContainer').style.display = val === 'custom' ? 'block' : 'none';
         }
@@ -1994,7 +1995,7 @@
             }
         });
 
-        // â”€â”€â”€ Live Countdown Timer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ─── Live Countdown Timer ───────────────────────
         function initCountdown() {
             const container = document.getElementById('countdownContainer');
             const timerEl = document.getElementById('countdownTimer');
@@ -2031,7 +2032,7 @@
         }
         document.addEventListener('DOMContentLoaded', initCountdown);
 
-        // â”€â”€â”€ Local File Uploading â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ─── Local File Uploading ───────────────────────
         async function uploadLocalFile(fileInputId, targetInputId, statusSpanId) {
             const fileInput = document.getElementById(fileInputId);
             const targetInput = document.getElementById(targetInputId);
@@ -2099,6 +2100,11 @@
                 // Restore settings
                 pSelect.disabled = false;
                 customPartInput.disabled = false;
+                
+                const prizesGrid = document.getElementById('prizesGrid');
+                if (prizesGrid) prizesGrid.style.gridTemplateColumns = '1fr 1fr 1fr';
+                const prize3Container = document.getElementById('prize3Container');
+                if (prize3Container) prize3Container.style.display = 'block';
                 prize3Input.disabled = false;
             } else {
                 hWrap.style.display = 'none';
@@ -2111,6 +2117,10 @@
                 pSelect.disabled = true;
                 customPartInput.disabled = true;
                 
+                const prizesGrid = document.getElementById('prizesGrid');
+                if (prizesGrid) prizesGrid.style.gridTemplateColumns = '1fr 1fr';
+                const prize3Container = document.getElementById('prize3Container');
+                if (prize3Container) prize3Container.style.display = 'none';
                 prize3Input.value = "0";
                 prize3Input.disabled = true;
                 

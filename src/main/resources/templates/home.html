@@ -23,25 +23,13 @@
             justify-content: center;
             overflow: hidden;
             margin-top: 0;
-            background: url('https://www.drivetrafficmedia.com/wp-content/uploads/2016/06/social-media-meetup-to-help-seo.jpg') no-repeat center center;
-            background-size: cover;
-            background-color: #0d1e3e; /* Fallback matching the macOS Sequoia tone */
-        }
-
-        .hero-bg-video {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            z-index: 1;
+            background: linear-gradient(135deg, #0b1528 0%, #1e1b4b 50%, #0d1e3e 100%);
         }
 
         .hero-video-overlay {
             position: absolute;
             inset: 0;
-            background: rgba(13, 30, 62, 0.45); /* Premium glassmorphic overlay for contrast */
+            background: rgba(13, 30, 62, 0.25); /* Premium glassmorphic overlay for contrast */
             z-index: 2;
         }
 
@@ -278,10 +266,6 @@
 
     <!-- Hero Section -->
     <section class="hero-lottie-section">
-        <!-- Background Video -->
-        <video autoplay loop muted playsinline class="hero-bg-video">
-            <source src="https://v1.pinimg.com/videos/iht/expMp4/26/fc/31/26fc318f8f7f56ae9a721cb1e58dd988_720w.mp4" type="video/mp4">
-        </video>
         <!-- Dark overlay to keep macOS dock extremely legible and premium -->
         <div class="hero-video-overlay"></div>
 
@@ -330,7 +314,7 @@
         <div class="feature-grid">
             <a class="feature-item reveal" th:href="@{/messages}">
                 <div class="feature-media">
-                    <img src="https://images.openai.com/static-rsc-4/8f5hqzs1t1WYBdG1_Qh2J9hf4rpwZcjV-2dsnlHCqPRQ8CpeB9QCyGYLUWrlalbsvZBcMYNixaLW2VVWxtJtBy9FhP7UPyuxdYr8lb70QnGxC2oYVM9KjX7QKJIDyBzbjfWS4C5we5XcDwd78boKd75QItf8oIagKepnamSDpLQdxWlUGSeypNfPeksqQEMr?purpose=fullsize"
+                    <img src="https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?q=80&w=800&auto=format&fit=crop"
                         alt="Real-time chat">
                 </div>
                 <div class="feature-text">
@@ -345,7 +329,7 @@
             </a>
             <a class="feature-item reveal" th:href="@{/dashboard}">
                 <div class="feature-media">
-                    <img src="https://images.openai.com/static-rsc-4/I2yVlMtcIKk4BAdQBKnkmCJA7yxYhCYrHQDtMyN4d_00YE_Y8iOpmV0e6U1R_OcMcj5LGKASruMRDgrU08RQosTJamwcjVFPlYTilt3HdW0DHphHwOtCqZkkrkJCgpjRpg6TM9utFk_FkM6t3k7stdwhXXQhEBGuINrrGCNF5igWAXCqv_2zAW3iOgK66lLC?purpose=fullsize"
+                    <img src="https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?q=80&w=800&auto=format&fit=crop"
                         alt="Discovery Feed">
                 </div>
                 <div class="feature-text">
@@ -360,7 +344,7 @@
             </a>
             <a class="feature-item reveal" th:href="@{/reels}">
                 <div class="feature-media">
-                    <img src="https://images.openai.com/static-rsc-4/9AJw0q6urbrbCbdwHdnLA3z9FSezNyKiYI8Bn8e9y1pBjquKHxfTgILbCGcizmMG7mv3PenxlbZcLxOEeb0a655_E6DK_k39UGJiWNXjdUNgzkdKYQtVJao8kkbyuFFQ3QZoikkwwpMNT2_U35MCUPab9akPduI56kgPglW2t-PmlXf7Kv9D_t18fUxw67TH?purpose=fullsize"
+                    <img src="https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?q=80&w=800&auto=format&fit=crop"
                         alt="Reels">
                 </div>
                 <div class="feature-text">
@@ -375,7 +359,7 @@
             </a>
             <a class="feature-item reveal" th:href="@{/events}">
                 <div class="feature-media">
-                    <img src="https://images.openai.com/static-rsc-4/HOqgBWLRRLbZCig4wBt5a1cmHTovXHqkkC665h4a6O804b4vYiZIH0O38tx6spX_1h1hQk7rn3rSJ7_1-ah8ZOU-ndUWS0nu9BBcgwwHGHsXGqeeExRmdgYs2bz6roIle9zalkDc_xCY3tpuRTKxKgHkDtBUBU8R9wK1WggwShTfwwaNxWRyyUIb9-npXR9z?purpose=fullsize"
+                    <img src="https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=800&auto=format&fit=crop"
                         alt="Local events">
                 </div>
                 <div class="feature-text">
@@ -392,7 +376,7 @@
             <!-- New Features -->
             <a class="feature-item reveal" th:href="@{/achievements}">
                 <div class="feature-media">
-                    <img src="https://images.openai.com/static-rsc-4/Tba901diyp0WM3Wg2kgGwyzRwgHfQ3kMp4NvdS1HyXG_MaggLsi7VEu5rJ0-AfNJWGJqkR_o60C-F4IAUbrItcQdkC2HiIHp-GCJ7TOFodjlO-hCoDBXlvm9FwCkrr_Y992uLa1O4jX8306mpl3CaUMScpaKbGiYBZOyn6b5wLr8qb2GMjOCBiP14c3pcQr0?purpose=fullsize"
+                    <img src="https://images.unsplash.com/photo-1578269174936-2709b5a5e06e?q=80&w=800&auto=format&fit=crop"
                         alt="Elite badges">
                 </div>
                 <div class="feature-text">
@@ -408,7 +392,7 @@
             </a>
             <a class="feature-item reveal" th:href="@{/games}">
                 <div class="feature-media">
-                    <img src="https://images.openai.com/static-rsc-4/OFPJGQFNps-xfB2336F_aEY-VXXAEFs8fTZ2SpniKDuhhHUUMA5BIWHYVxXL1PiDpANA8Ro7WeTrvkHyoeNPtMbOjyzOzWqZ0_ySf6PPWEEKI-NddJw5euRuwfVx1RZmJn4HzUUEAr8IOkfVgY-sWWZriXRtC7O6_NGa9J1bjgzTJkLJZl2irr6WNwSznGLt?purpose=fullsize"
+                    <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=800&auto=format&fit=crop"
                         alt="Global arenas">
                 </div>
                 <div class="feature-text">
@@ -524,7 +508,7 @@
             </a>
             <a th:href="@{/events}" class="category-card cat-yellow">
                 <div class="category-icon">
-                    <img src="https://images.openai.com/static-rsc-4/7vJOijI2a89kUbkkKGPE1civqgvqnF-D_w13F4AHwlfKmMTxi-A_i4ejlU66hYVhgT1juw-DIWDZ3X3xgaBx-iGqApFRFkBKauFlli5PpyHYPDuAJjbH2xIPkzbFki3iYukgMsVDBSE5RXf9I1SzoD39VDXjb20YPoYhQ4B0Fp_joULvx53arGpUO164Ft6e?purpose=fullsize"
+                    <img src="https://images.unsplash.com/photo-1585647347483-22b66260dfff?q=80&w=800&auto=format&fit=crop"
                         alt="Comedy category">
                 </div>
                 <div class="category-info">
@@ -656,7 +640,7 @@
             </div>
             <div class="media-side">
                 <div style="border-radius: 30px; overflow: hidden; box-shadow: var(--shadow-premium); border: 1px solid rgba(0,0,0,0.04);">
-                    <img src="https://images.openai.com/static-rsc-4/QsTjw6zTxJImq5FwCkYrx7APzbFBLizzIdysGwAuR8F8ku5xuaOawqLZpZfox0gO6MK4qc_Ts7L3kWrnEk5-2MkIdL5i5n_gqDZPaJK8OoLSl_5yFzFCOhKrP5ztM3ROpx7O5TJ5jknmYvbBsnL2etTI4eCyDQLePlvOkWv4A8S7XK8I52uQGIotSlS-RadM?purpose=fullsize" 
+                    <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=800&auto=format&fit=crop" 
                          alt="About Zentrix" style="width: 100%; height: 400px; object-fit: cover;">
                 </div>
             </div>

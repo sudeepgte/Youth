@@ -56,7 +56,7 @@
 
                 <!-- Participant A Video Box -->
                 <div class="live-video-box" id="video-box-a">
-                    <div th:if="${#lists.size(participants) > 0}">
+                    <div th:if="${#lists.size(participants) > 0}" style="width: 100%; height: 100%;">
                         <video id="local-video"
                                th:if="${participants[0].user.id.equals(user.id)}"
                                autoplay playsinline muted></video>
@@ -100,7 +100,7 @@
 
                 <!-- Participant B Video Box -->
                 <div class="live-video-box" id="video-box-b">
-                    <div th:if="${#lists.size(participants) > 1}">
+                    <div th:if="${#lists.size(participants) > 1}" style="width: 100%; height: 100%;">
                         <video id="local-video-b"
                                th:if="${participants[1].user.id.equals(user.id)}"
                                autoplay playsinline muted></video>
@@ -319,6 +319,8 @@
     // Dynamic endpoints respecting context path
     const wsUrl = /*[[@{/ws}]]*/ '/ws';
     const battleBaseUrl = /*[[@{/battles/}]]*/ '/battles/';
+    const participantA_Id = /*[[${#lists.size(participants) > 0 ? participants[0].user.id : null}]]*/ null;
+    const participantB_Id = /*[[${#lists.size(participants) > 1 ? participants[1].user.id : null}]]*/ null;
 
     let stompClient = null;
     let localStream = null;
@@ -354,6 +356,7 @@
             stompClient.subscribe('/topic/battle/' + battleId + '/votes', onVoteReceived);
             stompClient.subscribe('/topic/battle/' + battleId + '/status', onStatusReceived);
             stompClient.subscribe('/topic/battle/' + battleId + '/signal', onSignalReceived);
+            stompClient.subscribe('/topic/battle/' + battleId + '/signal/' + userId, onSignalReceived);
             stompClient.subscribe('/topic/battle/' + battleId + '/participants', onParticipantUpdate);
 
             // Announce join
@@ -375,7 +378,13 @@
     /* ─── 2. WebRTC Media ───────────────────────────────── */
     async function startLocalMedia() {
         const constraints = {};
-        if (devices.includes('camera')) constraints.video = true;
+        if (devices.includes('camera')) {
+            constraints.video = {
+                width: { ideal: 640, max: 1280 },
+                height: { ideal: 480, max: 720 },
+                frameRate: { ideal: 20, max: 24 }
+            };
+        }
         if (devices.includes('mic')) constraints.audio = true;
 
         if (devices.includes('screen')) {
@@ -526,10 +535,20 @@
     }
 
     /* ─── 3. WebRTC Peer Connection ─────────────────────── */
-    const ICE_SERVERS = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
+    const ICE_SERVERS = {
+        iceServers: [
+            { urls: 'stun:stun.l.google.com:19302' },
+            { urls: 'stun:stun1.l.google.com:19302' },
+            { urls: 'stun:stun2.l.google.com:19302' },
+            { urls: 'stun:stun3.l.google.com:19302' },
+            { urls: 'stun:stun4.l.google.com:19302' }
+        ]
+    };
 
     function createPeerConnection(remoteUserId) {
         const pc = new RTCPeerConnection(ICE_SERVERS);
+        pc.remoteUserId = remoteUserId;
+        pc.iceCandidateQueue = [];
         peerConnections[remoteUserId] = pc;
 
         // Add local tracks
@@ -541,17 +560,25 @@
 
         // Handle incoming remote tracks
         pc.ontrack = function(event) {
-            // Find the correct remote video element
-            var remoteVideo = document.getElementById('remote-video-a');
-            if (!remoteVideo || remoteVideo.srcObject) {
+            console.log('Received track for user:', remoteUserId, event.track.kind);
+            if (!event.streams || !event.streams[0]) return;
+
+            let remoteVideo = null;
+            if (remoteUserId == participantA_Id) {
+                remoteVideo = document.getElementById('remote-video-a');
+            } else if (remoteUserId == participantB_Id) {
                 remoteVideo = document.getElementById('remote-video-b');
             }
-            if (remoteVideo && event.streams[0]) {
-                remoteVideo.srcObject = event.streams[0];
+
+            if (remoteVideo) {
+                if (remoteVideo.srcObject !== event.streams[0]) {
+                    remoteVideo.srcObject = event.streams[0];
+                    console.log('Assigned remote stream to video element for user:', remoteUserId);
+                }
                 // Hide placeholder
-                var box = remoteVideo.closest('.live-video-box');
+                const box = remoteVideo.closest('.live-video-box');
                 if (box) {
-                    var placeholder = box.querySelector('.live-video-placeholder');
+                    const placeholder = box.querySelector('.live-video-placeholder');
                     if (placeholder) placeholder.style.display = 'none';
                 }
             }
@@ -570,7 +597,7 @@
         };
 
         pc.onconnectionstatechange = function() {
-            console.log('Peer connection state:', pc.connectionState);
+            console.log('Peer connection state for user ' + remoteUserId + ':', pc.connectionState);
         };
 
         return pc;
@@ -605,6 +632,17 @@
         else if (data.type === 'offer' && data.targetUserId === userId) {
             var pc2 = createPeerConnection(data.userId);
             await pc2.setRemoteDescription(new RTCSessionDescription(data.offer));
+            
+            // Process queued candidates
+            if (pc2.iceCandidateQueue) {
+                for (const cand of pc2.iceCandidateQueue) {
+                    try {
+                        await pc2.addIceCandidate(new RTCIceCandidate(cand));
+                    } catch(e) { console.error("Error adding queued candidate", e); }
+                }
+                pc2.iceCandidateQueue = [];
+            }
+
             var answer = await pc2.createAnswer();
             await pc2.setLocalDescription(answer);
             sendSignal({
@@ -616,11 +654,30 @@
         }
         else if (data.type === 'answer' && data.targetUserId === userId) {
             var pc3 = peerConnections[data.userId];
-            if (pc3) await pc3.setRemoteDescription(new RTCSessionDescription(data.answer));
+            if (pc3) {
+                await pc3.setRemoteDescription(new RTCSessionDescription(data.answer));
+                // Process queued candidates
+                if (pc3.iceCandidateQueue) {
+                    for (const cand of pc3.iceCandidateQueue) {
+                        try {
+                            await pc3.addIceCandidate(new RTCIceCandidate(cand));
+                        } catch(e) { console.error("Error adding queued candidate", e); }
+                    }
+                    pc3.iceCandidateQueue = [];
+                }
+            }
         }
         else if (data.type === 'candidate' && data.targetUserId === userId) {
             var pc4 = peerConnections[data.userId];
-            if (pc4) await pc4.addIceCandidate(new RTCIceCandidate(data.candidate));
+            if (pc4) {
+                if (pc4.remoteDescription && pc4.remoteDescription.type) {
+                    try {
+                        await pc4.addIceCandidate(new RTCIceCandidate(data.candidate));
+                    } catch(e) { console.error("Error adding candidate", e); }
+                } else {
+                    pc4.iceCandidateQueue.push(data.candidate);
+                }
+            }
         }
     }
 
