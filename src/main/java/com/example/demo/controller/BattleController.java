@@ -332,6 +332,9 @@ public class BattleController {
         if (!battle.getCreator().getId().equals(user.getId())) return "redirect:/battles/" + id;
         if (!"WAITING".equals(battle.getStatus())) return "redirect:/battles/" + id;
 
+        long participantCount = participantRepository.countByBattle(battle);
+        if (participantCount < 2) return "redirect:/battles/" + id;
+
         battle.setStatus("ACTIVE");
         battle.setStartedAt(LocalDateTime.now());
         if (battle.getDurationMinutes() != null && battle.getDurationMinutes() > 0) {
@@ -446,6 +449,9 @@ public class BattleController {
         Battle battle = battleRepository.findById(id).orElse(null);
         if (battle == null) return "redirect:/battles";
         if (!"ACTIVE".equals(battle.getStatus())) return "redirect:/battles/" + id + "?error=not_active";
+        if (battle.getDurationMinutes() != null && battle.getDurationMinutes() > 0) {
+            return "redirect:/battles/" + id + "?error=unauthorized";
+        }
         if (!participantRepository.existsByBattleAndUser(battle, user)) return "redirect:/battles/" + id + "?error=not_participant";
         if (submissionRepository.existsByBattleAndUser(battle, user)) return "redirect:/battles/" + id + "?error=already_submitted";
 

@@ -49,7 +49,13 @@ public class BattleLiveWebSocketController {
     // 1. WebRTC Signaling - just forward the message to the battle topic
     @MessageMapping("/battle/{battleId}/signal")
     public void handleSignal(@DestinationVariable Long battleId, @Payload Map<String, Object> signal, Principal principal) {
-        messagingTemplate.convertAndSend("/topic/battle/" + battleId + "/signal", (Object) signal);
+        Object targetUserIdObj = signal.get("targetUserId");
+        if (targetUserIdObj != null) {
+            String targetUserId = targetUserIdObj.toString();
+            messagingTemplate.convertAndSend("/topic/battle/" + battleId + "/signal/" + targetUserId, (Object) signal);
+        } else {
+            messagingTemplate.convertAndSend("/topic/battle/" + battleId + "/signal", (Object) signal);
+        }
     }
 
     // 2. Live Comment
