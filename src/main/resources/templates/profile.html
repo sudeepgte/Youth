@@ -595,7 +595,7 @@
             </a>
             <div class="profile-dropdown">
                 <a th:href="@{/profile}" class="active">
-                    <img th:src="${session.user.profilePhotoUrl != null and !session.user.profilePhotoUrl.isEmpty()} ? @{${session.user.profilePhotoUrl}} : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=1780&auto=format&fit=crop'"
+                    <img th:src="${user != null and user.profilePhotoUrl != null and !user.profilePhotoUrl.isEmpty()} ? @{${user.profilePhotoUrl}} : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=1780&auto=format&fit=crop'"
                         class="user-avatar" style="width: 32px; height: 32px; border: none;">
                 </a>
                 <div class="dropdown-menu">
