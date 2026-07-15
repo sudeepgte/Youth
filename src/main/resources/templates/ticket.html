@@ -27,7 +27,7 @@
             padding: 80px 20px 60px;
         }
 
-        /* ── Top nav ── */
+        /* â”€â”€ Top nav â”€â”€ */
         .topbar {
             position: fixed;
             top: 0;
@@ -66,7 +66,7 @@
             color: #fff;
         }
 
-        /* ── Success Header ── */
+        /* â”€â”€ Success Header â”€â”€ */
         .success-header {
             text-align: center;
             margin-bottom: 40px;
@@ -127,7 +127,7 @@
             font-size: 15px;
         }
 
-        /* ── Ticket ── */
+        /* â”€â”€ Ticket â”€â”€ */
         .ticket-wrapper {
             width: 100%;
             max-width: 680px;
@@ -166,7 +166,7 @@
             background: radial-gradient(circle, rgba(139, 92, 246, 0.12) 0%, transparent 70%);
         }
 
-        /* ── Ticket Top ── */
+        /* â”€â”€ Ticket Top â”€â”€ */
         .ticket-top {
             position: relative;
             display: flex;
@@ -241,7 +241,7 @@
             text-align: center;
         }
 
-        /* ── Perforation ── */
+        /* â”€â”€ Perforation â”€â”€ */
         .perforated {
             position: relative;
             margin: 0 20px;
@@ -268,7 +268,7 @@
             right: -36px;
         }
 
-        /* ── Ticket Body ── */
+        /* â”€â”€ Ticket Body â”€â”€ */
         .ticket-body {
             padding: 24px 28px;
             display: grid;
@@ -292,7 +292,7 @@
             color: #fff;
         }
 
-        /* ── Ticket Footer (Ticket ID + QR) ── */
+        /* â”€â”€ Ticket Footer (Ticket ID + QR) â”€â”€ */
         .ticket-footer {
             padding: 0 28px 28px;
             display: flex;
@@ -364,7 +364,7 @@
             white-space: nowrap;
         }
 
-        /* ── Action Buttons ── */
+        /* â”€â”€ Action Buttons â”€â”€ */
         .ticket-actions {
             display: flex;
             gap: 12px;
@@ -410,7 +410,7 @@
             color: #fff;
         }
 
-        /* ── Confetti ── */
+        /* â”€â”€ Confetti â”€â”€ */
         .confetti-piece {
             position: fixed;
             top: -10px;
@@ -433,28 +433,45 @@
                 opacity: 0;
             }
         }
+        @media print {
+            body { background: #fff !important; padding: 0 !important; margin: 0 !important; }
+            .topbar, .success-header, .ticket-actions, .confetti-piece { display: none !important; }
+            .ticket-wrapper, .ticket { box-shadow: none !important; margin: 0 !important; width: 100% !important; max-width: 100% !important; }
+            .ticket { background: #fff !important; border: 2px solid #000 !important; }
+            .ticket::before, .ticket::after { display: none !important; }
+            .ticket-banner-overlay { display: none !important; }
+            .perforated { border-top: 2px dashed #000 !important; }
+            .perf-circle { background: #fff !important; border: 2px solid #000 !important; }
+            .ticket-id-value { background: none !important; -webkit-text-fill-color: #000 !important; }
+            .mini-qr { border: 1px solid #ccc !important; }
+            * { color: #000 !important; text-shadow: none !important; }
+            .ticket-cat, .ticket-status-badge { border: 1px solid #000 !important; background: transparent !important; }
+            /* Handle inline styles for selected tickets / rewards */
+            div[style*="border: 1px solid rgba(255,255,255,0.08)"] { border: 1px solid #ccc !important; }
+            span[style*="background: rgba(255,255,255,0.1)"] { border: 1px solid #000 !important; }
+        }
     </style>
 </head>
 
 <body>
     <!-- Topbar -->
     <div class="topbar">
-        <div class="brand">⚡ Zentrix</div>
+        <div class="brand">Zentrix</div>
         <div class="nav-links">
             <a th:href="@{/events}">Browse Events</a>
             <a th:href="@{/dashboard}">Dashboard</a>
         </div>
     </div>
 
-    <!-- ═════ Success Header ═════ -->
+    <!-- â&bull;â&bull;â&bull;â&bull;â&bull; Success Header â&bull;â&bull;â&bull;â&bull;â&bull; -->
     <div class="success-header">
         <div class="success-icon-wrap"><i class="fas fa-check"></i></div>
-        <h1>You're Registered! 🎉</h1>
+        <h1>You're Registered!</h1>
         <p th:if="${registration.paymentStatus == 'PAID'}">Payment confirmed &middot; Your ticket is ready below</p>
         <p th:if="${registration.paymentStatus != 'PAID'}">Registration successful &middot; Your free ticket is ready below</p>
     </div>
 
-    <!-- ═════ TICKET ═════ -->
+    <!-- â&bull;â&bull;â&bull;â&bull;â&bull; TICKET â&bull;â&bull;â&bull;â&bull;â&bull; -->
     <div class="ticket-wrapper">
         <div class="ticket" id="ticketCard">
             <!-- Public Verification Banner (Only shows when scanned/public) -->
@@ -530,7 +547,7 @@
                 </div>
                 <div class="ticket-field">
                     <label>Amount Paid</label>
-                    <div class="val" th:text="${registration.totalPrice != null and registration.totalPrice > 0 ? '&#8377;' + #numbers.formatDecimal(registration.totalPrice, 1, 0) : (event.price == null or event.price == 'Free' or event.price == '0' ? 'Free' : '&#8377;0')}">Free</div>
+                    <div class="val" th:text="${registration.totalPrice != null and registration.totalPrice > 0 ? '₹' + #numbers.formatDecimal(registration.totalPrice, 1, 0) : (event.price == null or event.price == 'Free' or event.price == '0' ? 'Free' : '₹0')}">Free</div>
                 </div>
                 
                 <!-- Secret Reward Section -->
@@ -661,7 +678,7 @@
     </div><!-- /ticket-wrapper -->
 
     <script>
-        // ── Confetti on load ──
+        // â”€â”€ Confetti on load â”€â”€
         (function spawnConfetti() {
             const colors = ['#f84464', '#ff6b9d', '#10b981', '#8b5cf6', '#f59e0b', '#3b82f6'];
             for (let i = 0; i < 70; i++) {
@@ -681,7 +698,7 @@
             }
         })();
 
-        // ── Print Ticket ──
+        // â”€â”€ Print Ticket â”€â”€
         function printTicket() {
             window.print();
         }

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 
 <head>
@@ -547,7 +547,7 @@
             </a>
             <div class="profile-dropdown">
                 <a th:href="@{/profile}" style="position: relative;">
-                    <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=1780&auto=format&fit=crop"
+                    <img th:src="${user != null and user.profilePhotoUrl != null and !user.profilePhotoUrl.isEmpty()} ? @{${user.profilePhotoUrl}} : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=1780&auto=format&fit=crop'"
                         class="user-avatar" style="width: 32px; height: 32px; border: none;">
                     <span th:if="${pendingCount != null && pendingCount > 0}"
                         style="position: absolute; top: -5px; right: -5px; background: red; color: white; border-radius: 50%; padding: 2px 5px; font-size: 10px; font-weight: bold;"
@@ -608,7 +608,7 @@
                     <div style="position: relative; width: clamp(55px, 8vw, 65px); height: clamp(55px, 8vw, 65px); margin: 0 auto 5px; flex-shrink: 0; aspect-ratio: 1/1;">
                         <div
                             th:style="${hasStory} ? 'width: 100%; height: 100%; border-radius: 50%; background: linear-gradient(45deg, #3B82F6 0%, #22D3EE 100%); padding: 3px; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4); box-sizing: border-box;' : 'width: 100%; height: 100%; border-radius: 50%; background: var(--glass-border); padding: 2px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); box-sizing: border-box;'">
-                            <img th:src="${session.user.profilePhotoUrl != null and !session.user.profilePhotoUrl.isEmpty()} ? (${session.user.profilePhotoUrl.startsWith('/')} ? @{${session.user.profilePhotoUrl}} : ${session.user.profilePhotoUrl}) : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=1780&auto=format&fit=crop'"
+                            <img th:src="${user != null and user.profilePhotoUrl != null and !user.profilePhotoUrl.isEmpty()} ? (${user.profilePhotoUrl.startsWith('/')} ? @{${user.profilePhotoUrl}} : ${user.profilePhotoUrl}) : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=1780&auto=format&fit=crop'"
                                 style="width: 100%; height: 100%; border-radius: 50%; border: 2px solid #ffffff; object-fit: cover; pointer-events: none; box-sizing: border-box; display: block;">
                         </div>
                         <!-- Plus badge overlapping by 25-30% with 2.5px white border -->
@@ -916,18 +916,30 @@
                             comments yet.</div>
                     </div>
                     <!-- Emoji Selection Bar -->
-                    <div class="emoji-bar" style="display:flex; gap:12px; margin-bottom:8px; overflow-x:auto; padding:4px 2px; scrollbar-width:none; -ms-overflow-style:none;">
-                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'â¤ï¸\')'">â¤ï¸</span>
-                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'&#128514;\')'">&#128514;</span>
-                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'&#128293;\')'">&#128293;</span>
-                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'ðŸ˜\')'">ðŸ˜</span>
-                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'ðŸ‘\')'">ðŸ‘</span>
-                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'&#128588;\')'">&#128588;</span>
-                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'&#128546;\')'">&#128546;</span>
-                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'&#128558;\')'">&#128558;</span>
-                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'&#127881;\')'">&#127881;</span>
-                        <span style="cursor:pointer; font-size:18px; user-select:none; transition:transform 0.1s ease;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'&#128175;\')'">&#128175;</span>
-                    </div>
+					<div class="emoji-bar"
+					     style="display:flex; gap:12px; margin-bottom:8px; overflow-x:auto; padding:4px 2px; scrollbar-width:none; -ms-overflow-style:none;">
+
+					    <span onclick="insertEmoji([[${post.id}]], '❤️')" style="cursor:pointer;font-size:18px;">❤️</span>
+
+					    <span onclick="insertEmoji([[${post.id}]], '😂')" style="cursor:pointer;font-size:18px;">😂</span>
+
+					    <span onclick="insertEmoji([[${post.id}]], '🔥')" style="cursor:pointer;font-size:18px;">🔥</span>
+
+					    <span onclick="insertEmoji([[${post.id}]], '😍')" style="cursor:pointer;font-size:18px;">😍</span>
+
+					    <span onclick="insertEmoji([[${post.id}]], '👏')" style="cursor:pointer;font-size:18px;">👏</span>
+
+					    <span onclick="insertEmoji([[${post.id}]], '🙌')" style="cursor:pointer;font-size:18px;">🙌</span>
+
+					    <span onclick="insertEmoji([[${post.id}]], '😢')" style="cursor:pointer;font-size:18px;">😢</span>
+
+					    <span onclick="insertEmoji([[${post.id}]], '😮')" style="cursor:pointer;font-size:18px;">😮</span>
+
+					    <span onclick="insertEmoji([[${post.id}]], '🎉')" style="cursor:pointer;font-size:18px;">🎉</span>
+
+					    <span onclick="insertEmoji([[${post.id}]], '💯')" style="cursor:pointer;font-size:18px;">💯</span>
+
+					</div>
                     <style>
                         .emoji-bar::-webkit-scrollbar { display:none; }
                     </style>
@@ -950,7 +962,7 @@
                                  <span style="cursor:pointer;" onclick="switchEmojiCategory(this, 'gestures')">ðŸ‘</span>
                                  <span style="cursor:pointer;" onclick="switchEmojiCategory(this, 'hearts')">â¤ï¸</span>
                                  <span style="cursor:pointer;" onclick="switchEmojiCategory(this, 'animals')">ðŸ±</span>
-                                 <span style="cursor:pointer;" onclick="switchEmojiCategory(this, 'food')">ðŸ•</span>
+                                 <span style="cursor:pointer;" onclick="switchEmojiCategory(this, 'food')">ðŸ&bull;</span>
                                  <span style="cursor:pointer;" onclick="switchEmojiCategory(this, 'activities')">&#9917;</span>
                              </div>
                              <!-- Emoji Content Area -->

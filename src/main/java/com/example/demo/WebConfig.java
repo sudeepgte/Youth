@@ -19,7 +19,7 @@ public class WebConfig implements WebMvcConfigurer {
     public void addInterceptors(org.springframework.web.servlet.config.annotation.InterceptorRegistry registry) {
         registry.addInterceptor(authInterceptor)
                 .addPathPatterns("/**")
-                .excludePathPatterns("/", "/home", "/login", "/register", "/css/**", "/js/**", "/images/**", "/uploads/**", "/play-*", "/play-runner");
+                .excludePathPatterns("/", "/home", "/login", "/register", "/css/**", "/js/**", "/images/**", "/uploads/**", "/play-*", "/play-runner", "/api/heatmap/**");
     }
 
     @Override

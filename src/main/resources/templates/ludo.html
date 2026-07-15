@@ -911,10 +911,35 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
                 });
                 stompClient.send("/app/ludo/" + state.roomId + "/subscribe", {}, "{}");
             });
+
+            window.addEventListener('beforeunload', () => {
+                if (stompClient && stompClient.connected && state.roomId) {
+                    stompClient.send("/app/ludo/" + state.roomId + "/leave", {}, "{}");
+                }
+            });
         }
 
         function syncState(roomState) {
             console.log("Syncing State:", roomState);
+            if (roomState.status === 'opponent_left') {
+                state.status = 'opponent_left';
+                if (rafId) cancelAnimationFrame(rafId);
+                ctx.clearRect(0, 0, BOARD_SIZE, BOARD_SIZE);
+                ctx.fillStyle = '#000000';
+                ctx.fillRect(0, 0, BOARD_SIZE, BOARD_SIZE);
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '20px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('Opponent left the game! Arena closed.', BOARD_SIZE / 2, BOARD_SIZE / 2);
+                
+                document.getElementById('lobbyOverlay').style.display = 'none';
+                document.getElementById('overlay').style.display = 'flex';
+                document.getElementById('startModal').style.display = 'none';
+                document.getElementById('winModal').style.display = 'block';
+                document.getElementById('winnerText').textContent = 'OPPONENT LEFT';
+                document.querySelector('.win-msg').textContent = 'Opponent left the game! Arena closed.';
+                return;
+            }
             // Map backend players to frontend pieces
             roomState.players.forEach((p, pi) => {
                 if (p.name) {

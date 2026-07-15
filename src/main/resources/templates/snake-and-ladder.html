@@ -512,7 +512,16 @@ const { useState, useEffect, useCallback, useRef, useMemo } = React;
                 }, (err) => {
                     console.error("WebSocket Connection Failed", err);
                 });
-                return () => stomp && stomp.disconnect();
+                const handleUnload = () => {
+                    if (stomp && stomp.connected) {
+                        stomp.send(`/app/snake/${roomId}/leave`, {}, "{}");
+                    }
+                };
+                window.addEventListener('beforeunload', handleUnload);
+                return () => {
+                    window.removeEventListener('beforeunload', handleUnload);
+                    stomp && stomp.disconnect();
+                };
             }, [roomId]);
 
             return {
@@ -577,6 +586,16 @@ const { useState, useEffect, useCallback, useRef, useMemo } = React;
             const { sendRoll, sendStart } = useSnakeSocket(roomId, onStateUpdate, onRollAnim);
 
             if (!state) return <div style={{ height: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#121212", color: "#fff", letterSpacing: 5 }}>SYNCING ARENA...</div>;
+
+            if (state.status === "opponent_left") {
+                return (
+                    <div className="game-wrapper" style={{ flexDirection: "column", alignItems: "center", justifyContent: "center", width: 620, minHeight: 400, textAlign: "center" }}>
+                        <h2 style={{ color: "#ff4757", fontSize: 32 }}>OPPONENT LEFT</h2>
+                        <p style={{ color: "#fff", margin: "20px 0" }}>Opponent left the game! Arena closed.</p>
+                        <button className="btn" style={{ maxWidth: 300 }} onClick={() => window.location.href = '/games'}>BACK TO LOBBY</button>
+                    </div>
+                );
+            }
 
             const myTurn = state.turn === playerIndex;
             const isGameOver = state.status === "finished";

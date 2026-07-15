@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${event.title} + ' · Attendance | Zentrix Admin'">Attendance</title>
+    <title th:text="${event.title} + ' &middot; Attendance | Zentrix Admin'">Attendance</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
@@ -982,7 +982,7 @@
         <div class="table-card">
             <div class="table-head">
                 <h2><i class="fas fa-list" style="color:#f84464; margin-right:8px;"></i>Registered Participants</h2>
-                <span style="font-size:12px; color:rgba(255,255,255,0.3);" th:text="${totalCount} + ' participants'">0
+                <span style="font-size:12px; color:var(--text-secondary);" th:text="${totalCount} + ' participants'">0
                     participants</span>
             </div>
             <table>
@@ -1003,17 +1003,17 @@
                         <td colspan="8" class="empty-row">No registrations yet for this event.</td>
                     </tr>
                     <tr th:each="reg, iter : ${registrations}">
-                        <td style="color:rgba(255,255,255,0.3);" th:text="${iter.index + 1}">1</td>
+                        <td style="color:var(--text-secondary);" th:text="${iter.index + 1}">1</td>
                         <td>
-                            <div style="font-weight:700;"
+                            <div style="font-weight:700; color:var(--text-primary);"
                                 th:text="${reg.fullName != null ? reg.fullName : reg.user.username}">Name</div>
-                            <div style="font-size:11px; color:rgba(255,255,255,0.35);"
+                            <div style="font-size:11px; color:var(--text-secondary);"
                                 th:text="${reg.email != null ? reg.email : reg.user.email}">email</div>
                         </td>
-                        <td style="color:rgba(255,255,255,0.5); font-size:12px;"
+                        <td style="color:var(--text-secondary); font-size:12px;"
                             th:text="${reg.phone != null ? reg.phone : '—'}">Phone</td>
                         <td><span class="ticket-chip" th:text="${reg.ticketId}">ZTX-XX-XXXX</span></td>
-                        <td style="color:rgba(255,255,255,0.4); font-size:12px;"
+                        <td style="color:var(--text-secondary); font-size:12px;"
                             th:text="${reg.registrationDate != null ? #temporals.format(reg.registrationDate, 'MMM dd, yyyy') : '—'}">
                             Date</td>
                         <td>
