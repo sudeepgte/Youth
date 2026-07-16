@@ -68,13 +68,15 @@ public class AuthController {
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     public String loginUser(@org.springframework.web.bind.annotation.RequestParam String username,
             @org.springframework.web.bind.annotation.RequestParam String password,
+            jakarta.servlet.http.HttpServletRequest request,
             jakarta.servlet.http.HttpSession session,
             jakarta.servlet.http.HttpServletResponse response) {
         if ("admin".equals(username) && "admin123".equals(password)) {
             String token = jwtUtil.generateToken("admin");
             jakarta.servlet.http.Cookie cookie = new jakarta.servlet.http.Cookie("jwtToken", token);
             cookie.setHttpOnly(true);
-            cookie.setPath("/");
+            String ctx = request.getContextPath();
+            cookie.setPath(ctx.isEmpty() ? "/" : ctx);
             response.addCookie(cookie);
             
             session.setAttribute("user", "admin");
@@ -87,7 +89,8 @@ public class AuthController {
             String token = jwtUtil.generateToken(username);
             jakarta.servlet.http.Cookie cookie = new jakarta.servlet.http.Cookie("jwtToken", token);
             cookie.setHttpOnly(true);
-            cookie.setPath("/");
+            String ctx = request.getContextPath();
+            cookie.setPath(ctx.isEmpty() ? "/" : ctx);
             response.addCookie(cookie);
             
             session.setAttribute("user", user);
@@ -125,7 +128,8 @@ public class AuthController {
 
         // ── 4. Expire the jwtToken cookie in the browser ──
         jakarta.servlet.http.Cookie cookie = new jakarta.servlet.http.Cookie("jwtToken", "");
-        cookie.setPath("/");
+        String ctx = request.getContextPath();
+        cookie.setPath(ctx.isEmpty() ? "/" : ctx);
         cookie.setMaxAge(0);   // Delete immediately
         cookie.setHttpOnly(true);
         response.addCookie(cookie);

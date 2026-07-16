@@ -158,39 +158,13 @@ public class MainController {
     private BattleParticipantRepository battleParticipantRepository;
 
     @GetMapping("/")
-    public String root(jakarta.servlet.http.HttpSession session, jakarta.servlet.http.HttpServletResponse response) {
-        // Clear session to ensure we start fresh on landing
-        if (session != null) {
-            session.invalidate();
-        }
-        // Clear the JWT cookie
-        jakarta.servlet.http.Cookie cookie = new jakarta.servlet.http.Cookie("jwtToken", null);
-        cookie.setPath("/");
-        cookie.setHttpOnly(true);
-        cookie.setMaxAge(0); // Delete cookie
-        response.addCookie(cookie);
-        
+    public String root() {
         return "redirect:/home";
     }
 
     @GetMapping("/home")
     public String home(Model model, HttpSession session, HttpServletRequest request, jakarta.servlet.http.HttpServletResponse response) {
-        String authParam = request.getParameter("auth");
-        
-        // If arriving at home without an explicit auth token, force Guest view
-        if (authParam == null || authParam.isBlank()) {
-            if (session != null) {
-                try { session.invalidate(); } catch (Exception e) {}
-                session = request.getSession(true);
-            }
-            jakarta.servlet.http.Cookie cookie = new jakarta.servlet.http.Cookie("jwtToken", null);
-            cookie.setPath("/");
-            cookie.setHttpOnly(true);
-            cookie.setMaxAge(0);
-            response.addCookie(cookie);
-        } else {
-            validateSessionOnPublicPage(session, request);
-        }
+        validateSessionOnPublicPage(session, request);
 
         model.addAttribute("user", getUserFromSession(session));
         // Fetch real student thoughts

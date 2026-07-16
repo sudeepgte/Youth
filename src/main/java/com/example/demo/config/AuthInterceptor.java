@@ -29,22 +29,6 @@ public class AuthInterceptor implements HandlerInterceptor {
         if (path.isEmpty()) {
             path = "/";
         }
-        
-        // Skip public paths and game/socket endpoints
-        if (path.equals("/") || path.equals("/home") || path.equals("/login") || 
-            path.equals("/register") || path.equals("/about") || path.equals("/about-us") || path.equals("/careers") || path.equals("/privacy") || path.equals("/privacy-policy") || path.equals("/terms") || path.equals("/terms-of-service") || path.equals("/faq") || path.equals("/featured-events") || path.equals("/categories") || path.equals("/support") || path.equals("/contact") ||
-            // Allow unauthenticated multiplayer room creation/join
-            path.startsWith("/api/ludo/") ||
-            path.startsWith("/api/snake/") ||
-            path.startsWith("/api/uno/") ||
-            path.startsWith("/api/chess/") ||
-            path.startsWith("/api/rps/") ||
-            path.startsWith("/ws") ||
-            path.startsWith("/css/") || 
-            path.startsWith("/js/") || path.startsWith("/images/") || path.startsWith("/uploads/")) {
-            return true;
-        }
-
         String token = null;
 
         // 1. Check Authorization header

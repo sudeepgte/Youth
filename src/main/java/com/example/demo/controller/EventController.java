@@ -210,6 +210,21 @@ public class EventController {
         }
         model.addAttribute("votedPollIds", votedPollIds);
 
+        // Fetch dynamic booking counts for displayed events
+        java.util.List<Long> allEventIds = java.util.stream.Stream.concat(
+            java.util.stream.Stream.concat(regularEvents.stream(), votingPolls.stream()),
+            trending.stream()
+        ).map(Event::getId).distinct().collect(Collectors.toList());
+
+        java.util.Map<Long, Long> bookingCounts = new java.util.HashMap<>();
+        if (!allEventIds.isEmpty()) {
+            java.util.List<Object[]> counts = eventRegistrationRepository.countActiveBookingsForEvents(allEventIds);
+            for (Object[] row : counts) {
+                bookingCounts.put((Long) row[0], (Long) row[1]);
+            }
+        }
+        model.addAttribute("bookingCounts", bookingCounts);
+
         return "events";
     }
 
@@ -670,6 +685,19 @@ public class EventController {
     // ─────────────────────────────────────────────────────────
     //  TICKET: Show confirmation + ticket
     // ─────────────────────────────────────────────────────────
+    @RequestMapping(value = "/booking-success", method = RequestMethod.GET)
+    public String showBookingSuccess(@RequestParam String ticketId, Model model, HttpSession session) {
+        User user = getUserFromSession(session);
+        if (user == null) return "redirect:/login";
+
+        EventRegistration reg = eventRegistrationRepository.findByTicketId(ticketId).orElse(null);
+        if (reg == null) return "redirect:/events";
+
+        model.addAttribute("registration", reg);
+        model.addAttribute("user", user);
+        return "booking-success";
+    }
+
     @RequestMapping(value = "/ticket/{ticketId}", method = RequestMethod.GET)
     public String showTicket(@PathVariable String ticketId, Model model, HttpSession session, HttpServletRequest request) {
         User user = getUserFromSession(session);
@@ -1562,7 +1590,7 @@ public class EventController {
         eventRegistrationRepository.save(reg);
         eventRepository.save(event); // Save the incremented tier count
         rewardService.awardRegistration(user); // Award coins for registering 🍪
-        return "redirect:/events/ticket/" + reg.getTicketId() + "?success=true";
+        return "redirect:/events/booking-success?ticketId=" + reg.getTicketId();
     }
 
     private void generateSeatGrid(Event event) {

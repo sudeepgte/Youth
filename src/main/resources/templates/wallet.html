@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${user.username + ' â€¢ Wallet â€¢ Zentrix'}">Wallet</title>
+    <title th:text="${user.username + ' • Wallet • Zentrix'}">Wallet</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -61,6 +61,7 @@
             <a th:href="@{/profile}" class="sidebar-link"><i class="fas fa-user"></i> Profile</a>
             <a th:href="@{/games}" class="sidebar-link"><i class="fas fa-gamepad"></i> Games</a>
             <a th:href="@{/wallet}" class="sidebar-link active"><i class="fas fa-wallet"></i> Wallet</a>
+            <a th:href="@{/user/my-bookings}" class="sidebar-link"><i class="fas fa-ticket-alt"></i> My Bookings</a>
             <a href="javascript:void(0)" class="sidebar-link" onclick="openCreateModal()"><i class="fas fa-plus-circle" style="color: var(--accent);"></i> Create Post</a>
             <a th:href="@{/logout}" class="sidebar-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </aside>
@@ -77,7 +78,7 @@
                 <div style="background: rgba(16, 185, 129, 0.1); border: 2px solid rgba(16, 185, 129, 0.3); border-radius: 24px; padding: 30px; width: 100%; max-width: 400px; margin-bottom: 30px;">
                     <h3 style="font-size: 14px; text-transform: uppercase; color: #10B981; font-weight: 700; letter-spacing: 1px; margin-bottom: 8px;">Current Balance</h3>
                     <div style="font-size: 48px; font-weight: 900; color: var(--text-primary); display: flex; justify-content: center; align-items: center; gap: 8px;">
-                        <span style="color: #10B981;">₹</span> <span th:text="${user.walletBalance}">0.0</span>
+                        <span style="color: #10B981;">?</span> <span th:text="${user.walletBalance}">0.0</span>
                     </div>
                 </div>
                 
@@ -105,7 +106,7 @@
                         </div>
                         <div style="font-weight: 800; font-size: 16px;" 
                              th:styleappend="${tx.type == 'DEPOSIT'} ? 'color: #10B981;' : 'color: #ef4444;'" 
-                             th:text="${tx.type == 'DEPOSIT' ? '+' : '-'} + ' ₹' + ${tx.amount}">
+                             th:text="${tx.type == 'DEPOSIT' ? '+' : '-'} + ' ?' + ${tx.amount}">
                             Amount
                         </div>
                     </div>
@@ -125,7 +126,7 @@
             <div style="padding: 20px;">
                 <form th:action="@{/wallet/add}" method="POST">
                     <div style="margin-bottom: 16px;">
-                        <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px;">Amount (₹)</label>
+                        <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px;">Amount (?)</label>
                         <input type="number" name="amount" min="1" step="any" placeholder="e.g., 500" required style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--bg-color); color: var(--text-primary);">
                     </div>
                     <button type="submit" style="width: 100%; padding: 12px; background: #10B981; border: none; color: white; font-weight: 600; border-radius: 8px; cursor: pointer;">Proceed to Pay</button>
@@ -144,7 +145,7 @@
             <div style="padding: 20px;">
                 <form th:action="@{/wallet/withdraw}" method="POST">
                     <div style="margin-bottom: 16px;">
-                        <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px;">Amount to Withdraw (₹)</label>
+                        <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px;">Amount to Withdraw (?)</label>
                         <input type="number" name="amount" min="1" step="any" placeholder="e.g., 500" required style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--bg-color); color: var(--text-primary);">
                     </div>
                     <div style="margin-bottom: 20px;">
@@ -175,3 +176,4 @@
     </script>
 </body>
 </html>
+

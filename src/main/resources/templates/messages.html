@@ -1356,6 +1356,25 @@
             cursor: pointer;
         }
 
+        .msg-sender-name {
+            font-family: 'Inter', 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            color: #54656F;
+            margin-bottom: 8px;
+            margin-top: 12px;
+            padding: 0;
+            line-height: normal;
+        }
+        .msg-sender-name.sent {
+            align-self: flex-end;
+            margin-right: 2px;
+        }
+        .msg-sender-name.received {
+            align-self: flex-start;
+            margin-left: 2px;
+        }
+
         /* Message Actions & Reactions */
         .msg-bubble-wrapper {
             display: flex;
@@ -1782,6 +1801,7 @@
             <a th:href="@{/profile}" class="sidebar-link"><i class="fas fa-user"></i> Profile</a>
             <a th:href="@{/games}" class="sidebar-link"><i class="fas fa-gamepad"></i> Games</a>
             <a th:href="@{/wallet}" class="sidebar-link"><i class="fas fa-wallet"></i> Wallet</a>
+            <a th:href="@{/user/my-bookings}" class="sidebar-link"><i class="fas fa-ticket-alt"></i> My Bookings</a>
             <a href="javascript:void(0)" class="sidebar-link" onclick="openCreateModal()"><i class="fas fa-plus-circle" style="color: var(--accent);"></i> Create Post</a>
             <a th:href="@{/logout}" class="sidebar-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </aside>
@@ -3078,6 +3098,27 @@
             meta.className = `msg-meta ${isSent ? 'sent' : 'received'}`;
             meta.innerText = formatTime(msg.timestamp);
 
+            let isGroupConv = false;
+            try {
+                if (msg.conversation && msg.conversation.type === 'GROUP') {
+                    isGroupConv = true;
+                } else if (typeof conversationsData !== 'undefined' && conversationsData && Array.isArray(conversationsData)) {
+                    const conv = conversationsData.find(c => String(c.id) === String(activeConversationId));
+                    if (conv && conv.type === 'GROUP') {
+                        isGroupConv = true;
+                    }
+                }
+            } catch (e) {
+                console.warn('Error checking if group conv:', e);
+            }
+            
+            if (isGroupConv) {
+                const senderNameDiv = document.createElement('div');
+                senderNameDiv.className = `msg-sender-name ${isSent ? 'sent' : 'received'}`;
+                senderNameDiv.innerText = isSent ? 'You' : (msg.sender ? (msg.sender.username || msg.sender.name || 'Unknown') : 'Unknown');
+                container.appendChild(senderNameDiv);
+            }
+
             container.appendChild(wrapper);
             container.appendChild(meta);
             container.scrollTop = container.scrollHeight;
@@ -4169,3 +4210,4 @@
 </body>
 
 </html>
+
