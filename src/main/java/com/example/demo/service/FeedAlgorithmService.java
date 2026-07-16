@@ -75,6 +75,8 @@ public class FeedAlgorithmService {
         // Score and sort
         List<Post> ranked = pool.stream()
                 .filter(p -> p.getPostType() == null || !"STORY".equalsIgnoreCase(p.getPostType()))
+                .filter(p -> !p.isBlocked())
+                .filter(p -> !"BANNED".equals(p.getUser().getStatus()) && !"SUSPENDED".equals(p.getUser().getStatus()))
                 .filter(p -> !p.getUser().isPrivateAccount() || followingIds.contains(p.getUser().getId()) || p.getUser().getId().equals(userId))
                 .sorted(Comparator.comparingDouble(
                         (Post p) -> calcScore(p, followingIds, interactedAuthorIds, categoryAffinity)).reversed())
@@ -97,6 +99,8 @@ public class FeedAlgorithmService {
         List<Post> recent = postRepository.findByCreatedAtAfter(window);
 
         return recent.stream()
+                .filter(p -> !p.isBlocked())
+                .filter(p -> !"BANNED".equals(p.getUser().getStatus()) && !"SUSPENDED".equals(p.getUser().getStatus()))
                 .filter(p -> !p.getUser().isPrivateAccount())
                 .sorted(Comparator.comparingDouble((Post p) -> calcEngagement(p)).reversed())
                 .limit(limit)
@@ -121,6 +125,8 @@ public class FeedAlgorithmService {
                 .getContent();
 
         return candidates.stream()
+                .filter(p -> !p.isBlocked())
+                .filter(p -> !"BANNED".equals(p.getUser().getStatus()) && !"SUSPENDED".equals(p.getUser().getStatus()))
                 .filter(p -> !p.getUser().isPrivateAccount())
                 .sorted(Comparator.comparingDouble((Post p) -> calcEngagement(p)).reversed())
                 .limit(limit)

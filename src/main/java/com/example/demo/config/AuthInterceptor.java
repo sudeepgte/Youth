@@ -102,6 +102,21 @@ public class AuthInterceptor implements HandlerInterceptor {
                     User user = userRepository.findByUsername(username);
                     debugLog.append("user found = ").append(user != null).append("\n");
                     if (user != null && jwtUtil.validateToken(token, username)) {
+                        if ("BANNED".equals(user.getStatus()) || "SUSPENDED".equals(user.getStatus())) {
+                            debugLog.append("user is banned or suspended!\n");
+                            writeDebug(debugLog.toString());
+                            jakarta.servlet.http.Cookie badCookie = new jakarta.servlet.http.Cookie("jwtToken", null);
+                            badCookie.setPath("/");
+                            badCookie.setHttpOnly(true);
+                            badCookie.setMaxAge(0);
+                            response.addCookie(badCookie);
+                            if (isAjaxRequest(request)) {
+                                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            } else {
+                                response.sendRedirect(request.getContextPath() + "/login?error=" + user.getStatus().toLowerCase());
+                            }
+                            return false;
+                        }
                         if (activeLoginRegistry.isUserAlreadyLoggedIn(username, token)) {
                             debugLog.append("user is already logged in on another device!\n");
                             writeDebug(debugLog.toString());

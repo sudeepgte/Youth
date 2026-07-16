@@ -85,6 +85,9 @@ public class AuthController {
         }
         User user = userRepository.findByUsername(username);
         if (user != null && user.getPassword().equals(password)) {
+            if ("BANNED".equals(user.getStatus()) || "SUSPENDED".equals(user.getStatus())) {
+                return "redirect:/login?error=" + user.getStatus().toLowerCase();
+            }
             if (activeLoginRegistry.isUserAlreadyLoggedIn(username, null)) {
                 return "redirect:/login?error=already_logged_in";
             }

@@ -41,6 +41,7 @@ public class UserExploreApiController {
             // No filter → return all
             users = userRepository.findAll();
         }
+        users.removeIf(u -> "BANNED".equals(u.getStatus()) || "SUSPENDED".equals(u.getStatus()));
 
         // Map to safe DTO (no password / email exposed)
         List<Map<String, Object>> result = new ArrayList<>();
@@ -69,6 +70,9 @@ public class UserExploreApiController {
         User targetUser = userRepository.findById(id).orElse(null);
         if (targetUser == null) {
             return org.springframework.http.ResponseEntity.notFound().build();
+        }
+        if ("BANNED".equals(targetUser.getStatus()) || "SUSPENDED".equals(targetUser.getStatus())) {
+            return org.springframework.http.ResponseEntity.badRequest().body("User blocked");
         }
 
         boolean isFollowing = currentUser != null && currentUser.getFollowing().contains(targetUser);
