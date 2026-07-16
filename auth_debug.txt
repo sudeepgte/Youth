@@ -1869,9 +1869,9 @@ AuthInterceptor Debug Log
 token is NULL!
 redirecting to /login?error=timeout
 AuthInterceptor Debug Log
-<<<<<<< HEAD
+
 token found = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJwaiIsImlhdCI6MTc4NDAwNTIzNywiZXhwIjoxNzg0MDQxMjM3fQ.pCFoT3fTBo0G1oeHHeSLesiPrDURyaF7mf8ItI2UyE0
-=======
+
 token is NULL!
 redirecting to /login?error=timeout
 AuthInterceptor Debug Log
@@ -1919,10 +1919,10 @@ AuthInterceptor Debug Log
 token is NULL!
 redirecting to /login?error=timeout
 AuthInterceptor Debug Log
-<<<<<<< HEAD
+
 token found = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJwaiIsImlhdCI6MTc4NDAxOTczMSwiZXhwIjoxNzg0MDU1NzMxfQ.bPuOnaGXcnyubgVkDR8uqO1x8ZsL-RnO0eTepmZDPy8
 Exception caught: JWT signature does not match locally computed signature. JWT validity cannot be asserted and should not be trusted.
-=======
+
 token is NULL!
 redirecting to /login?error=timeout
 AuthInterceptor Debug Log
@@ -1972,22 +1972,17 @@ token is NULL!
 >>>>>>> e225cce473b7afec9b286a381afa88704a0b3767
 redirecting to /login?error=timeout
 AuthInterceptor Debug Log
+
+token found = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJwcmFrYXNoIiwiaWF0IjoxNzg0MDIxNzI5LCJleHAiOjE3ODQwNTc3Mjl9.GO2ySR9HeVhmqVdrvtEAuCU42KslGXAhzVYMAd7PEdo
+Exception caught: JWT signature does not match locally computed signature. JWT validity cannot be asserted and should not be trusted.
+
 token is NULL!
 redirecting to /login?error=timeout
 AuthInterceptor Debug Log
 token is NULL!
 redirecting to /login?error=timeout
-<<<<<<< HEAD
-=======
-AuthInterceptor Debug Log
-token is NULL!
-redirecting to /login?error=timeout
-AuthInterceptor Debug Log
-token is NULL!
-redirecting to /login?error=timeout
-AuthInterceptor Debug Log
-token is NULL!
-redirecting to /login?error=timeout
+
+
 AuthInterceptor Debug Log
 token is NULL!
 redirecting to /login?error=timeout
@@ -2051,10 +2046,117 @@ redirecting to /login?error=timeout
 AuthInterceptor Debug Log
 token is NULL!
 redirecting to /login?error=timeout
->>>>>>> 27426cb3a7bab707976e3d5cee940684698cac95
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+
 AuthInterceptor Debug Log
 token found = eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJyYWoiLCJpYXQiOjE3ODQwMzIwMjksImV4cCI6MTc4NDA2ODAyOX0._dqZEXcLrqeHpwhpBn1bqixn-xFOIj04gLZYbKDojfmXrDEMqP4_aV3p7kK6788fzpy9qtPGioqBLStscEqkGg
 Exception caught: JWT expired at 2026-07-14T22:27:09Z. Current time: 2026-07-15T04:42:26Z, a difference of 22517824 milliseconds.  Allowed clock skew: 0 milliseconds.
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token found = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJwcmFrcnV0aGkiLCJpYXQiOjE3ODQwMzIxNTYsImV4cCI6MTc4NDA2ODE1Nn0.of4q8DgFtYdX-PNkITInDgO_SYE5TpMIrw-AwYklHzU
+Exception caught: JWT signature does not match locally computed signature. JWT validity cannot be asserted and should not be trusted.
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
 redirecting to /login?error=timeout
 AuthInterceptor Debug Log
 token is NULL!

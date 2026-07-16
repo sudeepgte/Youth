@@ -101,6 +101,9 @@ public class ProfileController {
         if (targetUser == null) {
             return "redirect:/dashboard";
         }
+        if ("BANNED".equals(targetUser.getStatus()) || "SUSPENDED".equals(targetUser.getStatus())) {
+            return "redirect:/dashboard?error=user_blocked";
+        }
 
         // Refresh current user to get latest following list
         currentUser = userRepository.findById(currentUser.getId()).orElse(currentUser);
@@ -155,6 +158,7 @@ public class ProfileController {
 
         // Fetch posts to get the count
         List<Post> posts = postRepository.findByUserAndPostTypeNotOrderByCreatedAtDesc(targetUser, "STORY");
+        posts.removeIf(p -> p.isBlocked());
         List<com.example.demo.model.PostCollaboration> collaborations = postCollaborationRepository
                 .findByUserAndStatus(targetUser, com.example.demo.model.CollaborationStatus.ACCEPTED);
         for (com.example.demo.model.PostCollaboration col : collaborations) {

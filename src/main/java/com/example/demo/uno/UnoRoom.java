@@ -13,6 +13,7 @@ public class UnoRoom {
     public String currentColor = "";
     public String status = "waiting";
     public String lastMessage = "Waiting for players...";
+    public long turnStartedAt = System.currentTimeMillis();
 
     private static final AtomicInteger cardIdGenerator = new AtomicInteger(0);
 
@@ -64,6 +65,7 @@ public class UnoRoom {
         discardPile.add(startCard);
         currentColor = startCard.color;
         lastMessage = "Game started! Player 1's turn.";
+        turnStartedAt = System.currentTimeMillis();
     }
 
     public void playCard(int playerIdx, int cardId, String chosenColor) {
@@ -100,7 +102,12 @@ public class UnoRoom {
             if (skipNext) {
                 currentPlayerIndex = getNextPlayerIndex();
             }
-            lastMessage = players.get(currentPlayerIndex).name + "'s turn.";
+            if (p.hand.size() == 1) {
+                lastMessage = p.name + " yelled UNO! It's " + players.get(currentPlayerIndex).name + "'s turn.";
+            } else {
+                lastMessage = players.get(currentPlayerIndex).name + "'s turn.";
+            }
+            turnStartedAt = System.currentTimeMillis();
         }
     }
 
@@ -118,6 +125,7 @@ public class UnoRoom {
         }
         currentPlayerIndex = getNextPlayerIndex();
         lastMessage = players.get(currentPlayerIndex).name + "'s turn.";
+        turnStartedAt = System.currentTimeMillis();
     }
 
     private int getNextPlayerIndex() {
@@ -142,6 +150,7 @@ public class UnoRoom {
         map.put("topCard", discardPile.isEmpty() ? null : discardPile.get(discardPile.size() - 1));
         map.put("lastMessage", lastMessage);
         map.put("direction", direction);
+        map.put("turnStartedAt", turnStartedAt);
         
         List<Map<String, Object>> playersList = new ArrayList<>();
         for (int i = 0; i < players.size(); i++) {

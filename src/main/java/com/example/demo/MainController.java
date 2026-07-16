@@ -112,6 +112,30 @@ public class MainController {
             } catch (Exception e) {
             }
         }
+
+        // Fallback to JWT Cookie (for game pages where AuthInterceptor is bypassed)
+        String token = null;
+        if (httpServletRequest.getCookies() != null) {
+            for (Cookie c : httpServletRequest.getCookies()) {
+                if ("jwtToken".equals(c.getName())) {
+                    token = c.getValue();
+                    break;
+                }
+            }
+        }
+        if (token != null && !token.isBlank() && !tokenBlacklist.isBlacklisted(token)) {
+            try {
+                String username = jwtUtil.extractUsername(token);
+                if (username != null) {
+                    User user = userRepository.findByUsername(username);
+                    if (user != null && jwtUtil.validateToken(token, username)) {
+                        session.setAttribute("user", user);
+                        session.setAttribute("userId", user.getId());
+                        return user;
+                    }
+                }
+            } catch (Exception e) {}
+        }
         return null;
     }
 
@@ -428,7 +452,9 @@ public class MainController {
         model.addAttribute("user", user);
         model.addAttribute("pendingCount", pendingRequests.size());
 
-        model.addAttribute("posts", postRepository.findByPostTypeOrderByCreatedAtDesc("REEL"));
+        List<Post> reels = new java.util.ArrayList<>(postRepository.findByPostTypeOrderByCreatedAtDesc("REEL"));
+        reels.removeIf(p -> p.isBlocked() || "BANNED".equals(p.getUser().getStatus()) || "SUSPENDED".equals(p.getUser().getStatus()));
+        model.addAttribute("posts", reels);
         model.addAttribute("activeCategory", null);
         model.addAttribute("isReelsPage", true);
 
@@ -513,6 +539,7 @@ public class MainController {
         model.addAttribute("completedCount", eventRepository.countByStatus("COMPLETED"));
         model.addAttribute("rewardConfig", rewardService.getConfig());
         model.addAttribute("contactMessages", contactMessageRepository.findAllByOrderByCreatedAtDesc());
+        model.addAttribute("posts", postRepository.findAllByOrderByCreatedAtDesc());
         
         // Battle details for admin overview
         List<Battle> battles = battleRepository.findAllByOrderByCreatedAtDesc();
@@ -564,6 +591,44 @@ public class MainController {
         User user = getUserFromSession(session);
         model.addAttribute("user", user);
         return "admin-battles";
+    }
+
+    @org.springframework.web.bind.annotation.PostMapping("/admin/users/{id}/status")
+    @Transactional
+    public String updateUserStatus(
+            @org.springframework.web.bind.annotation.PathVariable Long id,
+            @org.springframework.web.bind.annotation.RequestParam String status,
+            HttpSession session
+    ) {
+        if (!"admin".equals(session.getAttribute("user")))
+            return "redirect:/login";
+
+        User targetUser = userRepository.findById(id).orElse(null);
+        if (targetUser != null) {
+            targetUser.setStatus(status);
+            userRepository.save(targetUser);
+            feedAlgorithmService.evictFeedCache();
+        }
+        return "redirect:/admin#users-section";
+    }
+
+    @org.springframework.web.bind.annotation.PostMapping("/admin/posts/{id}/block")
+    @Transactional
+    public String updatePostBlockStatus(
+            @org.springframework.web.bind.annotation.PathVariable Long id,
+            @org.springframework.web.bind.annotation.RequestParam boolean blocked,
+            HttpSession session
+    ) {
+        if (!"admin".equals(session.getAttribute("user")))
+            return "redirect:/login";
+
+        Post post = postRepository.findById(id).orElse(null);
+        if (post != null) {
+            post.setBlocked(blocked);
+            postRepository.save(post);
+            feedAlgorithmService.evictFeedCache();
+        }
+        return "redirect:/admin#posts-section";
     }
 
     // ── Stub routes: sidebar links that don't have full pages yet ──
@@ -639,7 +704,12 @@ public class MainController {
             model.addAttribute("achievements", List.of());
         }
 
-        List<User> leaderboard = userRepository.findAllByOrderByXpDesc();
+        List<User> leaderboard = userRepository.findAll();
+        leaderboard.sort((u1, u2) -> {
+            int xp1 = u1.getXp() != null ? u1.getXp() : 0;
+            int xp2 = u2.getXp() != null ? u2.getXp() : 0;
+            return Integer.compare(xp2, xp1);
+        });
         model.addAttribute("leaderboard", leaderboard);
 
         return "achievements";

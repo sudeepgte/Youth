@@ -574,7 +574,13 @@
             .lb-table th, .lb-table td {
                 padding: 12px 10px;
             }
+
+            .lb-table th:nth-child(3), .lb-table td:nth-child(3) {
+                display: table-cell; /* Show Tier column on mobile */
+            }
+
             /* Tier column is now shown on mobile */
+
             .u-flex {
                 gap: 8px;
             }
@@ -584,18 +590,13 @@
             }
             .u-flex div div {
                 font-size: 13px;
-                max-width: 150px;
+                max-width: 100px;
                 overflow: hidden;
                 text-overflow: ellipsis;
                 white-space: nowrap;
             }
             .u-flex span {
-                font-size: 11px;
-                max-width: 150px;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                white-space: nowrap;
-                display: block;
+                display: none !important; /* Hide email on mobile to prevent layout stretching */
             }
             .rank {
                 width: 30px;
@@ -848,7 +849,13 @@
                                 </div>
                             </td>
                             <td>
-                                <span class="lvl-badge"
+                                <!-- Top 3 Medals based on Rank -->
+                                <span th:if="${iter.index == 0}" class="lvl-badge c-gold"><i class="fas fa-crown"></i> 🥇 Gold</span>
+                                <span th:if="${iter.index == 1}" class="lvl-badge c-silver"><i class="fas fa-award"></i> 🥈 Silver</span>
+                                <span th:if="${iter.index == 2}" class="lvl-badge c-bronze"><i class="fas fa-medal"></i> 🥉 Bronze</span>
+                                
+                                <!-- Normal badge for Rank 4 and below -->
+                                <span th:if="${iter.index >= 3}" class="lvl-badge"
                                     th:classappend="${player.level == 'Platinum'} ? 'c-platinum' : (${player.level == 'Gold'} ? 'c-gold' : (${player.level == 'Silver'} ? 'c-silver' : (${player.level == 'Bronze'} ? 'c-bronze' : 'c-novice')))">
                                     <i class="fas"
                                         th:classappend="${player.level == 'Platinum'} ? 'fa-gem' : 

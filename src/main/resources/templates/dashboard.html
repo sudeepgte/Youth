@@ -314,17 +314,95 @@
         }
         .reel-card .post-content {
             position: absolute;
-            bottom: 20px;
+            bottom: 30px;
             left: 15px;
             right: 80px;
-            z-index: 10;
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.85);
+            z-index: 20;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
             pointer-events: none;
         }
         .reel-card .post-content p {
             color: #fff !important;
-            font-size: 14px;
-            margin-bottom: 3px;
+            font-size: 15px;
+            font-weight: 600;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+            margin: 0;
+            line-height: 1.4;
+            word-break: break-word;
+        }
+        .reel-card .post-content .hashtags {
+            color: #f84464 !important;
+            font-size: 13px;
+            font-weight: 600;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+            word-break: break-word;
+        }
+        .reel-duration-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 4px 10px;
+            border-radius: 20px;
+            width: fit-content;
+            color: #fff;
+            font-size: 11px;
+            font-weight: 700;
+            margin-top: 4px;
+            text-shadow: none;
+            pointer-events: auto;
+        }
+        .reel-duration-badge i {
+            color: #f84464;
+        }
+        .reel-progress-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.25);
+            cursor: pointer;
+            z-index: 25;
+            transition: height 0.15s ease;
+        }
+        .reel-progress-container:hover {
+            height: 10px;
+        }
+        .reel-progress-bar {
+            height: 100%;
+            width: 0%;
+            background: #f84464;
+            transition: width 0.1s linear;
+        }
+        .reel-play-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.7);
+            font-size: 40px;
+            color: rgba(255, 255, 255, 0.9);
+            background: rgba(0, 0, 0, 0.6);
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 15;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .reel-play-overlay.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
         }
 
         /* Slide-up Comments Panel overlay for Reels */
@@ -370,11 +448,61 @@
         @media (max-width: 768px) {
             .feed-toolbar { flex-wrap: wrap; }
             .dashboard-vote-section { padding: 16px; margin-bottom: 20px; }
+            .reels-container {
+                height: calc(100vh - var(--dashboard-nav-height) - 10px) !important;
+                gap: 12px !important;
+                padding-bottom: 20px !important;
+            }
             .reel-card { 
                 max-width: 100%; 
                 border-radius: 0 !important; 
                 border-left: none !important; 
                 border-right: none !important; 
+                min-height: calc(100vh - var(--dashboard-nav-height) - 70px) !important;
+                max-height: calc(100vh - var(--dashboard-nav-height) - 70px) !important;
+            }
+        }
+        @media (max-width: 480px) {
+            .reels-container {
+                height: calc(100vh - var(--dashboard-nav-height) - 5px) !important;
+                gap: 8px !important;
+                padding-bottom: 10px !important;
+            }
+            .reel-card { 
+                min-height: calc(100vh - var(--dashboard-nav-height) - 50px) !important;
+                max-height: calc(100vh - var(--dashboard-nav-height) - 50px) !important;
+            }
+            .reel-card .post-content {
+                right: 70px !important;
+                left: 12px !important;
+                bottom: 25px !important;
+                gap: 4px !important;
+            }
+            .reel-card .post-actions {
+                right: 10px !important;
+                bottom: 75px !important;
+                gap: 12px !important;
+            }
+            .reel-card .post-actions .action-btn {
+                width: 40px !important;
+                height: 40px !important;
+            }
+            .reel-card .post-actions .action-btn i {
+                font-size: 15px !important;
+            }
+            .reel-card .post-actions .action-btn span {
+                font-size: 9px !important;
+                margin-top: 2px !important;
+            }
+            .reel-card .post-content p {
+                font-size: 13px !important;
+            }
+            .reel-card .post-content .hashtags {
+                font-size: 11px !important;
+            }
+            .reel-duration-badge {
+                padding: 3px 8px !important;
+                font-size: 10px !important;
             }
         }
     </style>
@@ -419,7 +547,7 @@
             </a>
             <div class="profile-dropdown">
                 <a th:href="@{/profile}" style="position: relative;">
-                    <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=1780&auto=format&fit=crop"
+                    <img th:src="${user != null and user.profilePhotoUrl != null and !user.profilePhotoUrl.isEmpty()} ? @{${user.profilePhotoUrl}} : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=1780&auto=format&fit=crop'"
                         class="user-avatar" style="width: 32px; height: 32px; border: none;">
                     <span th:if="${pendingCount != null && pendingCount > 0}"
                         style="position: absolute; top: -5px; right: -5px; background: red; color: white; border-radius: 50%; padding: 2px 5px; font-size: 10px; font-weight: bold;"
@@ -481,7 +609,7 @@
                     <div style="position: relative; width: clamp(55px, 8vw, 65px); height: clamp(55px, 8vw, 65px); margin: 0 auto 5px; flex-shrink: 0; aspect-ratio: 1/1;">
                         <div
                             th:style="${hasStory} ? 'width: 100%; height: 100%; border-radius: 50%; background: linear-gradient(45deg, #3B82F6 0%, #22D3EE 100%); padding: 3px; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4); box-sizing: border-box;' : 'width: 100%; height: 100%; border-radius: 50%; background: var(--glass-border); padding: 2px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); box-sizing: border-box;'">
-                            <img th:src="${session.user.profilePhotoUrl != null and !session.user.profilePhotoUrl.isEmpty()} ? (${session.user.profilePhotoUrl.startsWith('/')} ? @{${session.user.profilePhotoUrl}} : ${session.user.profilePhotoUrl}) : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=1780&auto=format&fit=crop'"
+                            <img th:src="${user != null and user.profilePhotoUrl != null and !user.profilePhotoUrl.isEmpty()} ? (${user.profilePhotoUrl.startsWith('/')} ? @{${user.profilePhotoUrl}} : ${user.profilePhotoUrl}) : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=1780&auto=format&fit=crop'"
                                 style="width: 100%; height: 100%; border-radius: 50%; border: 2px solid #ffffff; object-fit: cover; pointer-events: none; box-sizing: border-box; display: block;">
                         </div>
                         <!-- Plus badge overlapping by 25-30% with 2.5px white border -->
@@ -665,6 +793,13 @@
                 </div>
             </div>
 
+            <!-- Back to Dashboard button for Reels Page -->
+            <div th:if="${isReelsPage}" style="max-width: 420px; margin: 0 auto 15px auto; display: flex; align-items: center; justify-content: flex-start;">
+                <a th:href="@{/dashboard}" style="display: inline-flex; align-items: center; gap: 8px; color: var(--text-primary); text-decoration: none; font-weight: 700; font-size: 14px; background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border: 1px solid var(--glass-border); padding: 8px 16px; border-radius: 20px; box-shadow: var(--shadow-premium); transition: all 0.2s;" onmouseover="this.style.transform='translateX(-3px)'; this.style.background='rgba(255,255,255,0.95)';" onmouseout="this.style.transform='none'; this.style.background='rgba(255, 255, 255, 0.7)';">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+
             <!-- Posts -->
             <div th:class="${isReelsPage} ? 'reels-container' : 'posts-feed'">
                 <div th:if="${posts == null or posts.isEmpty()}" style="text-align:center; padding:60px 40px; color:var(--text-primary); width: 100%; max-width: 500px; margin: 40px auto; background: rgba(255,255,255,0.7); border: 1px solid var(--glass-border); border-radius: 24px; backdrop-filter: blur(10px); box-shadow: var(--shadow-premium); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;">
@@ -717,8 +852,18 @@
                     </div>
                     <img th:if="${post.mediaType == 'IMAGE'}" th:src="@{${post.mediaUrl}}" class="post-image post-media"
                         alt="Post Image" style="width: 100%; border-radius: 8px;">
-                    <video th:if="${post.mediaType == 'VIDEO'}" th:src="@{${post.mediaUrl}}" controls class="post-image post-media"
-                        style="width: 100%; border-radius: 8px;"></video>
+                    <video th:if="${post.mediaType == 'VIDEO'}" th:src="@{${post.mediaUrl}}" 
+                        th:controls="${isReelsPage ? null : 'controls'}" 
+                        th:loop="${isReelsPage}"
+                        class="post-image post-media"
+                        style="width: 100%; border-radius: 8px;"
+                        th:attr="onclick=${isReelsPage} ? 'toggleReelPlay(this)' : null, ontimeupdate=${isReelsPage} ? 'updateReelProgress(this)' : null, onloadedmetadata=${isReelsPage} ? 'initReelDuration(this)' : null"></video>
+                    <div th:if="${isReelsPage and post.mediaType == 'VIDEO'}" class="reel-play-overlay">
+                        <i class="fas fa-play"></i>
+                    </div>
+                    <div th:if="${isReelsPage and post.mediaType == 'VIDEO'}" class="reel-progress-container" onclick="seekReel(event, this)">
+                        <div class="reel-progress-bar"></div>
+                    </div>
                 </div>
 
                 <div class="post-actions">
@@ -772,8 +917,8 @@
                             comments yet.</div>
                     </div>
                     <!-- Emoji Selection Bar -->
-					<div class="emoji-bar"
-					     style="display:flex; gap:12px; margin-bottom:8px; overflow-x:auto; padding:4px 2px; scrollbar-width:none; -ms-overflow-style:none;">
+					<div class="emoji-bar">
+
 
 					    <span onclick="insertEmoji([[${post.id}]], '??')" style="cursor:pointer;font-size:18px;">??</span>
 
@@ -794,6 +939,15 @@
 					    <span onclick="insertEmoji([[${post.id}]], '??')" style="cursor:pointer;font-size:18px;">??</span>
 
 					    <span onclick="insertEmoji([[${post.id}]], '??')" style="cursor:pointer;font-size:18px;">??</span>
+
+					    <span th:onclick="'insertEmoji(' + ${post.id} + ', ''❤️'')'">❤️</span>
+
+					    <span th:onclick="'insertEmoji(' + ${post.id} + ', ''😂'')'">😂</span>
+
+					    <span th:onclick="'insertEmoji(' + ${post.id} + ', ''🔥'')'">🔥</span>
+
+					    <span th:onclick="'insertEmoji(' + ${post.id} + ', ''😍'')'">😍</span>
+
 
 					</div>
                     <style>
@@ -815,10 +969,17 @@
                              <!-- Categories / Tabs -->
                              <div style="display:flex; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:6px; margin-bottom:8px; font-size:14px; color:#aaa; font-weight:700; user-select:none;">
                                  <span style="cursor:pointer; color:#fff;" onclick="switchEmojiCategory(this, 'smileys')">&#128512;</span>
+
                                  <span style="cursor:pointer;" onclick="switchEmojiCategory(this, 'gestures')">👍</span>
                                  <span style="cursor:pointer;" onclick="switchEmojiCategory(this, 'hearts')">❤️</span>
                                  <span style="cursor:pointer;" onclick="switchEmojiCategory(this, 'animals')">🐱</span>
-                                 <span style="cursor:pointer;" onclick="switchEmojiCategory(this, 'food')">�&bull;</span>
+                                 <span style="cursor:pointer;" onclick="switchEmojiCategory(this, 'food')">�&bull;</span>
+
+                                 <span style="cursor:pointer;" onclick="switchEmojiCategory(this, 'gestures')">&#128077;</span>
+                                 <span style="cursor:pointer;" onclick="switchEmojiCategory(this, 'hearts')">&#10084;&#65039;</span>
+                                 <span style="cursor:pointer;" onclick="switchEmojiCategory(this, 'animals')">&#128049;</span>
+                                 <span style="cursor:pointer;" onclick="switchEmojiCategory(this, 'food')">&#127829;</span>
+
                                  <span style="cursor:pointer;" onclick="switchEmojiCategory(this, 'activities')">&#9917;</span>
                              </div>
                              <!-- Emoji Content Area -->
@@ -834,6 +995,10 @@
                         Post content...</p>
                     <div th:if="${post.hashtags != null}" class="hashtags" th:text="${post.hashtags}"
                         style="color: var(--accent);">#hashtags</div>
+                    <div th:if="${isReelsPage and post.mediaType == 'VIDEO'}" class="reel-duration-badge">
+                        <i class="far fa-clock"></i>
+                        <span class="reel-time-display">0:00 / 0:00</span>
+                    </div>
                 </div>
             </div>
             </div> <!-- Close reels-container / posts-feed -->
@@ -1230,6 +1395,9 @@
         document.addEventListener('DOMContentLoaded', () => {
             initFeedViewTracking();
             initDoubleTapLike();
+            if (document.querySelector('.reels-container')) {
+                initReelAutoplay();
+            }
         });
 
         function showLikeBurst(postId) {
@@ -1826,7 +1994,7 @@
                 usernameSpan.textContent = story.username || 'Unknown';
             }
             if (timeSpan) {
-                timeSpan.textContent = '&bull; ' + formatRelativeTime(story.createdAt);
+                timeSpan.textContent = '• ' + formatRelativeTime(story.createdAt);
             }
 
             // Show/hide bottom reply panel or viewers panel based on ownership
@@ -1924,7 +2092,7 @@
                 listContent.innerHTML = viewers.map(v => `
                     <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px; text-align: left;">
                         <img src="${v.profilePhotoUrl || 'https://ui-avatars.com/api/?name=' + v.username + '&background=f84464&color=fff&size=80'}" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;">
-                        <span style="color: #fff; font-size: 14px; font-weight: 600;">@${v.username}</span>
+                        <span style="color: rgb(255, 255, 255); font-size: 14px; font-weight: 600;">@${v.username}</span>
                     </div>
                 `).join('');
             } catch (e) {
@@ -2011,6 +2179,117 @@
             closeAvatarMenu();
             openStoryViewer(userId);
         }
+
+        // Reels custom controls functions
+        function toggleReelPlay(videoEl) {
+            const card = videoEl.closest('.reel-card');
+            if (!card) return;
+            const playOverlay = card.querySelector('.reel-play-overlay');
+            if (videoEl.paused) {
+                videoEl.play().catch(err => {
+                    videoEl.muted = true;
+                    videoEl.play().catch(e => console.log("Play failed:", e));
+                });
+                videoEl.dataset.manuallyPaused = "false";
+                if (playOverlay) {
+                    playOverlay.innerHTML = '<i class="fas fa-play"></i>';
+                    playOverlay.classList.add('show');
+                    setTimeout(() => playOverlay.classList.remove('show'), 400);
+                }
+            } else {
+                videoEl.pause();
+                videoEl.dataset.manuallyPaused = "true";
+                if (playOverlay) {
+                    playOverlay.innerHTML = '<i class="fas fa-pause"></i>';
+                    playOverlay.classList.add('show');
+                    setTimeout(() => playOverlay.classList.remove('show'), 400);
+                }
+            }
+        }
+
+        let reelObserver;
+        function initReelAutoplay() {
+            const reels = document.querySelectorAll('.reel-card video');
+            if (!reels || reels.length === 0) return;
+
+            const options = {
+                root: null, // viewport
+                rootMargin: '-10% 0px -10% 0px',
+                threshold: 0.6
+            };
+
+            reelObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    const video = entry.target;
+                    if (entry.isIntersecting) {
+                        if (video.dataset.manuallyPaused !== "true") {
+                            video.play().catch(err => {
+                                // Fallback: play muted
+                                video.muted = true;
+                                video.play().catch(e => console.log("Autoplay failed even muted:", e));
+                            });
+                        }
+                    } else {
+                        video.pause();
+                        video.dataset.manuallyPaused = "false"; // reset
+                    }
+                });
+            }, options);
+
+            reels.forEach(video => {
+                reelObserver.observe(video);
+            });
+        }
+
+        function initReelDuration(videoEl) {
+            const card = videoEl.closest('.reel-card');
+            if (!card) return;
+            const timeDisplay = card.querySelector('.reel-time-display');
+            if (timeDisplay) {
+                const duration = formatTime(videoEl.duration);
+                timeDisplay.textContent = `0:00 / ${duration}`;
+            }
+        }
+
+        function updateReelProgress(videoEl) {
+            const card = videoEl.closest('.reel-card');
+            if (!card) return;
+            const progressBar = card.querySelector('.reel-progress-bar');
+            const timeDisplay = card.querySelector('.reel-time-display');
+            
+            if (videoEl.duration) {
+                const percent = (videoEl.currentTime / videoEl.duration) * 100;
+                if (progressBar) {
+                    progressBar.style.width = percent + '%';
+                }
+                if (timeDisplay) {
+                    const current = formatTime(videoEl.currentTime);
+                    const duration = formatTime(videoEl.duration);
+                    timeDisplay.textContent = `${current} / ${duration}`;
+                }
+            }
+        }
+
+        function seekReel(event, progressContainerEl) {
+            event.stopPropagation();
+            const card = progressContainerEl.closest('.reel-card');
+            if (!card) return;
+            const videoEl = card.querySelector('video');
+            if (videoEl && videoEl.duration) {
+                const rect = progressContainerEl.getBoundingClientRect();
+                const clickX = event.clientX - rect.left;
+                const width = rect.width;
+                const percentage = clickX / width;
+                videoEl.currentTime = percentage * videoEl.duration;
+            }
+        }
+
+        function formatTime(seconds) {
+            if (isNaN(seconds)) return '0:00';
+            const m = Math.floor(seconds / 60);
+            const s = Math.floor(seconds % 60);
+            return `${m}:${s < 10 ? '0' : ''}${s}`;
+        }
     </script>
 
     <!-- Story Viewer HTML -->
@@ -2027,8 +2306,8 @@
             <!-- Story Header (Avatar & Username) -->
             <div id="storyViewerHeader" style="position: absolute; top: 28px; left: 16px; display: flex; align-items: center; gap: 10px; z-index: 110; color: white;">
                 <img id="storyViewerAvatar" src="" style="width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid #fff; object-fit: cover; box-shadow: 0 2px 8px rgba(0,0,0,0.5);">
-                <span id="storyViewerUsername" style="font-weight: 700; font-size: 13.5px; text-shadow: 0 2px 5px rgba(0,0,0,0.95); font-family: 'DM Sans', sans-serif;">Username</span>
-                <span id="storyViewerTime" style="font-size: 11px; color: rgba(255,255,255,0.7); text-shadow: 0 2px 5px rgba(0,0,0,0.95); font-family: 'DM Sans', sans-serif;">&bull; 2h ago</span>
+                <span id="storyViewerUsername" style="font-weight: 700; font-size: 13.5px; text-shadow: 0 2px 5px rgba(0,0,0,0.95); font-family: 'DM Sans', sans-serif; color: #ffffff !important;">Username</span>
+                <span id="storyViewerTime" style="font-size: 11px; color: rgba(255,255,255,0.7) !important; text-shadow: 0 2px 5px rgba(0,0,0,0.95); font-family: 'DM Sans', sans-serif;">• 2h ago</span>
             </div>
 
             <button
@@ -2109,7 +2388,7 @@
         <div style="background:#1e1e2e; border:1px solid rgba(255,255,255,0.1); border-radius:20px; width:100%; max-width:360px; max-height:60vh; display:flex; flex-direction:column; box-shadow:0 25px 60px rgba(0,0,0,0.6); overflow:hidden;">
             <!-- Header -->
             <div style="padding:16px 20px; border-bottom:1px solid rgba(255,255,255,0.1); display:flex; justify-content:space-between; align-items:center;">
-                <h3 style="font-size:15px; font-weight:700; color:#fff; margin:0;"><i class="fas fa-eye" style="margin-right:8px; color:#f84464;"></i>Viewers</h3>
+                <h3 style="font-size:15px; font-weight:700; color:rgb(255, 255, 255); margin:0;"><i class="fas fa-eye" style="margin-right:8px; color:#f84464;"></i>Viewers</h3>
                 <button onclick="closeStoryViewersList()" style="background:rgba(255,255,255,0.08); border:none; color:#aaa; width:28px; height:28px; border-radius:50%; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'"><i class="fas fa-times"></i></button>
             </div>
             <!-- Body -->

@@ -405,6 +405,9 @@
                 <a href="#users-section" onclick="document.getElementById('users-section').scrollIntoView({behavior: 'smooth'})" class="sidebar-subtab">
                     <i class="fas fa-users"></i> Total Users <b th:text="${users.size()}">0</b>
                 </a>
+                <a href="#posts-section" onclick="document.getElementById('posts-section').scrollIntoView({behavior: 'smooth'})" class="sidebar-subtab">
+                    <i class="fas fa-shield-alt"></i> Moderate Content <b th:text="${posts.size()}">0</b>
+                </a>
                 <a th:href="@{/events/admin/manage}" class="sidebar-subtab">
                     <i class="fas fa-calendar-check"></i> Total Events <b th:text="${totalEvents}">0</b>
                 </a>
@@ -718,6 +721,7 @@
                     <th>Role</th>
                     <th>Date</th>
                     <th>Status</th>
+                    <th style="text-align: right;">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -730,7 +734,69 @@
                     <td th:text="${user.email}">user@example.com</td>
                     <td>User</td>
                     <td th:text="${user.dob}">2024-01-01</td>
-                    <td><span class="status-badge status-active">Active</span></td>
+                    <td>
+                        <span th:if="${user.status == 'ACTIVE' || user.status == null}" class="status-badge status-active">Active</span>
+                        <span th:if="${user.status == 'SUSPENDED'}" class="status-badge status-pending">Suspended</span>
+                        <span th:if="${user.status == 'BANNED'}" class="status-badge status-banned">Banned</span>
+                    </td>
+                    <td style="text-align: right;">
+                        <div style="display: inline-flex; gap: 6px; justify-content: flex-end;">
+                            <form th:if="${user.status == 'ACTIVE' || user.status == null}" th:action="@{/admin/users/{id}/status(id=${user.id})}" method="post" style="display: inline; margin: 0;">
+                                <input type="hidden" name="status" value="SUSPENDED">
+                                <button type="submit" class="status-badge status-pending" style="border: none; cursor: pointer; padding: 6px 12px; font-weight: bold;"><i class="fas fa-pause"></i> Suspend</button>
+                            </form>
+                            <form th:if="${user.status == 'ACTIVE' || user.status == null}" th:action="@{/admin/users/{id}/status(id=${user.id})}" method="post" style="display: inline; margin: 0;">
+                                <input type="hidden" name="status" value="BANNED">
+                                <button type="submit" class="status-badge status-banned" style="border: none; cursor: pointer; padding: 6px 12px; font-weight: bold;"><i class="fas fa-ban"></i> Ban</button>
+                            </form>
+                            <form th:if="${user.status == 'SUSPENDED' || user.status == 'BANNED'}" th:action="@{/admin/users/{id}/status(id=${user.id})}" method="post" style="display: inline; margin: 0;">
+                                <input type="hidden" name="status" value="ACTIVE">
+                                <button type="submit" class="status-badge status-active" style="border: none; cursor: pointer; padding: 6px 12px; font-weight: bold;"><i class="fas fa-check"></i> Activate</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2 id="posts-section" style="margin-bottom: 20px; padding-top: 100px; margin-top: -60px;">Content Moderation</h2>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Author</th>
+                    <th>Type</th>
+                    <th>Category</th>
+                    <th>Content Snippet</th>
+                    <th>Status</th>
+                    <th style="text-align: right;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="post : ${posts}">
+                    <td>
+                        <span th:text="${post.user != null ? post.user.username : 'Unknown'}">Author</span>
+                    </td>
+                    <td>
+                        <span class="status-badge" th:classappend="${post.postType == 'REEL' ? 'status-pending' : 'status-active'}" th:text="${post.postType != null ? post.postType : 'POST'}">POST</span>
+                    </td>
+                    <td th:text="${post.category != null ? post.category : 'General'}">Category</td>
+                    <td style="max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" th:text="${post.content}">Content snippet</td>
+                    <td>
+                        <span th:if="${!post.blocked}" class="status-badge status-active">Active</span>
+                        <span th:if="${post.blocked}" class="status-badge status-banned">Blocked</span>
+                    </td>
+                    <td style="text-align: right;">
+                        <form th:action="@{/admin/posts/{id}/block(id=${post.id})}" method="post" style="display: inline; margin: 0;">
+                            <input type="hidden" name="blocked" th:value="${!post.blocked}">
+                            <button type="submit" class="status-badge" th:classappend="${post.blocked ? 'status-active' : 'status-banned'}" style="border: none; cursor: pointer; padding: 6px 12px; font-weight: bold;">
+                                <i th:class="${post.blocked ? 'fas fa-unlock' : 'fas fa-lock'}"></i>
+                                <span th:text="${post.blocked ? 'Unblock' : 'Block'}">Block</span>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(posts)}">
+                    <td colspan="6" style="text-align: center; color: var(--text-secondary);">No posts available for moderation.</td>
                 </tr>
             </tbody>
         </table>
