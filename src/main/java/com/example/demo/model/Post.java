@@ -191,4 +191,8 @@ public class Post {
         }
         return likes.stream().anyMatch(l -> l.getUser() != null && l.getUser().getId().equals(user.getId()));
     }
+
+    private boolean blocked = false;
+    public boolean isBlocked() { return blocked; }
+    public void setBlocked(boolean blocked) { this.blocked = blocked; }
 }

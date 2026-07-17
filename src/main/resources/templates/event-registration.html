@@ -197,10 +197,12 @@
             border-radius: 16px;
             padding: 16px;
             display: flex;
-            align-items: flex-start;
+            align-items: center;
             gap: 14px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
             transition: all 0.25s ease;
+            height: auto;
+            min-height: 74px;
         }
 
         .detail-card:hover {
@@ -230,6 +232,8 @@
             display: flex;
             flex-direction: column;
             gap: 4px;
+            overflow: hidden;
+            width: 100%;
         }
 
         .detail-card .detail-info span {
@@ -244,7 +248,10 @@
             font-size: 14px;
             color: #111827;
             font-weight: 800;
-            line-height: 1.2;
+            line-height: 1.4;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            white-space: normal;
         }
 
         /* â”€â”€ About â”€â”€ */
@@ -946,31 +953,41 @@
             display: block;
             font-size: 12px;
             font-weight: 700;
-            color: rgba(255, 255, 255, 0.5);
+            color: #C7CEDB;
             margin-bottom: 7px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
 
         .mfield input,
-        .mfield select {
+        .mfield select,
+        .mfield textarea {
             width: 100%;
             padding: 12px 15px;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 11px;
-            color: #fff;
+            color: #D6D9E0;
             font-size: 14px;
+            font-weight: 300;
             font-family: 'Inter', sans-serif;
             outline: none;
             transition: all 0.2s;
         }
 
         .mfield input:focus,
-        .mfield select:focus {
-            border-color: #f84464;
-            background: rgba(248, 68, 100, 0.07);
+        .mfield select:focus,
+        .mfield textarea:focus {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(248, 68, 100, 0.5);
             box-shadow: 0 0 0 3px rgba(248, 68, 100, 0.12);
+        }
+
+        .mfield input::placeholder,
+        .mfield textarea::placeholder {
+            color: #8C96A8;
+            font-weight: 300;
+            opacity: 1;
         }
 
         .mfield select option {
@@ -1762,7 +1779,7 @@
                     <label>Full Name <span style="color:#f84464;">*</span></label>
                     <div class="input-wrap">
                         <i class="fas fa-user"></i>
-                        <input type="text" name="fullName" id="regFullName" th:value="${user?.username}"
+                        <input type="text" name="fullName" id="regFullName" 
                             placeholder="Enter your full name" required>
                     </div>
                 </div>
@@ -1772,7 +1789,7 @@
                         <label>Email Address <span style="color:#f84464;">*</span></label>
                         <div class="input-wrap">
                             <i class="fas fa-envelope"></i>
-                            <input type="email" name="email" id="regEmail" th:value="${user?.email}"
+                            <input type="email" name="email" id="regEmail" 
                                 placeholder="your@email.com" required>
                         </div>
                     </div>
@@ -1780,7 +1797,7 @@
                         <label>Phone Number <span style="color:#f84464;">*</span></label>
                         <div class="input-wrap">
                             <i class="fas fa-phone"></i>
-                            <input type="tel" name="phone" id="regPhone" placeholder="+91 98765 43210" maxlength="15"
+                            <input type="tel" name="phone" id="regPhone" placeholder="Enter your phone number" maxlength="15"
                                 required pattern="[+]?[0-9]{10,15}" oninput="this.value = this.value.replace(/[^0-9+]/g, '')">
                         </div>
                     </div>

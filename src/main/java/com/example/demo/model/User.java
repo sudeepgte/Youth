@@ -331,4 +331,8 @@ public class User implements Serializable {
 
     public boolean isHasFreeEntry() { return hasFreeEntry; }
     public void setHasFreeEntry(boolean hasFreeEntry) { this.hasFreeEntry = hasFreeEntry; }
+
+    private String status = "ACTIVE";
+    public String getStatus() { return status != null ? status : "ACTIVE"; }
+    public void setStatus(String status) { this.status = status; }
 }

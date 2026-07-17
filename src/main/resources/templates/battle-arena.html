@@ -846,6 +846,7 @@
             <a th:href="@{/profile}" class="sidebar-link"><i class="fas fa-user"></i> Profile</a>
             <a th:href="@{/games}" class="sidebar-link"><i class="fas fa-gamepad"></i> Games</a>
             <a th:href="@{/wallet}" class="sidebar-link"><i class="fas fa-wallet"></i> Wallet</a>
+            <a th:href="@{/user/my-bookings}" class="sidebar-link"><i class="fas fa-ticket-alt"></i> My Bookings</a>
             <a href="javascript:void(0)" class="sidebar-link" onclick="openCreateModal()"><i class="fas fa-plus-circle" style="color: var(--accent);"></i> Create Post</a>
             <a th:href="@{/logout}" class="sidebar-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </aside>
@@ -867,7 +868,7 @@
                 <span th:if="${param.error[0] == 'not_found'}">Battle not found. Check your room code.</span>
                 <span th:if="${param.error[0] == 'full'}">This battle is full!</span>
                 <span th:if="${param.error[0] == 'ended'}">This battle has ended.</span>
-                <span th:if="${param.error[0] == 'already_started'}">Joining is closed — this battle has already started.</span>
+                <span th:if="${param.error[0] == 'already_started'}">Joining is closed � this battle has already started.</span>
                 <span th:if="${param.error[0] == 'already_voted'}">You've already voted in this battle.</span>
                 <span th:if="${param.error[0] == 'already_submitted'}">You've already submitted your entry.</span>
                 <span th:if="${param.error[0] == 'not_active'}">This battle isn't accepting submissions right now.</span>
@@ -1102,7 +1103,11 @@
                 </div>
 
                 <!-- ─── SUBMISSION FORM (ACTIVE battles only, if participant & not submitted) ─── -->
+
+                <div th:if="${battle.status == 'ACTIVE' and isParticipant and !hasSubmitted}" class="battle-detail" id="submit-section">
+
                 <div th:if="${battle.status == 'ACTIVE' and isParticipant and !hasSubmitted and battle.durationMinutes == null}" class="battle-detail" id="submit-section">
+
                     <h3 style="font-size:18px; font-weight:900; color:#fff; margin-bottom:6px;">
                         <i class="fas fa-upload" style="color:#10B981;"></i> Upload Your Submission
                     </h3>
@@ -1110,7 +1115,11 @@
 
                     <form th:action="@{'/battles/' + ${battle.id} + '/submit'}" method="POST" onsubmit="return validateSubmissionForm()">
 
+
+                        <!-- �&bull;��&bull;� CATEGORY-SPECIFIC UPLOAD ZONE �&bull;��&bull;� -->
+
                         <!-- ══ CATEGORY-SPECIFIC UPLOAD ZONE ══ -->
+
                         <div class="arena-field">
                             <!-- Category-specific label with icon -->
                             <label style="display:flex; align-items:center; gap:6px;">
@@ -1237,7 +1246,11 @@
                 </div>
 
                 <!-- ─── SUBMISSIONS & VOTING ─── -->
+
+                <div th:if="${!submissions.isEmpty()}" class="battle-detail">
+
                 <div th:if="${!submissions.isEmpty() and battle.durationMinutes == null}" class="battle-detail">
+
                     <h3 style="font-size:18px; font-weight:900; color:#fff; margin-bottom:16px;">
                         <i class="fas fa-th-list" style="color:#3B82F6;"></i> Submissions
                         <span th:if="${battle.status == 'VOTING'}" style="font-size:12px; color:#3B82F6; font-weight:700; margin-left:8px;">— Vote for your favourite!</span>
@@ -1365,7 +1378,11 @@
 
                 <!-- ─── WINNER ANNOUNCEMENT ─── -->
                 <div th:if="${(battle.status == 'COMPLETED' or battle.status == 'TIE') and battle.winner != null}" class="winner-section" id="winner-display" style="padding: 20px;">
+
+                    <div class="winner-trophy" style="font-size: 64px; margin-bottom: 15px;">🏆</div>
+
                     <div class="winner-trophy" style="font-size: 64px; margin-bottom: 15px;"><i class="fas fa-trophy" style="color: #FFD700;"></i></div>
+
                     <div style="font-size:18px; color:var(--text-primary); font-weight:900; margin-bottom:20px; text-transform: uppercase;">
                         <span th:if="${battle.status == 'TIE'}">It's a Tie!</span>
                         <span th:if="${battle.status != 'TIE'}">Battle Winners</span>
@@ -1374,7 +1391,11 @@
                     <!-- 1st Place -->
                     <div style="background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.2); border-radius: 12px; padding: 15px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
                         <div style="display: flex; align-items: center; gap: 15px;">
+
+                            <div style="font-size: 24px;">🥇</div>
+
                             <div style="font-size: 24px;"><i class="fas fa-medal" style="color: #FFD700;"></i></div>
+
                             <div style="text-align: left;">
                                 <div style="font-size: 12px; color: var(--text-muted); font-weight: 700;">1ST PLACE</div>
                                 <div style="font-size: 20px; font-weight: 900; color: var(--text-primary);" th:text="${battle.winner.username}">Winner</div>
@@ -1389,7 +1410,11 @@
                     <!-- 2nd Place -->
                     <div th:if="${battle.winner2 != null}" style="background: rgba(255,255,255,0.6); border: 1px solid rgba(15,23,42,0.1); border-radius: 12px; padding: 15px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
                         <div style="display: flex; align-items: center; gap: 15px;">
+
+                            <div style="font-size: 24px;">🥈</div>
+
                             <div style="font-size: 24px;"><i class="fas fa-medal" style="color: #C0C0C0;"></i></div>
+
                             <div style="text-align: left;">
                                 <div style="font-size: 12px; color: var(--text-muted); font-weight: 700;" th:text="${battle.status == 'TIE' ? 'TIED WINNER' : '2ND PLACE'}">2ND PLACE</div>
                                 <div style="font-size: 18px; font-weight: 800; color: var(--text-primary);" th:text="${battle.winner2.username}">User 2</div>
@@ -1404,7 +1429,10 @@
                     <!-- 3rd Place -->
                     <div th:if="${battle.winner3 != null}" style="background: rgba(255,255,255,0.6); border: 1px solid rgba(15,23,42,0.1); border-radius: 12px; padding: 15px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
                         <div style="display: flex; align-items: center; gap: 15px;">
+
+                            <div style="font-size: 24px;">🥉</div>
                             <div style="font-size: 24px;"><i class="fas fa-medal" style="color: #CD7F32;"></i></div>
+
                             <div style="text-align: left;">
                                 <div style="font-size: 12px; color: var(--text-muted); font-weight: 700;">3RD PLACE</div>
                                 <div style="font-size: 18px; font-weight: 800; color: var(--text-primary);" th:text="${battle.winner3.username}">User 3</div>
@@ -1431,7 +1459,11 @@
             <div th:if="${battle == null}">
                 <!-- Hero Banner -->
                 <div class="arena-hero">
+
+                    <h1>⚔️ Battle Arena</h1>
+
                     <h1>&#9876;&#65039; Battle Arena</h1>
+
                     <p>Challenge your friends in creative battles across Coding, Music, Dance, Photography, and more. Submit your work, let the community vote, and climb the leaderboard!</p>
                     <div class="arena-hero-actions">
                         <button class="btn-arena btn-arena-primary" onclick="openCreateBattle()">
@@ -1448,9 +1480,15 @@
                     <!-- Colleges in Battle Widget -->
                     <div class="widget-card">
                         <div class="widget-header">
+
+                            <h3 th:if="${battle == null}">🏫 Colleges in Battle</h3>
+                            <h3 th:if="${battle != null and isCreator}">🏫 Students by College</h3>
+                            <h3 th:if="${battle != null and !isCreator}">🏫 Colleges Competing</h3>
+
                             <h3 th:if="${battle == null}"><i class="fas fa-university" style="margin-right: 6px;"></i> Colleges in Battle</h3>
                             <h3 th:if="${battle != null and isCreator}"><i class="fas fa-university" style="margin-right: 6px;"></i> Students by College</h3>
                             <h3 th:if="${battle != null and !isCreator}"><i class="fas fa-university" style="margin-right: 6px;"></i> Colleges Competing</h3>
+
                         </div>
                         <!-- College list when data exists -->
                         <div th:if="${battleColleges != null and !battleColleges.isEmpty()}" style="display:flex; flex-direction:column; gap:10px;">
@@ -1479,7 +1517,11 @@
                     <!-- Categories Widget -->
                     <div class="widget-card">
                         <div class="widget-header">
+
+                            <h3>🎯 Categories</h3>
+
                             <h3><i class="fas fa-bullseye" style="margin-right: 6px;"></i> Categories</h3>
+
                         </div>
                         <div style="display:flex; flex-wrap:wrap; gap:6px;">
                             <span style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(59,130,246,0.1); color:#3B82F6; border:1px solid rgba(59,130,246,0.15);">Coding</span>
@@ -1578,9 +1620,15 @@
             <div class="widget-card">
                 <div class="widget-header">
                     <!-- Title changes based on context -->
+
+                    <h3 th:if="${battle == null}">🏫 Colleges in Battle</h3>
+                    <h3 th:if="${battle != null and isCreator}">🏫 Students by College</h3>
+                    <h3 th:if="${battle != null and !isCreator}">🏫 Colleges Competing</h3>
+
                     <h3 th:if="${battle == null}"><i class="fas fa-university" style="margin-right: 6px;"></i> Colleges in Battle</h3>
                     <h3 th:if="${battle != null and isCreator}"><i class="fas fa-university" style="margin-right: 6px;"></i> Students by College</h3>
                     <h3 th:if="${battle != null and !isCreator}"><i class="fas fa-university" style="margin-right: 6px;"></i> Colleges Competing</h3>
+
                 </div>
 
                 <!-- College list when data exists -->
@@ -1613,7 +1661,11 @@
 
             <div class="widget-card">
                 <div class="widget-header">
+
+                    <h3>🎯 Categories</h3>
+
                     <h3><i class="fas fa-bullseye" style="margin-right: 6px;"></i> Categories</h3>
+
                 </div>
                 <div style="display:flex; flex-wrap:wrap; gap:6px;">
                     <span style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(59,130,246,0.1); color:#3B82F6; border:1px solid rgba(59,130,246,0.15);">Coding</span>
@@ -1647,7 +1699,11 @@
 
             <!-- Step 1: Title & Category -->
             <div id="create-step-1">
+
+                <h2>⚔️ Create Battle</h2>
+
                 <h2>&#9876;&#65039; Create Battle</h2>
+
                 <p class="subtitle">Set up a creative challenge for your friends</p>
                 <form id="createBattleForm" th:action="@{/battles/create}" method="POST">
                     <div class="arena-field">
@@ -1686,10 +1742,16 @@
                         <!-- Mode Selector -->
                         <div class="arena-field">
                             <label>Battle Mode</label>
+
+                            <select id="modeSelect" name="mode" onchange="toggleBattleMode(this.value)" style="padding:12px; font-size:14px; font-weight:700;">
+                                <option value="ONLINE" selected>🌐 Online (Default Web Submission)</option>
+                            </select>
+
                             <div style="background:#F8FAFC; border:1.5px solid rgba(15,23,42,0.12); border-radius:12px; padding:12px; font-size:14px; font-weight:700; color:var(--text-primary);">
                                 &#127760; Online
                             </div>
                             <input type="hidden" name="mode" value="ONLINE" />
+
                         </div>
 
                         <!-- Offline Specific Fields (Hidden by default) -->
@@ -1705,7 +1767,11 @@
                                 </div>
                                 <div class="arena-field">
                                     <label>Event Time</label>
+
+                                    <input type="text" name="eventTime" placeholder="e.g. 10:00 AM â€“ 1:00 PM" />
+
                                     <input type="text" name="eventTime" placeholder="e.g. 10:00 AM – 1:00 PM" />
+
                                 </div>
                             </div>
 
@@ -1722,11 +1788,26 @@
                         </div>
 
                         <div class="arena-field">
+
+                            <label>Entry Fee (?)</label>
+
                             <label>Entry Fee (&#8377;)</label>
+
                             <input type="number" step="0.01" name="entryFee" min="0" placeholder="e.g. 50.00" required />
                         </div>
                         <div id="prizesGrid" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom: 20px;">
                             <div class="arena-field" style="margin-bottom:0;">
+
+                                <label><i class="fas fa-trophy" style="color:#FFD700;"></i> 1st Prize (?)</label>
+                                <input type="number" step="0.01" name="prize1" min="0" placeholder="0" required />
+                            </div>
+                            <div class="arena-field" style="margin-bottom:0;">
+                                <label><i class="fas fa-trophy" style="color:#C0C0C0;"></i> 2nd Prize (?)</label>
+                                <input type="number" step="0.01" name="prize2" min="0" placeholder="0" required />
+                            </div>
+                            <div class="arena-field" style="margin-bottom:0;">
+                                <label><i class="fas fa-trophy" style="color:#cd7f32;"></i> 3rd Prize (?)</label>
+
                                 <label><i class="fas fa-trophy" style="color:#FFD700;"></i> 1st Prize (&#8377;)</label>
                                 <input type="number" step="0.01" name="prize1" min="0" placeholder="0" required />
                             </div>
@@ -1736,6 +1817,7 @@
                             </div>
                             <div id="prize3Container" class="arena-field" style="margin-bottom:0;">
                                 <label><i class="fas fa-trophy" style="color:#cd7f32;"></i> 3rd Prize (&#8377;)</label>
+
                                 <input type="number" step="0.01" name="prize3" min="0" placeholder="0" required />
                             </div>
                         </div>
@@ -1807,9 +1889,15 @@
         </div>
     </div>
 
+
+    <!-- �&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;� -->
+    <!-- JOIN BATTLE MODAL -->
+    <!-- �&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;� -->
+
     <!-- ═══════════════════════════════════════════════════ -->
     <!-- JOIN BATTLE MODAL -->
     <!-- ═══════════════════════════════════════════════════ -->
+
     <div class="arena-modal-overlay" id="joinBattleModal">
         <div class="arena-modal">
             <button class="arena-modal-close" onclick="closeJoinBattle()">&times;</button>
@@ -1830,9 +1918,15 @@
         </div>
     </div>
 
+
+    <!-- �&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;� -->
+    <!-- CONFETTI (for winner page) -->
+    <!-- �&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;��&bull;� -->
+
     <!-- ═══════════════════════════════════════════════════ -->
     <!-- CONFETTI (for winner page) -->
     <!-- ═══════════════════════════════════════════════════ -->
+
     <div class="confetti-container" id="confettiContainer"></div>
 
     <script>
@@ -2157,5 +2251,6 @@
     </script>
 </body>
 </html>
+
 
 

@@ -698,10 +698,20 @@
             }
         })();
 
-        // â”€â”€ Print Ticket â”€â”€
+        // ── Print Ticket ──
         function printTicket() {
             window.print();
         }
+
+        // Auto-print if ?download=true is in the URL
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('download') === 'true') {
+                setTimeout(function() {
+                    window.print();
+                }, 500); // Slight delay to ensure styles and fonts are loaded
+            }
+        };
     </script>
     <script>
         function revealReward(registrationId) {

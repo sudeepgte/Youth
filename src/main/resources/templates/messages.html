@@ -1384,6 +1384,25 @@
             cursor: pointer;
         }
 
+        .msg-sender-name {
+            font-family: 'Inter', 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            color: #54656F;
+            margin-bottom: 8px;
+            margin-top: 12px;
+            padding: 0;
+            line-height: normal;
+        }
+        .msg-sender-name.sent {
+            align-self: flex-end;
+            margin-right: 2px;
+        }
+        .msg-sender-name.received {
+            align-self: flex-start;
+            margin-left: 2px;
+        }
+
         /* Message Actions & Reactions */
         .msg-bubble-wrapper {
             display: flex;
@@ -1810,6 +1829,7 @@
             <a th:href="@{/profile}" class="sidebar-link"><i class="fas fa-user"></i> Profile</a>
             <a th:href="@{/games}" class="sidebar-link"><i class="fas fa-gamepad"></i> Games</a>
             <a th:href="@{/wallet}" class="sidebar-link"><i class="fas fa-wallet"></i> Wallet</a>
+            <a th:href="@{/user/my-bookings}" class="sidebar-link"><i class="fas fa-ticket-alt"></i> My Bookings</a>
             <a href="javascript:void(0)" class="sidebar-link" onclick="openCreateModal()"><i class="fas fa-plus-circle" style="color: var(--accent);"></i> Create Post</a>
             <a th:href="@{/logout}" class="sidebar-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </aside>
@@ -2216,7 +2236,8 @@
             currentUser: {
                 id: /*[[${currentUser.id}]]*/ 0,
                 username: /*[[${currentUser.username}]]*/ 'Unknown',
-                profilePicture: /*[[${currentUser.profilePicture}]]*/ null
+                profilePhotoUrl: /*[[${currentUser.profilePhotoUrl}]]*/ null,
+                profilePicture: /*[[${currentUser.profilePhotoUrl}]]*/ null
             },
             paths: {
                 conversations: /*[[@{/api/chat/conversations}]]*/ '/api/chat/conversations',
@@ -2673,8 +2694,8 @@
                     avatarHtml = `<div style="display:flex; flex-wrap:wrap; width:100%; height:100%;">
                         ${c.participants.slice(0, 4).map(p => `<div style="width:50%; height:50%; background:var(--avatar-bg); font-size:10px; display:flex; align-items:center; justify-content:center; border-radius:2px;">${p.username.charAt(0)}</div>`).join('')}
                     </div>`;
-                } else if (partner && partner.profilePicture) {
-                    avatarHtml = `<img src="${resolveUrl(partner.profilePicture)}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+                } else if (partner && (partner.profilePhotoUrl || partner.profilePicture)) {
+                    avatarHtml = `<img src="${resolveUrl(partner.profilePhotoUrl || partner.profilePicture)}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
                 } else {
                     avatarHtml = convName.charAt(0).toUpperCase();
                 }
@@ -2801,8 +2822,8 @@
                     avatarEl.innerHTML = `<div style="display:flex; flex-wrap:wrap; width:100%; height:100%;">
                         ${conv.participants.slice(0, 4).map(p => `<div style="width:50%; height:50%; background:var(--avatar-bg); font-size:10px; display:flex; align-items:center; justify-content:center; border-radius:2px;">${p.username.charAt(0)}</div>`).join('')}
                     </div>`;
-                } else if (partner && partner.profilePicture) {
-                    avatarEl.innerHTML = `<img src="${resolveUrl(partner.profilePicture)}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+                } else if (partner && (partner.profilePhotoUrl || partner.profilePicture)) {
+                    avatarEl.innerHTML = `<img src="${resolveUrl(partner.profilePhotoUrl || partner.profilePicture)}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
                 } else {
                     avatarEl.innerText = convName.charAt(0).toUpperCase();
                 }
@@ -3118,6 +3139,27 @@
             const meta = document.createElement('div');
             meta.className = `msg-meta ${isSent ? 'sent' : 'received'}`;
             meta.innerText = formatTime(msg.timestamp);
+
+            let isGroupConv = false;
+            try {
+                if (msg.conversation && msg.conversation.type === 'GROUP') {
+                    isGroupConv = true;
+                } else if (typeof conversationsData !== 'undefined' && conversationsData && Array.isArray(conversationsData)) {
+                    const conv = conversationsData.find(c => String(c.id) === String(activeConversationId));
+                    if (conv && conv.type === 'GROUP') {
+                        isGroupConv = true;
+                    }
+                }
+            } catch (e) {
+                console.warn('Error checking if group conv:', e);
+            }
+            
+            if (isGroupConv) {
+                const senderNameDiv = document.createElement('div');
+                senderNameDiv.className = `msg-sender-name ${isSent ? 'sent' : 'received'}`;
+                senderNameDiv.innerText = isSent ? 'You' : (msg.sender ? (msg.sender.username || msg.sender.name || 'Unknown') : 'Unknown');
+                container.appendChild(senderNameDiv);
+            }
 
             container.appendChild(wrapper);
             container.appendChild(meta);
@@ -3491,8 +3533,8 @@
                 item.className = 'search-result-item';
                 item.onclick = () => selectUserForChat(u);
 
-                const avatarHtml = u.profilePicture ?
-                    `<img src="${resolveUrl(u.profilePicture)}" style="width:100%; height:100%; object-fit:cover;">` :
+                const avatarHtml = (u.profilePhotoUrl || u.profilePicture) ?
+                    `<img src="${resolveUrl(u.profilePhotoUrl || u.profilePicture)}" style="width:100%; height:100%; object-fit:cover;">` :
                     u.username.charAt(0).toUpperCase();
 
                 item.innerHTML = `
@@ -4210,3 +4252,4 @@
 </body>
 
 </html>
+
