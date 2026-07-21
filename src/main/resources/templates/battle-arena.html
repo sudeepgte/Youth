@@ -876,6 +876,7 @@
                 <span th:if="${param.error[0] == 'unauthorized'}">You are not authorized to perform this action.</span>
                 <span th:if="${param.error[0] == 'empty_submission'}">Please upload a file or provide a valid URL for your submission.</span>
                 <span th:if="${param.error[0] == 'insufficient_funds'}">Insufficient funds in your wallet to pay the entry fee!</span>
+                <span th:if="${param.error[0] == 'invalid_prizes'}">Invalid Prize Amounts! Total prize pool cannot exceed the combined entry fee pool.</span>
             </div>
 
             <!-- ──────────────────────────────────────── -->
@@ -1761,16 +1762,16 @@
 
                             <label>Entry Fee (&#8377;)</label>
 
-                            <input type="number" step="0.01" name="entryFee" min="0" placeholder="e.g. 50.00" required />
+                            <input type="number" step="0.01" name="entryFee" min="0" placeholder="e.g. 50.00" oninput="updatePrizePool()" required />
                         </div>
                         <div id="prizesGrid" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom: 20px;">
                             <div class="arena-field" style="margin-bottom:0;">
                                 <label><i class="fas fa-trophy" style="color:#FFD700;"></i> 1st Prize (&#8377;)</label>
-                                <input type="number" step="0.01" name="prize1" min="0" placeholder="0" required />
+                                <input type="number" step="0.01" name="prize1" min="0" placeholder="0" oninput="onPrize1Input()" required />
                             </div>
                             <div class="arena-field" style="margin-bottom:0;">
                                 <label><i class="fas fa-trophy" style="color:#C0C0C0;"></i> 2nd Prize (&#8377;)</label>
-                                <input type="number" step="0.01" name="prize2" min="0" placeholder="0" required />
+                                <input type="number" step="0.01" name="prize2" min="0" placeholder="0" oninput="onPrize2Input()" required />
                             </div>
                             <div id="prize3Container" class="arena-field" style="margin-bottom:0;">
                                 <label><i class="fas fa-trophy" style="color:#cd7f32;"></i> 3rd Prize (&#8377;)</label>
@@ -2031,6 +2032,7 @@
 
             const partSelect = document.getElementById('participantsSelect');
             const customPart = document.getElementById('customParticipantsInput');
+            let participantCount = 2;
             if (partSelect.value === 'custom') {
                 partSelect.removeAttribute('name');
                 customPart.setAttribute('name', 'maxParticipants');
@@ -2039,9 +2041,28 @@
                     alert('Please enter custom max participants.');
                     return;
                 }
+                participantCount = parseFloat(customPart.value) || 2;
             } else {
                 partSelect.setAttribute('name', 'maxParticipants');
                 customPart.removeAttribute('name');
+                participantCount = parseFloat(partSelect.value) || 2;
+            }
+
+            // Validation: Total prize pool cannot exceed total entry fees (Entry Fee * Max Participants)
+            const entryFee = parseFloat(document.querySelector('input[name="entryFee"]')?.value || '0') || 0;
+            const prize1 = parseFloat(document.querySelector('input[name="prize1"]')?.value || '0') || 0;
+            const prize2 = parseFloat(document.querySelector('input[name="prize2"]')?.value || '0') || 0;
+            const prize3Container = document.getElementById('prize3Container');
+            const prize3Input = document.querySelector('input[name="prize3"]');
+            const prize3 = (prize3Container && prize3Container.style.display !== 'none' && prize3Input && !prize3Input.disabled) ? (parseFloat(prize3Input.value || '0') || 0) : 0;
+
+            const totalPrizePool = prize1 + prize2 + prize3;
+            const maxAllowedPrizePool = entryFee * participantCount;
+
+            if (totalPrizePool > maxAllowedPrizePool) {
+                e.preventDefault();
+                alert(`Invalid Prize Amounts! The total prize pool (₹${totalPrizePool.toFixed(2)}) cannot exceed the total collected entry fee pool (₹${entryFee.toFixed(2)} × ${participantCount} participants = ₹${maxAllowedPrizePool.toFixed(2)}).`);
+                return;
             }
         });
 
@@ -2175,6 +2196,59 @@
                 prize3Input.disabled = true;
                 
                 toggleCustomParticipants("2");
+                updatePrizePool();
+            }
+        }
+
+        function updatePrizePool() {
+            const type = document.querySelector('input[name="durationType"]:checked')?.value;
+            const entryFeeInput = document.querySelector('input[name="entryFee"]');
+            const prize1Input = document.querySelector('input[name="prize1"]');
+            const prize2Input = document.querySelector('input[name="prize2"]');
+            const prize3Input = document.querySelector('input[name="prize3"]');
+
+            if (!entryFeeInput || !prize1Input || !prize2Input) return;
+
+            const entryFee = parseFloat(entryFeeInput.value || '0') || 0;
+
+            if (type === 'minutes') {
+                // Live battle 1v1: 2 participants => Total Pool = entryFee * 2
+                const totalPool = entryFee * 2;
+                // 1st Prize = 80%, 2nd Prize = 20%
+                const prize1 = Math.round((totalPool * 0.80) * 100) / 100;
+                const prize2 = Math.round((totalPool * 0.20) * 100) / 100;
+
+                prize1Input.value = prize1 > 0 ? prize1 : 0;
+                prize2Input.value = prize2 > 0 ? prize2 : 0;
+                if (prize3Input) prize3Input.value = 0;
+            }
+        }
+
+        function onPrize1Input() {
+            const type = document.querySelector('input[name="durationType"]:checked')?.value;
+            if (type === 'minutes') {
+                const entryFee = parseFloat(document.querySelector('input[name="entryFee"]')?.value || '0') || 0;
+                const totalPool = entryFee * 2;
+                const prize1 = parseFloat(document.querySelector('input[name="prize1"]')?.value || '0') || 0;
+                const prize2Input = document.querySelector('input[name="prize2"]');
+                if (prize2Input && prize1 <= totalPool) {
+                    const remaining = Math.max(0, totalPool - prize1);
+                    prize2Input.value = Math.round(remaining * 100) / 100;
+                }
+            }
+        }
+
+        function onPrize2Input() {
+            const type = document.querySelector('input[name="durationType"]:checked')?.value;
+            if (type === 'minutes') {
+                const entryFee = parseFloat(document.querySelector('input[name="entryFee"]')?.value || '0') || 0;
+                const totalPool = entryFee * 2;
+                const prize2 = parseFloat(document.querySelector('input[name="prize2"]')?.value || '0') || 0;
+                const prize1Input = document.querySelector('input[name="prize1"]');
+                if (prize1Input && prize2 <= totalPool) {
+                    const remaining = Math.max(0, totalPool - prize2);
+                    prize1Input.value = Math.round(remaining * 100) / 100;
+                }
             }
         }
     </script>
