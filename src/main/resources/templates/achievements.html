@@ -505,7 +505,7 @@
 
         @media (max-width: 768px) {
             .dashboard-container {
-                grid-template-columns: 1fr;
+                grid-template-columns: minmax(0, 1fr);
                 padding: 0 12px;
                 gap: 15px;
                 margin-top: calc(var(--dashboard-nav-height) + 10px);
@@ -572,7 +572,7 @@
                 font-size: 14px;
             }
             .lb-table th, .lb-table td {
-                padding: 12px 10px;
+                padding: 10px 6px;
             }
 
             .lb-table th:nth-child(3), .lb-table td:nth-child(3) {
@@ -829,7 +829,7 @@
                             <th style="text-align:center;">Rank</th>
                             <th>User</th>
                             <th>Tier</th>
-                            <th>Experience</th>
+                            <th style="text-align:right; padding-right: 16px;">XP</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -865,8 +865,8 @@
                                     <span th:text="${player.level != null ? player.level : 'Novice'}">Novice</span>
                                 </span>
                             </td>
-                            <td>
-                                <div class="xp-score">
+                            <td style="text-align:right; padding-right: 16px;">
+                                <div class="xp-score" style="justify-content: flex-end;">
                                     <i class="fas fa-bolt"></i>
                                     <span th:text="${player.xp != null ? player.xp : 0}"></span>
                                 </div>

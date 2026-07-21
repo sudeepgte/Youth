@@ -588,6 +588,7 @@
 
         .input-container input {
             flex: 1;
+            min-width: 0;
             border: none;
             outline: none;
             padding: 10px 12px;
@@ -703,6 +704,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
         }
 
         .header-icon:hover {
@@ -2062,7 +2064,7 @@
                                 </svg>
                             </div>
                         </div>
-                        <div style="cursor: pointer; padding: 0 4px;"
+                        <div style="cursor: pointer; padding: 0 4px; flex-shrink: 0;"
                             onclick="document.getElementById('fileInput').click()">
                             <svg aria-label="Add Photo or Video" color="var(--text-main)" fill="var(--text-main)"
                                 height="24" role="img" viewBox="0 0 24 24" width="24">
