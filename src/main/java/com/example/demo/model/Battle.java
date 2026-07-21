@@ -186,13 +186,34 @@ public class Battle {
     public User getWinner3() { return winner3; }
     public void setWinner3(User winner3) { this.winner3 = winner3; }
 
-    public Double getPrize1() { return prize1; }
+    public Double getPrize1() {
+        if (entryFee != null && entryFee > 0 && participants != null && !participants.isEmpty()) {
+            double totalPool = entryFee * participants.size();
+            double pct = (durationMinutes != null && durationMinutes > 0) ? 0.80 : 0.60;
+            return Math.round(totalPool * pct * 100.0) / 100.0;
+        }
+        return prize1 != null ? prize1 : 0.0;
+    }
     public void setPrize1(Double prize1) { this.prize1 = prize1; }
 
-    public Double getPrize2() { return prize2; }
+    public Double getPrize2() {
+        if (entryFee != null && entryFee > 0 && participants != null && !participants.isEmpty()) {
+            double totalPool = entryFee * participants.size();
+            double pct = (durationMinutes != null && durationMinutes > 0) ? 0.20 : 0.30;
+            return Math.round(totalPool * pct * 100.0) / 100.0;
+        }
+        return prize2 != null ? prize2 : 0.0;
+    }
     public void setPrize2(Double prize2) { this.prize2 = prize2; }
 
-    public Double getPrize3() { return prize3; }
+    public Double getPrize3() {
+        if (durationMinutes != null && durationMinutes > 0) return 0.0;
+        if (entryFee != null && entryFee > 0 && participants != null && !participants.isEmpty()) {
+            double totalPool = entryFee * participants.size();
+            return Math.round(totalPool * 0.10 * 100.0) / 100.0;
+        }
+        return prize3 != null ? prize3 : 0.0;
+    }
     public void setPrize3(Double prize3) { this.prize3 = prize3; }
 
     public Integer getDurationMinutes() { return durationMinutes; }
