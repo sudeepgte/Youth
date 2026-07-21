@@ -1800,7 +1800,7 @@
                                 </div>
                             </div>
                             <div id="durationMinutesWrapper" style="display:none;">
-                                <select id="durationMinutesSelect" name="durationMinutes">
+                                <select id="durationMinutesSelect">
                                     <option value="1">1 Minute</option>
                                     <option value="3">3 Minutes</option>
                                     <option value="5" selected>5 Minutes</option>
@@ -2015,9 +2015,20 @@
                 }
             }
 
+            const durationType = document.querySelector('input[name="durationType"]:checked')?.value || 'hours';
+            const mSelect = document.getElementById('durationMinutesSelect');
+            if (durationType === 'hours') {
+                if (mSelect) mSelect.removeAttribute('name');
+            } else {
+                if (mSelect) mSelect.setAttribute('name', 'durationMinutes');
+            }
+
             const durSelect = document.getElementById('durationSelect');
             const customDur = document.getElementById('customDurationInput');
-            if (durSelect.value === 'custom') {
+            if (durationType === 'minutes') {
+                if (durSelect) durSelect.removeAttribute('name');
+                if (customDur) customDur.removeAttribute('name');
+            } else if (durSelect.value === 'custom') {
                 durSelect.removeAttribute('name');
                 customDur.setAttribute('name', 'durationHours');
                 if (!customDur.value) {
@@ -2059,7 +2070,7 @@
             const totalPrizePool = prize1 + prize2 + prize3;
             const maxAllowedPrizePool = entryFee * participantCount;
 
-            if (totalPrizePool > maxAllowedPrizePool) {
+            if (totalPrizePool > (maxAllowedPrizePool + 0.01)) {
                 e.preventDefault();
                 alert(`Invalid Prize Amounts! The total prize pool (₹${totalPrizePool.toFixed(2)}) cannot exceed the total collected entry fee pool (₹${entryFee.toFixed(2)} × ${participantCount} participants = ₹${maxAllowedPrizePool.toFixed(2)}).`);
                 return;
