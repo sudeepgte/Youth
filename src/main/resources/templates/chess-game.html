@@ -43,7 +43,7 @@
         const cp = (document.querySelector('meta[name="context-path"]')?.content || '').replace(/\/$/, '');
         const { useState, useEffect, useCallback, useRef, useMemo } = React;
         const W = "w", B = "b";
-        const GLYPHS = { wK:"♔", wQ:"♕", wR:"♖", wB:"♗", wN:"♘", wP:"♙", bK:"♚", bQ:"♛", bR:"♜", bB:"♝", bN:"♞", bP:"♟" };
+        const GLYPHS = { wK:"♚", wQ:"♛", wR:"♜", wB:"♝", wN:"♞", wP:"♟", bK:"♚", bQ:"♛", bR:"♜", bB:"♝", bN:"♞", bP:"♟" };
 
         function rawMoves(board, r, c) {
             const piece = board[r][c]; if (!piece) return [];
@@ -56,6 +56,212 @@
             if (type==="K") [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]].forEach(([dr,dc]) => { const nr=r+dr,nc=c+dc; if(inB(nr,nc) && board[nr][nc]?.color!==color) moves.push([nr,nc]); });
             if (type==="P") { const d=color===W?-1:1; if(inB(r+d,c) && !board[r+d][c]) { moves.push([r+d,c]); if((color===W?r===6:r===1) && !board[r+2*d][c]) moves.push([r+2*d,c]); } [-1,1].forEach(dc => { if(inB(r+d,c+dc) && board[r+d][c+dc]?.color===opp) moves.push([r+d,c+dc]); }); }
             return moves;
+        }
+
+        function findKing(board, color) {
+            for (let r = 0; r < 8; r++) {
+                for (let c = 0; c < 8; c++) {
+                    if (board[r][c] && board[r][c].type === "K" && board[r][c].color === color) {
+                        return [r, c];
+                    }
+                }
+            }
+            return null;
+        }
+
+        function isSquareAttacked(board, r, c, attackerColor) {
+            const opp = attackerColor;
+            for (let tr = 0; tr < 8; tr++) {
+                for (let tc = 0; tc < 8; tc++) {
+                    const p = board[tr][tc];
+                    if (p && p.color === opp) {
+                        if (p.type === "P") {
+                            const d = opp === W ? -1 : 1;
+                            if (tr + d === r && (tc - 1 === c || tc + 1 === c)) {
+                                return true;
+                            }
+                        } else {
+                            const moves = rawMoves(board, tr, tc);
+                            if (moves.some(([mr, mc]) => mr === r && mc === c)) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        function isKingInCheck(board, color) {
+            const kp = findKing(board, color);
+            if (!kp) return false;
+            const opp = color === W ? B : W;
+            return isSquareAttacked(board, kp[0], kp[1], opp);
+        }
+
+        function cloneBoard(board) {
+            return board.map(row => row.map(cell => cell ? { ...cell } : null));
+        }
+
+        function getLegalMoves(board, r, c) {
+            const piece = board[r][c];
+            if (!piece) return [];
+            const candidates = rawMoves(board, r, c);
+            const legal = [];
+            candidates.forEach(([tr, tc]) => {
+                const simulated = cloneBoard(board);
+                simulated[tr][tc] = simulated[r][c];
+                simulated[r][c] = null;
+                if (!isKingInCheck(simulated, piece.color)) {
+                    legal.push([tr, tc]);
+                }
+            });
+            return legal;
+        }
+
+        function hasAnyLegalMoves(board, color) {
+            for (let r = 0; r < 8; r++) {
+                for (let c = 0; c < 8; c++) {
+                    const p = board[r][c];
+                    if (p && p.color === color) {
+                        if (getLegalMoves(board, r, c).length > 0) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        function isInsufficientMaterial(board) {
+            const pieces = [];
+            for (let r = 0; r < 8; r++) {
+                for (let c = 0; c < 8; c++) {
+                    if (board[r][c]) pieces.push(board[r][c]);
+                }
+            }
+            if (pieces.length === 2) return true; // K vs K
+            if (pieces.length === 3) {
+                return pieces.some(p => p.type === "B" || p.type === "N"); // K+B vs K or K+N vs K
+            }
+            if (pieces.length === 4) {
+                const whiteB = pieces.filter(p => p.color === W && p.type === "B");
+                const blackB = pieces.filter(p => p.color === B && p.type === "B");
+                if (whiteB.length === 1 && blackB.length === 1) {
+                    let whiteBColor = null;
+                    let blackBColor = null;
+                    for (let r = 0; r < 8; r++) {
+                        for (let c = 0; c < 8; c++) {
+                            const p = board[r][c];
+                            if (p && p.type === "B") {
+                                const sqColor = (r + c) % 2;
+                                if (p.color === W) whiteBColor = sqColor;
+                                if (p.color === B) blackBColor = sqColor;
+                            }
+                        }
+                    }
+                    if (whiteBColor === blackBColor) return true; // Same colored bishops
+                }
+            }
+            return false;
+        }
+
+        function getFiftyMoveCount(moveHistory) {
+            let halfmoves = 0;
+            let simulatedBoard = [
+                ["bR", "bN", "bB", "bQ", "bK", "bB", "bN", "bR"],
+                ["bP", "bP", "bP", "bP", "bP", "bP", "bP", "bP"],
+                [null, null, null, null, null, null, null, null],
+                [null, null, null, null, null, null, null, null],
+                [null, null, null, null, null, null, null, null],
+                [null, null, null, null, null, null, null, null],
+                ["wP", "wP", "wP", "wP", "wP", "wP", "wP", "wP"],
+                ["wR", "wN", "wB", "wQ", "wK", "wB", "wN", "wR"]
+            ];
+            
+            moveHistory.forEach(m => {
+                const fr = m.from[0], fc = m.from[1];
+                const tr = m.to[0], tc = m.to[1];
+                const piece = m.piece;
+                
+                const isPawn = piece && piece.endsWith("P");
+                const isCapture = simulatedBoard[tr][tc] !== null;
+                
+                if (isPawn || isCapture) {
+                    halfmoves = 0;
+                } else {
+                    halfmoves++;
+                }
+                
+                simulatedBoard[tr][tc] = piece;
+                simulatedBoard[fr][fc] = null;
+            });
+            return halfmoves;
+        }
+
+        function checkThreefoldRepetition(moveHistory) {
+            let simulatedBoard = [
+                ["bR", "bN", "bB", "bQ", "bK", "bB", "bN", "bR"],
+                ["bP", "bP", "bP", "bP", "bP", "bP", "bP", "bP"],
+                [null, null, null, null, null, null, null, null],
+                [null, null, null, null, null, null, null, null],
+                [null, null, null, null, null, null, null, null],
+                [null, null, null, null, null, null, null, null],
+                ["wP", "wP", "wP", "wP", "wP", "wP", "wP", "wP"],
+                ["wR", "wN", "wB", "wQ", "wK", "wB", "wN", "wR"]
+            ];
+            
+            let turn = "w";
+            const states = {};
+            
+            const getBoardStateKey = (board, currentTurn) => {
+                return board.map(row => row.map(c => c || "-").join(",")).join("|") + "_" + currentTurn;
+            };
+            
+            states[getBoardStateKey(simulatedBoard, turn)] = 1;
+            
+            moveHistory.forEach(m => {
+                const fr = m.from[0], fc = m.from[1];
+                const tr = m.to[0], tc = m.to[1];
+                const piece = m.piece;
+                
+                simulatedBoard[tr][tc] = piece;
+                simulatedBoard[fr][fc] = null;
+                turn = turn === "w" ? "b" : "w";
+                
+                const key = getBoardStateKey(simulatedBoard, turn);
+                states[key] = (states[key] || 0) + 1;
+            });
+            
+            return Object.values(states).some(count => count >= 3);
+        }
+
+        function computeNextGameStatus(board, from, to, currentTurn, moveHistory) {
+            const nextBoard = cloneBoard(board);
+            const piece = nextBoard[from[0]][from[1]];
+            nextBoard[to[0]][to[1]] = piece;
+            nextBoard[from[0]][from[1]] = null;
+            
+            const nextTurnColor = currentTurn === W ? B : W;
+            
+            const inCheck = isKingInCheck(nextBoard, nextTurnColor);
+            const hasMoves = hasAnyLegalMoves(nextBoard, nextTurnColor);
+            
+            if (inCheck && !hasMoves) return "checkmate";
+            if (!inCheck && !hasMoves) return "stalemate";
+            
+            const tempHistory = [...moveHistory, { 
+                from, 
+                to, 
+                piece: piece.color + piece.type 
+            }];
+            
+            if (isInsufficientMaterial(nextBoard)) return "draw_insufficient";
+            if (checkThreefoldRepetition(tempHistory)) return "draw_repetition";
+            if (getFiftyMoveCount(tempHistory) >= 100) return "draw_fifty";
+            
+            if (inCheck) return "check";
+            return "idle";
         }
 
         function useChessSocket(roomId, onMessage) {
@@ -109,18 +315,48 @@
 
             const board = gs.board.map(row => row.map(c => c ? { color: c[0], type: c.slice(1) } : null));
             const myTurn = gs.turn === myColor;
-            const rows = myColor === B ? [0,1,2,3,4,5,6,7] : [7,6,5,4,3,2,1,0];
+            const rows = myColor === B ? [7,6,5,4,3,2,1,0] : [0,1,2,3,4,5,6,7];
             const cols = myColor === B ? [7,6,5,4,3,2,1,0] : [0,1,2,3,4,5,6,7];
 
+            const isGameOver = gs.gameStatus && (gs.gameStatus.startsWith("checkmate") || gs.gameStatus === "stalemate" || gs.gameStatus.startsWith("draw"));
+            const showDraw = gs.gameStatus === "stalemate" || gs.gameStatus.startsWith("draw");
+            const showCheckmate = gs.gameStatus === "checkmate";
+
             const click = (r, c) => {
+                if (isGameOver) return;
                 if (!myTurn) return;
                 if (sel) {
                     const m = hls.find(([hr, hc]) => hr === r && hc === c);
-                    if (m) { sendMove({ from: sel, to: m }); setSel(null); setHls([]); return; }
+                    if (m) { 
+                        const nextStatus = computeNextGameStatus(board, sel, m, myColor, gs.moveHistory || []);
+                        sendMove({ from: sel, to: m, gameStatus: nextStatus }); 
+                        setSel(null); 
+                        setHls([]); 
+                        return; 
+                    }
                 }
-                if (board[r][c]?.color === myColor) { setSel([r, c]); setHls(rawMoves(board, r, c)); }
+                if (board[r][c]?.color === myColor) { 
+                    setSel([r, c]); 
+                    setHls(getLegalMoves(board, r, c)); 
+                }
                 else { setSel(null); setHls([]); }
             };
+
+            let statusText = myTurn ? "YOUR TURN" : "WAITING...";
+            let statusColor = "#d4af37";
+            if (gs.gameStatus === "check") {
+                statusText = "CHECK!";
+                statusColor = "#ef4444";
+            } else if (gs.gameStatus === "checkmate") {
+                statusText = "CHECKMATE!";
+                statusColor = "#ef4444";
+            } else if (gs.gameStatus === "stalemate") {
+                statusText = "STALEMATE!";
+                statusColor = "#a0825a";
+            } else if (gs.gameStatus && gs.gameStatus.startsWith("draw")) {
+                statusText = "DRAW!";
+                statusColor = "#a0825a";
+            }
 
             return (
                 <div style={{ padding: 20, textAlign: "center" }}>
@@ -146,18 +382,134 @@
                         </div>
                     ) : (
                         <div style={{ display: "flex", gap: 30, alignItems: "center" }}>
-                            <div style={{ background: "#3a2510", padding: 10, borderRadius: 8 }}>
+                            <div style={{ background: "#3a2510", padding: 10, borderRadius: 8, position: "relative" }}>
                                 <div style={{ display: "grid", gridTemplateColumns: "repeat(8, 70px)" }}>
-                                    {rows.map(r => cols.map(c => {
+                                    {rows.map((r, ri) => cols.map((c, ci) => {
                                         const p = board[r][c], isL = (r+c)%2===0, isS = sel?.[0]===r && sel?.[1]===c, isH = hls.some(([hr,hc])=>hr===r&&hc===c);
-                                        return <div key={`${r}-${c}`} onClick={()=>click(r,c)} style={{ width:70, height:70, background: isS?"#7fc97f":isH?"#ced46a":isL?"#f0d9b5":"#b58863", display:"flex", alignItems:"center", justifyContent:"center", fontSize:50, cursor:"pointer" }}>{p ? GLYPHS[p.color+p.type] : ""}</div>
+                                        const kp = findKing(board, gs.turn);
+                                        const isKingCheck = kp && kp[0] === r && kp[1] === c && (gs.gameStatus === "check" || gs.gameStatus === "checkmate" || isKingInCheck(board, gs.turn));
+                                        
+                                        let bg = isS ? "#7fc97f" : isH ? "#ced46a" : isL ? "#f0d9b5" : "#b58863";
+                                        if (isKingCheck) bg = "#f87171"; // Red highlight for checked king
+                                        
+                                        const showFileLabel = ri === 7;
+                                        const showRankLabel = ci === 7;
+                                        
+                                        let pieceStyle = {
+                                            fontSize: 50,
+                                            userSelect: "none",
+                                            cursor: "pointer"
+                                        };
+                                        if (p) {
+                                            if (p.color === "w") {
+                                                // Clean solid white piece with a crisp black outline and subtle drop-shadow
+                                                pieceStyle.color = "#f8fafc";
+                                                pieceStyle.textShadow = "1px 1px 0px #000, -1px -1px 0px #000, 1px -1px 0px #000, -1px 1px 0px #000, 0px 2px 4px rgba(0,0,0,0.6)";
+                                            } else {
+                                                // Clean solid dark piece with a crisp white outline and subtle drop-shadow
+                                                pieceStyle.color = "#151b26";
+                                                pieceStyle.textShadow = "1px 1px 0px #fff, -1px -1px 0px #fff, 1px -1px 0px #fff, -1px 1px 0px #fff, 0px 2px 4px rgba(0,0,0,0.6)";
+                                            }
+                                        }
+
+                                        return (
+                                            <div 
+                                                key={`${r}-${c}`} 
+                                                onClick={()=>click(r,c)} 
+                                                style={{ 
+                                                    width:70, 
+                                                    height:70, 
+                                                    background: bg, 
+                                                    display:"flex", 
+                                                    alignItems:"center", 
+                                                    justifyContent:"center", 
+                                                    cursor:"pointer", 
+                                                    border: isKingCheck ? "3px solid #ef4444" : "none", 
+                                                    boxSizing: "border-box",
+                                                    position: "relative",
+                                                    userSelect: "none"
+                                                }}
+                                            >
+                                                {p ? (
+                                                    <span style={pieceStyle}>
+                                                        {GLYPHS[p.color+p.type]}
+                                                    </span>
+                                                ) : ""}
+                                                
+                                                {showFileLabel && (
+                                                    <span style={{
+                                                        position: "absolute",
+                                                        bottom: 2,
+                                                        left: 4,
+                                                        fontSize: 10,
+                                                        fontWeight: "bold",
+                                                        color: isL ? "#b58863" : "#f0d9b5"
+                                                    }}>
+                                                        {String.fromCharCode(97 + c)}
+                                                    </span>
+                                                )}
+                                                
+                                                {showRankLabel && (
+                                                    <span style={{
+                                                        position: "absolute",
+                                                        top: 2,
+                                                        right: 4,
+                                                        fontSize: 10,
+                                                        fontWeight: "bold",
+                                                        color: isL ? "#b58863" : "#f0d9b5"
+                                                    }}>
+                                                        {8 - r}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        );
                                     }))}
                                 </div>
+                                
+                                {isGameOver && (
+                                    <div style={{
+                                        position: "absolute",
+                                        inset: 0,
+                                        background: "rgba(0, 0, 0, 0.85)",
+                                        backdropFilter: "blur(8px)",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        zIndex: 1000,
+                                        borderRadius: 8
+                                    }}>
+                                        <div style={{
+                                            background: "linear-gradient(160deg, #2a1a08 0%, #1a0e05 100%)",
+                                            border: "2px solid #d4af37bb",
+                                            borderRadius: 16,
+                                            padding: "30px 40px",
+                                            textAlign: "center",
+                                            maxWidth: 320,
+                                            boxShadow: "0 20px 50px rgba(0,0,0,0.5)"
+                                        }}>
+                                            <div style={{ fontSize: 48, marginBottom: 15 }}>{showCheckmate ? "🏆" : "🤝"}</div>
+                                            <h2 style={{ color: "#d4af37", margin: "0 0 10px", fontSize: 24, letterSpacing: 2 }}>
+                                                {showCheckmate ? "CHECKMATE" : "GAME DRAWN"}
+                                            </h2>
+                                            <p style={{ color: "#fff", fontSize: 16, margin: "10px 0 25px" }}>
+                                                {showCheckmate ? (gs.turn === "w" ? "Black Wins!" : "White Wins!") : 
+                                                 gs.gameStatus === "stalemate" ? "Draw by Stalemate" :
+                                                 gs.gameStatus === "draw_insufficient" ? "Draw by Insufficient Material" :
+                                                 gs.gameStatus === "draw_repetition" ? "Draw by Threefold Repetition" :
+                                                 "Draw by Fifty-Move Rule"}
+                                            </p>
+                                            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                                                <button className="btn" style={{ background: "#d4af37", color: "#000", border: "none" }} onClick={() => location.reload()}>PLAY AGAIN</button>
+                                                <button className="btn" style={{ background: "transparent", color: "#fff", border: "1px solid #444" }} onClick={() => window.location.href='/games'}>RETURN TO LOBBY</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                             <div style={{ width: 250, textAlign: "left" }}>
                                 <div style={{ padding: 20, background: "#2a1a08", borderRadius: 12, border: "1px solid #d4af3733" }}>
                                     <div style={{ color: "#a0825a", fontSize: 12 }}>MATCH STATUS</div>
-                                    <div style={{ color: "#d4af37", fontSize: 18, fontWeight: 700, margin: "8px 0" }}>{myTurn ? "YOUR TURN" : "WAITING..."}</div>
+                                    <div style={{ color: statusColor, fontSize: 18, fontWeight: 700, margin: "8px 0" }}>{statusText}</div>
                                     <div style={{ borderTop: "1px solid #444", paddingTop: 10, marginTop: 10 }}>
                                         <div style={{ fontSize: 13 }}>White: {gs.players.w}</div>
                                         <div style={{ fontSize: 13 }}>Black: {gs.players.b}</div>

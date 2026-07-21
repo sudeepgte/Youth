@@ -2467,3 +2467,54 @@ redirecting to /login?error=timeout
 AuthInterceptor Debug Log
 token is NULL!
 redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token found = eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJyYWoiLCJpYXQiOjE3ODQxOTU2NjIsImV4cCI6MTc4NDIzMTY2Mn0._MEZ5ZTambJGm1ayiGGtJLeTDUTgFWaMrcTRkIfqOU-pznzrRSvwQSmGsqwHTTQ3jwvCArP7PGbfVFNYiOZZxg
+Exception caught: JWT expired at 2026-07-16T19:54:22Z. Current time: 2026-07-21T04:20:44Z, a difference of 375982913 milliseconds.  Allowed clock skew: 0 milliseconds.
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token found = eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJyYWoiLCJpYXQiOjE3ODQxOTU2NjIsImV4cCI6MTc4NDIzMTY2Mn0._MEZ5ZTambJGm1ayiGGtJLeTDUTgFWaMrcTRkIfqOU-pznzrRSvwQSmGsqwHTTQ3jwvCArP7PGbfVFNYiOZZxg
+Exception caught: JWT expired at 2026-07-16T19:54:22Z. Current time: 2026-07-21T04:20:44Z, a difference of 375982913 milliseconds.  Allowed clock skew: 0 milliseconds.
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token found = eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJyYWoiLCJpYXQiOjE3ODQxOTU2NjIsImV4cCI6MTc4NDIzMTY2Mn0._MEZ5ZTambJGm1ayiGGtJLeTDUTgFWaMrcTRkIfqOU-pznzrRSvwQSmGsqwHTTQ3jwvCArP7PGbfVFNYiOZZxg
+Exception caught: JWT expired at 2026-07-16T19:54:22Z. Current time: 2026-07-21T04:20:44Z, a difference of 375982912 milliseconds.  Allowed clock skew: 0 milliseconds.
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout

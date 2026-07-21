@@ -74,13 +74,24 @@
             position: absolute;
             top: 20px;
             right: 20px;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 8px 16px;
+            background: rgba(15, 23, 42, 0.85); /* High-contrast dark glass */
+            padding: 8px 18px;
             border-radius: 20px;
             font-size: 14px;
-            color: #fff;
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #F8FAFC; /* Primary light color */
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1.5px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            font-weight: 800;
+        }
+
+        .lobby-overlay h1 {
+            color: #F8FAFC !important;
+            font-family: 'Fredoka One', cursive;
+            font-size: 2.5rem;
+            margin-bottom: 24px;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
         }
     </style>
 </head>
@@ -137,22 +148,25 @@
         .sidebar {
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            width: 195px;
+            gap: 12px;
+            width: 210px;
             flex-shrink: 0;
         }
 
         .player-card {
-            background: rgba(255, 255, 255, 0.04);
+            background: rgba(15, 23, 42, 0.88); /* Sleek slate glass */
             border: 1.5px solid rgba(255, 255, 255, 0.08);
-            border-radius: 14px;
-            padding: 10px 14px;
+            border-radius: 16px;
+            padding: 12px 16px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
             position: relative;
             overflow: hidden;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
         }
 
         .player-card::before {
@@ -166,22 +180,22 @@
 
         .player-card.active {
             border-color: var(--pc, var(--accent));
-            background: rgba(255, 255, 255, 0.1);
-            box-shadow: 0 0 20px color-mix(in srgb, var(--pc, var(--accent)) 50%, transparent),
-                inset 0 1px 0 rgba(255, 255, 255, 0.15);
-            transform: translateX(4px);
+            background: rgba(15, 23, 42, 0.95);
+            box-shadow: 0 0 25px color-mix(in srgb, var(--pc, var(--accent)) 65%, transparent),
+                inset 0 1px 0 rgba(255, 255, 255, 0.25);
+            transform: translateX(6px);
         }
 
         .player-card.active::before {
-            opacity: 0.12;
+            opacity: 0.15;
         }
 
         .pc-dot {
-            width: 22px;
-            height: 22px;
+            width: 24px;
+            height: 24px;
             border-radius: 50%;
             background: var(--pc, #fff);
-            box-shadow: 0 0 10px var(--pc, #fff);
+            box-shadow: 0 0 12px var(--pc, #fff);
             flex-shrink: 0;
             position: relative;
         }
@@ -189,31 +203,33 @@
         .pc-dot::after {
             content: '';
             position: absolute;
-            inset: 3px;
+            inset: 4px;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.55);
         }
 
         .pc-info .pc-name {
-            font-weight: 900;
-            font-size: 0.85rem;
-            color: #fff;
-            line-height: 1.1;
+            font-weight: 800;
+            font-size: 0.95rem;
+            color: #F8FAFC; /* Primary text / Important info */
+            line-height: 1.2;
+            letter-spacing: 0.2px;
         }
 
         .pc-info .pc-pieces {
-            font-size: 0.7rem;
-            color: #888;
-            margin-top: 2px;
+            font-size: 0.78rem;
+            color: #CBD5E1; /* Secondary text */
+            margin-top: 3px;
+            font-weight: 600;
         }
 
         .pc-turn-badge {
             margin-left: auto;
             background: var(--pc, #fff);
-            color: #000;
-            font-size: 0.6rem;
+            color: #0F172A; /* High contrast dark text */
+            font-size: 0.65rem;
             font-weight: 900;
-            padding: 2px 7px;
+            padding: 3px 8px;
             border-radius: 20px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -227,62 +243,101 @@
 
         /* Dice Section */
         #diceSection {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1.5px solid rgba(255, 255, 255, 0.09);
-            border-radius: 16px;
-            padding: 16px 14px;
+            background: rgba(15, 23, 42, 0.88); /* Sleek slate glass */
+            border: 1.5px solid rgba(255, 255, 255, 0.08);
+            border-radius: 18px;
+            padding: 20px 16px;
             text-align: center;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
         }
 
         #currentPlayerLabel {
             font-weight: 800;
-            font-size: 1rem;
-            color: #fff;
-            margin-bottom: 12px;
+            font-size: 1.15rem;
+            color: #F8FAFC; /* Primary text / Important info */
+            margin-bottom: 8px;
             transition: color 0.3s;
             letter-spacing: 0.5px;
         }
 
         .dice-wrapper {
             position: relative;
-            width: 72px;
-            height: 72px;
-            margin: 0 auto 14px;
+            width: 76px;
+            height: 76px;
+            margin: 0 auto 16px;
             perspective: 200px;
         }
 
         #dice {
-            width: 72px;
-            height: 72px;
-            background: linear-gradient(145deg, #ffffff 0%, #e8e8e8 100%);
+            width: 76px;
+            height: 76px;
+            background: #ffffff;
             border-radius: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2.4rem;
             box-shadow:
-                0 6px 0 rgba(0, 0, 0, 0.3),
-                0 8px 20px rgba(0, 0, 0, 0.5),
-                inset 0 2px 0 rgba(255, 255, 255, 0.8);
+                0 6px 0 #d0d0d0,
+                0 8px 20px rgba(0, 0, 0, 0.15),
+                inset 0 2px 4px rgba(255, 255, 255, 0.9),
+                inset 0 -2px 4px rgba(0, 0, 0, 0.1);
             cursor: pointer;
             transition: transform 0.1s, box-shadow 0.1s;
             user-select: none;
-            color: #111;
-            border: none;
+            border: 1px solid #e0e0e0;
             position: relative;
+            padding: 8px;
+            box-sizing: border-box;
         }
 
         #dice:hover:not(.disabled) {
-            transform: translateY(-2px) scale(1.05);
+            transform: translateY(-2px) scale(1.04);
+            box-shadow:
+                0 8px 0 #d0d0d0,
+                0 12px 24px rgba(0, 0, 0, 0.2);
         }
 
         #dice:active:not(.disabled) {
-            transform: translateY(2px) scale(0.96);
-            box-shadow: 0 2px 0 rgba(0, 0, 0, 0.3), 0 4px 10px rgba(0, 0, 0, 0.5), inset 0 2px 0 rgba(255, 255, 255, 0.8);
+            transform: translateY(4px);
+            box-shadow:
+                0 2px 0 #d0d0d0,
+                0 4px 10px rgba(0, 0, 0, 0.15);
         }
 
         #dice.rolling {
             animation: diceRoll 0.6s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+        }
+
+        .dice-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            width: 100%;
+            height: 100%;
+            gap: 2px;
+        }
+
+        .dice-cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .dice-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #111827; /* Dark black/grey */
+            box-shadow: inset 1px 1px 1px rgba(0,0,0,0.6);
+        }
+
+        .dice-dot.red-dot {
+            background: #ef4444; /* Vivid red for 1 dot */
+            width: 14px;
+            height: 14px;
+            box-shadow: inset 1px 1px 2px rgba(0,0,0,0.5);
         }
 
         @keyframes diceRoll {
@@ -357,17 +412,17 @@
         }
 
         #status {
-            color: #bbb;
-            font-size: 0.78rem;
+            color: #CBD5E1; /* Secondary Text */
+            font-size: 0.82rem;
             margin-top: 10px;
             min-height: 18px;
-            font-weight: 700;
+            font-weight: 800;
             letter-spacing: 0.3px;
             transition: all 0.3s;
         }
 
         #status.capture {
-            color: #e63946;
+            color: #ef4444;
             animation: pulse 0.5s;
         }
 
@@ -377,7 +432,7 @@
         }
 
         #status.good {
-            color: #2dc653;
+            color: #4ade80; /* Vivid green */
         }
 
         @keyframes pulse {
@@ -394,22 +449,25 @@
 
         .exit-btn {
             display: block;
-            background: rgba(255, 255, 255, 0.04);
+            background: rgba(15, 23, 42, 0.85); /* High-contrast dark button */
             border: 1.5px solid rgba(255, 255, 255, 0.1);
             border-radius: 10px;
-            color: #aaa;
-            padding: 9px 18px;
+            color: #E2E8F0; /* Primary Text */
+            padding: 10px 18px;
             text-decoration: none;
-            font-weight: 700;
-            font-size: 0.82rem;
+            font-weight: 800;
+            font-size: 0.85rem;
             transition: all 0.2s;
             text-align: center;
             letter-spacing: 0.5px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
 
         .exit-btn:hover {
-            background: rgba(255, 255, 255, 0.09);
+            background: rgba(15, 23, 42, 0.95);
             color: #fff;
+            border-color: rgba(255, 255, 255, 0.25);
+            transform: translateY(-1px);
         }
 
         /* ---- OVERLAY ---- */
@@ -447,14 +505,14 @@
         }
 
         .game-modal p {
-            color: #aaa;
+            color: #CBD5E1; /* Secondary Text */
             margin-bottom: 18px;
-            font-size: 0.9rem;
+            font-size: 0.92rem;
         }
 
         .section-label {
-            color: #666;
-            font-size: 0.72rem;
+            color: #94A3B8; /* Muted Text */
+            font-size: 0.78rem;
             text-transform: uppercase;
             letter-spacing: 2px;
             font-weight: 800;
@@ -474,7 +532,7 @@
             border-radius: 10px;
             border: 2px solid rgba(255, 255, 255, 0.12);
             background: rgba(255, 255, 255, 0.04);
-            color: #ccc;
+            color: #CBD5E1; /* Secondary Text */
             font-family: 'Nunito', sans-serif;
             font-weight: 800;
             font-size: 0.85rem;
@@ -614,6 +672,25 @@
                 opacity: 0
             }
         }
+
+        #turnTimer {
+            transition: all 0.3s ease;
+        }
+
+        #turnTimer.warning {
+            color: #e63946 !important;
+            animation: timerPulse 1s infinite alternate;
+            text-shadow: 0 0 10px rgba(230, 57, 70, 0.6);
+        }
+
+        @keyframes timerPulse {
+            0% {
+                transform: scale(1);
+            }
+            100% {
+                transform: scale(1.1);
+            }
+        }
     </style>
     <h1>🎲 LUDO KING</h1>
 
@@ -662,6 +739,9 @@
             <div id="playerCards"></div>
             <div id="diceSection">
                 <div id="currentPlayerLabel">Red's Turn</div>
+                <div id="turnTimer" style="font-size: 1.25rem; font-weight: 800; color: #aaa; margin: 5px 0 12px; display: flex; align-items: center; justify-content: center; gap: 6px; font-family: 'Fredoka One', sans-serif;">
+                    <span>⏱</span> <span id="timerSeconds">30</span><span>s</span>
+                </div>
                 <div class="dice-wrapper">
                     <div id="dice" onclick="if(!diceDisabled)rollDice()">⚀</div>
                 </div>
@@ -717,6 +797,40 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
         const COLORS = ['#e63946', '#1d7bcf', '#2dc653', '#f7b731'];
         const NAMES = ['Red', 'Blue', 'Green', 'Yellow'];
         const FACES = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+
+        function renderDice(val) {
+            const diceEl = document.getElementById('dice');
+            if (!diceEl) return;
+            diceEl.innerHTML = '';
+            
+            const grid = document.createElement('div');
+            grid.className = 'dice-grid face-' + val;
+            
+            const dotPositions = {
+                1: [4],
+                2: [0, 8],
+                3: [0, 4, 8],
+                4: [0, 2, 6, 8],
+                5: [0, 2, 4, 6, 8],
+                6: [0, 2, 3, 5, 6, 8]
+            };
+            
+            const positions = dotPositions[val] || [4];
+            for (let i = 0; i < 9; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'dice-cell';
+                if (positions.includes(i)) {
+                    const dot = document.createElement('div');
+                    dot.className = 'dice-dot';
+                    if (val === 1) {
+                        dot.classList.add('red-dot');
+                    }
+                    cell.appendChild(dot);
+                }
+                grid.appendChild(cell);
+            }
+            diceEl.appendChild(grid);
+        }
 
         // ---- CORRECTED TRACK: 52 cells ----
         // Each element is [col, row]
@@ -788,6 +902,68 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
         let diceDisabled = true;
         let animating = false;
         let stompClient = null;
+
+        // ---- TURN TIMER ----
+        let turnTimerInterval = null;
+        function startTurnTimer(seconds) {
+            if (turnTimerInterval) {
+                clearInterval(turnTimerInterval);
+                turnTimerInterval = null;
+            }
+            
+            const timerDisplay = document.getElementById('turnTimer');
+            const timerSecondsEl = document.getElementById('timerSeconds');
+            
+            if (state.isGameOver || state.status !== 'active') {
+                if (timerSecondsEl) timerSecondsEl.textContent = '30';
+                if (timerDisplay) timerDisplay.classList.remove('warning');
+                return;
+            }
+
+            const timerPlayer = state.currentPlayer;
+            let secondsLeft = Math.max(0, seconds);
+
+            const updateUI = () => {
+                if (timerSecondsEl) timerSecondsEl.textContent = secondsLeft;
+                if (timerDisplay) {
+                    if (secondsLeft <= 5) {
+                        timerDisplay.classList.add('warning');
+                    } else {
+                        timerDisplay.classList.remove('warning');
+                    }
+                }
+            };
+
+            updateUI();
+
+            turnTimerInterval = setInterval(() => {
+                if (state.isGameOver || state.status !== 'active' || state.currentPlayer !== timerPlayer) {
+                    clearInterval(turnTimerInterval);
+                    turnTimerInterval = null;
+                    if (timerDisplay) timerDisplay.classList.remove('warning');
+                    return;
+                }
+
+                secondsLeft--;
+                if (secondsLeft < 0) {
+                    clearInterval(turnTimerInterval);
+                    turnTimerInterval = null;
+                    if (timerDisplay) timerDisplay.classList.remove('warning');
+                    
+                    showToast("Player skipped due to inactivity.", COLORS[timerPlayer]);
+                    
+                    if (state.playerIndex !== -1) {
+                        if (stompClient && state.roomId) {
+                            stompClient.send("/app/ludo/" + state.roomId + "/skip", {}, JSON.stringify({ playerIndex: timerPlayer }));
+                        }
+                    } else {
+                        nextPlayer();
+                    }
+                } else {
+                    updateUI();
+                }
+            }, 1000);
+        }
 
         // ---- MULTIPLAYER ----
         async function createRoom() {
@@ -861,7 +1037,7 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
             let playersHtml = '';
             for (let i = 0; i < 4; i++) {
                 if (state.playerTypes[i] === 'human') {
-                    playersHtml += `<div style="color: ${COLORS[i]}; font-size: 16px; margin-bottom: 8px; font-weight: bold;">Player ${i+1}: <span style="color: #fff; font-weight: normal;">${NAMES[i]}</span> ${i === state.playerIndex ? '(You)' : ''}</div>`;
+                    playersHtml += `<div style="color: ${COLORS[i]}; font-size: 16px; margin-bottom: 8px; font-weight: bold;">Player ${i+1}: <span style="color: #F8FAFC; font-weight: normal;">${NAMES[i]}</span> ${i === state.playerIndex ? '(You)' : ''}</div>`;
                 }
             }
             
@@ -883,7 +1059,7 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
                     </div>
                     ${btnHtml}
                 </div>
-                <button style="background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 10px 20px; border-radius: 8px; margin-top: 20px; cursor: pointer;" onclick="window.location.href='/games'">Leave</button>
+                <button style="background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #F8FAFC; padding: 10px 20px; border-radius: 8px; margin-top: 20px; cursor: pointer;" onclick="window.location.href='/games'">Leave</button>
             `;
         }
 
@@ -1007,11 +1183,24 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
             // Fallback: Ensure dice face matches state if not currently animating
             const diceEl = document.getElementById('dice');
             if (state.diceRolled && !diceEl.classList.contains('rolling')) {
-                diceEl.textContent = FACES[state.diceValue - 1] || '⚀';
+                renderDice(state.diceValue);
             }
 
             buildPlayerCards();
             updateTurnUI();
+
+            if (state.status === 'active') {
+                startTurnTimer(roomState.remainingSeconds);
+            } else {
+                if (turnTimerInterval) {
+                    clearInterval(turnTimerInterval);
+                    turnTimerInterval = null;
+                }
+                const timerDisplay = document.getElementById('turnTimer');
+                const timerSecondsEl = document.getElementById('timerSeconds');
+                if (timerSecondsEl) timerSecondsEl.textContent = '30';
+                if (timerDisplay) timerDisplay.classList.remove('warning');
+            }
         }
 
         function animateDiceRoll(val) {
@@ -1019,11 +1208,11 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
             diceEl.classList.add('rolling');
             let frame = 0;
             const interval = setInterval(() => {
-                diceEl.textContent = FACES[Math.floor(Math.random() * 6)];
+                renderDice(Math.floor(Math.random() * 6) + 1);
                 frame++;
                 if (frame > 8) {
                     clearInterval(interval);
-                    diceEl.textContent = FACES[val - 1];
+                    renderDice(val);
                     diceEl.classList.remove('rolling');
                 }
             }, 60);
@@ -1329,6 +1518,7 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
             state.currentSlotIndex = 0;
             state.currentPlayer = state.activeSlots[0];
             state.isGameOver = false;
+            state.status = 'active';
             state.diceRolled = false; state.diceValue = 0; state.moveableIndices = [];
             state.pieces = Array.from({ length: 4 }, () => Array.from({ length: 4 }, () => ({ pos: -1 })));
             state.playerTypes = Array(4).fill('inactive');
@@ -1340,6 +1530,9 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
             updateTurnUI();
             if (rafId) cancelAnimationFrame(rafId);
             render();
+            if (state.playerIndex === -1) {
+                startTurnTimer(30);
+            }
             if (state.playerTypes[state.currentPlayer] === 'computer') setTimeout(doComputerTurn, 1200);
         }
 
@@ -1439,9 +1632,9 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
             diceEl.classList.add('rolling');
             let frame = 0;
             const interval = setInterval(() => {
-                diceEl.textContent = FACES[Math.floor(Math.random() * 6)];
+                renderDice(Math.floor(Math.random() * 6) + 1);
                 frame++;
-                if (frame > 8) { clearInterval(interval); diceEl.textContent = FACES[val - 1]; diceEl.classList.remove('rolling'); }
+                if (frame > 8) { clearInterval(interval); renderDice(val); diceEl.classList.remove('rolling'); }
             }, 60);
 
             setTimeout(() => {
@@ -1542,6 +1735,9 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
                         setStatus('🎲 Rolled 6 &mdash; roll again!', 'rollAgain');
                         showToast(`${NAMES[pi]} rolled 6 &mdash; roll again!`, COLORS[pi]);
                         updateTurnUI();
+                        if (state.playerIndex === -1) {
+                            startTurnTimer(30);
+                        }
                         if (state.playerTypes[state.currentPlayer] === 'computer') setTimeout(doComputerTurn, 1100);
                     } else {
                         nextPlayer();
@@ -1591,6 +1787,9 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
             state.diceRolled = false;
             state.moveableIndices = [];
             updateTurnUI();
+            if (state.playerIndex === -1) {
+                startTurnTimer(30);
+            }
             if (state.playerTypes[state.currentPlayer] === 'computer') {
                 setStatus('CPU is thinking...', '');
                 setTimeout(doComputerTurn, 1200);
@@ -1696,6 +1895,7 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
         // Initial board draw
         drawBoard();
         initLocalIfNoRoom();
+        renderDice(1);
 
         // ]]>
     </script>
