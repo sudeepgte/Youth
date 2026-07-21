@@ -169,45 +169,58 @@ public class BattleController {
         if (user == null) return "redirect:/login";
         user = userRepository.findById(user.getId()).orElse(user);
 
-        // Prizes are real money now, not deducting from virtual coins.
+        double safeEntryFee = entryFee != null ? entryFee : 0.0;
+        double safePrize1 = prize1 != null ? prize1 : 0.0;
+        double safePrize2 = prize2 != null ? prize2 : 0.0;
+        double safePrize3 = prize3 != null ? prize3 : 0.0;
+        int effectiveMaxParticipants = maxParticipants != null ? maxParticipants : 2;
+
+        Battle battle = new Battle();
+
+        String durationMinutesStr = request.getParameter("durationMinutes");
+        if (durationMinutesStr != null && !durationMinutesStr.isEmpty()) {
+            try {
+                battle.setDurationMinutes(Integer.parseInt(durationMinutesStr));
+                // Enforce Live rules
+                effectiveMaxParticipants = 2;
+                safePrize3 = 0.0;
+            } catch (NumberFormatException e) { /* ignore */ }
+        } else {
+            effectiveMaxParticipants = Math.min(Math.max(effectiveMaxParticipants, 2), 100);
+        }
+
+        double totalPrizePool = safePrize1 + safePrize2 + safePrize3;
+        double maxAllowedPrizePool = safeEntryFee * effectiveMaxParticipants;
+
+        if (totalPrizePool > (maxAllowedPrizePool + 0.01)) {
+            return "redirect:/battles?error=invalid_prizes";
+        }
 
         // Creator pays entry fee if applicable
-        if (entryFee != null && entryFee > 0) {
+        if (safeEntryFee > 0) {
             Double balance = user.getWalletBalance() != null ? user.getWalletBalance() : 0.0;
-            if (balance < entryFee) {
+            if (balance < safeEntryFee) {
                 return "redirect:/battles?error=insufficient_funds";
             }
-            user.setWalletBalance(balance - entryFee);
+            user.setWalletBalance(balance - safeEntryFee);
             userRepository.save(user);
         }
 
-        Battle battle = new Battle();
         battle.setTitle(title);
         battle.setCategory(category);
         battle.setDurationHours(durationHours);
         battle.setMode(mode);
-        battle.setEntryFee(entryFee);
-        battle.setPrize1(prize1);
-        battle.setPrize2(prize2);
-        battle.setPrize3(prize3);
+        battle.setEntryFee(safeEntryFee);
+        battle.setPrize1(safePrize1);
+        battle.setPrize2(safePrize2);
+        battle.setPrize3(safePrize3);
+        battle.setMaxParticipants(effectiveMaxParticipants);
         if ("OFFLINE".equals(mode)) {
             battle.setVenue(venue);
             battle.setEventDate(eventDate);
             battle.setEventTime(eventTime);
             battle.setJudgeWeight(judgeWeight);
             battle.setAudienceWeight(audienceWeight);
-        }
-        
-        String durationMinutesStr = request.getParameter("durationMinutes");
-        if (durationMinutesStr != null && !durationMinutesStr.isEmpty()) {
-            try {
-                battle.setDurationMinutes(Integer.parseInt(durationMinutesStr));
-                // Enforce Live rules
-                battle.setMaxParticipants(2);
-                battle.setPrize3(0.0);
-            } catch (NumberFormatException e) { /* ignore */ }
-        } else {
-            battle.setMaxParticipants(Math.min(Math.max(maxParticipants, 2), 100));
         }
         
         battle.setCreator(user);
