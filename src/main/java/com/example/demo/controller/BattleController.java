@@ -177,8 +177,9 @@ public class BattleController {
 
         Battle battle = new Battle();
 
+        String durationType = request.getParameter("durationType");
         String durationMinutesStr = request.getParameter("durationMinutes");
-        if (durationMinutesStr != null && !durationMinutesStr.isEmpty()) {
+        if ("minutes".equalsIgnoreCase(durationType) && durationMinutesStr != null && !durationMinutesStr.isEmpty()) {
             try {
                 battle.setDurationMinutes(Integer.parseInt(durationMinutesStr));
                 // Enforce Live rules
@@ -186,6 +187,7 @@ public class BattleController {
                 safePrize3 = 0.0;
             } catch (NumberFormatException e) { /* ignore */ }
         } else {
+            battle.setDurationMinutes(null);
             effectiveMaxParticipants = Math.min(Math.max(effectiveMaxParticipants, 2), 100);
         }
 
