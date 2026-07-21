@@ -2201,7 +2201,7 @@
         }
 
         function updatePrizePool() {
-            const type = document.querySelector('input[name="durationType"]:checked')?.value;
+            const type = document.querySelector('input[name="durationType"]:checked')?.value || 'hours';
             const entryFeeInput = document.querySelector('input[name="entryFee"]');
             const prize1Input = document.querySelector('input[name="prize1"]');
             const prize2Input = document.querySelector('input[name="prize2"]');
@@ -2221,6 +2221,28 @@
                 prize1Input.value = prize1 > 0 ? prize1 : 0;
                 prize2Input.value = prize2 > 0 ? prize2 : 0;
                 if (prize3Input) prize3Input.value = 0;
+            } else {
+                // Hours mode: get max participant count
+                const partSelect = document.getElementById('participantsSelect');
+                const customPart = document.getElementById('customParticipantsInput');
+                let participantCount = 4;
+                if (partSelect && partSelect.value === 'custom' && customPart && customPart.value) {
+                    participantCount = parseFloat(customPart.value) || 2;
+                } else if (partSelect) {
+                    participantCount = parseFloat(partSelect.value) || 4;
+                }
+
+                const totalPool = entryFee * participantCount;
+                // 1st Prize = 60%, 2nd Prize = 30%, 3rd Prize = 10%
+                const prize1 = Math.round((totalPool * 0.60) * 100) / 100;
+                const prize2 = Math.round((totalPool * 0.30) * 100) / 100;
+                const prize3 = Math.round((totalPool * 0.10) * 100) / 100;
+
+                prize1Input.value = prize1 > 0 ? prize1 : 0;
+                prize2Input.value = prize2 > 0 ? prize2 : 0;
+                if (prize3Input && !prize3Input.disabled) {
+                    prize3Input.value = prize3 > 0 ? prize3 : 0;
+                }
             }
         }
 
