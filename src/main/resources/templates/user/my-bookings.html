@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/template :: head('My Bookings | Zentrix')}">
+</head>
+
+<body class="events-page">
+    <style>
+        .booking-card {
+            display: flex;
+            background: var(--card-bg);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--glass-border);
+            margin-bottom: 20px;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s ease;
+        }
+        .booking-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md);
+        }
+        .booking-details {
+            padding: 24px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .booking-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+        .booking-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 5px;
+        }
+        .booking-subtitle {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+            display: flex;
+            gap: 15px;
+        }
+        .booking-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .booking-info-item {
+            background: rgba(255,255,255,0.03);
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .info-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+            letter-spacing: 1px;
+        }
+        .info-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .booking-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .status-registered { background: rgba(16, 185, 129, 0.1); color: #10B981; border: 1px solid rgba(16, 185, 129, 0.3); }
+        .status-cancelled { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+        .status-attended { background: rgba(59, 130, 246, 0.1); color: #3B82F6; border: 1px solid rgba(59, 130, 246, 0.3); }
+
+        @media (max-width: 768px) {
+            .booking-card {
+                flex-direction: column;
+            }
+        }
+    </style>
+    <div class="mobile-menu-overlay" onclick="document.querySelector('.sidebar').classList.remove('mobile-open'); this.classList.remove('active');"></div>
+
+    <nav class="dashboard-navbar">
+        <button class="mobile-menu-btn" onclick="const s=document.querySelector('.sidebar');if(s)s.classList.toggle('mobile-open'); const o=document.querySelector('.mobile-menu-overlay');if(o)o.classList.toggle('active');" style="display:none; background:none; border:none; color:var(--text-primary); font-size:20px; cursor:pointer; margin-right:15px; margin-left: 5px; padding: 0;">
+            <i class="fas fa-bars"></i>
+        </button>
+        <a class="dashboard-logo" th:href="@{/home}">Zentrix</a>
+        <div class="dashboard-spacer"></div>
+        <div class="dashboard-nav-links">
+            <a th:href="@{/dashboard}"><i class="fas fa-home"></i></a>
+            <a th:href="@{/explore}"><i class="fas fa-compass"></i></a>
+            <div class="profile-dropdown">
+                <a th:href="@{/profile}">
+                    <img th:src="${user != null and user.profilePhotoUrl != null ? user.profilePhotoUrl : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=1780&auto=format&fit=crop'}"
+                        class="user-avatar" style="width:32px; height:32px; border:none;">
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <a th:href="@{/dashboard}" class="sidebar-link"><i class="fas fa-home"></i> Home</a>
+            <a th:href="@{/explore}" class="sidebar-link"><i class="fas fa-compass"></i> Explore</a>
+            <a th:href="@{/events}" class="sidebar-link"><i class="fas fa-calendar-alt"></i> Events</a>
+            <a th:href="@{/battles}" class="sidebar-link"><i class="fas fa-fire"></i> Battle Arena</a>
+            <a th:href="@{/achievements}" class="sidebar-link"><i class="fas fa-trophy"></i> Achievements</a>
+            <a th:href="@{/messages}" class="sidebar-link"><i class="fas fa-comment-dots"></i> Chat</a>
+            <a th:href="@{/reels}" class="sidebar-link"><i class="fas fa-film"></i> Reels</a>
+            <a th:href="@{/profile}" class="sidebar-link"><i class="fas fa-user"></i> Profile</a>
+            <a th:href="@{/games}" class="sidebar-link"><i class="fas fa-gamepad"></i> Games</a>
+            <a th:href="@{/wallet}" class="sidebar-link"><i class="fas fa-wallet"></i> Wallet</a>
+            <a th:href="@{/user/my-bookings}" class="sidebar-link active"><i class="fas fa-ticket-alt"></i> My Bookings</a>
+            <a href="javascript:void(0)" class="sidebar-link" onclick="openCreateModal()"><i class="fas fa-plus-circle" style="color: var(--accent);"></i> Create Post</a>
+            <a th:href="@{/logout}" class="sidebar-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content-main">
+            <div class="section-header">
+                <h2><i class="fas fa-ticket-alt" style="color: var(--purple);"></i> My Bookings</h2>
+            </div>
+
+            <!-- Search + Filter Bar -->
+            <div class="events-search-wrap" style="margin-bottom: 30px;">
+                <form id="bookingsFilterForm" method="GET" th:action="@{/user/my-bookings}" class="events-search-form" style="display: flex; gap: 15px; flex-wrap: wrap;">
+                    
+                    <div class="search-input-group" style="flex: 1; min-width: 250px;">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" name="search" class="search-input" placeholder="Search by event name or Booking ID..." th:value="${activeSearch}">
+                    </div>
+
+                    <div style="display: flex; gap: 15px;">
+                        <select name="filter" class="search-input" style="padding-left: 15px; border-radius: 50px; background: rgba(255,255,255,0.05);" onchange="document.getElementById('bookingsFilterForm').submit()">
+                            <option value="All" th:selected="${activeFilter == 'All'}">All Bookings</option>
+                            <option value="Upcoming" th:selected="${activeFilter == 'Upcoming'}">Upcoming</option>
+                            <option value="Completed" th:selected="${activeFilter == 'Completed'}">Completed</option>
+                            <option value="Cancelled" th:selected="${activeFilter == 'Cancelled'}">Cancelled</option>
+                        </select>
+
+
+                        <button type="submit" class="btn btn-primary" style="padding: 12px 24px;">Apply</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Empty State -->
+            <div th:if="${#lists.isEmpty(bookings)}" style="text-align:center; padding:80px 20px; background: var(--card-bg); border-radius: 24px; border: 1px dashed var(--glass-border);">
+                <i class="fas fa-receipt" style="font-size:48px; color:var(--text-secondary); margin-bottom:16px;"></i>
+                <h3 style="color:var(--text-primary);">You haven't booked any events yet.</h3>
+                <p style="color:var(--text-secondary); margin-bottom: 24px;">Discover exciting events, parties, and battles to join.</p>
+                <a th:href="@{/events}" class="btn btn-primary" style="display:inline-block; padding: 12px 30px;"><i class="fas fa-compass"></i> Explore Events</a>
+            </div>
+
+            <!-- Bookings List -->
+            <div th:unless="${#lists.isEmpty(bookings)}">
+                <div th:each="booking : ${bookings}" class="booking-card">
+
+                    <div class="booking-details">
+                        <div>
+                            <div class="booking-header">
+                                <div>
+                                    <h3 class="booking-title" th:text="${booking.event != null ? booking.event.title : 'Deleted Event'}">Event Title</h3>
+                                    <div class="booking-subtitle">
+                                        <span th:if="${booking.event != null}"><i class="fas fa-map-marker-alt text-accent"></i> <span th:text="${booking.event.venue}">Venue</span></span>
+                                        <span><i class="fas fa-hashtag text-accent"></i> Booking ID: <span th:text="${booking.ticketId}">TICKET123</span></span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <span th:if="${booking.registrationStatus == 'CANCELLED'}" class="status-badge status-cancelled">Cancelled</span>
+                                    <span th:if="${booking.registrationStatus == 'REGISTERED' and booking.event != null and booking.event.dateTime != null and booking.event.dateTime.isAfter(#temporals.createNow())}" class="status-badge status-registered">Upcoming</span>
+                                    <span th:if="${booking.registrationStatus == 'REGISTERED' and booking.event != null and booking.event.dateTime != null and booking.event.dateTime.isBefore(#temporals.createNow())}" class="status-badge status-attended">Completed</span>
+                                </div>
+                            </div>
+
+                            <div class="booking-grid">
+                                <div class="booking-info-item">
+                                    <div class="info-label">Event Date & Time</div>
+                                    <div class="info-value" th:if="${booking.event != null and booking.event.dateTime != null}" th:text="${#temporals.format(booking.event.dateTime, 'MMM dd, yyyy - hh:mm a')}">Jan 01, 2026</div>
+                                    <div class="info-value" th:unless="${booking.event != null and booking.event.dateTime != null}">TBA</div>
+                                </div>
+                                <div class="booking-info-item">
+                                    <div class="info-label">Booking Date</div>
+                                    <div class="info-value" th:text="${booking.registrationDate != null ? #temporals.format(booking.registrationDate, 'MMM dd, yyyy') : 'Unknown'}">Jan 01</div>
+                                </div>
+                                <div class="booking-info-item">
+                                    <div class="info-label">Tickets / Type</div>
+                                    <div class="info-value">
+                                        <span th:text="${booking.quantity}">1</span> x <span th:text="${booking.selectedTier != null ? booking.selectedTier : 'General'}">General</span>
+                                    </div>
+                                </div>
+                                <div class="booking-info-item">
+                                    <div class="info-label">Amount Paid / Status</div>
+                                    <div class="info-value">
+                                        <span th:text="${booking.totalPrice > 0 ? '₹' + booking.totalPrice : 'Free'}">₹500</span> 
+                                        <small th:if="${booking.paymentStatus != null}" th:text="'(' + ${booking.paymentStatus} + ')'" style="color: var(--text-secondary);"></small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="booking-actions">
+                            <a th:if="${booking.registrationStatus != 'CANCELLED'}" th:href="@{'/events/ticket/' + ${booking.ticketId}}" class="btn btn-primary" style="padding: 8px 16px; font-size: 13px;"><i class="fas fa-ticket-alt"></i> View Ticket</a>
+                            
+                            <a th:if="${booking.registrationStatus != 'CANCELLED'}" th:href="@{'/events/ticket/' + ${booking.ticketId}(download=true)}" class="btn" style="padding: 8px 16px; font-size: 13px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);"><i class="fas fa-download"></i> Download PDF</a>
+                            
+                            <a th:if="${booking.event != null}" th:href="@{'/events/' + ${booking.event.id}}" class="btn" style="padding: 8px 16px; font-size: 13px; background: transparent; border: 1px solid rgba(255,255,255,0.2);"><i class="fas fa-eye"></i> View Event</a>
+                            
+                            <!-- Only show cancel if Upcoming -->
+                            <form th:if="${booking.registrationStatus == 'REGISTERED' and booking.event != null and booking.event.dateTime != null and booking.event.dateTime.isAfter(#temporals.createNow())}" 
+                                  th:action="@{'/user/my-bookings/cancel/' + ${booking.id}}" method="POST" onsubmit="return confirm('Are you sure you want to cancel this booking? This action cannot be undone.');">
+                                <button type="submit" class="btn" style="padding: 8px 16px; font-size: 13px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3);"><i class="fas fa-times-circle"></i> Cancel Booking</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Footer Fragment -->
+    <footer th:replace="~{fragments/template :: footer}"></footer>
+    <div th:replace="~{fragments/modals :: createPostModal}"></div>
+</body>
+</html>

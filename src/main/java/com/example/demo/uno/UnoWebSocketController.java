@@ -117,6 +117,28 @@ public class UnoWebSocketController {
         messagingTemplate.convertAndSend("/topic/uno/" + room.roomId, (Object) Map.of("status", room.status, "playerCount", room.players.size()));
     }
 
+    @jakarta.annotation.PostConstruct
+    public void startScheduler() {
+        java.util.concurrent.Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> {
+            try {
+                long now = System.currentTimeMillis();
+                for (UnoRoom room : rooms.values()) {
+                    if ("active".equals(room.status)) {
+                        if (now - room.turnStartedAt >= 30000) {
+                            int inactivePlayer = room.currentPlayerIndex;
+                            room.drawCard(inactivePlayer);
+                            room.lastMessage = room.players.get(inactivePlayer).name + " was inactive. Card drawn/Turn skipped!";
+                            room.turnStartedAt = System.currentTimeMillis();
+                            broadcastState(room);
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }, 1, 1, java.util.concurrent.TimeUnit.SECONDS);
+    }
+
     private String generateRoomId() {
         String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         StringBuilder sb = new StringBuilder(6);

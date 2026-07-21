@@ -9,6 +9,7 @@ public class LudoRoom {
     public int diceValue = 1;
     public boolean diceRolled = false;
     public String status = "waiting";
+    public long lastTurnStartTime = System.currentTimeMillis();
 
     public LudoRoom(String roomId, String playerName) {
         this.roomId = roomId;
@@ -40,6 +41,9 @@ public class LudoRoom {
         map.put("diceValue", diceValue);
         map.put("diceRolled", diceRolled);
         map.put("status", status);
+        long elapsed = (System.currentTimeMillis() - lastTurnStartTime) / 1000;
+        long remaining = Math.max(0, 30 - elapsed);
+        map.put("remainingSeconds", "active".equals(status) ? remaining : 30);
         return map;
     }
 
@@ -86,6 +90,7 @@ public class LudoRoom {
         }
         if (allHome) {
             this.status = "finished";
+            this.lastTurnStartTime = System.currentTimeMillis();
             return;
         }
         
@@ -93,6 +98,7 @@ public class LudoRoom {
         if (diceValue != 6 && !captured) {
             nextTurn();
         }
+        this.lastTurnStartTime = System.currentTimeMillis();
     }
 
     private void nextTurn() {
@@ -105,5 +111,6 @@ public class LudoRoom {
     public void skipTurn() {
         diceRolled = false;
         nextTurn();
+        this.lastTurnStartTime = System.currentTimeMillis();
     }
 }

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/template :: head('Booking Successful | Zentrix')}">
+    <meta charset="UTF-8">
+</head>
+
+<body class="events-page" style="display: flex; flex-direction: column; min-height: 100vh; align-items: center; justify-content: center; background: var(--bg-color);">
+    <div style="text-align: center; max-width: 500px; padding: 40px; background: var(--card-bg); border-radius: 24px; box-shadow: var(--shadow-xl); border: 1px solid var(--glass-border); animation: fadeSlideIn 0.6s ease both;">
+        <div style="width: 80px; height: 80px; background: #10B981; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; box-shadow: 0 0 30px rgba(16, 185, 129, 0.4);">
+            <i class="fas fa-check" style="color: white; font-size: 36px;"></i>
+        </div>
+        <h1 style="font-size: 28px; font-weight: 800; color: var(--text-primary); margin-bottom: 10px;">Booking Successful!</h1>
+        <p th:if="${registration.paymentStatus == 'PAID'}" style="color: var(--text-secondary); margin-bottom: 30px; font-size: 15px;">Your payment is confirmed and your tickets have been secured.</p>
+        <p th:if="${registration.paymentStatus != 'PAID'}" style="color: var(--text-secondary); margin-bottom: 30px; font-size: 15px;">Your registration is complete and your free tickets have been secured.</p>
+        
+        <div style="background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.1); padding: 15px; border-radius: 12px; margin-bottom: 30px;">
+            <p style="margin: 0; font-size: 14px; color: var(--text-secondary);">Booking ID:</p>
+            <p style="margin: 0; font-size: 20px; font-weight: 700; color: var(--accent); letter-spacing: 1px;" th:text="${registration.ticketId}">TICKET123</p>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 15px;">
+            <a th:href="@{'/events/ticket/' + ${registration.ticketId}}" class="btn btn-primary" style="padding: 14px; font-size: 15px; font-weight: 600;"><i class="fas fa-ticket-alt"></i> View Ticket</a>
+            <a th:href="@{/user/my-bookings}" class="btn btn-secondary" style="padding: 14px; font-size: 15px; font-weight: 600; background: rgba(255,255,255,0.05); color: var(--text-primary);"><i class="fas fa-list-alt"></i> Go to My Bookings</a>
+        </div>
+    </div>
+</body>
+</html>

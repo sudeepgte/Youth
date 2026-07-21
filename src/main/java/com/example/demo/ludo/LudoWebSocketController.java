@@ -77,6 +77,7 @@ public class LudoWebSocketController {
         long count = room.players.stream().filter(p -> !p.name.isEmpty()).count();
         if (count > 1) {
             room.status = "active";
+            room.lastTurnStartTime = System.currentTimeMillis();
             messagingTemplate.convertAndSend("/topic/ludo/" + roomId, (Object) room.toStateMap());
         }
     }
@@ -119,6 +120,12 @@ public class LudoWebSocketController {
     public void skipTurn(@DestinationVariable String roomId, Map<String, Object> payload) {
         LudoRoom room = rooms.get(roomId);
         if (room == null) return;
+        if (payload != null && payload.containsKey("playerIndex")) {
+            int targetPlayer = ((Number) payload.get("playerIndex")).intValue();
+            if (room.currentPlayerIndex != targetPlayer) {
+                return; // Ignore duplicate or late skip requests
+            }
+        }
         room.skipTurn();
         messagingTemplate.convertAndSend("/topic/ludo/" + roomId, (Object) room.toStateMap());
     }

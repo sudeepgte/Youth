@@ -56,6 +56,7 @@
             <a th:href="@{/profile}" class="sidebar-link"><i class="fas fa-user"></i> Profile</a>
             <a th:href="@{/games}" class="sidebar-link"><i class="fas fa-gamepad"></i> Games</a>
             <a th:href="@{/wallet}" class="sidebar-link"><i class="fas fa-wallet"></i> Wallet</a>
+            <a th:href="@{/user/my-bookings}" class="sidebar-link"><i class="fas fa-ticket-alt"></i> My Bookings</a>
             <a href="javascript:void(0)" class="sidebar-link" onclick="openCreateModal()"><i class="fas fa-plus-circle" style="color: var(--accent);"></i> Create Post</a>
             <a th:href="@{/logout}" class="sidebar-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </aside>
@@ -252,7 +253,15 @@
                                 <span th:text="${event.venue}">Venue Name</span>
                             </div>
                             <div class="event-card-footer">
-                                <span class="attendees"><i class="fas fa-users"></i> 24+ Going</span>
+                                <span class="attendees">
+                                    <i class="fas fa-users"></i> 
+                                    <th:block th:if="${bookingCounts != null and bookingCounts[event.id] != null and bookingCounts[event.id] > 0}">
+                                        <span th:text="${bookingCounts[event.id]} + ' Going'"></span>
+                                    </th:block>
+                                    <th:block th:unless="${bookingCounts != null and bookingCounts[event.id] != null and bookingCounts[event.id] > 0}">
+                                        <span>No bookings yet</span>
+                                    </th:block>
+                                </span>
                                 <th:block th:if="${event.dateTime != null and event.dateTime.isBefore(#temporals.createNow())}">
                                     <span class="btn btn-secondary" style="padding: 8px 14px; font-size: 13px; background-color: #6c757d; border: none; color: white;"><i class="fas fa-ban"></i> Event Over</span>
                                 </th:block>
@@ -338,4 +347,5 @@
     <div th:replace="~{fragments/modals :: createPostModal}"></div>
 </body>
 </html>
+
 

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 
 <head>
@@ -342,6 +342,61 @@
             transform: scale(1.1) rotate(5deg);
             background: rgba(168, 85, 247, 0.1);
         }
+
+        /* --- Mobile Controls Styling --- */
+        #mobile-controls-container {
+            display: none;
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 360px;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            z-index: 150;
+            pointer-events: none;
+        }
+
+        .mobile-control-btn {
+            pointer-events: auto;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            transition: transform 0.1s, background 0.2s, border-color 0.2s;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: none;
+        }
+
+        #btn-left { border-color: var(--neon-blue); box-shadow: 0 0 15px rgba(0, 210, 255, 0.3); }
+        #btn-right { border-color: var(--neon-blue); box-shadow: 0 0 15px rgba(0, 210, 255, 0.3); }
+        #btn-jump { border-color: var(--neon-pink); box-shadow: 0 0 15px rgba(255, 0, 127, 0.3); width: 80px; height: 80px; font-size: 2.2rem; }
+
+        .mobile-control-btn:active {
+            transform: scale(0.9);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        @media (max-width: 1024px), (pointer: coarse) {
+            #mobile-controls-container {
+                display: flex;
+            }
+            #powerup-ui {
+                bottom: 140px !important;
+            }
+        }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
@@ -392,7 +447,13 @@
             <div class="p-bar-track">
                 <div id="powerup-fill" class="p-bar-fill"></div>
             </div>
-        </div>
+    </div>
+
+    <!-- Mobile Controls Interface -->
+    <div id="mobile-controls-container">
+        <button id="btn-left" class="mobile-control-btn"><i class="fas fa-arrow-left"></i></button>
+        <button id="btn-jump" class="mobile-control-btn"><i class="fas fa-arrow-up"></i></button>
+        <button id="btn-right" class="mobile-control-btn"><i class="fas fa-arrow-right"></i></button>
     </div>
 
     <div id="overlay">
@@ -616,6 +677,128 @@
             document.getElementById('restart-btn').onclick = startGame;
             document.getElementById('box-opener').onclick = openMysteryBox;
             document.getElementById('claim-btn').onclick = claimReward;
+
+            // --- Mobile Controls Initialization ---
+            let leftInterval = null;
+            let rightInterval = null;
+
+            function startMoveLeft() {
+                if (!gameActive) return;
+                if (currentLane > 0) {
+                    currentLane--;
+                    targetX = lanes[currentLane];
+                }
+                if (leftInterval) clearInterval(leftInterval);
+                leftInterval = setInterval(() => {
+                    if (currentLane > 0) {
+                        currentLane--;
+                        targetX = lanes[currentLane];
+                    }
+                }, 220); // Repeat interval for holding down
+            }
+
+            function stopMoveLeft() {
+                if (leftInterval) {
+                    clearInterval(leftInterval);
+                    leftInterval = null;
+                }
+            }
+
+            function startMoveRight() {
+                if (!gameActive) return;
+                if (currentLane < 2) {
+                    currentLane++;
+                    targetX = lanes[currentLane];
+                }
+                if (rightInterval) clearInterval(rightInterval);
+                rightInterval = setInterval(() => {
+                    if (currentLane < 2) {
+                        currentLane++;
+                        targetX = lanes[currentLane];
+                    }
+                }, 220);
+            }
+
+            function stopMoveRight() {
+                if (rightInterval) {
+                    clearInterval(rightInterval);
+                    rightInterval = null;
+                }
+            }
+
+            function triggerJump() {
+                if (!gameActive) return;
+                if (!isJumping && !isFlying) {
+                    isJumping = true;
+                    jumpVelocity = 0.85;
+                }
+            }
+
+            const btnLeft = document.getElementById('btn-left');
+            const btnRight = document.getElementById('btn-right');
+            const btnJump = document.getElementById('btn-jump');
+            const mobileContainer = document.getElementById('mobile-controls-container');
+
+            if (btnLeft && btnRight && btnJump) {
+                // Prevent gesture defaults (double-tap zoom, scrolling, etc.)
+                const preventDefaultTouch = (e) => {
+                    if (e.cancelable) e.preventDefault();
+                };
+
+                // Left Button
+                btnLeft.addEventListener('pointerdown', (e) => {
+                    preventDefaultTouch(e);
+                    startMoveLeft();
+                });
+                btnLeft.addEventListener('pointerup', (e) => {
+                    preventDefaultTouch(e);
+                    stopMoveLeft();
+                });
+                btnLeft.addEventListener('pointercancel', (e) => {
+                    preventDefaultTouch(e);
+                    stopMoveLeft();
+                });
+                btnLeft.addEventListener('pointerleave', (e) => {
+                    preventDefaultTouch(e);
+                    stopMoveLeft();
+                });
+
+                // Right Button
+                btnRight.addEventListener('pointerdown', (e) => {
+                    preventDefaultTouch(e);
+                    startMoveRight();
+                });
+                btnRight.addEventListener('pointerup', (e) => {
+                    preventDefaultTouch(e);
+                    stopMoveRight();
+                });
+                btnRight.addEventListener('pointercancel', (e) => {
+                    preventDefaultTouch(e);
+                    stopMoveRight();
+                });
+                btnRight.addEventListener('pointerleave', (e) => {
+                    preventDefaultTouch(e);
+                    stopMoveRight();
+                });
+
+                // Jump Button
+                btnJump.addEventListener('pointerdown', (e) => {
+                    preventDefaultTouch(e);
+                    triggerJump();
+                });
+
+                // Extra safety for touch events
+                btnLeft.addEventListener('touchstart', preventDefaultTouch, { passive: false });
+                btnRight.addEventListener('touchstart', preventDefaultTouch, { passive: false });
+                btnJump.addEventListener('touchstart', preventDefaultTouch, { passive: false });
+            }
+
+            if (mobileContainer) {
+                // Prevent scrolling when touching the controls area
+                mobileContainer.addEventListener('touchmove', (e) => {
+                    if (e.cancelable) e.preventDefault();
+                }, { passive: false });
+            }
 
             let prog = 0;
             const iv = setInterval(() => {
@@ -1215,9 +1398,15 @@
             collectedBoxes--;
         }
 
+        function getContextPath() {
+            const path = window.location.pathname;
+            const match = path.match(/^\/([^\/]+)\/play-runner/);
+            return match ? '/' + match[1] : '';
+        }
+
         async function saveGameResult(type, scoreValue) {
             try {
-                const response = await fetch('/api/games/reward', {
+                const response = await fetch(getContextPath() + '/api/games/reward', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
