@@ -205,12 +205,6 @@
                     });
                     stompClient.current.send(`/app/uno/${rId}/subscribe`, {}, "{}");
                 });
-
-                window.addEventListener('beforeunload', () => {
-                    if (stompClient.current && stompClient.current.connected) {
-                        stompClient.current.send(`/app/uno/${rId}/leave`, {}, "{}");
-                    }
-                });
             }, []);
 
             const handleStart = async (type, data) => {

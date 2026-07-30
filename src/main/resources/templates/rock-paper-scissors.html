@@ -18,6 +18,7 @@
         .choice-btn { width: 120px; height: 120px; border-radius: 50%; border: 4px solid transparent; background: #1e293b; color: #fff; font-size: 40px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; }
         .choice-btn:hover { transform: scale(1.1); border-color: #fbcc15; box-shadow: 0 0 20px rgba(250,204,21,0.3); }
         .choice-btn:disabled { opacity: 0.5; filter: grayscale(1); }
+        select#gameMode option { background-color: #0f172a; color: #fbcc15; font-weight: bold; }
     </style>
 </head>
 
@@ -32,17 +33,27 @@
                 <h2 style="color: #fbcc15;">GAME LOBBY</h2>
                 <div id="roomCode" style="font-size: 48px; letter-spacing: 12px; margin: 20px 0; color: #fbcc15; font-family: monospace;"></div>
                 <div style="margin: 20px 0; background: rgba(0,0,0,0.2); padding: 20px; border-radius: 12px;">
-                    <div style="font-size: 18px; font-weight: bold; margin-bottom: 10px;">Players Joined:</div>
+                    <div style="font-size: 18px; font-weight: bold; margin-bottom: 10px; color: #f8fafc;">Players Joined:</div>
                     <div id="lobbyP1" style="font-size: 16px; color: #fbcc15; margin-bottom: 5px;">Player 1: ...</div>
                     <div id="lobbyP2" style="font-size: 16px; color: #fbcc15;">Player 2: Waiting...</div>
                 </div>
                 <p style="color: #94a3b8; margin-bottom: 20px;">Share this code to invite opponent.</p>
+                <div id="gameModeSelector" style="display: none; margin-bottom: 20px; align-items: center; justify-content: center;">
+                    <label style="color: #fbcc15; font-weight: bold; margin-right: 10px;">Game Mode:</label>
+                    <select id="gameMode" style="background: #1e293b; color: #fbcc15; border: 2px solid #fbcc15; padding: 10px 15px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; outline: none;">
+                        <option value="best_of_10">Best of 10</option>
+                        <option value="max_10">Max 10 Rounds</option>
+                    </select>
+                </div>
                 <button id="startBattleBtn" class="choice-btn" onclick="startBattle()" style="display: none; width: 100%; height: auto; max-width: 300px; margin: 0 auto; background: #fbcc15; color: #000; padding: 15px; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; text-transform: uppercase;">START BATTLE</button>
             </div>
         </div>
 
         <div id="gameArea" style="display: none; width: 100%; max-width: 600px;">
             <div class="choices-card">
+                <div style="text-align: center; margin-bottom: 20px; font-size: 18px; color: #94a3b8; font-weight: bold;">
+                    ROUND <span id="currentRound">1</span>/<span id="maxRounds">10</span>
+                </div>
                 <div style="display: flex; justify-content: space-between; margin-bottom: 40px;">
                     <div style="text-align: left;"><span id="p1Name" style="font-weight: 700;">Player 1</span><div style="font-size: 32px; font-weight: 900;" id="p1Score">0</div></div>
                     <div style="font-size: 24px; align-self: center; opacity: 0.5;">VS</div>
@@ -64,6 +75,37 @@
                     </div>
                     <div id="roundResult" style="font-size: 28px; font-weight: 900; margin-bottom: 20px;"></div>
                     <button id="nextBtn" class="btn" onclick="nextRound()" style="display: none; max-width: 200px; margin: 0 auto;">Next Round</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="matchResultArea" style="display: none; text-align: center; width: 100%; max-width: 600px;">
+            <div class="choices-card">
+                <h1 id="matchOutcomeTitle" style="font-size: 48px; font-weight: 900; margin-bottom: 20px;">YOU WIN!</h1>
+                
+                <div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 12px; margin-bottom: 30px;">
+                    <h3 style="color: #fbcc15; margin-bottom: 15px;">MATCH STATS</h3>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span>Total Rounds Played:</span> <strong id="resTotalRounds">0</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span>Your Score:</span> <strong id="resYourScore">0</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span>Opponent Score:</span> <strong id="resOppScore">0</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span>Winner:</span> <strong id="resWinnerName" style="color: #fbcc15;">...</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Match Status:</span> <strong>COMPLETED</strong>
+                    </div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 15px;">
+                    <button id="playAgainBtn" class="choice-btn" onclick="playAgain()" style="width: 100%; height: auto; background: #fbcc15; color: #000; padding: 15px; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; text-transform: uppercase;">PLAY AGAIN</button>
+                    <button class="choice-btn" onclick="window.location.href='/games'" style="width: 100%; height: auto; background: transparent; border: 2px solid #334155; color: #fff; padding: 15px; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; text-transform: uppercase;">RETURN TO DASHBOARD</button>
+                    <button class="choice-btn" onclick="window.location.href='/'" style="width: 100%; height: auto; background: #ef4444; color: #fff; padding: 15px; border-radius: 12px; border: none; font-size: 16px; font-weight: bold; cursor: pointer; text-transform: uppercase;">EXIT MATCH</button>
                 </div>
             </div>
         </div>
@@ -89,6 +131,7 @@
             const params = new URLSearchParams(window.location.search);
             rId = params.get('room');
             if (!rId) { document.getElementById('status').innerText = "Join via Lobby"; return; }
+            rId = rId.trim().toUpperCase();
 
             try {
                 const auth = new URLSearchParams(window.location.search).get('auth');
@@ -98,11 +141,12 @@
 
                 const res = await fetch(finalJoinUrl, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ playerName: userName, roomId: rId.toUpperCase() })
+                    body: JSON.stringify({ playerName: userName, roomId: rId })
                 });
                 const data = await res.json();
                 if (data.error) throw data.error;
                 pNum = parseInt(data.playerNum);
+                if (data.roomId) rId = data.roomId;
                 connect();
             } catch (e) { document.getElementById('status').innerText = e; }
         }
@@ -127,11 +171,48 @@
                 document.getElementById('status').innerText = "OPPONENT LEFT";
                 document.getElementById('waitArea').style.display = 'none';
                 document.getElementById('gameArea').style.display = 'block';
+                document.getElementById('matchResultArea').style.display = 'none';
                 document.getElementById('choiceGrid').style.display = 'none';
                 document.getElementById('waitingMsg').style.display = 'none';
                 document.getElementById('resultBlock').style.display = 'block';
                 document.getElementById('roundResult').innerText = "Opponent left the game! Arena closed.";
                 document.getElementById('nextBtn').style.display = 'none';
+                return;
+            }
+            if (s.status === 'finished') {
+                document.getElementById('status').innerText = "MATCH COMPLETED";
+                document.getElementById('waitArea').style.display = 'none';
+                document.getElementById('gameArea').style.display = 'none';
+                document.getElementById('matchResultArea').style.display = 'block';
+                
+                document.getElementById('resTotalRounds').innerText = s.currentRound;
+                const myScore = pNum === 1 ? s.p1Score : s.p2Score;
+                const oppScore = pNum === 1 ? s.p2Score : s.p1Score;
+                document.getElementById('resYourScore').innerText = myScore;
+                document.getElementById('resOppScore').innerText = oppScore;
+                
+                let outcomeText = "MATCH DRAW!";
+                let outcomeColor = "#fbcc15";
+                let winnerName = "None";
+                if (s.matchWinner === 'p1') {
+                    winnerName = s.player1;
+                    outcomeText = pNum === 1 ? "YOU WIN!" : "YOU LOSE!";
+                    outcomeColor = pNum === 1 ? "#22c55e" : "#ef4444";
+                } else if (s.matchWinner === 'p2') {
+                    winnerName = s.player2;
+                    outcomeText = pNum === 2 ? "YOU WIN!" : "YOU LOSE!";
+                    outcomeColor = pNum === 2 ? "#22c55e" : "#ef4444";
+                }
+                document.getElementById('resWinnerName').innerText = winnerName;
+                document.getElementById('matchOutcomeTitle').innerText = outcomeText;
+                document.getElementById('matchOutcomeTitle').style.color = outcomeColor;
+                
+                const myPlayAgain = pNum === 1 ? s.p1PlayAgain : s.p2PlayAgain;
+                if (!myPlayAgain) {
+                    document.getElementById('playAgainBtn').innerText = "PLAY AGAIN";
+                    document.getElementById('playAgainBtn').disabled = false;
+                }
+                
                 return;
             }
             if (s.status === 'waiting') {
@@ -144,17 +225,22 @@
                 document.getElementById('lobbyP2').innerText = "Player 2: " + (s.player2 || "Waiting...");
                 
                 if (pNum === 1 && s.player2) {
+                    document.getElementById('gameModeSelector').style.display = 'block';
                     document.getElementById('startBattleBtn').style.display = 'block';
                 } else {
+                    document.getElementById('gameModeSelector').style.display = 'none';
                     document.getElementById('startBattleBtn').style.display = 'none';
                 }
             } else {
                 document.getElementById('waitArea').style.display = 'none';
+                document.getElementById('matchResultArea').style.display = 'none';
                 document.getElementById('gameArea').style.display = 'block';
                 document.getElementById('p1Name').innerText = s.player1;
                 document.getElementById('p2Name').innerText = s.player2;
                 document.getElementById('p1Score').innerText = s.p1Score;
                 document.getElementById('p2Score').innerText = s.p2Score;
+                document.getElementById('currentRound').innerText = s.currentRound || 1;
+                document.getElementById('maxRounds').innerText = s.maxRounds || 10;
 
                 const myChosen = pNum === 1 ? s.p1Chosen : s.p2Chosen;
                 if (s.lastResult) {
@@ -185,15 +271,17 @@
 
         function makeChoice(c) { stomp.send("/app/rps/" + rId + "/choice", {}, JSON.stringify({ playerNum: pNum, choice: c })); }
         function nextRound() { stomp.send("/app/rps/" + rId + "/nextRound", {}, "{}"); }
-        function startBattle() { stomp.send("/app/rps/" + rId + "/start", {}, "{}"); }
+        function startBattle() { 
+            const mode = document.getElementById('gameMode') ? document.getElementById('gameMode').value : 'best_of_10';
+            stomp.send("/app/rps/" + rId + "/start", {}, JSON.stringify({gameMode: mode})); 
+        }
+        function playAgain() {
+            document.getElementById('playAgainBtn').innerText = "WAITING...";
+            document.getElementById('playAgainBtn').disabled = true;
+            stomp.send("/app/rps/" + rId + "/playAgain", {}, JSON.stringify({ playerNum: pNum }));
+        }
 
         init();
-        
-        window.addEventListener('beforeunload', () => {
-            if (stomp && stomp.connected && rId && pNum) {
-                stomp.send("/app/rps/" + rId + "/leave", {}, JSON.stringify({ playerNum: pNum }));
-            }
-        });
         // ]]>
     </script>
 </body>

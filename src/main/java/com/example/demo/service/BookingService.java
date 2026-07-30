@@ -45,12 +45,16 @@ public class BookingService {
                     return "CANCELLED".equalsIgnoreCase(b.getRegistrationStatus());
                 } else if ("Completed".equalsIgnoreCase(filter)) {
                     return !"CANCELLED".equalsIgnoreCase(b.getRegistrationStatus()) && 
-                           b.getEvent() != null && b.getEvent().getDateTime() != null && 
-                           b.getEvent().getDateTime().isBefore(now);
+                           b.getEvent() != null && (
+                               "COMPLETED".equalsIgnoreCase(b.getEvent().getStatus()) ||
+                               (b.getEvent().getDateTime() != null && b.getEvent().getDateTime().isBefore(now))
+                           );
                 } else if ("Upcoming".equalsIgnoreCase(filter)) {
                     return !"CANCELLED".equalsIgnoreCase(b.getRegistrationStatus()) && 
-                           b.getEvent() != null && b.getEvent().getDateTime() != null && 
-                           b.getEvent().getDateTime().isAfter(now);
+                           b.getEvent() != null && 
+                           !"COMPLETED".equalsIgnoreCase(b.getEvent().getStatus()) &&
+                           !"CANCELLED".equalsIgnoreCase(b.getEvent().getStatus()) &&
+                           (b.getEvent().getDateTime() == null || b.getEvent().getDateTime().isAfter(now));
                 }
                 return true;
             }).collect(Collectors.toList());

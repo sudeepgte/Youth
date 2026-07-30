@@ -1601,17 +1601,18 @@ input[type="file"].form-input::file-selector-button:hover {
         bottom: 0 !important;
         left: -280px;
         width: 260px;
-        height: auto !important;
+        height: calc(100vh - var(--dashboard-nav-height)) !important;
         background: var(--bg-color);
-        z-index: 1000;
+        z-index: 1005 !important;
         transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         box-shadow: 4px 0 25px rgba(0,0,0,0.5);
         padding-top: 15px !important;
-        padding-bottom: 120px !important;
+        padding-bottom: 30px !important;
         padding-left: 15px !important;
         padding-right: 15px !important;
         flex-direction: column !important;
         overflow-y: auto !important;
+        border-radius: 0 !important;
     }
     .sidebar.mobile-open {
         left: 0;

@@ -446,41 +446,49 @@
 
         /* -- Mobile Responsive -- */
         @media (max-width: 768px) {
+            body:has(.reels-container) .dashboard-container {
+                padding: 0 !important;
+            }
             .feed-toolbar { flex-wrap: wrap; }
             .dashboard-vote-section { padding: 16px; margin-bottom: 20px; }
             .reels-container {
-                height: calc(100vh - var(--dashboard-nav-height) - 10px) !important;
-                gap: 12px !important;
-                padding-bottom: 20px !important;
+                height: calc(100vh - var(--dashboard-nav-height)) !important;
+                height: calc(100dvh - var(--dashboard-nav-height)) !important;
+                gap: 0 !important;
+                padding-bottom: 0 !important;
             }
             .reel-card { 
                 max-width: 100%; 
                 border-radius: 0 !important; 
-                border-left: none !important; 
-                border-right: none !important; 
-                min-height: calc(100vh - var(--dashboard-nav-height) - 70px) !important;
-                max-height: calc(100vh - var(--dashboard-nav-height) - 70px) !important;
+                border: none !important; 
+                min-height: calc(100vh - var(--dashboard-nav-height)) !important;
+                min-height: calc(100dvh - var(--dashboard-nav-height)) !important;
+                max-height: calc(100vh - var(--dashboard-nav-height)) !important;
+                max-height: calc(100dvh - var(--dashboard-nav-height)) !important;
             }
         }
         @media (max-width: 480px) {
             .reels-container {
-                height: calc(100vh - var(--dashboard-nav-height) - 5px) !important;
-                gap: 8px !important;
-                padding-bottom: 10px !important;
+                height: calc(100vh - var(--dashboard-nav-height)) !important;
+                height: calc(100dvh - var(--dashboard-nav-height)) !important;
+                gap: 0 !important;
+                padding-bottom: 0 !important;
             }
             .reel-card { 
-                min-height: calc(100vh - var(--dashboard-nav-height) - 50px) !important;
-                max-height: calc(100vh - var(--dashboard-nav-height) - 50px) !important;
+                min-height: calc(100vh - var(--dashboard-nav-height)) !important;
+                min-height: calc(100dvh - var(--dashboard-nav-height)) !important;
+                max-height: calc(100vh - var(--dashboard-nav-height)) !important;
+                max-height: calc(100dvh - var(--dashboard-nav-height)) !important;
             }
             .reel-card .post-content {
-                right: 70px !important;
+                right: 60px !important;
                 left: 12px !important;
-                bottom: 25px !important;
+                bottom: 20px !important;
                 gap: 4px !important;
             }
             .reel-card .post-actions {
                 right: 10px !important;
-                bottom: 75px !important;
+                bottom: 20px !important;
                 gap: 12px !important;
             }
             .reel-card .post-actions .action-btn {
@@ -2421,6 +2429,7 @@
             </div>
         </div>
     </div>
+    <script th:src="@{/js/session-keepalive.js}"></script>
 </body>
 
 </html>

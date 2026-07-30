@@ -2455,6 +2455,19 @@
         </div>
     </div>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const tabParam = urlParams.get('tab');
+            if (tabParam) {
+                const tabBtn = document.querySelector(`.tab-btn[onclick*="${tabParam}"]`);
+                if (tabBtn) {
+                    switchTab(tabParam, tabBtn);
+                    document.querySelector('.tabs').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+        });
+    </script>
 </body>
 
 </html>

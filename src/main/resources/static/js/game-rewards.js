@@ -11,21 +11,29 @@ const GameRewards = {
      * Report game result to server to earn rewards.
      * @param {string} gameName - Name of the game
      * @param {string} result - "WIN", "PLAY", or "SCORE"
-     * @param {number} score - The numeric score (used if result is "SCORE")
+     * @param {number} score - The numeric score
+     * @param {number} coinsEarned - Coins collected in gameplay (optional)
+     * @param {string} sessionId - Unique session ID/nonce (optional)
      */
-    award: async function(gameName, result = "PLAY", score = 0) {
-        console.log(`[GameRewards] Reporting ${result} for ${gameName}` + (score ? ` with score ${score}` : ''));
+    award: async function(gameName, result = "PLAY", score = 0, coinsEarned = null, sessionId = null) {
+        console.log(`[GameRewards] Reporting ${result} for ${gameName}` + (score ? ` with score ${score}` : '') + (coinsEarned !== null ? `, coins: ${coinsEarned}` : ''));
         
         try {
+            const bodyObj = { gameName, result, score: score.toString() };
+            if (coinsEarned !== null) bodyObj.coinsEarned = coinsEarned;
+            if (sessionId !== null) bodyObj.sessionId = sessionId;
+
             const response = await fetch(getContextPath() + '/api/games/reward', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ gameName, result, score: score.toString() })
+                body: JSON.stringify(bodyObj)
             });
 
             if (response.ok) {
                 const data = await response.json();
-                this.showRewardToast(data.message);
+                if (data.coinsAwarded > 0 && data.message) {
+                    this.showRewardToast(data.message);
+                }
                 window.dispatchEvent(new CustomEvent('zentrixCoinsUpdated', { detail: data }));
             }
         } catch (error) {
