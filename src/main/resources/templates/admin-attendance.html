@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 
 <head>
@@ -36,7 +36,7 @@
             min-height: 100vh;
         }
 
-        /* ── Navbar ── */
+        /* -- Navbar -- */
         .navbar {
             display: flex;
             align-items: center;
@@ -48,7 +48,7 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            backdrop-filter: blur(20px);
+            
         }
 
         .navbar .logo {
@@ -91,14 +91,14 @@
             font-size: 13px;
         }
 
-        /* ── Page ── */
+        /* -- Page -- */
         .page {
             max-width: 1100px;
             margin: 0 auto;
             padding: 32px 24px;
         }
 
-        /* ── Event Header ── */
+        /* -- Event Header -- */
         .event-header {
             background: var(--card-bg);
             border: 1px solid var(--glass-border);
@@ -108,7 +108,7 @@
             align-items: center;
             gap: 20px;
             margin-bottom: 28px;
-            backdrop-filter: blur(12px);
+            
         }
 
         .event-thumb {
@@ -219,7 +219,7 @@
             color: var(--text-primary);
         }
 
-        /* ── Stats Row ── */
+        /* -- Stats Row -- */
         .stats-row {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -233,7 +233,7 @@
             border-radius: 16px;
             padding: 20px 22px;
             text-align: center;
-            backdrop-filter: blur(12px);
+            
         }
 
         .stat-box .num {
@@ -259,7 +259,7 @@
             color: #dc2626;
         }
 
-        /* ── Progress Bar ── */
+        /* -- Progress Bar -- */
         .progress-wrap {
             margin-bottom: 28px;
         }
@@ -287,7 +287,7 @@
             transition: width 0.6s ease;
         }
 
-        /* ── Alert Banner ── */
+        /* -- Alert Banner -- */
         .alert {
             display: flex;
             align-items: center;
@@ -317,14 +317,14 @@
             color: #1d4ed8;
         }
 
-        /* ── Ticket Search (Offline) ── */
+        /* -- Ticket Search (Offline) -- */
         .scan-card {
             background: var(--card-bg);
             border: 1px solid var(--glass-border);
             border-radius: 18px;
             padding: 24px 26px;
             margin-bottom: 28px;
-            backdrop-filter: blur(12px);
+            
         }
 
         .scan-card h2 {
@@ -403,14 +403,14 @@
             margin-bottom: 14px;
         }
 
-        /* ── Table ── */
+        /* -- Table -- */
         .table-card {
             background: var(--card-bg);
             border: 1px solid var(--glass-border);
             border-radius: 18px;
             overflow: hidden;
             margin-bottom: 32px;
-            backdrop-filter: blur(12px);
+            
         }
 
         .table-head {
@@ -482,7 +482,7 @@
             padding: 40px;
         }
 
-        /* ── Results Modal ── */
+        /* -- Results Modal -- */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -490,7 +490,7 @@
             right: 0;
             bottom: 0;
             background: rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(8px);
+            
             display: flex;
             align-items: center;
             justify-content: center;
@@ -623,8 +623,7 @@
             height: var(--dashboard-nav-height);
             z-index: 1100;
             background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
+            
             border-bottom: 1px solid rgba(255, 255, 255, 0.5);
             box-shadow: 0 4px 30px rgba(15, 23, 42, 0.05);
             display: flex;
@@ -708,8 +707,7 @@
             font-size: 18px;
             color: var(--text-secondary);
         }
-
-        .mobile-menu-btn {
+            .mobile-menu-btn {
             background: none;
             border: none;
             color: var(--text-primary);
@@ -723,8 +721,7 @@
         .mobile-menu-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(15, 23, 42, 0.4);
-            backdrop-filter: blur(8px);
+            background: rgba(15, 23, 42, 0.7);
             z-index: 1150;
             display: none;
         }
@@ -734,8 +731,12 @@
         }
 
         @media (max-width: 992px) {
-            .dashboard-container {
+                        .dashboard-container {
                 grid-template-columns: 1fr;
+            }
+
+            .sidebar-link, .sidebar-link i, .sidebar-subtab {
+                color: rgba(255, 255, 255, 0.7) !important;
             }
 
             .sidebar {
@@ -744,20 +745,19 @@
                 top: 0;
                 bottom: 0;
                 width: 250px;
-                background: rgba(255, 255, 255, 0.95);
-                backdrop-filter: blur(20px);
+                background: rgba(15, 23, 42, 0.98);
+                
                 z-index: 1200;
                 box-shadow: 4px 0 30px rgba(0, 0, 0, 0.1);
                 transition: left 0.3s ease;
-                padding: 30px 20px 20px;
-                height: 100vh;
+                padding: 20px;
+                height: 100%;
                 overflow-y: auto;
             }
 
             .sidebar.mobile-open {
                 left: 0;
             }
-
             .mobile-menu-btn {
                 display: block;
             }
@@ -805,8 +805,6 @@
 
 <body>
 
-    <div class="mobile-menu-overlay" onclick="document.querySelector('.sidebar').classList.remove('mobile-open'); this.classList.remove('active'); document.body.style.overflow = '';"></div>
-
     <nav class="dashboard-navbar">
         <button class="mobile-menu-btn" onclick="const s=document.querySelector('.sidebar'); if(s) { s.classList.toggle('mobile-open'); const isOpen = s.classList.contains('mobile-open'); document.body.style.overflow = isOpen ? 'hidden' : ''; } const o=document.querySelector('.mobile-menu-overlay'); if(o) o.classList.toggle('active');">
             <i class="fas fa-bars"></i>
@@ -815,14 +813,13 @@
 
         <div class="dashboard-spacer"></div>
         <div class="dashboard-nav-links">
-            <a th:href="@{/dashboard}" class="btn btn-outline" style="border: 1px solid rgba(2, 132, 199, 0.4); color: #0284c7 !important; border-radius: 10px; padding: 8px 16px; text-decoration: none; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; width: max-content;">
-                <i class="fas fa-arrow-left"></i> App
-            </a>
+            
             <a th:href="@{/logout}" class="btn btn-primary" style="background: linear-gradient(135deg, #f84464, #ff6b9d); color: #fff !important; border-radius: 10px; padding: 8px 18px; text-decoration: none; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; width: max-content;">Logout</a>
         </div>
     </nav>
 
     <div class="dashboard-container">
+        <div class="mobile-menu-overlay" onclick="document.querySelector('.sidebar').classList.remove('mobile-open'); this.classList.remove('active'); document.body.style.overflow = '';"></div>
         <!-- Left Sidebar -->
         <aside class="sidebar">
             <a th:href="@{/admin}" class="sidebar-link"><i class="fas fa-chart-line" style="color: inherit;"></i> Overview</a>
@@ -841,7 +838,7 @@
 
         <div th:if="${param.completed}" class="alert alert-success">
             <i class="fas fa-flag-checkered"></i>
-            Event Results declared! <strong>XP awarded</strong>, <strong>Leaderboard updated</strong>, and 📍 Status set
+            Event Results declared! <strong>XP awarded</strong>, <strong>Leaderboard updated</strong>, and ?? Status set
             to <strong>COMPLETED</strong>.
         </div>
         <div th:if="${param.started}" class="alert alert-success">
@@ -854,7 +851,7 @@
         </div>
         <div th:if="${param.marked != null and !param.marked.isEmpty()}" class="alert alert-success">
             <i class="fas fa-check-circle"></i>
-            Ticket <strong th:text="${param.marked}"></strong> verified — attendance marked!
+            Ticket <strong th:text="${param.marked}"></strong> verified � attendance marked!
         </div>
         <div th:if="${param.error == 'invalid'}" class="alert alert-error">
             <i class="fas fa-times-circle"></i>
@@ -865,7 +862,7 @@
             This ticket has already been marked as attended.
         </div>
 
-        <!-- ── Event Header ── -->
+        <!-- -- Event Header -- -->
         <div class="event-header">
             <img class="event-thumb" th:src="${event.imageUrl}"
                 onerror="this.src='https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=200'" alt="event">
@@ -888,14 +885,14 @@
                 </div>
             </div>
             <div class="event-actions">
-                <!-- Start Event (UPCOMING → ONGOING) -->
+                <!-- Start Event (UPCOMING ? ONGOING) -->
                 <form th:if="${event.status == 'UPCOMING'}" th:action="@{'/events/admin/' + ${event.id} + '/start'}"
                     method="post">
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-play"></i> Start Event &amp; Track Attendance
                     </button>
                 </form>
-                <!-- Complete Event (ONGOING → COMPLETED) -->
+                <!-- Complete Event (ONGOING ? COMPLETED) -->
                 <button th:if="${event.status == 'ONGOING' and !event.finalVotingEnabled}" type="button"
                     class="btn btn-success" onclick="openResultsModal()">
                     <i class="fas fa-flag-checkered"></i> Mark Results &amp; Complete
@@ -919,7 +916,7 @@
             </div>
         </div>
 
-        <!-- ── Stats ── -->
+        <!-- -- Stats -- -->
         <div class="stats-row">
             <div class="stat-box">
                 <div class="num num-pink" th:text="${totalCount}">0</div>
@@ -935,7 +932,7 @@
             </div>
         </div>
 
-        <!-- ── Progress ── -->
+        <!-- -- Progress -- -->
         <div class="progress-wrap" th:if="${totalCount > 0}">
             <div class="progress-label">
                 <span>Attendance Progress</span>
@@ -948,7 +945,7 @@
             </div>
         </div>
 
-        <!-- ── Offline: Ticket/QR Scan Input ── -->
+        <!-- -- Offline: Ticket/QR Scan Input -- -->
         <div class="scan-card" th:if="${event.eventMode == 'Offline' or event.eventMode == null}">
             <h2><i class="fas fa-qrcode" style="color:#f84464;"></i> &nbsp;Verify Ticket / QR Code</h2>
             <p>Enter the participant's Ticket ID (printed on their ticket or QR code) to mark attendance.</p>
@@ -963,9 +960,9 @@
             </form>
         </div>
 
-        <!-- ── Online: Meeting Link Display ── -->
+        <!-- -- Online: Meeting Link Display -- -->
         <div class="online-card" th:if="${event.eventMode == 'Online'}">
-            <h2><i class="fas fa-video"></i> &nbsp;Online Event — Meeting Link</h2>
+            <h2><i class="fas fa-video"></i> &nbsp;Online Event � Meeting Link</h2>
             <p>Share this link with participants. Attendance is auto-marked when a registered student clicks "Join Now"
                 on the event page.</p>
             <div class="join-link-box"
@@ -978,7 +975,7 @@
             </a>
         </div>
 
-        <!-- ── Participant Table ── -->
+        <!-- -- Participant Table -- -->
         <div class="table-card">
             <div class="table-head">
                 <h2><i class="fas fa-list" style="color:#f84464; margin-right:8px;"></i>Registered Participants</h2>
@@ -1011,10 +1008,10 @@
                                 th:text="${reg.email != null ? reg.email : reg.user.email}">email</div>
                         </td>
                         <td style="color:var(--text-secondary); font-size:12px;"
-                            th:text="${reg.phone != null ? reg.phone : '—'}">Phone</td>
+                            th:text="${reg.phone != null ? reg.phone : '�'}">Phone</td>
                         <td><span class="ticket-chip" th:text="${reg.ticketId}">ZTX-XX-XXXX</span></td>
                         <td style="color:var(--text-secondary); font-size:12px;"
-                            th:text="${reg.registrationDate != null ? #temporals.format(reg.registrationDate, 'MMM dd, yyyy') : '—'}">
+                            th:text="${reg.registrationDate != null ? #temporals.format(reg.registrationDate, 'MMM dd, yyyy') : '�'}">
                             Date</td>
                         <td>
                             <span th:if="${reg.attendanceMarked}" class="att-yes">
@@ -1026,10 +1023,10 @@
                         </td>
                         <td style="font-weight:700; font-size:12px;"
                             th:classappend="${reg.position == 'Winner'} ? 'num-pink' : (${reg.position == 'Runner'} ? 'num-yellow' : '')"
-                            th:text="${reg.position != null ? reg.position : '—'}">—</td>
+                            th:text="${reg.position != null ? reg.position : '�'}">�</td>
                         <td style="color:#4ade80; font-weight:800;"
-                            th:text="${reg.pointsEarned != null and reg.pointsEarned > 0 ? '+' + reg.pointsEarned + ' XP' : '—'}">
-                            —</td>
+                            th:text="${reg.pointsEarned != null and reg.pointsEarned > 0 ? '+' + reg.pointsEarned + ' XP' : '�'}">
+                            �</td>
                     </tr>
                 </tbody>
             </table>
@@ -1038,7 +1035,7 @@
         </main>
     </div>
 
-    <!-- ── Results Modal ── -->
+    <!-- -- Results Modal -- -->
     <div class="modal-overlay" id="resultsModal">
         <div class="modal-box">
             <h2><i class="fas fa-trophy" style="color:#f59e0b; margin-right:10px;"></i> Event Results</h2>
@@ -1050,7 +1047,7 @@
 
                 <div class="form-group" style="margin-bottom: 20px;">
                     <div class="rank-label">
-                        <label>📊 Performance / Judge Scores</label>
+                        <label>?? Performance / Judge Scores</label>
                         <span style="font-size:11px; color:#10b981;">Weighted Final Score</span>
                     </div>
                     <div
@@ -1090,7 +1087,7 @@
 
                 <div class="form-group">
                     <div class="rank-label">
-                        <label>🏆 Winners</label>
+                        <label>?? Winners</label>
                         <div>
                             <span style="font-size:11px; color:rgba(255,255,255,0.4); margin-right:6px;">XP
                                 Reward:</span>
@@ -1106,7 +1103,7 @@
 
                 <div class="form-group">
                     <div class="rank-label">
-                        <label>🥈 Runners Up</label>
+                        <label>?? Runners Up</label>
                         <div>
                             <span style="font-size:11px; color:rgba(255,255,255,0.4); margin-right:6px;">XP
                                 Reward:</span>
@@ -1122,7 +1119,7 @@
 
                 <div class="form-group">
                     <div class="rank-label">
-                        <label>🏅 Participation Default</label>
+                        <label>?? Participation Default</label>
                         <div>
                             <span style="font-size:11px; color:rgba(255,255,255,0.4); margin-right:6px;">XP
                                 Reward:</span>
@@ -1140,7 +1137,7 @@
         </div>
     </div>
 
-    <!-- ── Finalist Selection Modal ── -->
+    <!-- -- Finalist Selection Modal -- -->
     <div class="modal-overlay" id="finalistModal">
         <div class="modal-box" style="max-width: 600px;">
             <h2><i class="fas fa-star" style="color:#10b981; margin-right:10px;"></i> Nominate Top 3 Finalists</h2>
@@ -1265,3 +1262,15 @@
 </body>
 
 </html>
+
+
+
+
+
+
+
+
+
+
+
+

@@ -45,6 +45,40 @@
         #root {
             min-height: 100vh;
         }
+
+        /* Mobile Responsiveness Rules */
+        @media (max-width: 768px) {
+            .lobby-title {
+                font-size: 36px !important;
+                text-align: center;
+            }
+            .table-id-badge {
+                position: static !important;
+                margin-bottom: 15px !important;
+                display: inline-block;
+            }
+            .players-row {
+                flex-wrap: wrap !important;
+                justify-content: center !important;
+                gap: 10px !important;
+            }
+            .player-box {
+                padding: 8px 12px !important;
+                font-size: 14px !important;
+            }
+            .color-picker-box {
+                padding: 24px !important;
+                width: 90%;
+            }
+            .color-btn {
+                width: 50px !important;
+                height: 50px !important;
+                font-size: 12px !important;
+            }
+            .main-game-container {
+                padding-top: 10px !important;
+            }
+        }
     </style>
 </head>
 
@@ -131,11 +165,11 @@
         function ColorPicker({ onPick }) {
             return (
                 <div style={{ position: "fixed", inset: 0, background: "#000c", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200 }}>
-                    <div style={{ background: "linear-gradient(145deg,#1c1c2e,#2a2a4a)", borderRadius: 20, padding: 36, textAlign: "center", boxShadow: "0 20px 60px #000a", backdropFilter: "blur(10px)" }}>
+                    <div className="color-picker-box" style={{ background: "linear-gradient(145deg,#1c1c2e,#2a2a4a)", borderRadius: 20, padding: 36, textAlign: "center", boxShadow: "0 20px 60px #000a", backdropFilter: "blur(10px)" }}>
                         <div style={{ color: "#fff", fontSize: 22, fontWeight: 900, marginBottom: 24 }}>CHOSE COLOR</div>
                         <div style={{ display: "flex", gap: 16, justifyContent: "center" }}>
                             {COLORS.map(c => (
-                                <button key={c} onClick={() => onPick(c)} style={{ width: 70, height: 70, borderRadius: 35, background: THEME[c].main, border: "none", cursor: "pointer", color: "#fff", fontWeight: 900 }}>{c.toUpperCase()}</button>
+                                <button key={c} onClick={() => onPick(c)} className="color-btn" style={{ width: 70, height: 70, borderRadius: 35, background: THEME[c].main, border: "none", cursor: "pointer", color: "#fff", fontWeight: 900 }}>{c.toUpperCase()}</button>
                             ))}
                         </div>
                     </div>
@@ -150,7 +184,7 @@
 
             return (
                 <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "#060e0a" }}>
-                    <h1 style={{ fontSize: 60, marginBottom: 40, background: "linear-gradient(135deg,#e63946,#f1faee)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>UNO MULTIPLAYER</h1>
+                    <h1 className="lobby-title" style={{ fontSize: 60, marginBottom: 40, background: "linear-gradient(135deg,#e63946,#f1faee)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>UNO MULTIPLAYER</h1>
                     <div style={{ background: "rgba(255,255,255,0.05)", padding: 40, borderRadius: 24, width: "100%", maxWidth: 400, border: "1px solid rgba(255,255,255,0.1)" }}>
                         <input className="lobby-input" type="text" placeholder="Your Name" value={name} onChange={e => setName(e.target.value)} style={{ width: "100%", padding: 14, borderRadius: 12, background: "#111", border: "1px solid #333", color: "#fff", marginBottom: 20 }} />
                         <button onClick={() => onStart("create", { name })} style={{ width: "100%", padding: 14, borderRadius: 12, background: "#d62828", border: "none", color: "#fff", fontWeight: 900, cursor: "pointer", marginBottom: 10 }}>CREATE TABLE</button>
@@ -320,8 +354,8 @@
             const colT = THEME[roomState.currentColor] || THEME.wild;
 
             return (
-                <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "#060e0a", padding: 20 }}>
-                    <div style={{ position: "absolute", top: 20, right: 20, background: "#fff2", padding: "8px 16px", borderRadius: 20, color: "#e0e0e0" }}>Table: <span style={{ color: "#d62828", fontWeight: 900 }}>{roomId}</span></div>
+                <div className="main-game-container" style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "#060e0a", padding: 20 }}>
+                    <div className="table-id-badge" style={{ position: "absolute", top: 20, right: 20, background: "#fff2", padding: "8px 16px", borderRadius: 20, color: "#e0e0e0" }}>Table: <span style={{ color: "#d62828", fontWeight: 900 }}>{roomId}</span></div>
                     
                     <div style={{ color: colT.main, textTransform: "uppercase", fontWeight: 900, fontSize: 14, marginBottom: 10 }}>{roomState.currentColor} Active</div>
                     <div style={{ color: "#e0e0e0", background: "#fff1", padding: "10px 20px", borderRadius: 12, marginBottom: 20 }}>{roomState.lastMessage}</div>
@@ -378,9 +412,9 @@
                         </div>
                     </div>
 
-                    <div style={{ marginTop: 40, display: "flex", gap: 20 }}>
+                    <div className="players-row" style={{ marginTop: 40, display: "flex", gap: 20 }}>
                         {roomState.players.map((p, i) => (
-                            <div key={i} style={{ opacity: roomState.currentPlayer === i ? 1 : 0.4, border: roomState.currentPlayer === i ? `2px solid ${colT.main}` : "1px solid #333", padding: "10px 20px", borderRadius: 12, textAlign: "center" }}>
+                            <div key={i} className="player-box" style={{ opacity: roomState.currentPlayer === i ? 1 : 0.4, border: roomState.currentPlayer === i ? `2px solid ${colT.main}` : "1px solid #333", padding: "10px 20px", borderRadius: 12, textAlign: "center" }}>
                                 <div style={{ color: "#e0e0e0", fontWeight: 700 }}>
                                     {p.name} {i === playerIndex ? "(You)" : ""}
                                     {p.cardCount === 1 && (
