@@ -891,6 +891,10 @@
                     <button class="action-btn" th:onclick="'openShareModal(' + ${post.id} + ')'" title="Share">
                         <i class="far fa-paper-plane"></i>
                     </button>
+                    <!-- Delete Button -->
+                    <button th:if="${user != null and post.user != null and post.user.id == user.id}" class="action-btn" th:onclick="'deleteFeedPost(' + ${post.id} + ')'" title="Delete" style="margin-left: auto;">
+                        <i class="fas fa-trash-alt" style="color: rgba(248,68,100,0.8);"></i>
+                    </button>
                 </div>
                 <!-- Comment Panel (hidden by default) -->
                 <div th:id="'comments-panel-' + ${post.id}"
@@ -2182,7 +2186,7 @@
         }
         function avatarGoToProfile() {
             const userId = document.getElementById('avatarMenuUserId').value;
-            // go to /profile/{username} â€&ldquo; we stored username in the span
+            // go to /profile/{username} – we stored username in the span
             const username = document.getElementById('avatarMenuUsername').textContent;
             window.location.href = '/profile/' + username;
         }
@@ -2191,10 +2195,32 @@
                 window.location.href = '/profile/' + username;
             }
         }
-        function avatarViewStory() {
+        async function avatarViewStory() {
             const userId = document.getElementById('avatarMenuUserId').value;
             closeAvatarMenu();
-            openStoryViewer(userId);
+            await openStoryViewer(userId);
+        }
+
+        async function deleteFeedPost(postId) {
+            if (!confirm("Are you sure you want to delete this post?")) return;
+            try {
+                const res = await fetch(basePath + '/profile/post/delete/' + postId, { method: 'POST' });
+                if (res.status === 401) {
+                    window.location.href = basePath + '/login?expired=true';
+                    return;
+                }
+                if (res.ok) {
+                    showToast('Post deleted successfully!');
+                    const el = document.getElementById('post-' + postId);
+                    if (el) el.remove();
+                    else location.reload();
+                } else {
+                    alert('Failed to delete post.');
+                }
+            } catch (e) {
+                console.error(e);
+                alert('Could not delete post.');
+            }
         }
 
         // Reels custom controls functions
@@ -2328,10 +2354,10 @@
             </div>
 
             <button id="storyViewerDeleteBtn"
-                style="position: absolute; top: 28px; right: 60px; width: 34px; height: 34px; display: none; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; color: #fff; background: rgba(248, 68, 100, 0.6); border-radius: 50%; border: none; z-index: 120; transition: background 0.2s;"
-                onmouseover="this.style.background='rgba(248, 68, 100, 0.9)'"
-                onmouseout="this.style.background='rgba(248, 68, 100, 0.6)'"
-                onclick="deleteCurrentStory()" title="Delete Story"><i class="fas fa-trash-alt"></i></button>
+                style="position: absolute; top: 28px; right: 60px; width: 34px; height: 34px; display: none; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; color: #fff; background: rgba(239,68,68,0.85); border-radius: 50%; border: none; z-index: 120; transition: background 0.2s;"
+                onmouseover="this.style.background='rgba(239,68,68,1)'"
+                onmouseout="this.style.background='rgba(239,68,68,0.85)'"
+                onclick="deleteCurrentStory()" title="Delete Story"><i class="fas fa-trash"></i></button>
 
             <button id="storyViewerCloseBtn"
                 style="position: absolute; top: 28px; right: 16px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: #fff; background: rgba(0,0,0,0.4); border-radius: 50%; border: none; z-index: 120; font-weight: bold; transition: background 0.2s;"
