@@ -83,6 +83,9 @@ public class ProfileController {
     private com.example.demo.repository.EventRegistrationRepository eventRegistrationRepository;
 
     @Autowired
+    private com.example.demo.repository.BattleRepository battleRepository;
+
+    @Autowired
     private com.example.demo.repository.UserActivityRepository userActivityRepository;
 
     @Autowired
@@ -111,7 +114,9 @@ public class ProfileController {
 
         // Calculate Talent Score Stats
         long eventsJoined = eventRegistrationRepository.countByUser(targetUser);
-        long eventsWon = eventRegistrationRepository.countByUserAndPosition(targetUser, "Winner");
+        long gamesWon = eventRegistrationRepository.countByUserAndPosition(targetUser, "Winner");
+        long battlesWon = battleRepository.countBattlesWonByUser(targetUser);
+        long eventsWon = gamesWon + battlesWon;
 
         // Calculate Rank with XP descending and ID ascending as a tie-breaker
         long rank = 1;
@@ -142,6 +147,8 @@ public class ProfileController {
         model.addAttribute("talentScore", talentScore);
         model.addAttribute("eventsJoined", eventsJoined);
         model.addAttribute("eventsWon", eventsWon);
+        model.addAttribute("gamesWon", gamesWon);
+        model.addAttribute("battlesWon", battlesWon);
         model.addAttribute("userRank", rank);
         model.addAttribute("userBadge", badge);
         boolean isFollowing = currentUser.getFollowing().contains(targetUser);
@@ -374,6 +381,8 @@ public class ProfileController {
             @RequestParam(required = false) String collaborators,
             @RequestParam(required = false, defaultValue = "POST") String postType,
             @RequestParam(required = false) String category,
+            @RequestParam(required = false) String bgColor,
+            @RequestParam(required = false) String textColor,
             HttpSession session) {
         Object sessionUser = session.getAttribute("user");
         if (!(sessionUser instanceof User)) {
@@ -424,6 +433,19 @@ public class ProfileController {
 
         if (user == null) {
             return "redirect:/login";
+        }
+
+        if ("STORY".equals(postType) && (mediaUrl == null || mediaUrl.isEmpty())) {
+            String prefix = "";
+            if (bgColor != null && !bgColor.isEmpty()) {
+                prefix += "[BG:" + bgColor + "]";
+            }
+            if (textColor != null && !textColor.isEmpty()) {
+                prefix += "[TXT:" + textColor + "]";
+            }
+            if (!prefix.isEmpty()) {
+                content = prefix + content;
+            }
         }
 
         Post post = new Post(content, user, mediaUrl, mediaType, hashtags, postType, category);

@@ -85,9 +85,11 @@
             </div>
             <div style="padding:20px; overflow-y:auto; flex:1;">
                 <form id="createPostForm" th:action="@{/profile/post}" method="post" enctype="multipart/form-data">
-                    <!-- Hidden fields for type & category -->
+                    <!-- Hidden fields for type & category & bgColor & textColor -->
                     <input type="hidden" name="postType" id="postTypeInput" value="POST">
                     <input type="hidden" name="category" id="categoryInput" value="">
+                    <input type="hidden" name="bgColor" id="bgColorInput" value="#000000">
+                    <input type="hidden" name="textColor" id="textColorInput" value="#ffffff">
 
                     <!-- Post Type Segmented Selector -->
                     <div class="form-group">
@@ -126,6 +128,35 @@
                         <textarea id="postContent" name="content" class="form-input" rows="3"
                             placeholder="What's on your mind? Type @ to mention..."></textarea>
                         <div class="mdrop" id="mentionDrop"></div>
+                    </div>
+
+                    <!-- Background and Text Color for Text Stories -->
+                    <div class="form-group" id="storyColorSelector" style="display:none;">
+                        <label style="font-size:12px; color:var(--text-secondary); margin-bottom:6px; display:block;">
+                            <i class="fas fa-palette"></i> &nbsp;Background Color
+                        </label>
+                        <div style="display:flex; gap:8px; margin-bottom: 12px;">
+                            <button type="button" class="color-btn" data-color="#000000" onclick="selectStoryColor(this)" style="width:30px; height:30px; border-radius:50%; border:2px solid var(--accent); background:#000000; cursor:pointer;"></button>
+                            <button type="button" class="color-btn" data-color="#ffffff" onclick="selectStoryColor(this)" style="width:30px; height:30px; border-radius:50%; border:2px solid transparent; background:#ffffff; cursor:pointer;"></button>
+                            <button type="button" class="color-btn" data-color="#f84464" onclick="selectStoryColor(this)" style="width:30px; height:30px; border-radius:50%; border:2px solid transparent; background:#f84464; cursor:pointer;"></button>
+                            <button type="button" class="color-btn" data-color="#8b5cf6" onclick="selectStoryColor(this)" style="width:30px; height:30px; border-radius:50%; border:2px solid transparent; background:#8b5cf6; cursor:pointer;"></button>
+                            <button type="button" class="color-btn" data-color="#3b82f6" onclick="selectStoryColor(this)" style="width:30px; height:30px; border-radius:50%; border:2px solid transparent; background:#3b82f6; cursor:pointer;"></button>
+                            <button type="button" class="color-btn" data-color="#10b981" onclick="selectStoryColor(this)" style="width:30px; height:30px; border-radius:50%; border:2px solid transparent; background:#10b981; cursor:pointer;"></button>
+                            <button type="button" class="color-btn" data-color="#f59e0b" onclick="selectStoryColor(this)" style="width:30px; height:30px; border-radius:50%; border:2px solid transparent; background:#f59e0b; cursor:pointer;"></button>
+                        </div>
+                        
+                        <label style="font-size:12px; color:var(--text-secondary); margin-bottom:6px; display:block;">
+                            <i class="fas fa-font"></i> &nbsp;Text Color
+                        </label>
+                        <div style="display:flex; gap:8px;">
+                            <button type="button" class="txt-color-btn" data-color="#ffffff" onclick="selectStoryTextColor(this)" style="width:30px; height:30px; border-radius:50%; border:2px solid var(--accent); background:#ffffff; cursor:pointer;"></button>
+                            <button type="button" class="txt-color-btn" data-color="#000000" onclick="selectStoryTextColor(this)" style="width:30px; height:30px; border-radius:50%; border:2px solid transparent; background:#000000; cursor:pointer;"></button>
+                            <button type="button" class="txt-color-btn" data-color="#f84464" onclick="selectStoryTextColor(this)" style="width:30px; height:30px; border-radius:50%; border:2px solid transparent; background:#f84464; cursor:pointer;"></button>
+                            <button type="button" class="txt-color-btn" data-color="#8b5cf6" onclick="selectStoryTextColor(this)" style="width:30px; height:30px; border-radius:50%; border:2px solid transparent; background:#8b5cf6; cursor:pointer;"></button>
+                            <button type="button" class="txt-color-btn" data-color="#3b82f6" onclick="selectStoryTextColor(this)" style="width:30px; height:30px; border-radius:50%; border:2px solid transparent; background:#3b82f6; cursor:pointer;"></button>
+                            <button type="button" class="txt-color-btn" data-color="#10b981" onclick="selectStoryTextColor(this)" style="width:30px; height:30px; border-radius:50%; border:2px solid transparent; background:#10b981; cursor:pointer;"></button>
+                            <button type="button" class="txt-color-btn" data-color="#f59e0b" onclick="selectStoryTextColor(this)" style="width:30px; height:30px; border-radius:50%; border:2px solid transparent; background:#f59e0b; cursor:pointer;"></button>
+                        </div>
                     </div>
 
                     <!-- Category -->
@@ -254,6 +285,29 @@
             }
         }
 
+        /* ===== Story Color Selector ===== */
+        function selectStoryColor(btn) {
+            const color = btn.dataset.color;
+            document.getElementById('bgColorInput').value = color;
+            document.querySelectorAll('.color-btn').forEach(b => {
+                b.style.borderColor = 'transparent';
+                if(b.dataset.color === '#ffffff') b.style.border = '1px solid #ccc';
+            });
+            btn.style.borderColor = 'var(--accent)';
+            if(color === '#ffffff') btn.style.border = '2px solid var(--accent)';
+        }
+
+        function selectStoryTextColor(btn) {
+            const color = btn.dataset.color;
+            document.getElementById('textColorInput').value = color;
+            document.querySelectorAll('.txt-color-btn').forEach(b => {
+                b.style.borderColor = 'transparent';
+                if(b.dataset.color === '#ffffff') b.style.border = '1px solid #ccc';
+            });
+            btn.style.borderColor = 'var(--accent)';
+            if(color === '#ffffff') btn.style.border = '2px solid var(--accent)';
+        }
+
         /* ===== Drag-and-drop media ===== */
         function handleFileDrop(event) {
             event.preventDefault();
@@ -338,6 +392,12 @@
 
             const prev = document.getElementById('mediaPreview');
             prev.innerHTML = ''; prev.style.display = 'none';
+
+            // Show color selector only for STORY
+            const colorSelector = document.getElementById('storyColorSelector');
+            if (colorSelector) {
+                colorSelector.style.display = (type === 'STORY') ? 'block' : 'none';
+            }
         }
 
         /* Mention/Collab Autocomplete logic */
