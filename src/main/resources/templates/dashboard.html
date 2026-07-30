@@ -899,6 +899,10 @@
                     <button class="action-btn" th:onclick="'openShareModal(' + ${post.id} + ')'" title="Share">
                         <i class="far fa-paper-plane"></i>
                     </button>
+                    <!-- Delete Button -->
+                    <button th:if="${user != null and post.user != null and post.user.id == user.id}" class="action-btn" th:onclick="'deleteFeedPost(' + ${post.id} + ')'" title="Delete" style="margin-left: auto;">
+                        <i class="fas fa-trash-alt" style="color: rgba(248,68,100,0.8);"></i>
+                    </button>
                 </div>
                 <!-- Comment Panel (hidden by default) -->
                 <div th:id="'comments-panel-' + ${post.id}"
@@ -1991,11 +1995,13 @@
             // Show/hide bottom reply panel or viewers panel based on ownership
             const bottomPanel = document.getElementById('storyViewerBottom');
             const statsEl = document.getElementById('storyViewerStats');
+            const deleteBtn = document.getElementById('storyViewerDeleteBtn');
             const selfId = (typeof CURRENT_USER_ID !== 'undefined' && CURRENT_USER_ID !== null) ? CURRENT_USER_ID : (typeof FEED_USER_ID !== 'undefined' ? FEED_USER_ID : 0);
             const authorId = story.userId || (story.user ? story.user.id : null);
 
             if (authorId == selfId) {
                 if (bottomPanel) bottomPanel.style.display = 'none';
+                if (deleteBtn) deleteBtn.style.display = 'flex';
                 if (statsEl) {
                     statsEl.style.display = 'flex';
                     fetch(basePath + `/api/stories/${story.id}/viewers`)
@@ -2006,6 +2012,7 @@
                 }
             } else {
                 if (statsEl) statsEl.style.display = 'none';
+                if (deleteBtn) deleteBtn.style.display = 'none';
                 if (bottomPanel) bottomPanel.style.display = 'flex';
                 recordStoryView(story.id);
             }
@@ -2037,7 +2044,28 @@
                 `;
                 clearTimeout(storyTimer);
             } else {
-                mediaHtml = `<div style="padding: 20px; color: white; text-align: center; font-size: 20px; font-family: 'DM Sans', sans-serif;">${story.content || 'Text Story'}</div>`;
+                let textContent = story.content || 'Text Story';
+                let bgColor = '#000000'; // Default black background
+                let textColor = 'white'; // Default white text
+                
+                if (textContent.includes('[TXT:')) {
+                    const txtMatch = textContent.match(/\[TXT:(#[0-9a-fA-F]{3,6})\]/);
+                    if (txtMatch) {
+                        textColor = txtMatch[1];
+                        textContent = textContent.replace(txtMatch[0], '');
+                    }
+                }
+                
+                if (textContent.includes('[BG:')) {
+                    const bgMatch = textContent.match(/\[BG:(#[0-9a-fA-F]{3,6})\]/);
+                    if (bgMatch) {
+                        bgColor = bgMatch[1];
+                        textContent = textContent.replace(bgMatch[0], '');
+                    }
+                }
+                
+                textContent = textContent.trim();
+                mediaHtml = `<div style="width: 100%; height: 100%; padding: 20px; background: ${bgColor}; color: ${textColor}; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 28px; font-weight: bold; font-family: 'DM Sans', sans-serif;">${textContent}</div>`;
                 startStoryTimer(5000);
             }
 
@@ -2115,6 +2143,37 @@
             renderStory();
         }
 
+        async function deleteCurrentStory() {
+            const story = currentStories[currentStoryIndex];
+            if (!story) return;
+            if (!confirm('Are you sure you want to delete this story?')) return;
+            
+            pauseStoryTimer();
+            try {
+                const res = await fetch(basePath + '/profile/post/delete/' + story.id, { method: 'POST' });
+                if (res.ok) {
+                    showToast('Story deleted');
+                    currentStories.splice(currentStoryIndex, 1);
+                    if (currentStories.length > 0) {
+                        if (currentStoryIndex >= currentStories.length) {
+                            currentStoryIndex = currentStories.length - 1;
+                        }
+                        renderStory();
+                    } else {
+                        closeStoryViewer();
+                        setTimeout(() => location.reload(), 1000);
+                    }
+                } else {
+                    alert('Failed to delete story');
+                    resumeStoryTimer();
+                }
+            } catch (e) {
+                console.error(e);
+                alert('An error occurred');
+                resumeStoryTimer();
+            }
+        }
+
         function updateStoryProgressBars() {
             const container = document.getElementById('storyProgressBarContainer');
             container.innerHTML = '';
@@ -2156,7 +2215,7 @@
         }
         function avatarGoToProfile() {
             const userId = document.getElementById('avatarMenuUserId').value;
-            // go to /profile/{username} â€&ldquo; we stored username in the span
+            // go to /profile/{username} – we stored username in the span
             const username = document.getElementById('avatarMenuUsername').textContent;
             window.location.href = '/profile/' + username;
         }
@@ -2165,10 +2224,32 @@
                 window.location.href = '/profile/' + username;
             }
         }
-        function avatarViewStory() {
+        async function avatarViewStory() {
             const userId = document.getElementById('avatarMenuUserId').value;
             closeAvatarMenu();
-            openStoryViewer(userId);
+            await openStoryViewer(userId);
+        }
+
+        async function deleteFeedPost(postId) {
+            if (!confirm("Are you sure you want to delete this post?")) return;
+            try {
+                const res = await fetch(basePath + '/profile/post/delete/' + postId, { method: 'POST' });
+                if (res.status === 401) {
+                    window.location.href = basePath + '/login?expired=true';
+                    return;
+                }
+                if (res.ok) {
+                    showToast('Post deleted successfully!');
+                    const el = document.getElementById('post-' + postId);
+                    if (el) el.remove();
+                    else location.reload();
+                } else {
+                    alert('Failed to delete post.');
+                }
+            } catch (e) {
+                console.error(e);
+                alert('Could not delete post.');
+            }
         }
 
         // Reels custom controls functions
@@ -2301,7 +2382,13 @@
                 <span id="storyViewerTime" style="font-size: 11px; color: rgba(255,255,255,0.7) !important; text-shadow: 0 2px 5px rgba(0,0,0,0.95); font-family: 'DM Sans', sans-serif;">• 2h ago</span>
             </div>
 
-            <button
+            <button id="storyViewerDeleteBtn"
+                style="position: absolute; top: 28px; right: 60px; width: 34px; height: 34px; display: none; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; color: #fff; background: rgba(239,68,68,0.85); border-radius: 50%; border: none; z-index: 120; transition: background 0.2s;"
+                onmouseover="this.style.background='rgba(239,68,68,1)'"
+                onmouseout="this.style.background='rgba(239,68,68,0.85)'"
+                onclick="deleteCurrentStory()" title="Delete Story"><i class="fas fa-trash"></i></button>
+
+            <button id="storyViewerCloseBtn"
                 style="position: absolute; top: 28px; right: 16px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: #fff; background: rgba(0,0,0,0.4); border-radius: 50%; border: none; z-index: 120; font-weight: bold; transition: background 0.2s;"
                 onmouseover="this.style.background='rgba(0,0,0,0.7)'"
                 onmouseout="this.style.background='rgba(0,0,0,0.4)'"

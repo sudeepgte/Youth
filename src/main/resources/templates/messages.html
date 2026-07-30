@@ -588,6 +588,7 @@
 
         .input-container input {
             flex: 1;
+            min-width: 0;
             border: none;
             outline: none;
             padding: 10px 12px;
@@ -703,6 +704,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
         }
 
         .header-icon:hover {
@@ -2062,7 +2064,7 @@
                                 </svg>
                             </div>
                         </div>
-                        <div style="cursor: pointer; padding: 0 4px;"
+                        <div style="cursor: pointer; padding: 0 4px; flex-shrink: 0;"
                             onclick="document.getElementById('fileInput').click()">
                             <svg aria-label="Add Photo or Video" color="var(--text-main)" fill="var(--text-main)"
                                 height="24" role="img" viewBox="0 0 24 24" width="24">
@@ -2719,14 +2721,69 @@
             });
         }
 
+        let globalSearchTimeout = null;
         function filterConversations() {
-            const query = document.getElementById('userSearch').value.toLowerCase();
+            const query = document.getElementById('userSearch').value.trim().toLowerCase();
             const filtered = conversationsData.filter(c => {
                 if (c.type === 'GROUP') return c.name.toLowerCase().includes(query);
                 const partner = getConvPartner(c);
                 return partner && partner.username.toLowerCase().includes(query);
             });
             renderConversationList(filtered);
+
+            if (query.length >= 2) {
+                clearTimeout(globalSearchTimeout);
+                globalSearchTimeout = setTimeout(async () => {
+                    try {
+                        const url = window.Zentrix.paths.searchUsers + '?query=' + encodeURIComponent(query);
+                        const res = await fetch(url);
+                        if (res.ok) {
+                            const globalUsers = await res.json();
+                            
+                            // Filter out users we already have a conversation with
+                            const existingUserIds = new Set();
+                            conversationsData.forEach(c => {
+                                if (c.type !== 'GROUP') {
+                                    const partner = getConvPartner(c);
+                                    if (partner) existingUserIds.add(partner.id);
+                                }
+                            });
+                            
+                            const newUsers = globalUsers.filter(u => !existingUserIds.has(u.id));
+                            
+                            if (newUsers.length > 0) {
+                                const listContainer = document.getElementById('convList');
+                                const divider = document.createElement('div');
+                                divider.innerHTML = '<div style="padding: 10px 15px; font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase;">Other People</div>';
+                                listContainer.appendChild(divider);
+                                
+                                newUsers.forEach(u => {
+                                    const div = document.createElement('div');
+                                    div.className = 'conv-item';
+                                    div.onclick = () => selectUserForChat(u);
+                                    
+                                    const avatarHtml = (u.profilePhotoUrl || u.profilePicture) ?
+                                        `<img src="${resolveUrl(u.profilePhotoUrl || u.profilePicture)}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">` :
+                                        u.username.charAt(0).toUpperCase();
+                                        
+                                    div.innerHTML = `
+                                        <div class="avatar-container">
+                                            <div class="avatar-inner">${avatarHtml}</div>
+                                        </div>
+                                        <div class="conv-info">
+                                            <div class="conv-name">${u.username}</div>
+                                            <div class="conv-preview">Start a new chat</div>
+                                        </div>
+                                    `;
+                                    listContainer.appendChild(div);
+                                });
+                            }
+                        }
+                    } catch (e) {
+                        console.error('[ERROR] Global search failed:', e);
+                    }
+                }, 300);
+            }
         }
 
         function closeMobileChat() {

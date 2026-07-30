@@ -1800,7 +1800,7 @@
                                 </div>
                             </div>
                             <div id="durationMinutesWrapper" style="display:none;">
-                                <select id="durationMinutesSelect" name="durationMinutes">
+                                <select id="durationMinutesSelect">
                                     <option value="1">1 Minute</option>
                                     <option value="3">3 Minutes</option>
                                     <option value="5" selected>5 Minutes</option>
@@ -1810,7 +1810,7 @@
                         </div>
                         <div class="arena-field">
                             <label>Max Participants</label>
-                            <select id="participantsSelect" name="maxParticipants" onchange="toggleCustomParticipants(this.value)">
+                            <select id="participantsSelect" name="maxParticipants" onchange="toggleCustomParticipants(this.value); updatePrizePool();">
                                 <option value="2">2 Participants (1v1)</option>
                                 <option value="4" selected>4 Participants</option>
                                 <option value="6">6 Participants</option>
@@ -1819,7 +1819,7 @@
                                 <option value="custom">Custom...</option>
                             </select>
                             <div id="customParticipantsContainer" style="display:none; margin-top:10px;">
-                                <input type="number" id="customParticipantsInput" placeholder="Enter custom count (2-100)..." min="2" max="100" />
+                                <input type="number" id="customParticipantsInput" placeholder="Enter custom count (2-100)..." min="2" max="100" oninput="updatePrizePool()" />
                             </div>
                         </div>
                         <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px;">
@@ -2015,9 +2015,20 @@
                 }
             }
 
+            const durationType = document.querySelector('input[name="durationType"]:checked')?.value || 'hours';
+            const mSelect = document.getElementById('durationMinutesSelect');
+            if (durationType === 'hours') {
+                if (mSelect) mSelect.removeAttribute('name');
+            } else {
+                if (mSelect) mSelect.setAttribute('name', 'durationMinutes');
+            }
+
             const durSelect = document.getElementById('durationSelect');
             const customDur = document.getElementById('customDurationInput');
-            if (durSelect.value === 'custom') {
+            if (durationType === 'minutes') {
+                if (durSelect) durSelect.removeAttribute('name');
+                if (customDur) customDur.removeAttribute('name');
+            } else if (durSelect.value === 'custom') {
                 durSelect.removeAttribute('name');
                 customDur.setAttribute('name', 'durationHours');
                 if (!customDur.value) {
@@ -2059,7 +2070,7 @@
             const totalPrizePool = prize1 + prize2 + prize3;
             const maxAllowedPrizePool = entryFee * participantCount;
 
-            if (totalPrizePool > maxAllowedPrizePool) {
+            if (totalPrizePool > (maxAllowedPrizePool + 0.01)) {
                 e.preventDefault();
                 alert(`Invalid Prize Amounts! The total prize pool (₹${totalPrizePool.toFixed(2)}) cannot exceed the total collected entry fee pool (₹${entryFee.toFixed(2)} × ${participantCount} participants = ₹${maxAllowedPrizePool.toFixed(2)}).`);
                 return;
@@ -2171,12 +2182,6 @@
                 // Restore settings
                 pSelect.disabled = false;
                 customPartInput.disabled = false;
-                
-                const prizesGrid = document.getElementById('prizesGrid');
-                if (prizesGrid) prizesGrid.style.gridTemplateColumns = '1fr 1fr 1fr';
-                const prize3Container = document.getElementById('prize3Container');
-                if (prize3Container) prize3Container.style.display = 'block';
-                prize3Input.disabled = false;
             } else {
                 hWrap.style.display = 'none';
                 mWrap.style.display = 'block';
@@ -2188,39 +2193,67 @@
                 pSelect.disabled = true;
                 customPartInput.disabled = true;
                 
-                const prizesGrid = document.getElementById('prizesGrid');
-                if (prizesGrid) prizesGrid.style.gridTemplateColumns = '1fr 1fr';
-                const prize3Container = document.getElementById('prize3Container');
-                if (prize3Container) prize3Container.style.display = 'none';
-                prize3Input.value = "0";
-                prize3Input.disabled = true;
-                
                 toggleCustomParticipants("2");
-                updatePrizePool();
             }
+            updatePrizePool();
         }
 
         function updatePrizePool() {
-            const type = document.querySelector('input[name="durationType"]:checked')?.value;
+            const type = document.querySelector('input[name="durationType"]:checked')?.value || 'hours';
             const entryFeeInput = document.querySelector('input[name="entryFee"]');
             const prize1Input = document.querySelector('input[name="prize1"]');
             const prize2Input = document.querySelector('input[name="prize2"]');
             const prize3Input = document.querySelector('input[name="prize3"]');
+            const prize3Container = document.getElementById('prize3Container');
+            const prizesGrid = document.getElementById('prizesGrid');
 
             if (!entryFeeInput || !prize1Input || !prize2Input) return;
 
             const entryFee = parseFloat(entryFeeInput.value || '0') || 0;
+            
+            let participantCount = 2;
+            if (type !== 'minutes') {
+                const partSelect = document.getElementById('participantsSelect');
+                const customPart = document.getElementById('customParticipantsInput');
+                participantCount = 4;
+                if (partSelect && partSelect.value === 'custom' && customPart && customPart.value) {
+                    participantCount = parseFloat(customPart.value) || 2;
+                } else if (partSelect) {
+                    participantCount = parseFloat(partSelect.value) || 4;
+                }
+            }
 
-            if (type === 'minutes') {
-                // Live battle 1v1: 2 participants => Total Pool = entryFee * 2
-                const totalPool = entryFee * 2;
+            const totalPool = entryFee * participantCount;
+
+            if (participantCount <= 2) {
                 // 1st Prize = 80%, 2nd Prize = 20%
                 const prize1 = Math.round((totalPool * 0.80) * 100) / 100;
                 const prize2 = Math.round((totalPool * 0.20) * 100) / 100;
 
                 prize1Input.value = prize1 > 0 ? prize1 : 0;
                 prize2Input.value = prize2 > 0 ? prize2 : 0;
-                if (prize3Input) prize3Input.value = 0;
+                
+                if (prizesGrid) prizesGrid.style.gridTemplateColumns = '1fr 1fr';
+                if (prize3Container) prize3Container.style.display = 'none';
+                if (prize3Input) {
+                    prize3Input.value = 0;
+                    prize3Input.disabled = true;
+                }
+            } else {
+                // 1st Prize = 60%, 2nd Prize = 30%, 3rd Prize = 10%
+                const prize1 = Math.round((totalPool * 0.60) * 100) / 100;
+                const prize2 = Math.round((totalPool * 0.30) * 100) / 100;
+                const prize3 = Math.round((totalPool * 0.10) * 100) / 100;
+
+                prize1Input.value = prize1 > 0 ? prize1 : 0;
+                prize2Input.value = prize2 > 0 ? prize2 : 0;
+                
+                if (prizesGrid) prizesGrid.style.gridTemplateColumns = '1fr 1fr 1fr';
+                if (prize3Container) prize3Container.style.display = 'block';
+                if (prize3Input) {
+                    prize3Input.disabled = false;
+                    prize3Input.value = prize3 > 0 ? prize3 : 0;
+                }
             }
         }
 
