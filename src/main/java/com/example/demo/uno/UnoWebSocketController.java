@@ -143,6 +143,16 @@ public class UnoWebSocketController {
         broadcastState(room);
     }
 
+    @MessageMapping("/uno/{roomId}/skip")
+    public void skipTurn(@DestinationVariable String roomId, Map<String, Object> payload) {
+        UnoRoom room = roomService.getRoom(roomId, UnoRoom.class);
+        if (room == null) return;
+
+        int pIdx = (int) payload.get("playerIndex");
+        room.skipTurn(pIdx);
+        broadcastState(room);
+    }
+
     @MessageMapping("/uno/{roomId}/catch-uno")
     public void catchUno(@DestinationVariable String roomId, Map<String, Object> payload) {
         UnoRoom room = roomService.getRoom(roomId, UnoRoom.class);

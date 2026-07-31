@@ -122,9 +122,9 @@ public class UnoRoom {
             }
             if (p.hand.size() == 1) {
                 if (p.calledUno) {
-                    lastMessage = p.name + " yelled UNO! It's " + players.get(currentPlayerIndex).name + "'s turn.";
+                    lastMessage = p.name + " Telled UNO! It's " + players.get(currentPlayerIndex).name + "'s turn.";
                 } else {
-                    lastMessage = p.name + " forgot to yell UNO! They can be caught! It's " + players.get(currentPlayerIndex).name + "'s turn.";
+                    lastMessage = p.name + " forgot to Tell UNO! They can be caught! It's " + players.get(currentPlayerIndex).name + "'s turn.";
                 }
             } else {
                 lastMessage = players.get(currentPlayerIndex).name + "'s turn.";
@@ -150,6 +150,27 @@ public class UnoRoom {
         }
         currentPlayerIndex = getNextPlayerIndex();
         lastMessage = players.get(currentPlayerIndex).name + "'s turn.";
+        turnStartedAt = System.currentTimeMillis();
+    }
+
+    public void skipTurn(int playerIdx) {
+        if (currentPlayerIndex != playerIdx) return;
+        UnoPlayer p = players.get(playerIdx);
+        if (deck.isEmpty()) {
+            UnoCard top = discardPile.remove(discardPile.size() - 1);
+            deck.addAll(discardPile);
+            Collections.shuffle(deck);
+            discardPile.clear();
+            discardPile.add(top);
+        }
+        if (!deck.isEmpty()) {
+            p.hand.add(deck.remove(0));
+        }
+        if (p.hand.size() > 1) {
+            p.calledUno = false;
+        }
+        currentPlayerIndex = getNextPlayerIndex();
+        lastMessage = p.name + " ran out of time! They drew a card. It's " + players.get(currentPlayerIndex).name + "'s turn.";
         turnStartedAt = System.currentTimeMillis();
     }
 

@@ -842,7 +842,8 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
             moveableIndices: [],
             roomId: null,
             status: 'waiting',
-            playerIndex: -1 // -1 = local, 0-3 = network player
+            playerIndex: -1, // -1 = local, 0-3 = network player
+            nonSixStreak: [0, 0, 0, 0]
         };
 
         let diceDisabled = true;
@@ -1563,7 +1564,17 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
                  return showToast("Not your turn!");
             }
 
-            const val = Math.floor(Math.random() * 6) + 1;
+            let val = Math.floor(Math.random() * 6) + 1;
+            
+            // Pity Timer / Luck Boost
+            if (val !== 6) {
+                const streak = state.nonSixStreak[state.currentPlayer] || 0;
+                if (streak >= 5) {
+                    val = 6; // Guarantee a 6 after 5 non-6s
+                } else if (streak >= 3 && Math.random() < 0.5) {
+                    val = 6; // 50% chance after 3 or 4 non-6s
+                }
+            }
             
             if (state.playerIndex !== -1) {
                 // Send to server
@@ -1579,6 +1590,12 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
             state.diceRolled = true;
             diceDisabled = true;
             document.getElementById('rollBtn').disabled = true;
+
+            if (val === 6) {
+                state.nonSixStreak[state.currentPlayer] = 0;
+            } else {
+                state.nonSixStreak[state.currentPlayer] = (state.nonSixStreak[state.currentPlayer] || 0) + 1;
+            }
 
             // Animate dice
             const diceEl = document.getElementById('dice');

@@ -211,13 +211,21 @@
             useEffect(() => {
                 if (!roomState || roomState.status !== 'active') return;
                 const turnStart = roomState.turnStartedAt || Date.now();
+                let triggered = false;
                 const interval = setInterval(() => {
                     const elapsed = Math.floor((Date.now() - turnStart) / 1000);
                     const remaining = Math.max(0, 30 - elapsed);
                     setTimeLeft(remaining);
+                    
+                    if (remaining === 0 && !triggered && roomState.currentPlayer === playerIndex) {
+                        triggered = true;
+                        if (stompClient.current) {
+                            stompClient.current.send(`/app/uno/${roomId}/skip`, {}, JSON.stringify({ playerIndex }));
+                        }
+                    }
                 }, 500);
                 return () => clearInterval(interval);
-            }, [roomState]);
+            }, [roomState, playerIndex, roomId]);
 
             useEffect(() => {
                 if (roomParam && roomId === null) {
