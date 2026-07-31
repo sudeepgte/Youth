@@ -50,6 +50,7 @@ public class LudoRoom {
     public void applyRoll(int val) {
         this.diceValue = val;
         this.diceRolled = true;
+        this.lastTurnStartTime = System.currentTimeMillis();
     }
 
     private static final int[] STARTS = {0, 13, 26, 39};

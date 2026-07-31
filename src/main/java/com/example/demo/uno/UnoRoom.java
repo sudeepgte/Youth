@@ -48,9 +48,23 @@ public class UnoRoom {
         Collections.shuffle(deck);
     }
 
+    public void resetGame() {
+        deck.clear();
+        discardPile.clear();
+        for (UnoPlayer p : players) {
+            p.hand.clear();
+            p.calledUno = false;
+        }
+        currentPlayerIndex = 0;
+        direction = 1;
+        initializeDeck();
+        startGame();
+    }
+
     public void startGame() {
         status = "active";
         for (UnoPlayer p : players) {
+            p.calledUno = false;
             for (int i = 0; i < 7; i++) {
                 p.hand.add(deck.remove(0));
             }
@@ -94,6 +108,10 @@ public class UnoRoom {
             skipNext = true;
         }
 
+        if (p.hand.size() > 1) {
+            p.calledUno = false;
+        }
+
         if (p.hand.isEmpty()) {
             status = "finished";
             lastMessage = p.name + " wins!";
@@ -103,7 +121,11 @@ public class UnoRoom {
                 currentPlayerIndex = getNextPlayerIndex();
             }
             if (p.hand.size() == 1) {
-                lastMessage = p.name + " yelled UNO! It's " + players.get(currentPlayerIndex).name + "'s turn.";
+                if (p.calledUno) {
+                    lastMessage = p.name + " yelled UNO! It's " + players.get(currentPlayerIndex).name + "'s turn.";
+                } else {
+                    lastMessage = p.name + " forgot to yell UNO! They can be caught! It's " + players.get(currentPlayerIndex).name + "'s turn.";
+                }
             } else {
                 lastMessage = players.get(currentPlayerIndex).name + "'s turn.";
             }
@@ -123,6 +145,9 @@ public class UnoRoom {
         if (!deck.isEmpty()) {
             p.hand.add(deck.remove(0));
         }
+        if (p.hand.size() > 1) {
+            p.calledUno = false;
+        }
         currentPlayerIndex = getNextPlayerIndex();
         lastMessage = players.get(currentPlayerIndex).name + "'s turn.";
         turnStartedAt = System.currentTimeMillis();
@@ -135,9 +160,32 @@ public class UnoRoom {
     }
 
     private void drawCardsForPlayer(int pIdx, int count) {
+        UnoPlayer p = players.get(pIdx);
         for (int i = 0; i < count; i++) {
             if (deck.isEmpty()) break;
-            players.get(pIdx).hand.add(deck.remove(0));
+            p.hand.add(deck.remove(0));
+        }
+        if (p.hand.size() > 1) {
+            p.calledUno = false;
+        }
+    }
+
+    public void callUno(int playerIdx) {
+        UnoPlayer p = players.get(playerIdx);
+        if (p.hand.size() <= 2) {
+            p.calledUno = true;
+            lastMessage = p.name + " yelled UNO!";
+        }
+    }
+
+    public void catchUno(int catcherIdx, int targetIdx) {
+        UnoPlayer target = players.get(targetIdx);
+        UnoPlayer catcher = players.get(catcherIdx);
+        
+        if (target.hand.size() == 1 && !target.calledUno) {
+            drawCardsForPlayer(targetIdx, 2);
+            target.calledUno = false;
+            lastMessage = catcher.name + " caught " + target.name + " not saying UNO! " + target.name + " drew 2 penalty cards.";
         }
     }
 
@@ -158,6 +206,7 @@ public class UnoRoom {
             Map<String, Object> pMap = new HashMap<>();
             pMap.put("name", p.name);
             pMap.put("cardCount", p.hand.size());
+            pMap.put("calledUno", p.calledUno);
             if (i == forPlayerIdx) {
                 pMap.put("hand", p.hand);
             }
@@ -171,6 +220,7 @@ public class UnoRoom {
         public String name;
         public int index;
         public List<UnoCard> hand = new ArrayList<>();
+        public boolean calledUno = false;
 
         public UnoPlayer(String name, int index) {
             this.name = name;
