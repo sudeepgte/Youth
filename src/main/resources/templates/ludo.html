@@ -1566,16 +1566,6 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
 
             let val = Math.floor(Math.random() * 6) + 1;
             
-            // Pity Timer / Luck Boost
-            if (val !== 6) {
-                const streak = state.nonSixStreak[state.currentPlayer] || 0;
-                if (streak >= 5) {
-                    val = 6; // Guarantee a 6 after 5 non-6s
-                } else if (streak >= 3 && Math.random() < 0.5) {
-                    val = 6; // 50% chance after 3 or 4 non-6s
-                }
-            }
-            
             if (state.playerIndex !== -1) {
                 diceDisabled = true;
                 // Send to server
@@ -1714,18 +1704,7 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
                 animating = false;
                 checkWin();
                 if (!state.isGameOver) {
-                    if (val === 6 || captured) {
-                        state.diceRolled = false;
-                        setStatus(captured ? '💥 Captured &mdash; roll again!' : '🎲 Rolled 6 &mdash; roll again!', 'rollAgain');
-                        showToast(captured ? `${NAMES[pi]} captured &mdash; roll again!` : `${NAMES[pi]} rolled 6 &mdash; roll again!`, COLORS[pi]);
-                        updateTurnUI();
-                        if (state.playerIndex === -1) {
-                            startTurnTimer(30);
-                        }
-                        if (state.playerTypes[state.currentPlayer] === 'computer') setTimeout(doComputerTurn, 1100);
-                    } else {
-                        nextPlayer();
-                    }
+                    nextPlayer();
                 }
             }, 200);
         }

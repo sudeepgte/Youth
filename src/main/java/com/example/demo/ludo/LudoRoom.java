@@ -108,10 +108,8 @@ public class LudoRoom {
             return;
         }
         
-        // Handle next turn if not a 6 and no capture
-        if (diceValue != 6 && !captured) {
-            nextTurn();
-        }
+        // Turn always passes to the next player
+        nextTurn();
         this.lastTurnStartTime = System.currentTimeMillis();
     }
 

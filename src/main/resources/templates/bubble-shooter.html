@@ -49,8 +49,7 @@
             flex-direction: column;
             align-items: center;
             filter: drop-shadow(0 30px 80px rgba(0, 0, 0, 0.95)) drop-shadow(0 0 60px rgba(200, 120, 30, 0.15));
-            transform-origin: center center;
-            transform: scale(min(calc(95vh / 780), calc(95vw / 520)));
+            transform-origin: top center;
         }
 
         /* Wooden frame top */
@@ -481,15 +480,9 @@
             .exit-modal-box {
                 padding: 30px 20px;
             }
-            #cabinet {
-                transform: scale(min(calc(90vh / 780), calc(95vw / 520))) !important;
-            }
         }
         
         @media (max-width: 480px) {
-            #cabinet {
-                transform: scale(min(calc(90vh / 780), calc(95vw / 520))) !important;
-            }
         }
     </style>
 </head>
@@ -575,8 +568,31 @@
         const nctx = NX.getContext('2d');
         const arenaWrap = document.getElementById('arena-wrap');
 
-        const W = 426, H = 580, R = 21;
-        const COLS = 10, ROW_H = R * 1.73, TOP = 38, SY = H - 60, SX = W / 2, SPD = 11;
+        let R = 21;
+        let W = window.innerWidth - 64 - 40; // 64 for wood sides, 40 for safety margin
+        let H = window.innerHeight - 36 - 10 - 80 - 16; // 36 top, 10 bars, 80 bottom, 16 safety
+        
+        // Mobile fallback
+        if (W < 300) W = 300;
+        if (H < 400) H = 400;
+
+        let COLS = Math.floor((W - R) / (R * 2));
+        W = COLS * R * 2 + R; // Snap width perfectly to grid
+        
+        let ROW_H = R * 1.73;
+        let TOP = 38;
+        let SY = H - 60;
+        let SX = W / 2;
+        let SPD = 11;
+
+        // Apply dynamic sizes
+        C.width = W;
+        C.height = H;
+        const cabWidth = (W + 64) + 'px';
+        document.querySelector('.wood-top').style.width = cabWidth;
+        document.querySelector('.bottom-panel').style.width = cabWidth;
+        document.querySelectorAll('.metal-bar').forEach(el => el.style.width = cabWidth);
+        document.querySelectorAll('.led-strip').forEach(el => el.style.width = cabWidth);
 
         // Realistic glass bubble color palette &mdash; each has base, light, dark, glow
         const PALETTE = [
@@ -595,6 +611,11 @@
         let level = parseInt(localStorage.getItem('bubble_level')) || 1;
         let particles = [], sparkles = [], state = 'idle';
         let ripples = [];
+
+        // No scale needed anymore since we calculated exact sizes
+        function resizeCabinet() {
+            // we do nothing here on resize to prevent breaking the live grid
+        }
 
         // ── Grid helpers ──────────────────────────────────────────────────
         function rowOff(r) { return r % 2 === 0 ? 0 : R; }
