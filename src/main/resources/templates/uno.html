@@ -207,17 +207,45 @@
             const [pickingColor, setPickingColor] = useState(null);
             const [timeLeft, setTimeLeft] = useState(30);
             const stompClient = useRef(null);
+            const unoTimerRef = useRef(null);
+
+            useEffect(() => {
+                if (!roomState || roomState.status !== 'active') return;
+                const myD = roomState.players[playerIndex];
+                if (myD && myD.cardCount === 1 && !myD.calledUno) {
+                    if (!unoTimerRef.current) {
+                        unoTimerRef.current = setTimeout(() => {
+                            if (stompClient.current) {
+                                stompClient.current.send(`/app/uno/${roomId}/catch-uno`, {}, JSON.stringify({ catcherIndex: playerIndex, targetIndex: playerIndex }));
+                            }
+                        }, 5000);
+                    }
+                } else {
+                    if (unoTimerRef.current) {
+                        clearTimeout(unoTimerRef.current);
+                        unoTimerRef.current = null;
+                    }
+                }
+            }, [roomState, playerIndex, roomId]);
 
             useEffect(() => {
                 if (!roomState || roomState.status !== 'active') return;
                 const turnStart = roomState.turnStartedAt || Date.now();
+                let triggered = false;
                 const interval = setInterval(() => {
                     const elapsed = Math.floor((Date.now() - turnStart) / 1000);
                     const remaining = Math.max(0, 30 - elapsed);
                     setTimeLeft(remaining);
+                    
+                    if (remaining === 0 && !triggered && roomState.currentPlayer === playerIndex) {
+                        triggered = true;
+                        if (stompClient.current) {
+                            stompClient.current.send(`/app/uno/${roomId}/skip`, {}, JSON.stringify({ playerIndex }));
+                        }
+                    }
                 }, 500);
                 return () => clearInterval(interval);
-            }, [roomState]);
+            }, [roomState, playerIndex, roomId]);
 
             useEffect(() => {
                 if (roomParam && roomId === null) {
@@ -298,6 +326,16 @@
             const handleStartGame = () => {
                 if (playerIndex !== 0) return;
                 stompClient.current.send(`/app/uno/${roomId}/start`, {}, "{}");
+            };
+
+            const handleCallUno = () => {
+                if (roomState.status !== 'active') return;
+                stompClient.current.send(`/app/uno/${roomId}/call-uno`, {}, JSON.stringify({ playerIndex }));
+            };
+
+            const handleCatchUno = (targetIndex) => {
+                if (roomState.status !== 'active') return;
+                stompClient.current.send(`/app/uno/${roomId}/catch-uno`, {}, JSON.stringify({ catcherIndex: playerIndex, targetIndex }));
             };
 
             if (initializing) return <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: "#e0e0e0", background:"#060e0a", fontSize: 20, fontWeight: 700 }}>Initializing Match...</div>;
@@ -400,6 +438,15 @@
                             <CardFace card={roomState.topCard} />
                             <div style={{ color: "#fff6", fontSize: 10, marginTop: 4 }}>DISCARD PILE</div>
                         </div>
+                        {myData.cardCount === 1 && !myData.calledUno && (
+                            <div onClick={handleCallUno} style={{
+                                width: 50, height: 50, borderRadius: 10, background: "#d62828",
+                                display: "flex", alignItems: "center", justifyContent: "center",
+                                cursor: "pointer", border: "2px solid #fbcc15", color: "#fff", fontWeight: 900, fontSize: 14, boxShadow: "0 4px 15px rgba(214,40,40,0.5)"
+                            }}>
+                                UNO
+                            </div>
+                        )}
                     </div>
 
                     <div style={{ width: "100%", maxWidth: 800 }}>
@@ -417,7 +464,7 @@
                             <div key={i} className="player-box" style={{ opacity: roomState.currentPlayer === i ? 1 : 0.4, border: roomState.currentPlayer === i ? `2px solid ${colT.main}` : "1px solid #333", padding: "10px 20px", borderRadius: 12, textAlign: "center" }}>
                                 <div style={{ color: "#e0e0e0", fontWeight: 700 }}>
                                     {p.name} {i === playerIndex ? "(You)" : ""}
-                                    {p.cardCount === 1 && (
+                                    {p.calledUno && (
                                         <span style={{
                                             marginLeft: 8,
                                             background: "#d62828",
@@ -431,6 +478,9 @@
                                     )}
                                 </div>
                                 <div style={{ color: "#aaa", fontSize: 12 }}>{p.cardCount} cards</div>
+                                {p.cardCount === 1 && !p.calledUno && i !== playerIndex && (
+                                    <button onClick={() => handleCatchUno(i)} style={{ marginTop: 8, background: "#fbcc15", color: "#000", border: "none", borderRadius: 8, padding: "4px 10px", fontSize: 12, fontWeight: 900, cursor: "pointer" }}>CATCH!</button>
+                                )}
                             </div>
                         ))}
                     </div>
@@ -440,7 +490,7 @@
                         <div style={{ position: "fixed", inset: 0, background: "#000c", display: "flex", alignItems: "center", justifyContent: "center" }}>
                             <div style={{ textAlign: "center" }}>
                                 <div style={{ fontSize: 60, color: "#fbcc15", fontWeight: 900 }}>{roomState.lastMessage}</div>
-                                <button onClick={() => location.reload()} style={{ padding: "14px 40px", borderRadius: 12, background: "#d62828", border: "none", color: "#fff", fontWeight: 900, marginTop: 20 }}>PLAY AGAIN</button>
+                                <button onClick={() => stompClient.current.send(`/app/uno/${roomId}/restart`, {}, "{}")} style={{ padding: "14px 40px", borderRadius: 12, background: "#d62828", border: "none", color: "#fff", fontWeight: 900, marginTop: 20, cursor: "pointer" }}>PLAY AGAIN</button>
                             </div>
                         </div>
                     )}

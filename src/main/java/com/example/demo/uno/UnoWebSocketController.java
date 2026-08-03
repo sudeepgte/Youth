@@ -92,6 +92,16 @@ public class UnoWebSocketController {
         }
     }
 
+    @MessageMapping("/uno/{roomId}/restart")
+    public void restartGame(@DestinationVariable String roomId) {
+        UnoRoom room = roomService.getRoom(roomId, UnoRoom.class);
+        if (room == null) return;
+        if (room.status.equals("finished")) {
+            room.resetGame();
+            broadcastState(room);
+        }
+    }
+
     @MessageMapping("/uno/{roomId}/leave")
     public void leaveGame(@DestinationVariable String roomId) {
         UnoRoom room = roomService.getRoom(roomId, UnoRoom.class);
@@ -120,6 +130,37 @@ public class UnoWebSocketController {
 
         int pIdx = (int) payload.get("playerIndex");
         room.drawCard(pIdx);
+        broadcastState(room);
+    }
+
+    @MessageMapping("/uno/{roomId}/call-uno")
+    public void callUno(@DestinationVariable String roomId, Map<String, Object> payload) {
+        UnoRoom room = roomService.getRoom(roomId, UnoRoom.class);
+        if (room == null) return;
+
+        int pIdx = (int) payload.get("playerIndex");
+        room.callUno(pIdx);
+        broadcastState(room);
+    }
+
+    @MessageMapping("/uno/{roomId}/skip")
+    public void skipTurn(@DestinationVariable String roomId, Map<String, Object> payload) {
+        UnoRoom room = roomService.getRoom(roomId, UnoRoom.class);
+        if (room == null) return;
+
+        int pIdx = (int) payload.get("playerIndex");
+        room.skipTurn(pIdx);
+        broadcastState(room);
+    }
+
+    @MessageMapping("/uno/{roomId}/catch-uno")
+    public void catchUno(@DestinationVariable String roomId, Map<String, Object> payload) {
+        UnoRoom room = roomService.getRoom(roomId, UnoRoom.class);
+        if (room == null) return;
+
+        int catcherIdx = (int) payload.get("catcherIndex");
+        int targetIdx = (int) payload.get("targetIndex");
+        room.catchUno(catcherIdx, targetIdx);
         broadcastState(room);
     }
 

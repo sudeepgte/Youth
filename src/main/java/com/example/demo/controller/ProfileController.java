@@ -86,6 +86,9 @@ public class ProfileController {
     private com.example.demo.repository.BattleRepository battleRepository;
 
     @Autowired
+    private com.example.demo.repository.BattleParticipantRepository battleParticipantRepository;
+
+    @Autowired
     private com.example.demo.repository.UserActivityRepository userActivityRepository;
 
     @Autowired
@@ -113,7 +116,10 @@ public class ProfileController {
         session.setAttribute("user", currentUser);
 
         // Calculate Talent Score Stats
-        long eventsJoined = eventRegistrationRepository.countByUser(targetUser);
+        long gamesJoined = eventRegistrationRepository.countByUser(targetUser);
+        long battlesJoined = battleParticipantRepository.countByUser(targetUser);
+        long eventsJoined = gamesJoined + battlesJoined;
+        
         long gamesWon = eventRegistrationRepository.countByUserAndPosition(targetUser, "Winner");
         long battlesWon = battleRepository.countBattlesWonByUser(targetUser);
         long eventsWon = gamesWon + battlesWon;

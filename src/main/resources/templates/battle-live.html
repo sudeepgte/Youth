@@ -856,7 +856,7 @@
                 document.getElementById('battle-timer').textContent = '00:00';
                 
                 // Auto-end battle when timer reaches 0
-                if (userRole === 'HOST' && !window.battleEndedTriggered) {
+                if (!window.battleEndedTriggered) {
                     window.battleEndedTriggered = true;
                     endBattle(true);
                 }

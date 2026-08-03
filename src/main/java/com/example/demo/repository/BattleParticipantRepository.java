@@ -10,4 +10,5 @@ public interface BattleParticipantRepository extends JpaRepository<BattlePartici
     List<BattleParticipant> findByBattle(Battle battle);
     boolean existsByBattleAndUser(Battle battle, User user);
     long countByBattle(Battle battle);
+    long countByUser(User user);
 }

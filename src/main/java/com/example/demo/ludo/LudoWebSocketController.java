@@ -68,13 +68,21 @@ public class LudoWebSocketController {
                 return resp;
             }
         }
-        
-        // Find first empty slot
+        // Find suitable empty slot
         int slot = -1;
-        for (int i = 0; i < 4; i++) {
-            if (room.players.get(i).name.isEmpty()) {
-                slot = i;
-                break;
+        long activeCount = room.players.stream().filter(p -> !p.name.isEmpty()).count();
+        if (activeCount == 1 && room.players.get(2).name.isEmpty()) {
+            slot = 2; // Diagonal to player 0
+        } else if (activeCount == 2 && room.players.get(1).name.isEmpty()) {
+            slot = 1;
+        } else if (activeCount == 3 && room.players.get(3).name.isEmpty()) {
+            slot = 3;
+        } else {
+            for (int i = 0; i < 4; i++) {
+                if (room.players.get(i).name.isEmpty()) {
+                    slot = i;
+                    break;
+                }
             }
         }
         
