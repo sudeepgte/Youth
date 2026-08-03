@@ -429,6 +429,9 @@ public class EventController {
             bikeRidingDetailsRepository.findByEvent(event).ifPresent(bd -> model.addAttribute("bikeRidingDetails", bd));
         }
 
+        boolean isCompleted = ("COMPLETED".equalsIgnoreCase(event.getStatus())) ||
+                              (event.getDateTime() != null && event.getDateTime().isBefore(LocalDateTime.now()));
+        model.addAttribute("isCompleted", isCompleted);
         model.addAttribute("event", event);
         model.addAttribute("seats", seats);
         model.addAttribute("user", user);
@@ -441,6 +444,14 @@ public class EventController {
         model.addAttribute("hasVoted", hasVoted);
         model.addAttribute("candidates", candidates);
         return "event-registration";
+    }
+
+    public boolean isEventCompletedOrCancelled(Event event) {
+        if (event == null) return true;
+        if ("COMPLETED".equalsIgnoreCase(event.getStatus()) || "CANCELLED".equalsIgnoreCase(event.getStatus())) {
+            return true;
+        }
+        return event.getDateTime() != null && event.getDateTime().isBefore(LocalDateTime.now());
     }
 
     // ─────────────────────────────────────────────────────────
@@ -488,9 +499,9 @@ public class EventController {
         }
 
         Event event = eventRepository.findById(id).orElse(null);
-        if (event == null) {
+        if (event == null || isEventCompletedOrCancelled(event)) {
             response.put("success", false);
-            response.put("message", "Event not found.");
+            response.put("message", "This event has ended or been cancelled.");
             return response;
         }
 
@@ -554,7 +565,7 @@ public class EventController {
         if (user == null) return "redirect:/login";
 
         Event event = eventRepository.findById(id).orElse(null);
-        if (event == null) return "redirect:/events";
+        if (event == null || isEventCompletedOrCancelled(event)) return "redirect:/events/" + id + "?error=event_completed";
 
         // If seat map is used, quantity is the number of seats selected
         if (selectedSeatIds != null && !selectedSeatIds.isEmpty()) {
@@ -603,7 +614,7 @@ public class EventController {
         if (user == null) return "redirect:/login";
 
         Event event = eventRepository.findById(id).orElse(null);
-        if (event == null) return "redirect:/events";
+        if (event == null || isEventCompletedOrCancelled(event)) return "redirect:/events/" + id + "?error=event_completed";
         
         Integer quantity = (Integer) session.getAttribute("regQuantity");
         if (quantity == null) quantity = 1;
@@ -658,7 +669,7 @@ public class EventController {
         if (user == null) return "redirect:/login";
 
         Event event = eventRepository.findById(id).orElse(null);
-        if (event == null) return "redirect:/events";
+        if (event == null || isEventCompletedOrCancelled(event)) return "redirect:/events/" + id + "?error=event_completed";
 
         // Retrieve registration info stored in session
         String fullName    = (String) session.getAttribute("regFullName");

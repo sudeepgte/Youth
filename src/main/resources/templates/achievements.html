@@ -653,6 +653,9 @@
             .u-flex div div {
                 max-width: 100px;
             }
+            .lb-table th:nth-child(3), .lb-table td:nth-child(3) {
+                display: none !important; /* Hide Tier column on mobile to prevent overflow */
+            }
             .my-stats-card {
                 flex-direction: column;
                 align-items: center;
@@ -792,32 +795,37 @@
                 </div>
             </div>
 
-            <!-- My Achievements Section -->
-            <div class="achievements-section" th:if="${user != null}">
-                <h2><i class="fas fa-award" style="color:#f84464;"></i> My Honors & Achievements</h2>
+            <!-- Top Scorer Section -->
+            <div class="achievements-section" th:if="${not #lists.isEmpty(leaderboard)}">
+                <h2><i class="fas fa-trophy" style="color:#fbbf24;"></i> Zentrix Top Scorer</h2>
 
-                <div class="achievements-grid" th:if="${not #lists.isEmpty(achievements)}">
-                    <div th:each="ach : ${achievements}" class="achievement-card">
-                        <div class="award-icon"
-                            th:classappend="${ach.position == 'Winner'} ? 'award-winner' : 'award-runner'">
-                            <i th:class="${ach.position == 'Winner'} ? 'fas fa-trophy' : 'fas fa-medal'"></i>
-                        </div>
+                <div class="achievement-card" style="background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(255, 255, 255, 0.5)); border-color: rgba(251, 191, 36, 0.4); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 20px;">
+                    <div style="display: flex; align-items: center; gap: 18px;">
+                        <img th:src="${leaderboard[0].profilePhotoUrl != null ? leaderboard[0].profilePhotoUrl : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100'}"
+                            alt="Top Scorer" style="width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 3px solid #fbbf24; box-shadow: 0 0 15px rgba(251, 191, 36, 0.4);">
                         <div class="award-info">
-                            <p th:text="${ach.position} + ' &bull; ' + ${#temporals.format(ach.event.dateTime, 'MMM yyyy')}">
-                                WINNER &bull; MAR 2025</p>
-                            <h4 th:text="${ach.event.title}">Event Title</h4>
-                            <div class="award-xp">
-                                <i class="fas fa-bolt"></i>
-                                <span th:text="'+' + ${ach.pointsEarned} + ' XP Earned'">+100 XP Earned</span>
-                            </div>
+                            <p style="color: #d97706; font-weight: 800; font-size: 12px; margin-bottom: 4px;"><i class="fas fa-star"></i> #1 PLAYER</p>
+                            <h4 th:text="${leaderboard[0].username}" style="font-size: 1.4rem; margin-bottom: 8px;">Username</h4>
+                            
+                            <!-- Tier Badge -->
+                            <span class="lvl-badge"
+                                th:classappend="${leaderboard[0].level == 'Platinum'} ? 'c-platinum' : (${leaderboard[0].level == 'Gold'} ? 'c-gold' : (${leaderboard[0].level == 'Silver'} ? 'c-silver' : (${leaderboard[0].level == 'Bronze'} ? 'c-bronze' : 'c-novice')))">
+                                <i class="fas"
+                                    th:classappend="${leaderboard[0].level == 'Platinum'} ? 'fa-gem' : 
+                                                              (${leaderboard[0].level == 'Gold'} ? 'fa-crown' : 
+                                                              (${leaderboard[0].level == 'Silver'} ? 'fa-award' : 
+                                                              (${leaderboard[0].level == 'Bronze'} ? 'fa-medal' : 'fa-user-astronaut')))"></i>
+                                <span th:text="${leaderboard[0].level != null ? leaderboard[0].level : 'Novice'}">Novice</span>
+                            </span>
                         </div>
                     </div>
-                </div>
-
-                <div class="empty-achievements" th:if="${#lists.isEmpty(achievements)}">
-                    <i class="fas fa-certificate"></i>
-                    <p>No major honors yet. Compete in events and finish as a winner or runner-up to earn your place
-                        here!</p>
+                    
+                    <div style="text-align: right; display: flex; flex-direction: column; justify-content: center; align-items: flex-end;">
+                        <div style="font-size: 28px; font-weight: 900; color: #f84464; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+                            <i class="fas fa-bolt"></i> <span th:text="${leaderboard[0].xp != null ? leaderboard[0].xp : 0}">0</span>
+                        </div>
+                        <p style="font-size: 12px; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">Total XP</p>
+                    </div>
                 </div>
             </div>
 
@@ -849,13 +857,7 @@
                                 </div>
                             </td>
                             <td>
-                                <!-- Top 3 Medals based on Rank -->
-                                <span th:if="${iter.index == 0}" class="lvl-badge c-gold"><i class="fas fa-crown"></i> 🥇 Gold</span>
-                                <span th:if="${iter.index == 1}" class="lvl-badge c-silver"><i class="fas fa-award"></i> 🥈 Silver</span>
-                                <span th:if="${iter.index == 2}" class="lvl-badge c-bronze"><i class="fas fa-medal"></i> 🥉 Bronze</span>
-                                
-                                <!-- Normal badge for Rank 4 and below -->
-                                <span th:if="${iter.index >= 3}" class="lvl-badge"
+                                <span class="lvl-badge"
                                     th:classappend="${player.level == 'Platinum'} ? 'c-platinum' : (${player.level == 'Gold'} ? 'c-gold' : (${player.level == 'Silver'} ? 'c-silver' : (${player.level == 'Bronze'} ? 'c-bronze' : 'c-novice')))">
                                     <i class="fas"
                                         th:classappend="${player.level == 'Platinum'} ? 'fa-gem' : 

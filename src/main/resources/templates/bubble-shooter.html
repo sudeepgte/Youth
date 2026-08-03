@@ -1,4 +1,4 @@
-﻿
+
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 
@@ -49,6 +49,8 @@
             flex-direction: column;
             align-items: center;
             filter: drop-shadow(0 30px 80px rgba(0, 0, 0, 0.95)) drop-shadow(0 0 60px rgba(200, 120, 30, 0.15));
+            transform-origin: center center;
+            transform: scale(min(calc(95vh / 780), calc(95vw / 520)));
         }
 
         /* Wooden frame top */
@@ -363,10 +365,151 @@
         .exit-btn:hover {
             background: rgba(255, 255, 255, 0.12);
         }
+        /* In-game Exit Button */
+        .ingame-exit-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            background: rgba(200, 40, 40, 0.8);
+            color: #fff;
+            border: 2px solid #ff5555;
+            border-radius: 8px;
+            font-family: 'Cinzel', serif;
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            cursor: pointer;
+            z-index: 500;
+            transition: 0.3s;
+            backdrop-filter: blur(5px);
+        }
+        .ingame-exit-btn:hover {
+            background: rgba(220, 50, 50, 1);
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(255, 80, 80, 0.6);
+        }
+
+        /* Exit Confirmation Modal */
+        #exit-confirm-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        #exit-confirm-modal.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        .exit-modal-box {
+            background: linear-gradient(180deg, #1a0800 0%, #3a1d02 100%);
+            border: 3px solid #ffd070;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 0 40px rgba(255, 180, 50, 0.3);
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+        }
+        #exit-confirm-modal.active .exit-modal-box {
+            transform: translateY(0);
+        }
+        .exit-modal-box h2 {
+            font-family: 'Cinzel', serif;
+            color: #ffd070;
+            font-size: 2rem;
+            margin-bottom: 15px;
+            text-shadow: 0 0 10px rgba(255, 180, 50, 0.5);
+        }
+        .exit-modal-box p {
+            color: #ddd;
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+            font-family: 'Rajdhani', sans-serif;
+        }
+        .exit-modal-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+        .exit-modal-btn {
+            padding: 12px 25px;
+            font-family: 'Cinzel', serif;
+            font-weight: 700;
+            font-size: 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: 0.2s;
+        }
+        .btn-cancel {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .btn-cancel:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        .btn-confirm {
+            background: linear-gradient(135deg, #c8832a 0%, #ffd070 50%, #c8832a 100%);
+            color: #1a0800;
+            border: none;
+            box-shadow: 0 4px 15px rgba(200, 130, 40, 0.4);
+        }
+        .btn-confirm:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(200, 130, 40, 0.6);
+        }
+
+        /* Mobile responsivenes */
+        @media (max-width: 768px) {
+            .ingame-exit-btn {
+                top: 10px;
+                left: 10px;
+                padding: 8px 15px;
+                font-size: 0.9rem;
+            }
+            .exit-modal-box {
+                padding: 30px 20px;
+            }
+            #cabinet {
+                transform: scale(min(calc(90vh / 780), calc(95vw / 520))) !important;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            #cabinet {
+                transform: scale(min(calc(90vh / 780), calc(95vw / 520))) !important;
+            }
+        }
     </style>
 </head>
 
 <body>
+
+    <button class="ingame-exit-btn" onclick="document.getElementById('exit-confirm-modal').classList.add('active')">
+        &#10006; EXIT
+    </button>
+
+    <div id="exit-confirm-modal">
+        <div class="exit-modal-box">
+            <h2>EXIT GAME?</h2>
+            <p>Are you sure you want to exit the game?</p>
+            <div class="exit-modal-actions">
+                <button class="exit-modal-btn btn-cancel" onclick="document.getElementById('exit-confirm-modal').classList.remove('active')">NO</button>
+                <a th:href="@{/games}" class="exit-modal-btn btn-confirm">YES</a>
+            </div>
+        </div>
+    </div>
 
     <div id="cabinet">
         <div class="led-strip" style="width:490px;border-radius:12px 12px 0 0;"></div>
@@ -447,7 +590,9 @@
         ];
 
         let grid = [], proj = null, nextPal, angle = -Math.PI / 2;
-        let score = 0, best = 0, level = 1, shots = 0;
+        let score = 0, shots = 0;
+        let best = parseInt(localStorage.getItem('bubble_best')) || 0;
+        let level = parseInt(localStorage.getItem('bubble_level')) || 1;
         let particles = [], sparkles = [], state = 'idle';
         let ripples = [];
 
@@ -584,15 +729,23 @@
 
         function doNextLevel() {
             level++;
+            localStorage.setItem('bubble_level', level);
             if (level > 10) { state = 'win'; showOv('YOU WIN!', 'All bubbles cleared!', score, 'PLAY AGAIN'); return; }
             initGrid(); nextPal = randPal(); proj = newProj(); updateHUD();
         }
         function triggerLose() {
-            state = 'over'; if (score > best) best = score; updateHUD();
+            state = 'over'; 
+            if (score > best) {
+                best = score;
+                localStorage.setItem('bubble_best', best);
+            }
+            updateHUD();
             showOv('GAME OVER', 'Bubbles reached the danger zone!', score, 'TRY AGAIN');
         }
         function startGame() {
-            score = 0; shots = 0; level = 1; particles = []; sparkles = []; ripples = [];
+            score = 0; shots = 0; 
+            level = parseInt(localStorage.getItem('bubble_level')) || 1;
+            particles = []; sparkles = []; ripples = [];
             initGrid(); nextPal = randPal(); proj = newProj();
             state = 'playing';
             document.getElementById('overlay').classList.add('hidden');

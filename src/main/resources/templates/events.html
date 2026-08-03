@@ -228,8 +228,7 @@
 
                 <div class="events-cards">
                     <a th:each="event : ${events}" class="event-card hover-lift" 
-                       th:href="${event.dateTime != null and event.dateTime.isBefore(#temporals.createNow())} ? 'javascript:void(0)' : @{'/events/' + ${event.id}}"
-                       th:style="${event.dateTime != null and event.dateTime.isBefore(#temporals.createNow())} ? 'opacity: 0.65; cursor: not-allowed;' : ''">
+                       th:href="@{'/events/' + ${event.id}}">
                         <div class="event-card-media">
                             <img th:src="${event.imageUrl}" th:alt="${event.title}" onerror="this.src='https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=2070&auto=format&fit=crop'">
                             <div class="event-card-top">
@@ -262,10 +261,10 @@
                                         <span>No bookings yet</span>
                                     </th:block>
                                 </span>
-                                <th:block th:if="${event.dateTime != null and event.dateTime.isBefore(#temporals.createNow())}">
-                                    <span class="btn btn-secondary" style="padding: 8px 14px; font-size: 13px; background-color: #6c757d; border: none; color: white;"><i class="fas fa-ban"></i> Event Over</span>
+                                <th:block th:if="${event.status == 'COMPLETED' or (event.dateTime != null and event.dateTime.isBefore(#temporals.createNow()))}">
+                                    <span class="btn btn-secondary" style="padding: 8px 14px; font-size: 13px; background-color: #6c757d; border: none; color: white;"><i class="fas fa-check-circle"></i> Completed</span>
                                 </th:block>
-                                <th:block th:unless="${event.dateTime != null and event.dateTime.isBefore(#temporals.createNow())}">
+                                <th:block th:unless="${event.status == 'COMPLETED' or (event.dateTime != null and event.dateTime.isBefore(#temporals.createNow()))}">
                                     <span class="btn btn-primary" style="padding: 8px 14px; font-size: 13px;"><i class="fas fa-ticket"></i> View</span>
                                 </th:block>
                             </div>

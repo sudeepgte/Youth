@@ -267,107 +267,62 @@
             width: 76px;
             height: 76px;
             margin: 0 auto 16px;
-            perspective: 200px;
+            perspective: 600px;
         }
 
         #dice {
             width: 76px;
             height: 76px;
+            transform-style: preserve-3d;
+            transition: transform 0.5s ease-out;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .dice-side {
+            position: absolute;
+            width: 76px;
+            height: 76px;
             background: #ffffff;
             border-radius: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow:
-                0 6px 0 #d0d0d0,
-                0 8px 20px rgba(0, 0, 0, 0.15),
-                inset 0 2px 4px rgba(255, 255, 255, 0.9),
-                inset 0 -2px 4px rgba(0, 0, 0, 0.1);
-            cursor: pointer;
-            transition: transform 0.1s, box-shadow 0.1s;
-            user-select: none;
-            border: 1px solid #e0e0e0;
-            position: relative;
+            display: grid;
+            grid-template: repeat(3, 1fr) / repeat(3, 1fr);
             padding: 8px;
             box-sizing: border-box;
+            border: 1px solid #d0d0d0;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.05), inset 0 2px 4px rgba(255, 255, 255, 0.9);
         }
 
-        #dice:hover:not(.disabled) {
-            transform: translateY(-2px) scale(1.04);
-            box-shadow:
-                0 8px 0 #d0d0d0,
-                0 12px 24px rgba(0, 0, 0, 0.2);
-        }
-
-        #dice:active:not(.disabled) {
-            transform: translateY(4px);
-            box-shadow:
-                0 2px 0 #d0d0d0,
-                0 4px 10px rgba(0, 0, 0, 0.15);
-        }
-
-        #dice.rolling {
-            animation: diceRoll 0.6s cubic-bezier(0.36, 0.07, 0.19, 0.97);
-        }
-
-        .dice-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            grid-template-rows: repeat(3, 1fr);
-            width: 100%;
-            height: 100%;
-            gap: 2px;
-        }
-
-        .dice-cell {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .dice-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
+        .dot {
+            width: 12px;
+            height: 12px;
             background: #111827; /* Dark black/grey */
+            border-radius: 50%;
+            place-self: center;
             box-shadow: inset 1px 1px 1px rgba(0,0,0,0.6);
         }
 
-        .dice-dot.red-dot {
+        .side-1 .dot {
             background: #ef4444; /* Vivid red for 1 dot */
-            width: 14px;
-            height: 14px;
+            width: 18px;
+            height: 18px;
             box-shadow: inset 1px 1px 2px rgba(0,0,0,0.5);
         }
 
+        .side-1 { transform: translateZ(38px); }
+        .side-2 { transform: rotateY(90deg) translateZ(38px); }
+        .side-3 { transform: rotateY(180deg) translateZ(38px); }
+        .side-4 { transform: rotateY(-90deg) translateZ(38px); }
+        .side-5 { transform: rotateX(90deg) translateZ(38px); }
+        .side-6 { transform: rotateX(-90deg) translateZ(38px); }
+
+        #dice.rolling {
+            animation: diceRoll 0.4s linear infinite;
+        }
+
         @keyframes diceRoll {
-            0% {
-                transform: rotateX(0deg) rotateY(0deg) scale(1);
-            }
-
-            15% {
-                transform: rotateX(180deg) rotateY(90deg) scale(1.15);
-            }
-
-            30% {
-                transform: rotateX(360deg) rotateY(180deg) scale(0.9);
-            }
-
-            50% {
-                transform: rotateX(270deg) rotateY(270deg) scale(1.1);
-            }
-
-            70% {
-                transform: rotateX(450deg) rotateY(360deg) scale(0.95);
-            }
-
-            85% {
-                transform: rotateX(540deg) rotateY(450deg) scale(1.05);
-            }
-
-            100% {
-                transform: rotateX(720deg) rotateY(540deg) scale(1);
-            }
+            0% { transform: rotateX(0deg) rotateY(0deg) scale(1.1); }
+            100% { transform: rotateX(360deg) rotateY(360deg) scale(1.1); }
         }
 
         #rollBtn {
@@ -743,7 +698,14 @@
                     <span>⏱</span> <span id="timerSeconds">30</span><span>s</span>
                 </div>
                 <div class="dice-wrapper">
-                    <div id="dice" onclick="if(!diceDisabled)rollDice()">⚀</div>
+                    <div id="dice" onclick="if(!diceDisabled)rollDice()">
+                        <div class="dice-side side-1"><div class="dot" style="grid-area: 2/2"></div></div>
+                        <div class="dice-side side-2"><div class="dot" style="grid-area: 1/1"></div><div class="dot" style="grid-area: 3/3"></div></div>
+                        <div class="dice-side side-3"><div class="dot" style="grid-area: 1/1"></div><div class="dot" style="grid-area: 2/2"></div><div class="dot" style="grid-area: 3/3"></div></div>
+                        <div class="dice-side side-4"><div class="dot" style="grid-area: 1/1"></div><div class="dot" style="grid-area: 1/3"></div><div class="dot" style="grid-area: 3/1"></div><div class="dot" style="grid-area: 3/3"></div></div>
+                        <div class="dice-side side-5"><div class="dot" style="grid-area: 1/1"></div><div class="dot" style="grid-area: 1/3"></div><div class="dot" style="grid-area: 2/2"></div><div class="dot" style="grid-area: 3/1"></div><div class="dot" style="grid-area: 3/3"></div></div>
+                        <div class="dice-side side-6"><div class="dot" style="grid-area: 1/1"></div><div class="dot" style="grid-area: 1/3"></div><div class="dot" style="grid-area: 2/1"></div><div class="dot" style="grid-area: 2/3"></div><div class="dot" style="grid-area: 3/1"></div><div class="dot" style="grid-area: 3/3"></div></div>
+                    </div>
                 </div>
                 <button id="rollBtn" onclick="rollDice()" disabled>Roll Dice</button>
                 <div id="status" class="good">Ready to roll</div>
@@ -798,38 +760,22 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
         const NAMES = ['Red', 'Blue', 'Green', 'Yellow'];
         const FACES = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
 
+        function getDiceRotation(v) {
+            switch(v) {
+                case 1: return "rotateX(0deg) rotateY(0deg)";
+                case 2: return "rotateY(-90deg)";
+                case 3: return "rotateY(180deg)";
+                case 4: return "rotateY(90deg)";
+                case 5: return "rotateX(-90deg)";
+                case 6: return "rotateX(90deg)";
+                default: return "";
+            }
+        }
+
         function renderDice(val) {
             const diceEl = document.getElementById('dice');
             if (!diceEl) return;
-            diceEl.innerHTML = '';
-            
-            const grid = document.createElement('div');
-            grid.className = 'dice-grid face-' + val;
-            
-            const dotPositions = {
-                1: [4],
-                2: [0, 8],
-                3: [0, 4, 8],
-                4: [0, 2, 6, 8],
-                5: [0, 2, 4, 6, 8],
-                6: [0, 2, 3, 5, 6, 8]
-            };
-            
-            const positions = dotPositions[val] || [4];
-            for (let i = 0; i < 9; i++) {
-                const cell = document.createElement('div');
-                cell.className = 'dice-cell';
-                if (positions.includes(i)) {
-                    const dot = document.createElement('div');
-                    dot.className = 'dice-dot';
-                    if (val === 1) {
-                        dot.classList.add('red-dot');
-                    }
-                    cell.appendChild(dot);
-                }
-                grid.appendChild(cell);
-            }
-            diceEl.appendChild(grid);
+            diceEl.style.transform = getDiceRotation(val);
         }
 
         // ---- CORRECTED TRACK: 52 cells ----
@@ -896,7 +842,8 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
             moveableIndices: [],
             roomId: null,
             status: 'waiting',
-            playerIndex: -1 // -1 = local, 0-3 = network player
+            playerIndex: -1, // -1 = local, 0-3 = network player
+            nonSixStreak: [0, 0, 0, 0]
         };
 
         let diceDisabled = true;
@@ -1173,6 +1120,13 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
                             stompClient.send("/app/ludo/" + state.roomId + "/skip", {}, JSON.stringify({ playerIndex: state.playerIndex }));
                         }
                     }, 1200);
+                } else if (moveable.length === 1) {
+                    setStatus(`Rolled ${state.diceValue} &mdash; Auto-moving...`, 'good');
+                    setTimeout(() => {
+                        if (state.moveableIndices.length === 1 && state.currentPlayer === state.playerIndex && state.diceRolled) {
+                            movePiece(state.currentPlayer, moveable[0]);
+                        }
+                    }, 500);
                 } else {
                     setStatus(`Rolled ${state.diceValue} &mdash; choose a piece!`, 'good');
                 }
@@ -1603,16 +1557,27 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
         }
 
         function rollDice() {
-            if (state.diceRolled || state.isGameOver || animating) return;
+            if (state.diceRolled || state.isGameOver || animating || diceDisabled) return;
             
             // If multiplayer, check if it's my turn
             if (state.playerIndex !== -1 && state.currentPlayer !== state.playerIndex) {
                  return showToast("Not your turn!");
             }
 
-            const val = Math.floor(Math.random() * 6) + 1;
+            let val = Math.floor(Math.random() * 6) + 1;
+            
+            // Pity Timer / Luck Boost
+            if (val !== 6) {
+                const streak = state.nonSixStreak[state.currentPlayer] || 0;
+                if (streak >= 5) {
+                    val = 6; // Guarantee a 6 after 5 non-6s
+                } else if (streak >= 3 && Math.random() < 0.5) {
+                    val = 6; // 50% chance after 3 or 4 non-6s
+                }
+            }
             
             if (state.playerIndex !== -1) {
+                diceDisabled = true;
                 // Send to server
                 stompClient.send("/app/ludo/" + state.roomId + "/roll", {}, JSON.stringify({ playerIndex: state.playerIndex, val: val }));
             } else {
@@ -1627,17 +1592,25 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
             diceDisabled = true;
             document.getElementById('rollBtn').disabled = true;
 
+            if (val === 6) {
+                state.nonSixStreak[state.currentPlayer] = 0;
+            } else {
+                state.nonSixStreak[state.currentPlayer] = (state.nonSixStreak[state.currentPlayer] || 0) + 1;
+            }
+
             // Animate dice
             const diceEl = document.getElementById('dice');
+            diceEl.style.transition = 'none';
+            diceEl.style.transform = 'rotateX(0deg) rotateY(0deg)';
+            // Force reflow
+            void diceEl.offsetWidth;
+            diceEl.style.transition = '';
             diceEl.classList.add('rolling');
-            let frame = 0;
-            const interval = setInterval(() => {
-                renderDice(Math.floor(Math.random() * 6) + 1);
-                frame++;
-                if (frame > 8) { clearInterval(interval); renderDice(val); diceEl.classList.remove('rolling'); }
-            }, 60);
 
             setTimeout(() => {
+                diceEl.classList.remove('rolling');
+                renderDice(val);
+
                 const pi = state.currentPlayer;
                 const moveable = [];
                 state.pieces[pi].forEach((p, i) => { if (canPieceMove(pi, i)) moveable.push(i); });
@@ -1648,9 +1621,20 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
                     showToast(`${NAMES[pi]} rolled ${val} &mdash; no moves`);
                     setTimeout(nextPlayer, 1200);
                 } else {
-                    setStatus(`Rolled ${val} &mdash; choose a piece!`, 'good');
                     if (state.playerTypes[pi] === 'computer') {
+                        setStatus(`Rolled ${val} &mdash; CPU thinking...`, 'good');
                         setTimeout(() => doComputerMove(moveable), 900);
+                    } else {
+                        if (moveable.length === 1) {
+                            setStatus(`Rolled ${val} &mdash; Auto-moving...`, 'good');
+                            setTimeout(() => {
+                                if (state.moveableIndices.length === 1 && state.currentPlayer === pi && state.diceValue === val) {
+                                    movePiece(pi, moveable[0]);
+                                }
+                            }, 500);
+                        } else {
+                            setStatus(`Rolled ${val} &mdash; choose a piece!`, 'good');
+                        }
                     }
                 }
                 updateTurnUI();
@@ -1699,10 +1683,10 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
             else piece.pos += val;
 
             // Capture check
+            let captured = false;
             if (piece.pos < 52) {
                 const globalIdx = (STARTS[pi] + piece.pos) % 52;
                 if (!SAFE_SQUARES.has(globalIdx)) {
-                    let captured = false;
                     state.pieces.forEach((opp, op) => {
                         if (op === pi) return;
                         opp.forEach(op2 => {
@@ -1730,10 +1714,10 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
                 animating = false;
                 checkWin();
                 if (!state.isGameOver) {
-                    if (val === 6) {
+                    if (val === 6 || captured) {
                         state.diceRolled = false;
-                        setStatus('🎲 Rolled 6 &mdash; roll again!', 'rollAgain');
-                        showToast(`${NAMES[pi]} rolled 6 &mdash; roll again!`, COLORS[pi]);
+                        setStatus(captured ? '💥 Captured &mdash; roll again!' : '🎲 Rolled 6 &mdash; roll again!', 'rollAgain');
+                        showToast(captured ? `${NAMES[pi]} captured &mdash; roll again!` : `${NAMES[pi]} rolled 6 &mdash; roll again!`, COLORS[pi]);
                         updateTurnUI();
                         if (state.playerIndex === -1) {
                             startTurnTimer(30);

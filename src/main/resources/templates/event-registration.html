@@ -1445,7 +1445,7 @@
             </div>
 
             <!-- BMOS Seat Map -->
-            <div th:if="${event.totalRows > 0}" class="seat-map-container" id="seatMapSection">
+            <div th:if="${event.totalRows > 0 and not isCompleted and event.status != 'CANCELLED' and (event.dateTime == null or event.dateTime.isAfter(#temporals.createNow()))}" class="seat-map-container" id="seatMapSection">
                 <div class="section-label" style="text-align:left; margin-bottom: 20px;">
                     <i class="fas fa-couch"></i> Select Your Seats
                 </div>
@@ -1655,7 +1655,7 @@
                 </div>
 
                 <!-- Event Full -->
-                <div th:if="${spotsLeft == 0 and event.maxParticipants != null}" class="full-box">
+                <div th:if="${spotsLeft == 0 and event.maxParticipants != null and not isCompleted and event.status != 'CANCELLED'}" class="full-box">
                     <i class="fas fa-ban"></i>
                     <p>This event is fully booked. No spots available.</p>
                 </div>
@@ -1680,8 +1680,8 @@
                     </a>
                 </div>
 
-                <!-- Guest View: Login to register -->
-                <div th:if="${user == null and !isAdmin}" style="text-align:center;">
+                <!-- Guest View: Login to register (Only if event is upcoming) -->
+                <div th:if="${user == null and !isAdmin and not isCompleted and event.status != 'CANCELLED' and (event.dateTime == null or event.dateTime.isAfter(#temporals.createNow()))}" style="text-align:center;">
                     <a th:href="@{/login}" class="btn-register" style="text-decoration:none;">
                         <i class="fas fa-sign-in-alt"></i> Login to Register
                     </a>
@@ -1690,18 +1690,35 @@
                     </p>
                 </div>
 
+                <!-- Registration Buttons (Only if event is upcoming & not completed/cancelled) -->
                 <div
-                    th:if="${user != null and !isAdmin and (spotsLeft == null or spotsLeft == -1 or spotsLeft > 0) and (event.totalRows == null or event.totalRows == 0) and (event.entryFeeType != 'Paid' and (event.price == null or event.price == 'Free' or event.price == '0'))}">
+                    th:if="${user != null and !isAdmin and not isCompleted and event.status != 'CANCELLED' and (event.dateTime == null or event.dateTime.isAfter(#temporals.createNow())) and (spotsLeft == null or spotsLeft == -1 or spotsLeft > 0) and (event.totalRows == null or event.totalRows == 0) and (event.entryFeeType != 'Paid' and (event.price == null or event.price == 'Free' or event.price == '0'))}">
                     <button type="button" class="btn-register" onclick="openRegModal('free')">
                         <i class="fas fa-ticket-alt"></i> <span th:text="${isRegistered ? 'Book More Tickets' : 'Register for Free'}">Register for Free</span>
                     </button>
                 </div>
 
                 <div
-                    th:if="${user != null and !isAdmin and (spotsLeft == null or spotsLeft == -1 or spotsLeft > 0) and (event.totalRows == null or event.totalRows == 0) and (event.entryFeeType == 'Paid' or (event.price != null and event.price != 'Free' and event.price != '0'))}">
+                    th:if="${user != null and !isAdmin and not isCompleted and event.status != 'CANCELLED' and (event.dateTime == null or event.dateTime.isAfter(#temporals.createNow())) and (spotsLeft == null or spotsLeft == -1 or spotsLeft > 0) and (event.totalRows == null or event.totalRows == 0) and (event.entryFeeType == 'Paid' or (event.price != null and event.price != 'Free' and event.price != '0'))}">
                     <button type="button" class="btn-register" onclick="openRegModal('paid')">
                         <i class="fas fa-credit-card"></i> <span th:text="${isRegistered ? 'Book More Tickets' : 'Pay &amp; Register'}">Pay &amp; Register</span>
                     </button>
+                </div>
+
+                <!-- Event Completed Status Box -->
+                <div th:if="${(isCompleted or event.status == 'COMPLETED' or (event.dateTime != null and event.dateTime.isBefore(#temporals.createNow()))) and event.status != 'CANCELLED'}" 
+                     style="background: rgba(107, 114, 128, 0.1); border: 1px solid rgba(107, 114, 128, 0.3); border-radius: 14px; padding: 18px; text-align: center; margin-top: 10px;">
+                    <i class="fas fa-check-circle" style="color: #9ca3af; font-size: 2rem; display: block; margin-bottom: 8px;"></i>
+                    <div style="font-weight: 800; font-size: 15px; color: #9ca3af; margin-bottom: 4px;">Event Completed</div>
+                    <p style="font-size: 12px; color: #6b7280; margin: 0;">This event has ended. Ticket bookings are closed.</p>
+                </div>
+
+                <!-- Event Cancelled Status Box -->
+                <div th:if="${event.status == 'CANCELLED'}" 
+                     style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 14px; padding: 18px; text-align: center; margin-top: 10px;">
+                    <i class="fas fa-ban" style="color: #ef4444; font-size: 2rem; display: block; margin-bottom: 8px;"></i>
+                    <div style="font-weight: 800; font-size: 15px; color: #f87171; margin-bottom: 4px;">Event Cancelled</div>
+                    <p style="font-size: 12px; color: #ef4444; margin: 0;">This event has been cancelled by the organizer.</p>
                 </div>
 
                 <p th:if="${!isAdmin}"
@@ -1884,8 +1901,8 @@
         </div>
     </div>
 
-    <!-- â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull; BOOKING BAR (BMOS) â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull;â&bull; -->
-    <div class="booking-bar" id="bookingBar">
+    <!-- â&bull; â&bull; â&bull; â&bull; â&bull; â&bull; â&bull; â&bull; â&bull; â&bull; â&bull;  BOOKING BAR (BMOS) â&bull; â&bull; â&bull; â&bull; â&bull; â&bull; â&bull; â&bull; â&bull; â&bull; â&bull;  -->
+    <div th:if="${event.totalRows > 0 and not isCompleted and event.status != 'CANCELLED' and (event.dateTime == null or event.dateTime.isAfter(#temporals.createNow()))}" class="booking-bar" id="bookingBar">
         <div class="summary-left">
             <span class="booking-total-label">Selected Seats: <span id="selectedCount"
                     class="summary-pill">0</span></span>

@@ -30,7 +30,7 @@ public class ActiveLoginRegistry {
     }
 
     private final Map<String, ActiveSession> activeSessions = new ConcurrentHashMap<>();
-    private static final long SESSION_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes inactivity timeout
+    private static final long SESSION_TIMEOUT_MS = 8 * 60 * 60 * 1000L; // 8 hours inactivity timeout
 
     public synchronized boolean isUserAlreadyLoggedIn(String username, String currentToken) {
         ActiveSession session = activeSessions.get(username);
@@ -38,7 +38,7 @@ public class ActiveLoginRegistry {
             return false;
         }
         // If the active token is the same as the current request's token, it's the same session/device
-        if (session.getToken().equals(currentToken)) {
+        if (currentToken != null && session.getToken().equals(currentToken)) {
             return false;
         }
         // Check if the session has timed out due to inactivity
@@ -56,8 +56,10 @@ public class ActiveLoginRegistry {
 
     public void updateActivity(String username, String token) {
         ActiveSession session = activeSessions.get(username);
-        if (session != null && session.getToken().equals(token)) {
+        if (session != null && (token == null || session.getToken().equals(token))) {
             session.updateActivity();
+        } else if (session == null && username != null && token != null) {
+            registerLogin(username, token);
         }
     }
 

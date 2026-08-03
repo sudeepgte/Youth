@@ -372,7 +372,12 @@ public class MainController {
     @GetMapping("/play-car-game")
     public String playCarGame() {
         return "car-game";
+    }
 
+    @GetMapping("/settings")
+    public String settings(HttpSession session) {
+        if (!isLoggedIn(session)) return "redirect:/login";
+        return "redirect:/profile?tab=settings";
     }
 
     @Transactional

@@ -134,8 +134,20 @@
             Invalid username or password.
         </div>
 
+        <!-- 🚫 Banned -->
+        <div th:if="${param.error != null and param.error[0] == 'banned'}"
+            style="color: #ff4444; background-color: rgba(255, 68, 68, 0.1); border: 1px solid #ff4444; padding: 10px; border-radius: 5px; text-align: center; margin-bottom: 1rem;">
+            Your account has been banned. Please contact the administrator for more information.
+        </div>
+
+        <!-- ⚠️ Suspended -->
+        <div th:if="${param.error != null and param.error[0] == 'suspended'}"
+            style="color: #ea580c; background-color: rgba(234, 88, 12, 0.1); border: 1px solid #fdba74; padding: 10px; border-radius: 5px; text-align: center; margin-bottom: 1rem;">
+            Your account has been suspended. Please contact the administrator for more information.
+        </div>
+
         <!-- ❌ Timeout / other error generic -->
-        <div th:if="${param.error != null and param.error[0] != 'already_logged_in' and param.error[0] != 'bad_credentials'}"
+        <div th:if="${param.error != null and param.error[0] != 'already_logged_in' and param.error[0] != 'bad_credentials' and param.error[0] != 'banned' and param.error[0] != 'suspended'}"
             style="color: #ff4444; background-color: rgba(255, 68, 68, 0.1); border: 1px solid #ff4444; padding: 10px; border-radius: 5px; text-align: center; margin-bottom: 1rem;">
             Session timeout or invalid login request.
         </div>

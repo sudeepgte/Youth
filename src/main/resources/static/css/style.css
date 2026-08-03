@@ -423,8 +423,7 @@ header .navbar .btn-outline {
     .mobile-nav-backdrop {
         position: fixed;
         inset: 0;
-        background: rgba(0, 0, 0, 0.5);
-        backdrop-filter: blur(4px);
+        background: rgba(15, 23, 42, 0.7);
         z-index: 1002;
         opacity: 0;
         pointer-events: none;
@@ -1609,17 +1608,18 @@ input[type="file"].form-input::file-selector-button:hover {
         bottom: 0 !important;
         left: -280px;
         width: 260px;
-        height: auto !important;
+        height: calc(100vh - var(--dashboard-nav-height)) !important;
         background: var(--bg-color);
-        z-index: 1000;
+        z-index: 1200 !important;
         transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         box-shadow: 4px 0 25px rgba(0,0,0,0.5);
         padding-top: 15px !important;
-        padding-bottom: 120px !important;
+        padding-bottom: 30px !important;
         padding-left: 15px !important;
         padding-right: 15px !important;
         flex-direction: column !important;
         overflow-y: auto !important;
+        border-radius: 0 !important;
     }
     .sidebar.mobile-open {
         left: 0;
@@ -1631,8 +1631,7 @@ input[type="file"].form-input::file-selector-button:hover {
         display: none;
         position: fixed;
         top: 0; left: 0; right: 0; bottom: 0;
-        background: rgba(0,0,0,0.6);
-        backdrop-filter: blur(4px);
+        background: rgba(15, 23, 42, 0.7);
         z-index: 999;
     }
     .mobile-menu-overlay.active {
@@ -2758,4 +2757,7 @@ input[type="file"].form-input::file-selector-button:hover {
     align-items: center !important;
     justify-content: center !important;
 }
+
+
+
 

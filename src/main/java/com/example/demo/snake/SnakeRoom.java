@@ -30,7 +30,7 @@ public class SnakeRoom {
         this.maxPlayers = maxPlayers;
         this.players.add(hostName);
         this.positions = new int[4]; // Max possible
-        for(int i=0; i<4; i++) positions[i] = 0;
+        for(int i=0; i<4; i++) positions[i] = 1;
     }
 
     public void applyRoll(int steps, int playerIdx) {

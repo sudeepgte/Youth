@@ -10,4 +10,7 @@ public interface BattleRepository extends JpaRepository<Battle, Long> {
     List<Battle> findByStatusInOrderByCreatedAtDesc(List<String> statuses);
     List<Battle> findAllByOrderByCreatedAtDesc();
     List<Battle> findByStatusOrderByCreatedAtDesc(String status);
+    
+    @org.springframework.data.jpa.repository.Query("SELECT COUNT(b) FROM Battle b WHERE b.winner = :user OR b.winner2 = :user OR b.winner3 = :user")
+    long countBattlesWonByUser(@org.springframework.data.repository.query.Param("user") com.example.demo.model.User user);
 }

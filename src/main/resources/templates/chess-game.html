@@ -17,10 +17,71 @@
 
     <style>
         body { margin: 0; background: #1a0e05; color: #fff; font-family: 'Palatino Linotype', Georgia, serif; }
-        #root { min-height: 100vh; display: flex; align-items: center; justify-content: center; }
-        .cell-size { width: 70px; height: 70px; }
+        #root { min-height: 100vh; display: flex; align-items: center; justify-content: center; overflow-x: hidden; }
         @keyframes pulse { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }
-        .btn { padding: 12px 24px; border-radius: 8px; border: 1px solid #d4af3766; background: #3a1a05; color: #d4af37; font-weight: 700; cursor: pointer; text-transform: uppercase; }
+        .btn { padding: 12px 24px; border-radius: 8px; border: 1px solid #d4af3766; background: #3a1a05; color: #d4af37; font-weight: 700; cursor: pointer; text-transform: uppercase; width: 100%; box-sizing: border-box; }
+        
+        .game-container {
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .board-container {
+            background: #3a2510;
+            padding: 10px;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .chess-board {
+            display: grid;
+            grid-template-columns: repeat(8, 70px);
+        }
+
+        .chess-cell {
+            width: 70px;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            cursor: pointer;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        .chess-piece {
+            font-size: 50px;
+            user-select: none;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .chess-board {
+                grid-template-columns: repeat(8, 11.5vw);
+            }
+            .chess-cell {
+                width: 11.5vw;
+                height: 11.5vw;
+            }
+            .chess-piece {
+                font-size: 8vw;
+            }
+            .board-container {
+                padding: 5px;
+            }
+            .game-container {
+                flex-direction: column;
+                gap: 20px;
+                padding: 5px;
+            }
+            .side-panel {
+                width: 90vw !important;
+            }
+        }
     </style>
 </head>
 
@@ -278,14 +339,7 @@
                     stomp.subscribe(`/topic/chess/${rid}`, (m) => onMessage(JSON.parse(m.body)));
                     stomp.send(`/app/chess/${rid}/subscribe`, {}, "{}");
                 });
-                const handleUnload = () => {
-                    if (stomp && stomp.connected) {
-                        stomp.send(`/app/chess/${rid}/leave`, {}, "{}");
-                    }
-                };
-                window.addEventListener('beforeunload', handleUnload);
                 return () => {
-                    window.removeEventListener('beforeunload', handleUnload);
                     stomp.disconnect();
                 };
             }, [rid]);
@@ -359,11 +413,11 @@
             }
 
             return (
-                <div style={{ padding: 20, textAlign: "center" }}>
-                    <div style={{ color: "#d4af37", fontSize: 32, fontWeight: 900, letterSpacing: 8, marginBottom: 20 }}>CHESS ARENA</div>
+                <div style={{ padding: "20px 10px", textAlign: "center", width: "100%", boxSizing: "border-box" }}>
                     
                     {(gs.status === 'waiting') ? (
-                        <div style={{ background: "#2a1a08", padding: 40, borderRadius: 16, border: "1px solid #d4af3744" }}>
+                        <div style={{ background: "#2a1a08", padding: 40, borderRadius: 16, border: "1px solid #d4af3744", maxWidth: 600, margin: "0 auto" }}>
+                            <div style={{ color: "#d4af37", fontSize: 32, fontWeight: 900, letterSpacing: 8, marginBottom: 20 }}>CHESS ARENA</div>
                             <h2 style={{ color: "#d4af37" }}>GAME LOBBY</h2>
                             <div style={{ fontSize: 44, letterSpacing: 10, margin: "20px 0", color: "#d4af37", background: "#000", padding: 20, borderRadius: 12 }}>{roomId}</div>
                             
@@ -381,9 +435,11 @@
                             <button className="btn" style={{ background: "transparent", color: "#fff", border: "1px solid #444", width: "100%", marginTop: 15 }} onClick={() => window.location.href='/games'}>LEAVE</button>
                         </div>
                     ) : (
-                        <div style={{ display: "flex", gap: 30, alignItems: "center" }}>
-                            <div style={{ background: "#3a2510", padding: 10, borderRadius: 8, position: "relative" }}>
-                                <div style={{ display: "grid", gridTemplateColumns: "repeat(8, 70px)" }}>
+                        <div className="game-container">
+                            <div>
+                                <div style={{ color: "#d4af37", fontSize: 32, fontWeight: 900, letterSpacing: 8, marginBottom: 20 }}>CHESS ARENA</div>
+                                <div className="board-container">
+                                    <div className="chess-board">
                                     {rows.map((r, ri) => cols.map((c, ci) => {
                                         const p = board[r][c], isL = (r+c)%2===0, isS = sel?.[0]===r && sel?.[1]===c, isH = hls.some(([hr,hc])=>hr===r&&hc===c);
                                         const kp = findKing(board, gs.turn);
@@ -395,11 +451,7 @@
                                         const showFileLabel = ri === 7;
                                         const showRankLabel = ci === 7;
                                         
-                                        let pieceStyle = {
-                                            fontSize: 50,
-                                            userSelect: "none",
-                                            cursor: "pointer"
-                                        };
+                                        let pieceStyle = {};
                                         if (p) {
                                             if (p.color === "w") {
                                                 // Clean solid white piece with a crisp black outline and subtle drop-shadow
@@ -416,22 +468,14 @@
                                             <div 
                                                 key={`${r}-${c}`} 
                                                 onClick={()=>click(r,c)} 
+                                                className="chess-cell"
                                                 style={{ 
-                                                    width:70, 
-                                                    height:70, 
                                                     background: bg, 
-                                                    display:"flex", 
-                                                    alignItems:"center", 
-                                                    justifyContent:"center", 
-                                                    cursor:"pointer", 
-                                                    border: isKingCheck ? "3px solid #ef4444" : "none", 
-                                                    boxSizing: "border-box",
-                                                    position: "relative",
-                                                    userSelect: "none"
+                                                    border: isKingCheck ? "3px solid #ef4444" : "none"
                                                 }}
                                             >
                                                 {p ? (
-                                                    <span style={pieceStyle}>
+                                                    <span className="chess-piece" style={pieceStyle}>
                                                         {GLYPHS[p.color+p.type]}
                                                     </span>
                                                 ) : ""}
@@ -506,13 +550,14 @@
                                     </div>
                                 )}
                             </div>
-                            <div style={{ width: 250, textAlign: "left" }}>
+                            </div>
+                            <div className="side-panel" style={{ width: 250, textAlign: "left" }}>
                                 <div style={{ padding: 20, background: "#2a1a08", borderRadius: 12, border: "1px solid #d4af3733" }}>
                                     <div style={{ color: "#a0825a", fontSize: 12 }}>MATCH STATUS</div>
                                     <div style={{ color: statusColor, fontSize: 18, fontWeight: 700, margin: "8px 0" }}>{statusText}</div>
                                     <div style={{ borderTop: "1px solid #444", paddingTop: 10, marginTop: 10 }}>
-                                        <div style={{ fontSize: 13 }}>White: {gs.players.w}</div>
-                                        <div style={{ fontSize: 13 }}>Black: {gs.players.b}</div>
+                                        <div style={{ fontSize: 14, color: "#fff", marginBottom: 5 }}>White: {gs.players.w}</div>
+                                        <div style={{ fontSize: 14, color: "#fff" }}>Black: {gs.players.b}</div>
                                     </div>
                                     <button className="btn" style={{ marginTop: 20 }} onClick={() => window.location.href='/games'}>RESIGN</button>
                                 </div>
