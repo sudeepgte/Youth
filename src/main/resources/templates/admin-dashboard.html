@@ -708,8 +708,13 @@
                 </div>
             </form>
         </div>
-
         <h2 id="users-section" style="margin-bottom: 20px; padding-top: 100px; margin-top: -100px;">Recent Registrations</h2>
+        <div th:if="${param.userMsg != null || userSuccess != null}" class="status-badge status-active" style="margin-bottom: 15px; padding: 10px 16px; display: inline-block; font-size: 14px; border-radius: 8px;">
+            <i class="fas fa-check-circle"></i> <span th:text="${param.userMsg != null ? param.userMsg[0] : userSuccess}">User status updated successfully.</span>
+        </div>
+        <div th:if="${param.userErr != null || userError != null}" class="status-badge status-banned" style="margin-bottom: 15px; padding: 10px 16px; display: inline-block; font-size: 14px; border-radius: 8px;">
+            <i class="fas fa-exclamation-triangle"></i> <span th:text="${param.userErr != null ? param.userErr[0] : userError}">An error occurred.</span>
+        </div>
         <table class="data-table">
             <thead>
                 <tr>
@@ -738,17 +743,28 @@
                     </td>
                     <td style="text-align: right;">
                         <div style="display: inline-flex; gap: 6px; justify-content: flex-end;">
-                            <form th:if="${user.status == 'ACTIVE' || user.status == null}" th:action="@{/admin/users/{id}/status(id=${user.id})}" method="post" style="display: inline; margin: 0;">
-                                <input type="hidden" name="status" value="SUSPENDED">
+                            <!-- ACTIVE Status Actions -->
+                            <form th:if="${user.status == 'ACTIVE' || user.status == null}" th:action="@{/admin/users/{id}/suspend(id=${user.id})}" method="post" style="display: inline; margin: 0;" onsubmit="return confirm('Are you sure you want to suspend this user?');">
                                 <button type="submit" class="status-badge status-pending" style="border: none; cursor: pointer; padding: 6px 12px; font-weight: bold;"><i class="fas fa-pause"></i> Suspend</button>
                             </form>
-                            <form th:if="${user.status == 'ACTIVE' || user.status == null}" th:action="@{/admin/users/{id}/status(id=${user.id})}" method="post" style="display: inline; margin: 0;">
-                                <input type="hidden" name="status" value="BANNED">
+                            <form th:if="${user.status == 'ACTIVE' || user.status == null}" th:action="@{/admin/users/{id}/ban(id=${user.id})}" method="post" style="display: inline; margin: 0;" onsubmit="return confirm('Are you sure you want to ban this user?');">
                                 <button type="submit" class="status-badge status-banned" style="border: none; cursor: pointer; padding: 6px 12px; font-weight: bold;"><i class="fas fa-ban"></i> Ban</button>
                             </form>
-                            <form th:if="${user.status == 'SUSPENDED' || user.status == 'BANNED'}" th:action="@{/admin/users/{id}/status(id=${user.id})}" method="post" style="display: inline; margin: 0;">
-                                <input type="hidden" name="status" value="ACTIVE">
-                                <button type="submit" class="status-badge status-active" style="border: none; cursor: pointer; padding: 6px 12px; font-weight: bold;"><i class="fas fa-check"></i> Activate</button>
+
+                            <!-- SUSPENDED Status Actions -->
+                            <form th:if="${user.status == 'SUSPENDED'}" th:action="@{/admin/users/{id}/unsuspend(id=${user.id})}" method="post" style="display: inline; margin: 0;" onsubmit="return confirm('Are you sure you want to unsuspend this user?');">
+                                <button type="submit" class="status-badge status-active" style="border: none; cursor: pointer; padding: 6px 12px; font-weight: bold;"><i class="fas fa-play"></i> Unsuspend</button>
+                            </form>
+                            <form th:if="${user.status == 'SUSPENDED'}" th:action="@{/admin/users/{id}/ban(id=${user.id})}" method="post" style="display: inline; margin: 0;" onsubmit="return confirm('Are you sure you want to ban this user?');">
+                                <button type="submit" class="status-badge status-banned" style="border: none; cursor: pointer; padding: 6px 12px; font-weight: bold;"><i class="fas fa-ban"></i> Ban</button>
+                            </form>
+
+                            <!-- BANNED Status Actions -->
+                            <form th:if="${user.status == 'BANNED'}" th:action="@{/admin/users/{id}/unban(id=${user.id})}" method="post" style="display: inline; margin: 0;" onsubmit="return confirm('Are you sure you want to unban this user?');">
+                                <button type="submit" class="status-badge status-active" style="border: none; cursor: pointer; padding: 6px 12px; font-weight: bold;"><i class="fas fa-check-circle"></i> Unban</button>
+                            </form>
+                            <form th:if="${user.status == 'BANNED'}" th:action="@{/admin/users/{id}/suspend(id=${user.id})}" method="post" style="display: inline; margin: 0;" onsubmit="return confirm('Are you sure you want to suspend this user?');">
+                                <button type="submit" class="status-badge status-pending" style="border: none; cursor: pointer; padding: 6px 12px; font-weight: bold;"><i class="fas fa-pause"></i> Suspend</button>
                             </form>
                         </div>
                     </td>
@@ -846,6 +862,7 @@
 </body>
 
 </html>
+
 
 
 

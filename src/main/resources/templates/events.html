@@ -325,7 +325,7 @@
                     const eventTime = new Date(eventTimeStr).getTime();
                     const distance = eventTime - now;
                     if (distance < 0) {
-                        timer.innerHTML = '<i class="fas fa-flag-checkered"></i> <span>Started</span>';
+                        timer.innerHTML = '<i class="fas fa-flag-checkered"></i> <span>Finished</span>';
                     } else {
                         const d = Math.floor(distance / (1000 * 60 * 60 * 24));
                         const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -346,5 +346,6 @@
     <div th:replace="~{fragments/modals :: createPostModal}"></div>
 </body>
 </html>
+
 
 

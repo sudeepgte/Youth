@@ -1122,9 +1122,9 @@
                 </span>
                 <!-- Status -->
                 <span class="status-badge"
-                    th:classappend="${event.status == 'UPCOMING'} ? 'status-upcoming' : (${event.status == 'ONGOING'} ? 'status-ongoing' : 'status-completed')">
+                    th:classappend="${isCompleted or event.status == 'COMPLETED' or (event.dateTime != null and event.dateTime.isBefore(#temporals.createNow()))} ? 'status-completed' : (${event.status == 'ONGOING'} ? 'status-ongoing' : (${event.status == 'CANCELLED'} ? 'status-cancelled' : 'status-upcoming'))">
                     <i class="fas fa-circle" style="font-size:7px;"></i>
-                    <span th:text="${event.status != null ? event.status : 'UPCOMING'}">UPCOMING</span>
+                    <span th:text="${(isCompleted or event.status == 'COMPLETED' or (event.dateTime != null and event.dateTime.isBefore(#temporals.createNow()))) ? 'COMPLETED' : (event.status != null ? event.status : 'UPCOMING')}">UPCOMING</span>
                 </span>
             </div>
         </div>
@@ -2175,3 +2175,4 @@
 </body>
 
 </html>
+
