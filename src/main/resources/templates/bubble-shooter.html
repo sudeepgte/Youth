@@ -49,6 +49,8 @@
             flex-direction: column;
             align-items: center;
             filter: drop-shadow(0 30px 80px rgba(0, 0, 0, 0.95)) drop-shadow(0 0 60px rgba(200, 120, 30, 0.15));
+            transform-origin: center center;
+            transform: scale(min(calc(95vh / 780), calc(95vw / 520)));
         }
 
         /* Wooden frame top */
@@ -480,13 +482,13 @@
                 padding: 30px 20px;
             }
             #cabinet {
-                transform: scale(0.65) !important;
+                transform: scale(min(calc(90vh / 780), calc(95vw / 520))) !important;
             }
         }
         
         @media (max-width: 480px) {
             #cabinet {
-                transform: scale(0.55) !important;
+                transform: scale(min(calc(90vh / 780), calc(95vw / 520))) !important;
             }
         }
     </style>
@@ -588,7 +590,9 @@
         ];
 
         let grid = [], proj = null, nextPal, angle = -Math.PI / 2;
-        let score = 0, best = 0, level = 1, shots = 0;
+        let score = 0, shots = 0;
+        let best = parseInt(localStorage.getItem('bubble_best')) || 0;
+        let level = parseInt(localStorage.getItem('bubble_level')) || 1;
         let particles = [], sparkles = [], state = 'idle';
         let ripples = [];
 
@@ -725,15 +729,23 @@
 
         function doNextLevel() {
             level++;
+            localStorage.setItem('bubble_level', level);
             if (level > 10) { state = 'win'; showOv('YOU WIN!', 'All bubbles cleared!', score, 'PLAY AGAIN'); return; }
             initGrid(); nextPal = randPal(); proj = newProj(); updateHUD();
         }
         function triggerLose() {
-            state = 'over'; if (score > best) best = score; updateHUD();
+            state = 'over'; 
+            if (score > best) {
+                best = score;
+                localStorage.setItem('bubble_best', best);
+            }
+            updateHUD();
             showOv('GAME OVER', 'Bubbles reached the danger zone!', score, 'TRY AGAIN');
         }
         function startGame() {
-            score = 0; shots = 0; level = 1; particles = []; sparkles = []; ripples = [];
+            score = 0; shots = 0; 
+            level = parseInt(localStorage.getItem('bubble_level')) || 1;
+            particles = []; sparkles = []; ripples = [];
             initGrid(); nextPal = randPal(); proj = newProj();
             state = 'playing';
             document.getElementById('overlay').classList.add('hidden');

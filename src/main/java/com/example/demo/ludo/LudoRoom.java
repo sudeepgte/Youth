@@ -10,6 +10,7 @@ public class LudoRoom {
     public boolean diceRolled = false;
     public String status = "waiting";
     public long lastTurnStartTime = System.currentTimeMillis();
+    public int consecutiveSixes = 0;
 
     public LudoRoom(String roomId, String playerName) {
         this.roomId = roomId;
@@ -48,9 +49,21 @@ public class LudoRoom {
     }
 
     public void applyRoll(int val) {
+        if (diceRolled) return; // Prevent double rolling
         this.diceValue = val;
         this.diceRolled = true;
         this.lastTurnStartTime = System.currentTimeMillis();
+        
+        if (val == 6) {
+            consecutiveSixes++;
+            if (consecutiveSixes == 3) {
+                // Rolled 3 sixes in a row, turn is forfeited!
+                this.diceValue = 0;
+                skipTurn();
+            }
+        } else {
+            consecutiveSixes = 0;
+        }
     }
 
     private static final int[] STARTS = {0, 13, 26, 39};
@@ -111,6 +124,7 @@ public class LudoRoom {
 
     public void skipTurn() {
         diceRolled = false;
+        consecutiveSixes = 0;
         nextTurn();
         this.lastTurnStartTime = System.currentTimeMillis();
     }

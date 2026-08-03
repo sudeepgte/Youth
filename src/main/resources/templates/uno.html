@@ -207,6 +207,26 @@
             const [pickingColor, setPickingColor] = useState(null);
             const [timeLeft, setTimeLeft] = useState(30);
             const stompClient = useRef(null);
+            const unoTimerRef = useRef(null);
+
+            useEffect(() => {
+                if (!roomState || roomState.status !== 'active') return;
+                const myD = roomState.players[playerIndex];
+                if (myD && myD.cardCount === 1 && !myD.calledUno) {
+                    if (!unoTimerRef.current) {
+                        unoTimerRef.current = setTimeout(() => {
+                            if (stompClient.current) {
+                                stompClient.current.send(`/app/uno/${roomId}/catch-uno`, {}, JSON.stringify({ catcherIndex: playerIndex, targetIndex: playerIndex }));
+                            }
+                        }, 5000);
+                    }
+                } else {
+                    if (unoTimerRef.current) {
+                        clearTimeout(unoTimerRef.current);
+                        unoTimerRef.current = null;
+                    }
+                }
+            }, [roomState, playerIndex, roomId]);
 
             useEffect(() => {
                 if (!roomState || roomState.status !== 'active') return;
@@ -418,14 +438,18 @@
                             <CardFace card={roomState.topCard} />
                             <div style={{ color: "#fff6", fontSize: 10, marginTop: 4 }}>DISCARD PILE</div>
                         </div>
+                        {myData.cardCount === 1 && !myData.calledUno && (
+                            <div onClick={handleCallUno} style={{
+                                width: 50, height: 50, borderRadius: 10, background: "#d62828",
+                                display: "flex", alignItems: "center", justifyContent: "center",
+                                cursor: "pointer", border: "2px solid #fbcc15", color: "#fff", fontWeight: 900, fontSize: 14, boxShadow: "0 4px 15px rgba(214,40,40,0.5)"
+                            }}>
+                                UNO
+                            </div>
+                        )}
                     </div>
 
                     <div style={{ width: "100%", maxWidth: 800 }}>
-                        {myData.cardCount <= 2 && !myData.calledUno && (
-                            <div style={{ textAlign: "center", marginBottom: 20 }}>
-                                <button onClick={handleCallUno} style={{ background: "#d62828", color: "#fff", padding: "12px 30px", borderRadius: 25, border: "2px solid #fbcc15", fontSize: 18, fontWeight: 900, cursor: "pointer", boxShadow: "0 4px 15px rgba(214,40,40,0.5)" }}>YELL UNO!</button>
-                            </div>
-                        )}
                         <div style={{ display: "flex", justifyContent: "center", gap: 10, flexWrap: "wrap" }}>
                             {myData.hand.map(card => (
                                 <div key={card.id} onClick={() => handlePlay(card)} style={{ cursor: "pointer", transition: "transform 0.2s" }} onMouseEnter={e => e.currentTarget.style.transform = "translateY(-10px)"} onMouseLeave={e => e.currentTarget.style.transform = "translateY(0)"}>

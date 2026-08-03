@@ -1557,7 +1557,7 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
         }
 
         function rollDice() {
-            if (state.diceRolled || state.isGameOver || animating) return;
+            if (state.diceRolled || state.isGameOver || animating || diceDisabled) return;
             
             // If multiplayer, check if it's my turn
             if (state.playerIndex !== -1 && state.currentPlayer !== state.playerIndex) {
@@ -1577,6 +1577,7 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
             }
             
             if (state.playerIndex !== -1) {
+                diceDisabled = true;
                 // Send to server
                 stompClient.send("/app/ludo/" + state.roomId + "/roll", {}, JSON.stringify({ playerIndex: state.playerIndex, val: val }));
             } else {
@@ -1682,10 +1683,10 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
             else piece.pos += val;
 
             // Capture check
+            let captured = false;
             if (piece.pos < 52) {
                 const globalIdx = (STARTS[pi] + piece.pos) % 52;
                 if (!SAFE_SQUARES.has(globalIdx)) {
-                    let captured = false;
                     state.pieces.forEach((opp, op) => {
                         if (op === pi) return;
                         opp.forEach(op2 => {
@@ -1713,10 +1714,10 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
                 animating = false;
                 checkWin();
                 if (!state.isGameOver) {
-                    if (val === 6) {
+                    if (val === 6 || captured) {
                         state.diceRolled = false;
-                        setStatus('🎲 Rolled 6 &mdash; roll again!', 'rollAgain');
-                        showToast(`${NAMES[pi]} rolled 6 &mdash; roll again!`, COLORS[pi]);
+                        setStatus(captured ? '💥 Captured &mdash; roll again!' : '🎲 Rolled 6 &mdash; roll again!', 'rollAgain');
+                        showToast(captured ? `${NAMES[pi]} captured &mdash; roll again!` : `${NAMES[pi]} rolled 6 &mdash; roll again!`, COLORS[pi]);
                         updateTurnUI();
                         if (state.playerIndex === -1) {
                             startTurnTimer(30);

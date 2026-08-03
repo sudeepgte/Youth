@@ -124,7 +124,7 @@ public class UnoRoom {
                 if (p.calledUno) {
                     lastMessage = p.name + " Telled UNO! It's " + players.get(currentPlayerIndex).name + "'s turn.";
                 } else {
-                    lastMessage = p.name + " forgot to Tell UNO! They can be caught! It's " + players.get(currentPlayerIndex).name + "'s turn.";
+                    lastMessage = p.name + " has 1 card left and must say UNO within 5 seconds!";
                 }
             } else {
                 lastMessage = players.get(currentPlayerIndex).name + "'s turn.";
@@ -193,7 +193,7 @@ public class UnoRoom {
 
     public void callUno(int playerIdx) {
         UnoPlayer p = players.get(playerIdx);
-        if (p.hand.size() <= 2) {
+        if (p.hand.size() == 1) {
             p.calledUno = true;
             lastMessage = p.name + " yelled UNO!";
         }
@@ -206,7 +206,11 @@ public class UnoRoom {
         if (target.hand.size() == 1 && !target.calledUno) {
             drawCardsForPlayer(targetIdx, 2);
             target.calledUno = false;
-            lastMessage = catcher.name + " caught " + target.name + " not saying UNO! " + target.name + " drew 2 penalty cards.";
+            if (catcherIdx == targetIdx) {
+                lastMessage = target.name + " missed the 5-second UNO window and drew 2 penalty cards!";
+            } else {
+                lastMessage = catcher.name + " caught " + target.name + " not saying UNO! " + target.name + " drew 2 penalty cards.";
+            }
         }
     }
 

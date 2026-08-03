@@ -652,26 +652,33 @@ const { useState, useEffect, useCallback, useRef, useMemo } = React;
                         const finalPos = nextState.players[pIdx].pos;
                         
                         setAnimating(true);
-                        let currentPos = startPos;
-                        for (let i = 1; i <= data.steps; i++) {
-                            currentPos = startPos + i;
-                            setVisualPlayers(prev => {
-                                const next = [...prev];
-                                if (next[pIdx]) next[pIdx] = { pos: currentPos };
-                                return next;
-                            });
-                            await new Promise(r => setTimeout(r, 300));
+                        
+                        if (startPos + data.steps <= 100) {
+                            let currentPos = startPos;
+                            for (let i = 1; i <= data.steps; i++) {
+                                currentPos = startPos + i;
+                                setVisualPlayers(prev => {
+                                    const next = [...prev];
+                                    if (next[pIdx]) next[pIdx] = { pos: currentPos };
+                                    return next;
+                                });
+                                await new Promise(r => setTimeout(r, 300));
+                            }
+                            
+                            if (currentPos !== finalPos) {
+                                await new Promise(r => setTimeout(r, 200));
+                                setVisualPlayers(prev => {
+                                    const next = [...prev];
+                                    if (next[pIdx]) next[pIdx] = { pos: finalPos };
+                                    return next;
+                                });
+                                await new Promise(r => setTimeout(r, 400));
+                            }
+                        } else {
+                            // If move exceeds 100, do not animate moving forward
+                            await new Promise(r => setTimeout(r, 800));
                         }
                         
-                        if (currentPos !== finalPos) {
-                            await new Promise(r => setTimeout(r, 200));
-                            setVisualPlayers(prev => {
-                                const next = [...prev];
-                                if (next[pIdx]) next[pIdx] = { pos: finalPos };
-                                return next;
-                            });
-                            await new Promise(r => setTimeout(r, 400));
-                        }
                         setAnimating(false);
                         
                         setState(nextState);
