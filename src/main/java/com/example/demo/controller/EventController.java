@@ -294,11 +294,24 @@ public class EventController {
         }
     }
 
+    private void resolveExpiredEvents() {
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        java.util.List<Event> upcomingEvents = eventRepository.findAll().stream()
+                .filter(e -> "UPCOMING".equals(e.getStatus()) || "ONGOING".equals(e.getStatus()))
+                .filter(e -> e.getDateTime() != null && e.getDateTime().isBefore(now))
+                .collect(java.util.stream.Collectors.toList());
+        for (Event e : upcomingEvents) {
+            e.setStatus("COMPLETED");
+            eventRepository.save(e);
+        }
+    }
+
     // ─────────────────────────────────────────────────────────
     //  PUBLIC: Event Detail Page
     // ─────────────────────────────────────────────────────────
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
     public String eventDetails(@PathVariable Long id, Model model, HttpSession session) {
+        resolveExpiredEvents();
         User user = getUserFromSession(session);
         boolean adminViewing = isAdmin(session);
 
@@ -431,6 +444,10 @@ public class EventController {
 
         boolean isCompleted = ("COMPLETED".equalsIgnoreCase(event.getStatus())) ||
                               (event.getDateTime() != null && event.getDateTime().isBefore(LocalDateTime.now()));
+        if (isCompleted && !"COMPLETED".equals(event.getStatus())) {
+            event.setStatus("COMPLETED");
+            eventRepository.save(event);
+        }
         model.addAttribute("isCompleted", isCompleted);
         model.addAttribute("event", event);
         model.addAttribute("seats", seats);

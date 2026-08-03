@@ -13,9 +13,16 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.transaction.annotation.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
@@ -23,6 +30,8 @@ import java.util.stream.Collectors;
 
 @Controller
 public class MainController {
+
+    private static final Logger logger = LoggerFactory.getLogger(MainController.class);
 
     @Autowired
     private HttpServletRequest httpServletRequest;
@@ -418,7 +427,7 @@ public class MainController {
             final String catKey = normalizedCategory.trim().toUpperCase();
             personalized = personalized.stream()
                     .filter(p -> p.getCategory() != null && p.getCategory().trim().equalsIgnoreCase(catKey))
-                    .toList();
+                    .collect(Collectors.toList());
         }
         model.addAttribute("posts", personalized);
         model.addAttribute("activeCategory", normalizedCategory);
@@ -598,23 +607,130 @@ public class MainController {
         return "admin-battles";
     }
 
-    @org.springframework.web.bind.annotation.PostMapping("/admin/users/{id}/status")
+    @PostMapping("/admin/users/{id}/status")
     @Transactional
     public String updateUserStatus(
-            @org.springframework.web.bind.annotation.PathVariable Long id,
+            @PathVariable Long id,
             @org.springframework.web.bind.annotation.RequestParam String status,
-            HttpSession session
+            HttpSession session,
+            RedirectAttributes redirectAttributes
+    ) {
+        return processUserStatusChange(id, status, session, redirectAttributes);
+    }
+
+    @PostMapping("/admin/users/{id}/suspend")
+    @Transactional
+    public String suspendUser(
+            @PathVariable Long id,
+            HttpSession session,
+            RedirectAttributes redirectAttributes
+    ) {
+        return processUserStatusChange(id, "SUSPENDED", session, redirectAttributes);
+    }
+
+    @PostMapping("/admin/users/{id}/unsuspend")
+    @Transactional
+    public String unsuspendUser(
+            @PathVariable Long id,
+            HttpSession session,
+            RedirectAttributes redirectAttributes
+    ) {
+        return processUserStatusChange(id, "ACTIVE", session, redirectAttributes);
+    }
+
+    @PostMapping("/admin/users/{id}/ban")
+    @Transactional
+    public String banUser(
+            @PathVariable Long id,
+            HttpSession session,
+            RedirectAttributes redirectAttributes
+    ) {
+        return processUserStatusChange(id, "BANNED", session, redirectAttributes);
+    }
+
+    @PostMapping("/admin/users/{id}/unban")
+    @Transactional
+    public String unbanUser(
+            @PathVariable Long id,
+            HttpSession session,
+            RedirectAttributes redirectAttributes
+    ) {
+        return processUserStatusChange(id, "ACTIVE", session, redirectAttributes);
+    }
+
+    private String processUserStatusChange(
+            Long id,
+            String targetStatus,
+            HttpSession session,
+            RedirectAttributes redirectAttributes
     ) {
         if (!"admin".equals(session.getAttribute("user")))
             return "redirect:/login";
 
         User targetUser = userRepository.findById(id).orElse(null);
-        if (targetUser != null) {
-            targetUser.setStatus(status);
-            userRepository.save(targetUser);
-            feedAlgorithmService.evictFeedCache();
+        if (targetUser == null) {
+            String err = "User not found.";
+            logger.warn("Admin attempted status change on non-existent user ID {}", id);
+            redirectAttributes.addFlashAttribute("userError", err);
+            return "redirect:/admin?userErr=" + encodeUrl(err) + "#users-section";
         }
-        return "redirect:/admin#users-section";
+
+        String currentStatus = targetUser.getStatus();
+        if (currentStatus == null) currentStatus = "ACTIVE";
+        String normalizedTarget = targetStatus != null ? targetStatus.toUpperCase().trim() : "ACTIVE";
+
+        if ("SUSPENDED".equals(normalizedTarget) && "SUSPENDED".equals(currentStatus)) {
+            String err = "User is already suspended.";
+            logger.warn("Admin tried to suspend user {} (ID {}) who is already suspended", targetUser.getUsername(), id);
+            redirectAttributes.addFlashAttribute("userError", err);
+            return "redirect:/admin?userErr=" + encodeUrl(err) + "#users-section";
+        }
+
+        if ("BANNED".equals(normalizedTarget) && "BANNED".equals(currentStatus)) {
+            String err = "User is already banned.";
+            logger.warn("Admin tried to ban user {} (ID {}) who is already banned", targetUser.getUsername(), id);
+            redirectAttributes.addFlashAttribute("userError", err);
+            return "redirect:/admin?userErr=" + encodeUrl(err) + "#users-section";
+        }
+
+        String successMsg;
+        if ("SUSPENDED".equals(normalizedTarget)) {
+            successMsg = "User has been successfully suspended.";
+        } else if ("BANNED".equals(normalizedTarget)) {
+            successMsg = "User has been successfully banned.";
+        } else if ("ACTIVE".equals(normalizedTarget)) {
+            if ("SUSPENDED".equals(currentStatus)) {
+                successMsg = "User has been successfully unsuspended.";
+            } else if ("BANNED".equals(currentStatus)) {
+                successMsg = "User has been successfully unbanned.";
+            } else {
+                String err = "User is already active.";
+                redirectAttributes.addFlashAttribute("userError", err);
+                return "redirect:/admin?userErr=" + encodeUrl(err) + "#users-section";
+            }
+        } else {
+            String err = "Invalid status requested: " + targetStatus;
+            redirectAttributes.addFlashAttribute("userError", err);
+            return "redirect:/admin?userErr=" + encodeUrl(err) + "#users-section";
+        }
+
+        targetUser.setStatus(normalizedTarget);
+        userRepository.save(targetUser);
+        feedAlgorithmService.evictFeedCache();
+
+        logger.info("Admin updated status for user {} (ID {}) from [{}] to [{}]",
+                targetUser.getUsername(), id, currentStatus, normalizedTarget);
+
+        redirectAttributes.addFlashAttribute("userSuccess", successMsg);
+        return "redirect:/admin?userMsg=" + encodeUrl(successMsg) + "#users-section";
+    }
+
+    private String encodeUrl(String val) {
+        try {
+            return URLEncoder.encode(val, StandardCharsets.UTF_8.toString());
+        } catch (Exception e) {
+            return val;
+        }
     }
 
     @org.springframework.web.bind.annotation.PostMapping("/admin/posts/{id}/block")
