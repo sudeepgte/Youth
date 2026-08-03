@@ -6,56 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard | Zentrix</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Mobile Full Screen Reels Style -->
-    <th:block th:if="${isReelsPage}">
-        <style>
-            @media (max-width: 768px) {
-                body {
-                    background: #000 !important;
-                    padding: 0 !important;
-                    margin: 0 !important;
-                }
-                .dashboard-navbar, .sidebar, .mobile-menu-btn, .mobile-menu-overlay, .back-to-dash-btn {
-                    display: none !important;
-                }
-                .dashboard-container {
-                    padding: 0 !important;
-                    margin: 0 !important;
-                    margin-top: 0 !important;
-                }
-                .social-feed {
-                    padding: 0 !important;
-                    margin: 0 !important;
-                    width: 100vw !important;
-                    max-width: 100% !important;
-                    min-height: 100vh !important;
-                }
-                .reels-container {
-                    padding: 0 !important;
-                    margin: 0 !important;
-                    width: 100vw !important;
-                }
-                .post-card.reel-card {
-                    margin: 0 !important;
-                    border-radius: 0 !important;
-                    border: none !important;
-                    width: 100vw !important;
-                    max-width: 100% !important;
-                    min-height: 100vh !important;
-                    box-shadow: none !important;
-                }
-                .reel-video-container {
-                    height: 100vh !important;
-                    border-radius: 0 !important;
-                }
-                .reel-video {
-                    object-fit: cover !important;
-                }
-            }
-        </style>
-    </th:block>
     <style>
         /* Voting Poll Styles for Dashboard */
         .dashboard-vote-section {
@@ -494,7 +447,49 @@
         }
 
         /* -- Mobile Responsive -- */
-        @media (max-width: 768px) {
+        @media (max-width: 1024px) {
+            body.is-reels-page {
+                background: #000 !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            body.is-reels-page .dashboard-navbar, 
+            body.is-reels-page .sidebar, 
+            body.is-reels-page .mobile-menu-btn, 
+            body.is-reels-page .mobile-menu-overlay, 
+            body.is-reels-page .back-to-dash-btn {
+                display: none !important;
+            }
+            body.is-reels-page .dashboard-container {
+                padding: 0 !important;
+                margin: 0 !important;
+                padding-top: 0 !important;
+                max-width: 100% !important;
+            }
+            body.is-reels-page .social-feed {
+                padding: 0 !important;
+                margin: 0 !important;
+                max-width: 100% !important;
+            }
+            body.is-reels-page .reels-container {
+                padding: 0 !important;
+                margin: 0 !important;
+                height: 100vh !important;
+                height: 100dvh !important;
+            }
+            body.is-reels-page .post-card.reel-card {
+                margin: 0 !important;
+                border-radius: 0 !important;
+                border: none !important;
+                width: 100vw !important;
+                max-width: 100% !important;
+                min-height: 100vh !important;
+                min-height: 100dvh !important;
+                max-height: 100vh !important;
+                max-height: 100dvh !important;
+                box-shadow: none !important;
+            }
+            
             body:has(.reels-container) .dashboard-container {
                 padding: 0 !important;
             }
@@ -537,8 +532,9 @@
             }
             .reel-card .post-actions {
                 right: 10px !important;
-                bottom: 20px !important;
+                bottom: 80px !important;
                 gap: 12px !important;
+                z-index: 25 !important;
             }
             .reel-card .post-actions .action-btn {
                 width: 40px !important;
@@ -567,7 +563,7 @@
     <script th:src="@{/js/game-rewards.js}"></script>
 </head>
 
-<body>
+<body th:class="${isReelsPage} ? 'is-reels-page' : ''">
 
     <!-- Navbar -->
     <!-- Mobile Sidebar Overlay -->
@@ -608,18 +604,7 @@
                     <img th:src="${user != null and user.profilePhotoUrl != null and !user.profilePhotoUrl.isEmpty()} ? @{${user.profilePhotoUrl}} : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=1780&auto=format&fit=crop'"
                         class="user-avatar" style="width: 32px; height: 32px; border: none;">
                 </a>
-                <div class="dropdown-menu" style="min-width: 200px !important; width: max-content !important; z-index: 99999 !important;">
-                    <a th:href="@{/profile}" class="dropdown-item" style="display: flex !important; align-items: center !important; gap: 12px !important; white-space: nowrap !important; width: auto !important; padding: 11px 16px !important; font-size: 14px !important; font-weight: 600 !important; color: #334155 !important; border-radius: 10px !important; text-decoration: none !important;">
-                        <i class="fas fa-user-circle" style="font-size: 15px !important; width: 20px !important; text-align: center !important; color: #64748B !important;"></i> View Profile
-                    </a>
-                    <a th:href="@{/settings}" class="dropdown-item" style="display: flex !important; align-items: center !important; gap: 12px !important; white-space: nowrap !important; width: auto !important; padding: 11px 16px !important; font-size: 14px !important; font-weight: 600 !important; color: #334155 !important; border-radius: 10px !important; text-decoration: none !important;">
-                        <i class="fas fa-cog" style="font-size: 15px !important; width: 20px !important; text-align: center !important; color: #64748B !important;"></i> Settings
-                    </a>
-                    <div class="dropdown-divider" style="height: 1px !important; background: rgba(0, 0, 0, 0.06) !important; margin: 6px 0 !important;"></div>
-                    <a th:href="@{/logout}" class="dropdown-item" style="color: #ff4444 !important; display: flex !important; align-items: center !important; gap: 12px !important; white-space: nowrap !important; width: auto !important; padding: 11px 16px !important; font-size: 14px !important; font-weight: 600 !important; border-radius: 10px !important; text-decoration: none !important;">
-                        <i class="fas fa-sign-out-alt" style="font-size: 15px !important; width: 20px !important; text-align: center !important; color: #ff4444 !important;"></i> Logout
-                    </a>
-                </div>
+
             </div>
         </div>
     </nav>

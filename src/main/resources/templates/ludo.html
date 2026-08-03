@@ -1704,10 +1704,25 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
                 animating = false;
                 checkWin();
                 if (!state.isGameOver) {
-                    if (val === 6 || captured) {
+                    let getsExtraTurn = false;
+                    let msg = '';
+                    if (piece.pos === 57) {
+                        getsExtraTurn = true;
+                        msg = '🏠 Reached home';
+                    }
+                    if (captured) {
+                        getsExtraTurn = true;
+                        msg = '💥 Captured';
+                    }
+                    if (val === 6) {
+                        getsExtraTurn = true;
+                        msg = '🎲 Rolled 6';
+                    }
+
+                    if (getsExtraTurn) {
                         state.diceRolled = false;
-                        setStatus(captured ? '💥 Captured &mdash; roll again!' : '🎲 Rolled 6 &mdash; roll again!', 'rollAgain');
-                        showToast(captured ? `${NAMES[pi]} captured &mdash; roll again!` : `${NAMES[pi]} rolled 6 &mdash; roll again!`, COLORS[pi]);
+                        setStatus(`${msg} &mdash; roll again!`, 'rollAgain');
+                        showToast(`${NAMES[pi]} ${msg.toLowerCase()} &mdash; roll again!`, COLORS[pi]);
                         updateTurnUI();
                         if (state.playerIndex === -1) {
                             startTurnTimer(30);
