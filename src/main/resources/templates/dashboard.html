@@ -6,7 +6,56 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard | Zentrix</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Mobile Full Screen Reels Style -->
+    <th:block th:if="${isReelsPage}">
+        <style>
+            @media (max-width: 768px) {
+                body {
+                    background: #000 !important;
+                    padding: 0 !important;
+                    margin: 0 !important;
+                }
+                .dashboard-navbar, .sidebar, .mobile-menu-btn, .mobile-menu-overlay, .back-to-dash-btn {
+                    display: none !important;
+                }
+                .dashboard-container {
+                    padding: 0 !important;
+                    margin: 0 !important;
+                    margin-top: 0 !important;
+                }
+                .social-feed {
+                    padding: 0 !important;
+                    margin: 0 !important;
+                    width: 100vw !important;
+                    max-width: 100% !important;
+                    min-height: 100vh !important;
+                }
+                .reels-container {
+                    padding: 0 !important;
+                    margin: 0 !important;
+                    width: 100vw !important;
+                }
+                .post-card.reel-card {
+                    margin: 0 !important;
+                    border-radius: 0 !important;
+                    border: none !important;
+                    width: 100vw !important;
+                    max-width: 100% !important;
+                    min-height: 100vh !important;
+                    box-shadow: none !important;
+                }
+                .reel-video-container {
+                    height: 100vh !important;
+                    border-radius: 0 !important;
+                }
+                .reel-video {
+                    object-fit: cover !important;
+                }
+            }
+        </style>
+    </th:block>
     <style>
         /* Voting Poll Styles for Dashboard */
         .dashboard-vote-section {
@@ -800,7 +849,7 @@
             </div>
 
             <!-- Back to Dashboard button for Reels Page -->
-            <div th:if="${isReelsPage}" style="max-width: 420px; margin: 0 auto 15px auto; display: flex; align-items: center; justify-content: flex-start;">
+            <div class="back-to-dash-btn" th:if="${isReelsPage}" style="max-width: 420px; margin: 0 auto 15px auto; display: flex; align-items: center; justify-content: flex-start;">
                 <a th:href="@{/dashboard}" style="display: inline-flex; align-items: center; gap: 8px; color: var(--text-primary); text-decoration: none; font-weight: 700; font-size: 14px; background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border: 1px solid var(--glass-border); padding: 8px 16px; border-radius: 20px; box-shadow: var(--shadow-premium); transition: all 0.2s;" onmouseover="this.style.transform='translateX(-3px)'; this.style.background='rgba(255,255,255,0.95)';" onmouseout="this.style.transform='none'; this.style.background='rgba(255, 255, 255, 0.7)';">
                     <i class="fas fa-arrow-left"></i> Back to Dashboard
                 </a>
