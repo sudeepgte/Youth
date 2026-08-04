@@ -58,6 +58,9 @@ public class LudoRoom {
     private static final Set<Integer> SAFE_SQUARES = new HashSet<>(Arrays.asList(0, 8, 13, 21, 26, 34, 39, 47));
 
     public void applyMove(int playerIdx, int pieceIdx, int newPos) {
+        if (!diceRolled || currentPlayerIndex != playerIdx) {
+            return;
+        }
         players.get(playerIdx).pieces[pieceIdx] = newPos;
         
         boolean captured = false;

@@ -1651,6 +1651,8 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
             else newPos = piece.pos + val;
 
             if (state.playerIndex !== -1) {
+                // Prevent duplicate requests locally
+                state.diceRolled = false;
                 // Send to server
                 stompClient.send("/app/ludo/" + state.roomId + "/move", {}, JSON.stringify({ 
                     playerIndex: pi, 
