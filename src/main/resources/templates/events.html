@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 
 <head th:replace="~{fragments/template :: head('Explore Events | Zentrix')}">
@@ -75,9 +75,9 @@
         <!-- Main Content -->
         <main class="content-main">
 
-            <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+            <!-- ═══════════════════════════════════════════════════════
                  SEARCH + CATEGORY FILTER BAR
-            â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+            ═══════════════════════════════════════════════════════ -->
             <div class="events-search-wrap">
                 <form id="eventsFilterForm" method="GET" th:action="@{/events}" class="events-search-form">
 
@@ -191,7 +191,7 @@
                 </div>
             </div>
 
-            <!-- ðŸ—³ï¸ Polls Section -->
+            <!-- 🗳️ Polls Section -->
             <section th:if="${!#lists.isEmpty(votingPolls)}" class="poll-section surface">
                 <div class="section-header">
                     <h2><i class="fas fa-poll"></i> Vote For Upcoming Events <span class="badge">Live</span></h2>
@@ -219,7 +219,7 @@
                 </div>
             </section>
 
-            <!-- ðŸ“… All Events Grid -->
+            <!-- 📅 All Events Grid -->
             <section>
                 <div class="section-header">
                     <h2>

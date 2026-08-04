@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 
 <head>
@@ -1105,11 +1105,10 @@
         </div>
         <div th:if="${param.marked != null and !param.marked.isEmpty()}" class="alert alert-success">
             <i class="fas fa-check-circle"></i>
-<<<<<<< HEAD
-            Ticket <strong th:text="${param.marked}"></strong> verified  attendance marked!
-=======
+
+
             Ticket <strong th:text="${param.marked}"></strong> verified — attendance marked!
->>>>>>> 13839f55fcd8768c94a74c35eb67556aafcb32c3
+
         </div>
         <div th:if="${param.error == 'invalid'}" class="alert alert-error">
             <i class="fas fa-times-circle"></i>
@@ -1220,11 +1219,10 @@
 
         <!-- -- Online: Meeting Link Display -- -->
         <div class="online-card" th:if="${event.eventMode == 'Online'}">
-<<<<<<< HEAD
-            <h2><i class="fas fa-video"></i> &nbsp;Online Event  Meeting Link</h2>
-=======
-            <h2><i class="fas fa-video"></i> &nbsp;Online Event — Meeting Link</h2>
->>>>>>> 13839f55fcd8768c94a74c35eb67556aafcb32c3
+
+            <h2><i class="fas fa-video"></i> &nbsp;Online Event � Meeting Link</h2>
+
+
             <p>Share this link with participants. Attendance is auto-marked when a registered student clicks "Join Now"
                 on the event page.</p>
             <div class="join-link-box"
@@ -1270,10 +1268,27 @@
                                 th:text="${reg.email != null ? reg.email : reg.user.email}">email</div>
                         </td>
                         <td style="color:var(--text-secondary); font-size:12px;"
+
                             th:text="${reg.phone != null ? reg.phone : '—'}">Phone</td>
                         <td><span class="ticket-chip" th:text="${reg.ticketId}">ZTX-XX-XXXX</span></td>
                         <td style="color:var(--text-secondary); font-size:12px;"
                             th:text="${reg.registrationDate != null ? #temporals.format(reg.registrationDate, 'MMM dd, yyyy') : '—'}">Date</td>
+
+
+                            th:text="${reg.phone != null ? reg.phone : '�'}">Phone</td>
+                        <td><span class="ticket-chip" th:text="${reg.ticketId}">ZTX-XX-XXXX</span></td>
+                        <td style="color:var(--text-secondary); font-size:12px;"
+                            th:text="${reg.registrationDate != null ? #temporals.format(reg.registrationDate, 'MMM dd, yyyy') : '�'}">
+
+
+                            th:text="${reg.phone != null ? reg.phone : ''}">Phone</td>
+                        <td><span class="ticket-chip" th:text="${reg.ticketId}">ZTX-XX-XXXX</span></td>
+                        <td style="color:var(--text-secondary); font-size:12px;"
+                            th:text="${reg.registrationDate != null ? #temporals.format(reg.registrationDate, 'MMM dd, yyyy') : ''}">
+
+                          
+                            Date</td>
+
                         <td>
                             <span th:if="${reg.attendanceMarked}" class="att-yes">
                                 <i class="fas fa-check-circle"></i> Present
@@ -1284,9 +1299,30 @@
                         </td>
                         <td style="font-weight:700; font-size:12px;"
                             th:classappend="${reg.position == 'Winner'} ? 'num-pink' : (${reg.position == 'Runner'} ? 'num-yellow' : '')"
+
                             th:text="${reg.position != null ? reg.position : '—'}">—</td>
                         <td style="color:#4ade80; font-weight:800;"
                             th:text="${reg.pointsEarned != null and reg.pointsEarned > 0 ? '+' + reg.pointsEarned + ' XP' : '—'}">—</td>
+
+
+                            th:text="${reg.position != null ? reg.position : '�'}">�</td>
+                        <td style="color:#4ade80; font-weight:800;"
+                            th:text="${reg.pointsEarned != null and reg.pointsEarned > 0 ? '+' + reg.pointsEarned + ' XP' : '�'}">
+                            �</td>
+
+
+                            th:text="${reg.position != null ? reg.position : ''}"></td>
+                        <td style="color:#4ade80; font-weight:800;"
+                            th:text="${reg.pointsEarned != null and reg.pointsEarned > 0 ? '+' + reg.pointsEarned + ' XP' : ''}">
+                            </td>
+
+                            th:text="${reg.position != null ? reg.position : '—'}">—</td>
+                        <td style="color:#4ade80; font-weight:800;"
+                            th:text="${reg.pointsEarned != null and reg.pointsEarned > 0 ? '+' + reg.pointsEarned + ' XP' : '—'}">
+                            —</td>
+
+
+
                     </tr>
                 </tbody>
             </table>

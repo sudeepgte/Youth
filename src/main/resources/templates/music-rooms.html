@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
@@ -108,7 +108,7 @@
                 <select class="form-input" name="trackId" style="flex:1; min-width: 220px;">
                     <option value="">Select your music (optional)</option>
 
-                    <option th:each="t : ${approvedTracks}" th:value="${t.id}" th:text="${t.title + ' â€” ' + t.artistName}">Track</option>
+                    <option th:each="t : ${approvedTracks}" th:value="${t.id}" th:text="${t.title + ' — ' + t.artistName}">Track</option>
 
                
 
@@ -134,7 +134,7 @@
                 <select class="form-input" name="trackId" style="flex:1; min-width: 220px;">
                     <option value="">Select your music (optional)</option>
 
-                    <option th:each="t : ${approvedTracks}" th:value="${t.id}" th:text="${t.title + ' â€” ' + t.artistName}">Track</option>
+                    <option th:each="t : ${approvedTracks}" th:value="${t.id}" th:text="${t.title + ' — ' + t.artistName}">Track</option>
 
   
                 </select>

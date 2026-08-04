@@ -705,19 +705,17 @@ header .navbar.navbar-home.scrolled .btn-outline:hover {
     from {
         opacity: 0;
         transform: translateY(30px) scale(0.98);
-        filter: blur(4px);
     }
 
     to {
         opacity: 1;
         transform: translateY(0) scale(1);
-        filter: blur(0);
     }
 }
 
 .reveal {
     opacity: 0;
-    will-change: opacity, transform, filter;
+    will-change: opacity, transform;
     transition: none !important;
     /* Managed by animation */
 }
