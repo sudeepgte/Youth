@@ -1566,16 +1566,6 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
 
             let val = Math.floor(Math.random() * 6) + 1;
             
-            // Pity Timer / Luck Boost
-            if (val !== 6) {
-                const streak = state.nonSixStreak[state.currentPlayer] || 0;
-                if (streak >= 5) {
-                    val = 6; // Guarantee a 6 after 5 non-6s
-                } else if (streak >= 3 && Math.random() < 0.5) {
-                    val = 6; // 50% chance after 3 or 4 non-6s
-                }
-            }
-            
             if (state.playerIndex !== -1) {
                 diceDisabled = true;
                 // Send to server
@@ -1714,10 +1704,25 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
                 animating = false;
                 checkWin();
                 if (!state.isGameOver) {
-                    if (val === 6 || captured) {
+                    let getsExtraTurn = false;
+                    let msg = '';
+                    if (piece.pos === 57) {
+                        getsExtraTurn = true;
+                        msg = '🏠 Reached home';
+                    }
+                    if (captured) {
+                        getsExtraTurn = true;
+                        msg = '💥 Captured';
+                    }
+                    if (val === 6) {
+                        getsExtraTurn = true;
+                        msg = '🎲 Rolled 6';
+                    }
+
+                    if (getsExtraTurn) {
                         state.diceRolled = false;
-                        setStatus(captured ? '💥 Captured &mdash; roll again!' : '🎲 Rolled 6 &mdash; roll again!', 'rollAgain');
-                        showToast(captured ? `${NAMES[pi]} captured &mdash; roll again!` : `${NAMES[pi]} rolled 6 &mdash; roll again!`, COLORS[pi]);
+                        setStatus(`${msg} &mdash; roll again!`, 'rollAgain');
+                        showToast(`${NAMES[pi]} ${msg.toLowerCase()} &mdash; roll again!`, COLORS[pi]);
                         updateTurnUI();
                         if (state.playerIndex === -1) {
                             startTurnTimer(30);
@@ -1811,12 +1816,44 @@ const BOARD_SIZE = Math.min(520, window.innerWidth * 0.92);
             const sx = BOARD_SIZE / rect.width, sy = BOARD_SIZE / rect.height;
             const mx = (e.clientX - rect.left) * sx, my = (e.clientY - rect.top) * sy;
             const pi = state.currentPlayer;
+            
+            // Only current player can move their pieces
+            if (state.playerIndex !== -1 && state.playerIndex !== pi) {
+                return;
+            }
+            
             let picked = -1;
+            let bestDist = 9999;
             state.pieces[pi].forEach((piece, idx) => {
                 if (!state.moveableIndices.includes(idx)) return;
-                const [px, py] = getPieceXY(pi, idx, piece);
+                
+                const [cx, cy] = getPieceXY(pi, idx, piece);
+                let ox = 0, oy = 0;
+                const globalIdx = piece.pos >= 0 && piece.pos < 52 ? (STARTS[pi] + piece.pos) % 52 : -1;
+                let sameCell = 0, myOrder = 0;
+                state.activeSlots.forEach(ppi => {
+                    state.pieces[ppi].forEach((pp2, ii) => {
+                        if (pp2.pos >= 0 && pp2.pos < 52) {
+                            const gi2 = (STARTS[ppi] + pp2.pos) % 52;
+                            if (gi2 === globalIdx) {
+                                if (ppi === pi && ii === idx) myOrder = sameCell;
+                                sameCell++;
+                            }
+                        }
+                    });
+                });
+                if (sameCell > 1) {
+                    const offsets = [[-0.18, -0.18], [0.18, -0.18], [-0.18, 0.18], [0.18, 0.18]];
+                    const o = offsets[myOrder % 4];
+                    if (o) { ox = o[0] * C; oy = o[1] * C; }
+                }
+                const px = cx + ox, py = cy + oy;
+                
                 const dist = Math.hypot(mx - px, my - py);
-                if (dist < C * 0.5) picked = idx;
+                if (dist < C && dist < bestDist) { // Increased hit radius for easier tapping on mobile
+                    bestDist = dist;
+                    picked = idx;
+                }
             });
             if (picked !== -1) movePiece(pi, picked);
         });

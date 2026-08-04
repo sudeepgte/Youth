@@ -10,7 +10,6 @@ public class LudoRoom {
     public boolean diceRolled = false;
     public String status = "waiting";
     public long lastTurnStartTime = System.currentTimeMillis();
-    public int consecutiveSixes = 0;
 
     public LudoRoom(String roomId, String playerName) {
         this.roomId = roomId;
@@ -53,17 +52,6 @@ public class LudoRoom {
         this.diceValue = val;
         this.diceRolled = true;
         this.lastTurnStartTime = System.currentTimeMillis();
-        
-        if (val == 6) {
-            consecutiveSixes++;
-            if (consecutiveSixes == 3) {
-                // Rolled 3 sixes in a row, turn is forfeited!
-                this.diceValue = 0;
-                skipTurn();
-            }
-        } else {
-            consecutiveSixes = 0;
-        }
     }
 
     private static final int[] STARTS = {0, 13, 26, 39};
@@ -94,7 +82,7 @@ public class LudoRoom {
 
         diceRolled = false;
 
-        // Check if current player won
+        // Check if current player won the game
         boolean allHome = true;
         for (int p : players.get(playerIdx).pieces) {
             if (p < 57) {
@@ -108,8 +96,13 @@ public class LudoRoom {
             return;
         }
         
-        // Handle next turn if not a 6 and no capture
-        if (diceValue != 6 && !captured) {
+        // Grant extra turn for rolling 6, capturing, or reaching home
+        boolean getsExtraTurn = false;
+        if (diceValue == 6) getsExtraTurn = true;
+        if (captured) getsExtraTurn = true;
+        if (newPos == 57) getsExtraTurn = true;
+        
+        if (!getsExtraTurn) {
             nextTurn();
         }
         this.lastTurnStartTime = System.currentTimeMillis();
@@ -124,7 +117,6 @@ public class LudoRoom {
 
     public void skipTurn() {
         diceRolled = false;
-        consecutiveSixes = 0;
         nextTurn();
         this.lastTurnStartTime = System.currentTimeMillis();
     }

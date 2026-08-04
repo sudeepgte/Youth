@@ -1619,6 +1619,7 @@ input[type="file"].form-input::file-selector-button:hover {
         padding-right: 15px !important;
         flex-direction: column !important;
         overflow-y: auto !important;
+        overflow-x: hidden !important;
         border-radius: 0 !important;
     }
     .sidebar.mobile-open {
@@ -1668,6 +1669,7 @@ input[type="file"].form-input::file-selector-button:hover {
     flex-direction: column;
     gap: 15px;
     overflow-y: auto;
+    overflow-x: hidden;
     padding-top: 15px;
     padding-bottom: 20px;
 }
@@ -2748,6 +2750,7 @@ input[type="file"].form-input::file-selector-button:hover {
     }
 }
 
+
 /* Fix Zen Coin box shape and alignment in navbar */
 .coin-nav {
     width: auto !important;
@@ -2758,6 +2761,52 @@ input[type="file"].form-input::file-selector-button:hover {
     justify-content: center !important;
 }
 
-
-
-
+/* Dark Theme overrides */
+.dark-theme {
+    --bg-color: #0f172a;
+    --bg-gradient: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+    --text-primary: #f8fafc;
+    --text-secondary: #cbd5e1;
+    --text-muted: #94a3b8;
+    --card-bg: rgba(30, 41, 59, 0.85);
+    --glass-bg: rgba(30, 41, 59, 0.5);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --shadow-premium: 0 20px 50px -12px rgba(0, 0, 0, 0.5);
+    --shadow-hover: 0 30px 60px -12px rgba(59, 130, 246, 0.4);
+}
+.dark-theme .dashboard-navbar {
+    background: rgba(15, 23, 42, 0.8);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.dark-theme .btn-outline {
+    border-color: rgba(255, 255, 255, 0.2);
+    color: #f8fafc;
+}
+.dark-theme .btn-outline:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+.dark-theme .sidebar-link {
+    color: var(--text-secondary);
+}
+.dark-theme .sidebar-link:hover, .dark-theme .sidebar-link.active {
+    color: var(--text-primary);
+    background: rgba(255,255,255,0.05);
+}
+.dark-theme .nav-links a {
+    color: var(--text-primary);
+}
+.dark-theme .post-card,
+.dark-theme .reels-container,
+.dark-theme .feature-card,
+.dark-theme .follow-list-container {
+    background: var(--card-bg);
+}
+.dark-theme .form-input, .dark-theme .search-bar input {
+    background: rgba(255,255,255,0.05);
+    color: #fff;
+    border-color: rgba(255,255,255,0.1);
+}
+.dark-theme .dashboard-logo span,
+.dark-theme h1, .dark-theme h2, .dark-theme h3 {
+    color: #f8fafc !important;
+}
