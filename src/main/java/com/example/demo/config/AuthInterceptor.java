@@ -43,6 +43,7 @@ public class AuthInterceptor implements HandlerInterceptor {
             path.startsWith("/api/uno/") ||
             path.startsWith("/api/chess/") ||
             path.startsWith("/api/rps/") ||
+            path.startsWith("/api/mobile/auth/") ||
             path.startsWith("/ws") ||
             path.startsWith("/css/") || 
             path.startsWith("/js/") || path.startsWith("/images/") || path.startsWith("/uploads/")) {
@@ -140,6 +141,10 @@ public class AuthInterceptor implements HandlerInterceptor {
 
                         // Store user in request for controllers to use
                         request.setAttribute("authenticatedUser", user);
+                        // Also hydrate session so legacy controllers (posts, notifications, shop) work with Bearer JWT (mobile)
+                        jakarta.servlet.http.HttpSession session = request.getSession(true);
+                        session.setAttribute("user", user);
+                        session.setAttribute("userId", user.getId());
                         // Prevent browser from caching protected pages
                         setNoCacheHeaders(response);
                         return true;
