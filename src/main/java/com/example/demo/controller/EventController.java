@@ -375,7 +375,7 @@ public class EventController {
         }
         
         if (minStartingPrice != null) {
-            String formattedPrice = "₹" + String.format("%,.0f", minStartingPrice);
+            String formattedPrice = "\u20B9" + String.format("%,.0f", minStartingPrice);
             model.addAttribute("startingPriceFormatted", formattedPrice);
         } else {
             model.addAttribute("startingPriceFormatted", "Sold Out");
@@ -666,8 +666,8 @@ public class EventController {
         model.addAttribute("user", dbUser);
         model.addAttribute("isDiscounted", isDiscounted);
         model.addAttribute("quantity", quantity);
-        model.addAttribute("basePrice", "₹" + String.format("%,.0f", priceVal));
-        model.addAttribute("finalPrice", "₹" + String.format("%,.0f", finalPrice));
+        model.addAttribute("basePrice", "\u20B9" + String.format("%,.0f", priceVal));
+        model.addAttribute("finalPrice", "\u20B9" + String.format("%,.0f", finalPrice));
         return "payment";
     }
 
@@ -1310,6 +1310,8 @@ public class EventController {
             @PathVariable Long id,
             @RequestParam(required = false) List<Long> winnerIds,
             @RequestParam(required = false) List<Long> runnerIds,
+            @RequestParam(required = false) String customWinners,
+            @RequestParam(required = false) String customRunners,
             @RequestParam(defaultValue = "100") int winnerPoints,
             @RequestParam(defaultValue = "50") int runnerPoints,
             @RequestParam(defaultValue = "10") int defaultPoints,
@@ -1338,7 +1340,14 @@ public class EventController {
             String position = "Participant";
             int points = 0;
 
-            if (reg.isAttendanceMarked()) {
+            boolean isWinner = (winnerIds != null && winnerIds.contains(reg.getId())) || matchesCustomText(reg, customWinners);
+            boolean isRunner = (runnerIds != null && runnerIds.contains(reg.getId())) || matchesCustomText(reg, customRunners);
+
+            if (reg.isAttendanceMarked() || isWinner || isRunner) {
+                if (!reg.isAttendanceMarked() && (isWinner || isRunner)) {
+                    reg.setAttendanceMarked(true);
+                }
+
                 // Secret Voting Weight System
                 String jScoreStr = request.getParameter("judgeScore_" + reg.getId());
                 double jScore = 0.0;
@@ -1353,10 +1362,10 @@ public class EventController {
                 reg.setFinalScore(finalScore);
 
                 // Assign Rank
-                if (winnerIds != null && winnerIds.contains(reg.getId())) {
+                if (isWinner) {
                     position = "Winner";
                     points = winnerPoints;
-                } else if (runnerIds != null && runnerIds.contains(reg.getId())) {
+                } else if (isRunner) {
                     position = "Runner";
                     points = runnerPoints;
                 } else {
@@ -1525,6 +1534,17 @@ public class EventController {
     // ─────────────────────────────────────────────────────────
     //  HELPERS
     // ─────────────────────────────────────────────────────────
+    private boolean matchesCustomText(EventRegistration reg, String customText) {
+        if (customText == null || customText.trim().isEmpty()) return false;
+        String text = customText.toLowerCase().trim();
+        if (reg.getId() != null && text.contains(reg.getId().toString())) return true;
+        if (reg.getTicketId() != null && text.contains(reg.getTicketId().toLowerCase())) return true;
+        if (reg.getFullName() != null && text.contains(reg.getFullName().toLowerCase())) return true;
+        if (reg.getUser() != null && reg.getUser().getUsername() != null && text.contains(reg.getUser().getUsername().toLowerCase())) return true;
+        if (reg.getEmail() != null && text.contains(reg.getEmail().toLowerCase())) return true;
+        return false;
+    }
+
     private String completeRegistration(Event event, User user, String paymentStatus,
                                          String fullName, String email, String phone,
                                          String college, String yearOfStudy, String selectedTier,

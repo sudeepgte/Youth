@@ -435,7 +435,96 @@
                 bottom: 110px !important;
             }
         }
-    </style>
+    
+        /* ── Mobile Responsive Controls & HUD Fix ── */
+        @media (max-width: 768px) {
+            #ui-container {
+                padding: 12px 15px !important;
+            }
+
+            #top-hud .hud-card {
+                padding: 6px 12px !important;
+                border-radius: 16px !important;
+                gap: 8px !important;
+            }
+
+            #top-hud .score-value {
+                font-size: 1.4rem !important;
+            }
+
+            #top-hud .score-label {
+                font-size: 0.65rem !important;
+            }
+
+            #mobile-controls-container {
+                display: flex !important;
+                position: fixed !important;
+                bottom: 20px !important;
+                left: 0 !important;
+                right: 0 !important;
+                transform: none !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                padding: 0 20px !important;
+                justify-content: space-between !important;
+                align-items: flex-end !important;
+                box-sizing: border-box !important;
+                z-index: 50 !important;
+                pointer-events: none !important;
+            }
+
+            .mobile-control-btn {
+                pointer-events: auto !important;
+                width: 58px !important;
+                height: 58px !important;
+                font-size: 1.4rem !important;
+                border-radius: 50% !important;
+                background: rgba(0, 0, 0, 0.65) !important;
+                backdrop-filter: blur(12px) !important;
+                -webkit-backdrop-filter: blur(12px) !important;
+                border: 2px solid rgba(255, 255, 255, 0.3) !important;
+                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                touch-action: manipulation !important;
+                -webkit-tap-highlight-color: transparent !important;
+            }
+
+            #btn-left {
+                border-color: var(--neon-blue) !important;
+                box-shadow: 0 0 15px rgba(0, 210, 255, 0.4) !important;
+            }
+
+            #btn-right {
+                border-color: var(--neon-blue) !important;
+                box-shadow: 0 0 15px rgba(0, 210, 255, 0.4) !important;
+            }
+
+            #btn-jump {
+                width: 66px !important;
+                height: 66px !important;
+                font-size: 1.7rem !important;
+                border-color: var(--neon-pink) !important;
+                box-shadow: 0 0 18px rgba(255, 0, 127, 0.5) !important;
+            }
+
+            #powerup-ui {
+                bottom: 100px !important;
+            }
+
+            .glass-menu {
+                padding: 30px 20px !important;
+                width: 90% !important;
+                border-radius: 28px !important;
+            }
+
+            .game-title {
+                font-size: 2.5rem !important;
+            }
+        }
+
+</style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
@@ -497,7 +586,7 @@
             <div class="p-bar-track">
                 <div id="powerup-fill" class="p-bar-fill"></div>
             </div>
-    </div>
+        </div>
 
     <!-- Mobile Controls Interface -->
     <div id="mobile-controls-container">

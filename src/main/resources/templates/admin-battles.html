@@ -93,21 +93,38 @@
         }
 
         .status-badge {
+            display: inline-block;
             padding: 6px 14px;
             border-radius: 20px;
             font-size: 11px;
             font-weight: 800;
             text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
         }
 
         .status-active {
             background: #dcfce7 !important;
-            color: #166534 !important;
+            color: #15803d !important;
+            border: 1px solid #bbf7d0 !important;
         }
 
-        .status-pending {
-            background: #fef08a !important;
-            color: #854d0e !important;
+        .status-waiting, .status-pending {
+            background: #fef3c7 !important;
+            color: #b45309 !important;
+            border: 1px solid #fde68a !important;
+        }
+
+        .status-completed {
+            background: #f3e8ff !important;
+            color: #6b21a8 !important;
+            border: 1px solid #e9d5ff !important;
+        }
+
+        .status-voting, .status-ongoing {
+            background: #e0f2fe !important;
+            color: #0369a1 !important;
+            border: 1px solid #bae6fd !important;
         }
 
         /* Responsive Dashboard Container and Sidebar Styling */
@@ -287,7 +304,206 @@
                 display: none; /* Hide icons in navbar buttons on small screens to save space */
             }
         }
-    </style>
+    
+        /* ── Dark Mode Design System ── */
+        [data-theme="dark"] {
+            --bg-gradient: linear-gradient(135deg, #090d16 0%, #0f172a 100%) !important;
+            --text-primary: #f8fafc !important;
+            --text-secondary: #94a3b8 !important;
+            --card-bg: rgba(30, 41, 59, 0.85) !important;
+            --glass-border: rgba(255, 255, 255, 0.12) !important;
+        }
+
+        [data-theme="dark"] body {
+            background: var(--bg-gradient) !important;
+            color: #f8fafc !important;
+        }
+
+        [data-theme="dark"] .dashboard-navbar {
+            background: rgba(15, 23, 42, 0.92) !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3) !important;
+        }
+
+        [data-theme="dark"] .dashboard-logo {
+            color: #f8fafc !important;
+        }
+
+        [data-theme="dark"] .sidebar {
+            background: rgba(15, 23, 42, 0.8) !important;
+        }
+
+        [data-theme="dark"] .sidebar-link {
+            color: #cbd5e1 !important;
+        }
+
+        [data-theme="dark"] .sidebar-subtab {
+            color: #94a3b8 !important;
+        }
+
+        [data-theme="dark"] .sidebar-subtab:hover,
+        [data-theme="dark"] .sidebar-subtab.active {
+            background: rgba(59, 130, 246, 0.2) !important;
+            color: #38bdf8 !important;
+        }
+
+        [data-theme="dark"] .stat-tile,
+        [data-theme="dark"] .event-card,
+        [data-theme="dark"] .form-card,
+        [data-theme="dark"] .table-card,
+        [data-theme="dark"] .online-card,
+        [data-theme="dark"] .battles-card,
+        [data-theme="dark"] .card {
+            background: rgba(30, 41, 59, 0.85) !important;
+            border-color: rgba(255, 255, 255, 0.12) !important;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2) !important;
+        }
+
+        [data-theme="dark"] h1,
+        [data-theme="dark"] h2,
+        [data-theme="dark"] h3,
+        [data-theme="dark"] h4,
+        [data-theme="dark"] h5,
+        [data-theme="dark"] .stat-num,
+        [data-theme="dark"] .event-title,
+        [data-theme="dark"] label {
+            color: #f8fafc !important;
+        }
+
+        [data-theme="dark"] p,
+        [data-theme="dark"] span,
+        [data-theme="dark"] .stat-lbl,
+        [data-theme="dark"] .meta-row,
+        [data-theme="dark"] td {
+            color: #cbd5e1 !important;
+        }
+
+        [data-theme="dark"] input:not([type="submit"]):not([type="button"]),
+        [data-theme="dark"] select,
+        [data-theme="dark"] textarea {
+            background: rgba(15, 23, 42, 0.7) !important;
+            color: #f8fafc !important;
+            border-color: rgba(255, 255, 255, 0.18) !important;
+        }
+
+        [data-theme="dark"] input::placeholder,
+        [data-theme="dark"] textarea::placeholder {
+            color: #64748b !important;
+        }
+
+        [data-theme="dark"] table {
+            color: #f8fafc !important;
+        }
+
+        [data-theme="dark"] table th {
+            background: rgba(15, 23, 42, 0.85) !important;
+            color: #94a3b8 !important;
+            border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+        }
+
+        [data-theme="dark"] table td {
+            border-bottom-color: rgba(255, 255, 255, 0.06) !important;
+        }
+
+        [data-theme="dark"] .modal-box {
+            background: #1e293b !important;
+            border-color: rgba(255, 255, 255, 0.15) !important;
+            color: #f8fafc !important;
+        }
+
+        [data-theme="dark"] .modal-close-btn {
+            background: rgba(255, 255, 255, 0.1) !important;
+            border-color: rgba(255, 255, 255, 0.2) !important;
+            color: #cbd5e1 !important;
+        }
+
+        [data-theme="dark"] .btn-back-exit {
+            background: rgba(30, 41, 59, 0.85) !important;
+            border-color: rgba(255, 255, 255, 0.15) !important;
+            color: #f8fafc !important;
+        }
+
+        /* ── Dark Mode Battle Status Badges ── */
+        [data-theme="dark"] .status-active {
+            background: rgba(34, 197, 94, 0.25) !important;
+            color: #4ade80 !important;
+            border: 1px solid rgba(74, 222, 128, 0.4) !important;
+        }
+
+        [data-theme="dark"] .status-waiting,
+        [data-theme="dark"] .status-pending {
+            background: rgba(245, 158, 11, 0.25) !important;
+            color: #facc15 !important;
+            border: 1px solid rgba(250, 204, 21, 0.4) !important;
+        }
+
+        [data-theme="dark"] .status-completed {
+            background: rgba(168, 85, 247, 0.25) !important;
+            color: #c084fc !important;
+            border: 1px solid rgba(192, 132, 252, 0.4) !important;
+        }
+
+        [data-theme="dark"] .status-voting,
+        [data-theme="dark"] .status-ongoing {
+            background: rgba(56, 189, 248, 0.25) !important;
+            color: #38bdf8 !important;
+            border: 1px solid rgba(56, 189, 248, 0.4) !important;
+        }
+
+        .theme-toggle-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.85);
+            border: 1px solid rgba(15, 23, 42, 0.15);
+            color: #0f172a;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            margin-left: auto;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .theme-toggle-btn:hover {
+            transform: scale(1.08) rotate(15deg);
+            background: #ffffff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        }
+
+        [data-theme="dark"] .theme-toggle-btn {
+            background: rgba(30, 41, 59, 0.85) !important;
+            border-color: rgba(255, 255, 255, 0.2) !important;
+            color: #f59e0b !important;
+        }
+
+        [data-theme="dark"] .theme-toggle-btn:hover {
+            background: rgba(51, 65, 85, 0.9) !important;
+            color: #fbbf24 !important;
+        }
+
+        @media (max-width: 576px) {
+            .theme-toggle-btn {
+                width: 34px;
+                height: 34px;
+                font-size: 14px;
+            }
+        }
+
+</style>
+    <script>
+        (function () {
+            const savedTheme = localStorage.getItem('zentrix_theme') || 'light';
+            if (savedTheme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                document.body.classList.add('dark-theme');
+            }
+        })();
+    </script>
+
 </head>
 
 <body>
@@ -314,10 +530,10 @@
 </a>
 
         <div class="dashboard-spacer"></div>
-        <div class="dashboard-nav-links">
-            
-            <a th:href="@{/logout}" class="btn btn-primary" style="background: linear-gradient(135deg, #f84464, #ff6b9d); color: #fff !important; border-radius: 10px; padding: 8px 18px; text-decoration: none; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; width: max-content;">Logout</a>
-        </div>
+        <button id="themeToggleBtn" onclick="toggleTheme()" class="theme-toggle-btn" title="Toggle Light / Dark Mode" aria-label="Toggle Theme">
+            <i id="themeToggleIcon" class="fas fa-moon"></i>
+        </button>
+        
     </nav>
 
     <div class="dashboard-container">
@@ -366,7 +582,11 @@
                 <div class="stat-card">
                     <div class="stat-icon" style="background: rgba(245, 158, 11, 0.15);"><i class="fas fa-coins" style="color: #f59e0b;"></i></div>
                     <div>
+
                         <h3 style="font-size: 24px; color: #fff;" th:text="${'₹' + #numbers.formatDecimal(totalAdminCommission, 1, 2)}">₹0.00</h3>
+
+                        <h3 style="font-size: 24px; color: #fff;" th:text="${'\\u20B9' + #numbers.formatDecimal(totalAdminCommission, 1, 2)}">&#8377;0.00</h3>
+
                         <span style="color: #94a3b8; font-size: 14px;">Battle Revenue (7%)</span>
                     </div>
                 </div>
@@ -397,11 +617,19 @@
                                     <div style="font-weight: 700;" th:text="${b.creator != null ? b.creator.username : 'Unknown'}">Host</div>
                                 </td>
                                 <td th:text="${b.category}">Category</td>
+
                                 <td th:text="${'₹' + b.entryFee}">₹0.00</td>
                                 <td th:text="${b.participants != null ? b.participants.size() : 0}">0</td>
                                 <td style="font-weight: 800; color: #10b981;" 
                                     th:text="${'₹' + #numbers.formatDecimal((b.entryFee != null ? b.entryFee : 0.0) * 0.07 * joinsCount, 1, 2)}">
                                     ₹0.00
+
+                                <td th:text="${'\\u20B9' + b.entryFee}">&#8377;0.00</td>
+                                <td th:text="${b.participants != null ? b.participants.size() : 0}">0</td>
+                                <td style="font-weight: 800; color: #10b981;" 
+                                    th:text="${'\\u20B9' + #numbers.formatDecimal((b.entryFee != null ? b.entryFee : 0.0) * 0.07 * joinsCount, 1, 2)}">
+                                    &#8377;0.00
+
                                 </td>
                                 <td>
                                     <details style="cursor: pointer; outline: none;">
@@ -424,10 +652,11 @@
                                         </div>
                                     </details>
                                 </td>
-                                <td>
-                                    <span th:class="${'status-badge ' + ('ACTIVE'.equals(b.status) ? 'status-active' : 'status-pending')}" 
-                                          th:text="${b.status}">Status</span>
-                                </td>
+                                 <td>
+                                     <span class="status-badge" 
+                                           th:classappend="${'ACTIVE'.equals(b.status) ? 'status-active' : ('WAITING'.equals(b.status) ? 'status-waiting' : ('COMPLETED'.equals(b.status) ? 'status-completed' : ('VOTING'.equals(b.status) or 'ONGOING'.equals(b.status) ? 'status-voting' : 'status-pending')))}" 
+                                           th:text="${b.status}">Status</span>
+                                 </td>
                             </tr>
                             <tr th:if="${#lists.isEmpty(battles)}">
                                 <td colspan="7" style="text-align: center; color: var(--text-secondary); padding: 20px;">No battles created yet.</td>
@@ -439,6 +668,33 @@
 
         </main>
     </div>
+
+
+    <script>
+        function updateThemeIcon() {
+            const icon = document.getElementById('themeToggleIcon');
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            if (icon) {
+                icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+            }
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            if (newTheme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                document.body.classList.add('dark-theme');
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+                document.body.classList.remove('dark-theme');
+            }
+            localStorage.setItem('zentrix_theme', newTheme);
+            updateThemeIcon();
+        }
+
+        document.addEventListener('DOMContentLoaded', updateThemeIcon);
+    </script>
 
 </body>
 

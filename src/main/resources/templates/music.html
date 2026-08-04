@@ -215,7 +215,7 @@
         // Clean the URL so refresh doesn't re-show the toast
         params.delete('success');
         const newQuery = params.toString();
-        const newUrl = window.location.pathname + (newQuery ? ('?' + newQuery) : '');
+        const newUrl = window.location.pathname + (newQuery ? ('\\u20B9 ' + newQuery) : '');
         window.history.replaceState({}, '', newUrl);
     })();
 

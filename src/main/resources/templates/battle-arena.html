@@ -934,10 +934,10 @@
                         <span><i class="fas fa-vote-yea"></i> <span th:text="${battle.votingType}">PUBLIC</span> Voting</span>
                         <span><i class="fas fa-trophy"></i> <span th:text="${battle.winnerXp}">500</span> XP Reward</span>
                         
-                        <span th:if="${battle.entryFee != null and battle.entryFee > 0}" style="color:#10B981; font-weight:700;"><i class="fas fa-ticket-alt"></i> â‚¹<span th:text="${battle.entryFee}">50</span> Entry Fee</span>
-                        <span th:if="${battle.prize1 != null and battle.prize1 > 0}"><i class="fas fa-trophy" style="color:#FFD700;"></i> 1st Prize: â‚¹<span th:text="${battle.prize1}">100</span></span>
-                        <span th:if="${battle.prize2 != null and battle.prize2 > 0}"><i class="fas fa-trophy" style="color:#C0C0C0;"></i> 2nd Prize: â‚¹<span th:text="${battle.prize2}">50</span></span>
-                        <span th:if="${battle.prize3 != null and battle.prize3 > 0}"><i class="fas fa-trophy" style="color:#cd7f32;"></i> 3rd Prize: â‚¹<span th:text="${battle.prize3}">25</span></span>
+                        <span th:if="${battle.entryFee != null and battle.entryFee > 0}" style="color:#10B981; font-weight:700;"><i class="fas fa-ticket-alt"></i> &#8377;<span th:text="${battle.entryFee}">50</span> Entry Fee</span>
+                        <span th:if="${battle.prize1 != null and battle.prize1 > 0}"><i class="fas fa-trophy" style="color:#FFD700;"></i> 1st Prize: &#8377;<span th:text="${battle.prize1}">100</span></span>
+                        <span th:if="${battle.prize2 != null and battle.prize2 > 0}"><i class="fas fa-trophy" style="color:#C0C0C0;"></i> 2nd Prize: &#8377;<span th:text="${battle.prize2}">50</span></span>
+                        <span th:if="${battle.prize3 != null and battle.prize3 > 0}"><i class="fas fa-trophy" style="color:#cd7f32;"></i> 3rd Prize: &#8377;<span th:text="${battle.prize3}">25</span></span>
                     </div>
 
                     <!-- Offline Event Details Block -->
@@ -2088,7 +2088,7 @@
 
             if (totalPrizePool > (maxAllowedPrizePool + 0.01)) {
                 e.preventDefault();
-                alert(`Invalid Prize Amounts! The total prize pool (â‚¹${totalPrizePool.toFixed(2)}) cannot exceed the total collected entry fee pool (â‚¹${entryFee.toFixed(2)} Ã— ${participantCount} participants = â‚¹${maxAllowedPrizePool.toFixed(2)}).`);
+                alert(`Invalid Prize Amounts! The total prize pool (&#8377;${totalPrizePool.toFixed(2)}) cannot exceed the total collected entry fee pool (&#8377;${entryFee.toFixed(2)} Ã— ${participantCount} participants = &#8377;${maxAllowedPrizePool.toFixed(2)}).`);
                 return;
             }
         });

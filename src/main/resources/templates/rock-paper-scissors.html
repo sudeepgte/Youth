@@ -31,7 +31,15 @@
         <div id="waitArea" style="display: none; text-align: center;">
             <div style="background: #1e293b; padding: 30px; border-radius: 20px; border: 1px solid #334155;">
                 <h2 style="color: #fbcc15;">GAME LOBBY</h2>
-                <div id="roomCode" style="font-size: 48px; letter-spacing: 12px; margin: 20px 0; color: #fbcc15; font-family: monospace;"></div>
+                <div id="roomCode" style="font-size: clamp(18px, 5.5vw, 44px); letter-spacing: clamp(0px, 0.8vw, 4px); margin: 15px 0; color: #fbcc15; font-family: monospace; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 0 10px; box-sizing: border-box;"></div>
+                <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px;">
+                    <button onclick="copyRpsCode()" class="choice-btn" style="width: auto; height: auto; padding: 10px 20px; border-radius: 10px; background: rgba(255,255,255,0.1); border: 1px solid #334155; font-size: 14px; font-weight: bold; color: #fff; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; min-height: 44px;">
+                        <i class="fas fa-copy"></i> Copy Code
+                    </button>
+                    <button onclick="shareRpsCode()" class="choice-btn" style="width: auto; height: auto; padding: 10px 20px; border-radius: 10px; background: #25D366; border: none; font-size: 14px; font-weight: bold; color: #fff; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; min-height: 44px;">
+                        <i class="fab fa-whatsapp"></i> Share
+                    </button>
+                </div>
                 <div style="margin: 20px 0; background: rgba(0,0,0,0.2); padding: 20px; border-radius: 12px;">
                     <div style="font-size: 18px; font-weight: bold; margin-bottom: 10px; color: #f8fafc;">Players Joined:</div>
                     <div id="lobbyP1" style="font-size: 16px; color: #fbcc15; margin-bottom: 5px;">Player 1: ...</div>
@@ -113,6 +121,94 @@
 
     <script type="text/javascript" th:inline="none">
         // <![CDATA[
+
+        function copyRpsCode() {
+            const code = rId || document.getElementById('roomCode')?.innerText;
+            if (!code) return;
+            copyRpsText(code, "Room code copied successfully!");
+        }
+
+        function shareRpsCode() {
+            const code = rId || document.getElementById('roomCode')?.innerText;
+            if (!code) return;
+
+            const origin = window.location.origin;
+            const joinUrl = origin + window.location.pathname + '?room=' + code;
+            const message = `🎮 Join my Rock Paper Scissors game!\n\nRoom Code: ${code}\n\nJoin here:\n${joinUrl}\n\nOr open the game and enter the room code.\n\nLet's play! 🔥`;
+            const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+
+            if (navigator.share && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+                navigator.share({
+                    title: "Join my Rock Paper Scissors game!",
+                    text: message,
+                    url: joinUrl
+                }).catch(() => {
+                    openRpsWhatsApp(waUrl, message);
+                });
+            } else {
+                openRpsWhatsApp(waUrl, message);
+            }
+        }
+
+        function openRpsWhatsApp(waUrl, message) {
+            try {
+                const win = window.open(waUrl, '_blank');
+                if (!win || win.closed || typeof win.closed === 'undefined') {
+                    copyRpsText(message, "Invitation copied successfully.");
+                } else {
+                    showRpsToast("Opening WhatsApp...");
+                }
+            } catch (e) {
+                copyRpsText(message, "Invitation copied successfully.");
+            }
+        }
+
+        function copyRpsText(text, toastMsg) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showRpsToast(toastMsg);
+                }).catch(() => {
+                    fallbackRpsCopy(text, toastMsg);
+                });
+            } else {
+                fallbackRpsCopy(text, toastMsg);
+            }
+        }
+
+        function fallbackRpsCopy(text, toastMsg) {
+            const dummy = document.createElement('textarea');
+            dummy.style.position = 'fixed';
+            dummy.style.opacity = '0';
+            document.body.appendChild(dummy);
+            dummy.value = text;
+            dummy.select();
+            document.execCommand('copy');
+            document.body.removeChild(dummy);
+            showRpsToast(toastMsg);
+        }
+
+        function showRpsToast(msg) {
+            showGlobalToast(msg);
+        }
+
+        function showGlobalToast(msg) {
+            let toast = document.getElementById('global-invite-toast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'global-invite-toast';
+                document.body.appendChild(toast);
+            }
+            toast.style.cssText = 'position:fixed !important;top:25px !important;left:50% !important;transform:translateX(-50%) !important;background:linear-gradient(135deg, #10b981 0%, #059669 100%) !important;color:#ffffff !important;padding:12px 28px !important;border-radius:50px !important;font-weight:800 !important;font-size:14px !important;letter-spacing:0.5px !important;z-index:999999 !important;box-shadow:0 10px 30px rgba(16,185,129,0.45), 0 4px 12px rgba(0,0,0,0.5) !important;border:1px solid rgba(255,255,255,0.3) !important;display:inline-flex !important;align-items:center !important;gap:10px !important;white-space:nowrap !important;pointer-events:none !important;box-sizing:border-box !important;max-width:90vw !important;font-family:sans-serif !important;';
+            toast.innerHTML = '<i class="fas fa-check-circle" style="font-size:16px;color:#fff;"></i> <span>' + msg + '</span>';
+            toast.style.display = 'inline-flex';
+
+            if (window.toastTimeout) clearTimeout(window.toastTimeout);
+            window.toastTimeout = setTimeout(() => {
+                toast.style.display = 'none';
+            }, 2800);
+        }
+
+
         const getUniqueGuestName = () => {
             const baseName = document.body.dataset.username || 'Player';
             if (baseName !== 'Player') return baseName;
