@@ -345,6 +345,11 @@
             gap: 12px;
         }
 
+        .scan-row .btn {
+            flex-shrink: 0;
+            white-space: nowrap;
+        }
+
         .scan-input {
             flex: 1;
             background: rgba(255, 255, 255, 0.8);
@@ -489,15 +494,19 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.4);
-            
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 1000;
+            z-index: 1100;
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.3s;
+            transition: opacity 0.3s ease;
+            overflow-y: auto;
+            padding: 20px 16px;
+            box-sizing: border-box;
         }
 
         .modal-overlay.open {
@@ -506,15 +515,18 @@
         }
 
         .modal-box {
-            background: #fff;
+            position: relative;
+            background: #ffffff;
             padding: 30px;
             border-radius: 20px;
             width: 100%;
-            max-width: 500px;
+            max-width: 540px;
             border: 1px solid var(--glass-border);
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
-            max-height: 90vh;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+            max-height: calc(100vh - 40px);
             overflow-y: auto;
+            margin: auto !important;
+            box-sizing: border-box;
         }
 
         .modal-box h2 {
@@ -789,18 +801,245 @@
             }
             
             .modal-box {
-                padding: 20px 15px !important;
-                margin: 0 15px !important;
-                width: calc(100% - 30px) !important;
-                max-width: none !important;
+                padding: 24px 18px !important;
+                margin: auto !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                max-height: calc(100vh - 32px) !important;
             }
             .rank-label {
                 flex-direction: column !important;
                 align-items: flex-start !important;
                 gap: 5px !important;
             }
+
+            .scan-row {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                gap: 10px !important;
+            }
+
+            .scan-row .scan-input {
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+
+            .scan-row .btn {
+                width: 100% !important;
+                justify-content: center !important;
+                padding: 12px 16px !important;
+                white-space: nowrap !important;
+                box-sizing: border-box !important;
+            }
         }
-    </style>
+    
+        .modal-close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            color: #475569;
+            font-size: 22px;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            z-index: 10;
+        }
+        .modal-close-btn:hover {
+            background: #ef4444;
+            color: #ffffff;
+            border-color: #ef4444;
+            transform: scale(1.08);
+        }
+        @media (max-width: 576px) {
+            .modal-close-btn {
+                top: 14px;
+                right: 14px;
+                width: 30px;
+                height: 30px;
+                font-size: 18px;
+            }
+        }
+
+        /* â”€â”€ Dark Mode Design System â”€â”€ */
+        [data-theme="dark"] {
+            --bg-gradient: linear-gradient(135deg, #090d16 0%, #0f172a 100%) !important;
+            --text-primary: #f8fafc !important;
+            --text-secondary: #94a3b8 !important;
+            --card-bg: rgba(30, 41, 59, 0.85) !important;
+            --glass-border: rgba(255, 255, 255, 0.12) !important;
+        }
+
+        [data-theme="dark"] body {
+            background: var(--bg-gradient) !important;
+            color: #f8fafc !important;
+        }
+
+        [data-theme="dark"] .dashboard-navbar {
+            background: rgba(15, 23, 42, 0.92) !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3) !important;
+        }
+
+        [data-theme="dark"] .dashboard-logo {
+            color: #f8fafc !important;
+        }
+
+        [data-theme="dark"] .sidebar {
+            background: rgba(15, 23, 42, 0.8) !important;
+        }
+
+        [data-theme="dark"] .sidebar-link {
+            color: #cbd5e1 !important;
+        }
+
+        [data-theme="dark"] .sidebar-subtab {
+            color: #94a3b8 !important;
+        }
+
+        [data-theme="dark"] .sidebar-subtab:hover,
+        [data-theme="dark"] .sidebar-subtab.active {
+            background: rgba(59, 130, 246, 0.2) !important;
+            color: #38bdf8 !important;
+        }
+
+        [data-theme="dark"] .stat-tile,
+        [data-theme="dark"] .event-card,
+        [data-theme="dark"] .form-card,
+        [data-theme="dark"] .table-card,
+        [data-theme="dark"] .online-card,
+        [data-theme="dark"] .battles-card,
+        [data-theme="dark"] .card {
+            background: rgba(30, 41, 59, 0.85) !important;
+            border-color: rgba(255, 255, 255, 0.12) !important;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2) !important;
+        }
+
+        [data-theme="dark"] h1,
+        [data-theme="dark"] h2,
+        [data-theme="dark"] h3,
+        [data-theme="dark"] h4,
+        [data-theme="dark"] h5,
+        [data-theme="dark"] .stat-num,
+        [data-theme="dark"] .event-title,
+        [data-theme="dark"] label {
+            color: #f8fafc !important;
+        }
+
+        [data-theme="dark"] p,
+        [data-theme="dark"] span,
+        [data-theme="dark"] .stat-lbl,
+        [data-theme="dark"] .meta-row,
+        [data-theme="dark"] td {
+            color: #cbd5e1 !important;
+        }
+
+        [data-theme="dark"] input:not([type="submit"]):not([type="button"]),
+        [data-theme="dark"] select,
+        [data-theme="dark"] textarea {
+            background: rgba(15, 23, 42, 0.7) !important;
+            color: #f8fafc !important;
+            border-color: rgba(255, 255, 255, 0.18) !important;
+        }
+
+        [data-theme="dark"] input::placeholder,
+        [data-theme="dark"] textarea::placeholder {
+            color: #64748b !important;
+        }
+
+        [data-theme="dark"] table {
+            color: #f8fafc !important;
+        }
+
+        [data-theme="dark"] table th {
+            background: rgba(15, 23, 42, 0.85) !important;
+            color: #94a3b8 !important;
+            border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+        }
+
+        [data-theme="dark"] table td {
+            border-bottom-color: rgba(255, 255, 255, 0.06) !important;
+        }
+
+        [data-theme="dark"] .modal-box {
+            background: #1e293b !important;
+            border-color: rgba(255, 255, 255, 0.15) !important;
+            color: #f8fafc !important;
+        }
+
+        [data-theme="dark"] .modal-close-btn {
+            background: rgba(255, 255, 255, 0.1) !important;
+            border-color: rgba(255, 255, 255, 0.2) !important;
+            color: #cbd5e1 !important;
+        }
+
+        [data-theme="dark"] .btn-back-exit {
+            background: rgba(30, 41, 59, 0.85) !important;
+            border-color: rgba(255, 255, 255, 0.15) !important;
+            color: #f8fafc !important;
+        }
+
+        .theme-toggle-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.85);
+            border: 1px solid rgba(15, 23, 42, 0.15);
+            color: #0f172a;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            margin-left: auto;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .theme-toggle-btn:hover {
+            transform: scale(1.08) rotate(15deg);
+            background: #ffffff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        }
+
+        [data-theme="dark"] .theme-toggle-btn {
+            background: rgba(30, 41, 59, 0.85) !important;
+            border-color: rgba(255, 255, 255, 0.2) !important;
+            color: #f59e0b !important;
+        }
+
+        [data-theme="dark"] .theme-toggle-btn:hover {
+            background: rgba(51, 65, 85, 0.9) !important;
+            color: #fbbf24 !important;
+        }
+
+        @media (max-width: 576px) {
+            .theme-toggle-btn {
+                width: 34px;
+                height: 34px;
+                font-size: 14px;
+            }
+        }
+
+</style>
+    <script>
+        (function () {
+            const savedTheme = localStorage.getItem('zentrix_theme') || 'light';
+            if (savedTheme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                document.body.classList.add('dark-theme');
+            }
+        })();
+    </script>
+
 </head>
 
 <body>
@@ -812,10 +1051,10 @@
         <a class="dashboard-logo" th:href="@{/admin}">Zentrix <span style="font-size: 14px; font-weight: 500; opacity: 0.8; color: var(--primary);">Admin</span></a>
 
         <div class="dashboard-spacer"></div>
-        <div class="dashboard-nav-links">
-            
-            <a th:href="@{/logout}" class="btn btn-primary" style="background: linear-gradient(135deg, #f84464, #ff6b9d); color: #fff !important; border-radius: 10px; padding: 8px 18px; text-decoration: none; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; width: max-content;">Logout</a>
-        </div>
+        <button id="themeToggleBtn" onclick="toggleTheme()" class="theme-toggle-btn" title="Toggle Light / Dark Mode" aria-label="Toggle Theme">
+            <i id="themeToggleIcon" class="fas fa-moon"></i>
+        </button>
+        
     </nav>
 
     <div class="dashboard-container">
@@ -851,7 +1090,7 @@
         </div>
         <div th:if="${param.marked != null and !param.marked.isEmpty()}" class="alert alert-success">
             <i class="fas fa-check-circle"></i>
-            Ticket <strong th:text="${param.marked}"></strong> verified — attendance marked!
+            Ticket <strong th:text="${param.marked}"></strong> verified  attendance marked!
         </div>
         <div th:if="${param.error == 'invalid'}" class="alert alert-error">
             <i class="fas fa-times-circle"></i>
@@ -962,7 +1201,7 @@
 
         <!-- -- Online: Meeting Link Display -- -->
         <div class="online-card" th:if="${event.eventMode == 'Online'}">
-            <h2><i class="fas fa-video"></i> &nbsp;Online Event — Meeting Link</h2>
+            <h2><i class="fas fa-video"></i> &nbsp;Online Event  Meeting Link</h2>
             <p>Share this link with participants. Attendance is auto-marked when a registered student clicks "Join Now"
                 on the event page.</p>
             <div class="join-link-box"
@@ -1008,10 +1247,10 @@
                                 th:text="${reg.email != null ? reg.email : reg.user.email}">email</div>
                         </td>
                         <td style="color:var(--text-secondary); font-size:12px;"
-                            th:text="${reg.phone != null ? reg.phone : '—'}">Phone</td>
+                            th:text="${reg.phone != null ? reg.phone : ''}">Phone</td>
                         <td><span class="ticket-chip" th:text="${reg.ticketId}">ZTX-XX-XXXX</span></td>
                         <td style="color:var(--text-secondary); font-size:12px;"
-                            th:text="${reg.registrationDate != null ? #temporals.format(reg.registrationDate, 'MMM dd, yyyy') : '—'}">
+                            th:text="${reg.registrationDate != null ? #temporals.format(reg.registrationDate, 'MMM dd, yyyy') : ''}">
                             Date</td>
                         <td>
                             <span th:if="${reg.attendanceMarked}" class="att-yes">
@@ -1023,10 +1262,10 @@
                         </td>
                         <td style="font-weight:700; font-size:12px;"
                             th:classappend="${reg.position == 'Winner'} ? 'num-pink' : (${reg.position == 'Runner'} ? 'num-yellow' : '')"
-                            th:text="${reg.position != null ? reg.position : '—'}">—</td>
+                            th:text="${reg.position != null ? reg.position : ''}"></td>
                         <td style="color:#4ade80; font-weight:800;"
-                            th:text="${reg.pointsEarned != null and reg.pointsEarned > 0 ? '+' + reg.pointsEarned + ' XP' : '—'}">
-                            —</td>
+                            th:text="${reg.pointsEarned != null and reg.pointsEarned > 0 ? '+' + reg.pointsEarned + ' XP' : ''}">
+                            </td>
                     </tr>
                 </tbody>
             </table>
@@ -1036,111 +1275,138 @@
     </div>
 
     <!-- -- Results Modal -- -->
-    <div class="modal-overlay" id="resultsModal">
+    <div class="modal-overlay" id="resultsModal" onclick="if(event.target === this) closeResultsModal();">
         <div class="modal-box">
-            <h2><i class="fas fa-trophy" style="color:#f59e0b; margin-right:10px;"></i> Event Results</h2>
-            <p style="font-size:13px; color:rgba(255,255,255,0.5); margin-bottom: 20px;">
-                Select winners and runners from the attended participants. All attended participants will receive
-                default XP. Marking event as completed will lock attendance.
+            <button type="button" class="modal-close-btn" onclick="closeResultsModal()" aria-label="Close" title="Close Modal">&times;</button>
+            <h2 style="padding-right: 40px; color: #0f172a; font-weight: 800; font-size: 1.35rem; margin-bottom: 6px;"><i class="fas fa-trophy" style="color:#eab308; margin-right:8px;"></i> Event Results</h2>
+            <p style="font-size:13px; color: #475569; font-weight: 500; margin-bottom: 20px; line-height: 1.5;">
+                Select winners and runners from the attended participants or type custom winner names. All attended participants will receive default XP. Marking event as completed will lock attendance.
             </p>
             <form th:action="@{'/events/admin/' + ${event.id} + '/complete'}" method="post">
 
-                <div class="form-group" style="margin-bottom: 20px;">
-                    <div class="rank-label">
-                        <label>?? Performance / Judge Scores</label>
-                        <span style="font-size:11px; color:#10b981;">Weighted Final Score</span>
+                <!-- Judge Scores Card -->
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 16px; margin-bottom: 16px;">
+                    <div class="rank-label" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <label style="color: #0f172a; font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 6px;">
+                            <i class="fas fa-chart-line" style="color:#0284c7;"></i> Performance / Judge Scores
+                        </label>
+                        <span style="font-size:11px; color:#0284c7; font-weight: 700; background: #e0f2fe; padding: 2px 8px; border-radius: 6px;">Weighted Final Score</span>
                     </div>
-                    <div
-                        style="max-height: 200px; overflow-y: auto; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; border: 1px inset rgba(255,255,255,0.05);">
+
+                    <div style="max-height: 200px; overflow-y: auto; background: #ffffff; padding: 12px; border-radius: 10px; border: 1px solid #cbd5e1;">
                         <div th:each="reg : ${registrations}" th:if="${reg.attendanceMarked}"
-                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.03); padding-bottom: 4px;">
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px;">
                             <div style="font-size: 13px;">
-                                <div style="font-weight:700;"
+                                <div style="font-weight:700; color: #0f172a;"
                                     th:text="${reg.fullName != null ? reg.fullName : reg.user.username}">Name</div>
-                                <div style="font-size:10px; color:rgba(255,255,255,0.4);"><span
+                                <div style="font-size:11px; color:#64748b;"><span
                                         th:text="${reg.publicVotes != null ? reg.publicVotes : 0}"></span> Public Votes
                                     (40% Weighting)</div>
                             </div>
                             <input type="number" th:name="'judgeScore_' + ${reg.id}" value="0" min="0" max="100"
-                                style="width: 70px; padding: 6px; border-radius: 6px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; text-align:center;">
+                                style="width: 70px; padding: 6px; border-radius: 8px; background: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; font-weight: 700; text-align:center;">
                         </div>
                         <div th:if="${#lists.isEmpty(registrations.?[attendanceMarked])}"
-                            style="background:rgba(255,255,255,0.03); border:1px dashed rgba(255,255,255,0.1); padding:20px; border-radius:12px; text-align:center;">
-                            <div style="font-size:30px; margin-bottom:10px; opacity:0.3;"><i
-                                    class="fas fa-user-clock"></i></div>
-                            <p style="font-size:12px; color:rgba(255,255,255,0.4); margin-bottom:15px;">No attendees
-                                marked yet. You must mark attendance to declare winners.</p>
+                            style="background:#f1f5f9; border:1px dashed #cbd5e1; padding:22px 16px; border-radius:12px; text-align:center;">
+                            <div style="font-size:28px; margin-bottom:8px; color: #0284c7;"><i class="fas fa-user-clock"></i></div>
+                            <p style="font-size:13px; color:#475569; font-weight: 600; margin-bottom:14px;">No attendees marked yet. You must mark attendance to declare winners.</p>
                             <form th:action="@{'/events/admin/' + ${event.id} + '/attendance/mark-all'}" method="post"
                                 style="display:inline;">
                                 <input type="hidden" name="next" value="declare">
-                                <button type="submit" class="btn btn-ghost" style="font-size:12px; padding:6px 14px;">
+                                <button type="submit" class="btn" style="background: linear-gradient(135deg, #0284c7, #2563eb); color: #ffffff !important; font-size:12px; font-weight: 700; padding:8px 16px; border-radius: 8px; border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);">
                                     <i class="fas fa-check-double"></i> Mark Everyone Present & Proceed
                                 </button>
                             </form>
                         </div>
                     </div>
                     <p th:if="${!#lists.isEmpty(registrations.?[attendanceMarked])}"
-                        style="font-size:11px; color:rgba(255,255,255,0.4); margin-top:8px;">
+                        style="font-size:11px; color:#64748b; font-weight: 500; margin-top:8px; margin-bottom: 0;">
                         * The final score determines the true ranking. Use these scores to pick the winners below.
                     </p>
                 </div>
 
-                <div class="form-group">
-                    <div class="rank-label">
-                        <label>?? Winners</label>
-                        <div>
-                            <span style="font-size:11px; color:rgba(255,255,255,0.4); margin-right:6px;">XP
-                                Reward:</span>
-                            <input type="number" name="winnerPoints" value="100" class="points-input" required>
+                <!-- Winners Card -->
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 16px; margin-bottom: 16px;">
+                    <div class="rank-label" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <label style="color: #0f172a; font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 6px;">
+                            <i class="fas fa-trophy" style="color:#eab308;"></i> Winners
+                        </label>
+                        <div style="display: flex; align-items: center;">
+                            <span style="font-size:12px; color:#475569; font-weight: 600; margin-right:6px;">XP Reward:</span>
+                            <input type="number" name="winnerPoints" value="100" class="points-input" style="width: 70px; padding: 5px 8px; border-radius: 8px; background: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; font-weight: 700; text-align: center;" required>
                         </div>
                     </div>
-                    <select name="winnerIds" multiple>
-                        <option th:each="reg : ${registrations}" th:if="${reg.attendanceMarked}" th:value="${reg.id}"
-                            th:text="${reg.fullName != null ? reg.fullName : reg.user.username} + ' (' + ${reg.ticketId} + ')'">
-                        </option>
-                    </select>
-                </div>
 
-                <div class="form-group">
-                    <div class="rank-label">
-                        <label>?? Runners Up</label>
-                        <div>
-                            <span style="font-size:11px; color:rgba(255,255,255,0.4); margin-right:6px;">XP
-                                Reward:</span>
-                            <input type="number" name="runnerPoints" value="50" class="points-input" required>
-                        </div>
+                    <!-- Direct Text Box Option -->
+                    <div style="margin-top: 6px; margin-bottom: 8px;">
+                        <input type="text" name="customWinners" placeholder="Type winner name(s), username, or ticket ID..." style="width: 100%; padding: 10px 14px; border-radius: 10px; background: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; font-weight: 600; font-size: 13px; box-sizing: border-box;">
                     </div>
-                    <select name="runnerIds" multiple>
-                        <option th:each="reg : ${registrations}" th:if="${reg.attendanceMarked}" th:value="${reg.id}"
-                            th:text="${reg.fullName != null ? reg.fullName : reg.user.username} + ' (' + ${reg.ticketId} + ')'">
-                        </option>
-                    </select>
-                </div>
 
-                <div class="form-group">
-                    <div class="rank-label">
-                        <label>?? Participation Default</label>
-                        <div>
-                            <span style="font-size:11px; color:rgba(255,255,255,0.4); margin-right:6px;">XP
-                                Reward:</span>
-                            <input type="number" name="defaultPoints" value="10" class="points-input" required>
-                        </div>
+                    <!-- Select Dropdown Option -->
+                    <div th:if="${!#lists.isEmpty(registrations.?[attendanceMarked])}">
+                        <div style="font-size: 11px; color: #64748b; font-weight: 600; margin-bottom: 4px;">Or select from attended participants list:</div>
+                        <select name="winnerIds" multiple style="width: 100%; padding: 8px 12px; border-radius: 10px; background: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; font-weight: 600; font-size: 13px;">
+                            <option th:each="reg : ${registrations}" th:if="${reg.attendanceMarked}" th:value="${reg.id}"
+                                th:text="${reg.fullName != null ? reg.fullName : reg.user.username} + ' (' + ${reg.ticketId} + ')'">
+                            </option>
+                        </select>
                     </div>
                 </div>
 
-                <div class="modal-actions">
-                    <button type="button" class="btn-cancel" onclick="closeResultsModal()">Cancel</button>
-                    <button type="submit" class="btn btn-success"><i class="fas fa-check"></i> Submit &amp;
-                        Complete</button>
+                <!-- Runners Up Card -->
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 16px; margin-bottom: 16px;">
+                    <div class="rank-label" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <label style="color: #0f172a; font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 6px;">
+                            <i class="fas fa-medal" style="color:#94a3b8;"></i> Runners Up
+                        </label>
+                        <div style="display: flex; align-items: center;">
+                            <span style="font-size:12px; color:#475569; font-weight: 600; margin-right:6px;">XP Reward:</span>
+                            <input type="number" name="runnerPoints" value="50" class="points-input" style="width: 70px; padding: 5px 8px; border-radius: 8px; background: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; font-weight: 700; text-align: center;" required>
+                        </div>
+                    </div>
+
+                    <!-- Direct Text Box Option -->
+                    <div style="margin-top: 6px; margin-bottom: 8px;">
+                        <input type="text" name="customRunners" placeholder="Type runner-up name(s), username, or ticket ID..." style="width: 100%; padding: 10px 14px; border-radius: 10px; background: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; font-weight: 600; font-size: 13px; box-sizing: border-box;">
+                    </div>
+
+                    <!-- Select Dropdown Option -->
+                    <div th:if="${!#lists.isEmpty(registrations.?[attendanceMarked])}">
+                        <div style="font-size: 11px; color: #64748b; font-weight: 600; margin-bottom: 4px;">Or select from attended participants list:</div>
+                        <select name="runnerIds" multiple style="width: 100%; padding: 8px 12px; border-radius: 10px; background: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; font-weight: 600; font-size: 13px;">
+                            <option th:each="reg : ${registrations}" th:if="${reg.attendanceMarked}" th:value="${reg.id}"
+                                th:text="${reg.fullName != null ? reg.fullName : reg.user.username} + ' (' + ${reg.ticketId} + ')'">
+                            </option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Participation Default Card -->
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 16px; margin-bottom: 20px;">
+                    <div class="rank-label" style="display: flex; justify-content: space-between; align-items: center;">
+                        <label style="color: #0f172a; font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 6px;">
+                            <i class="fas fa-award" style="color:#10b981;"></i> Participation Default
+                        </label>
+                        <div style="display: flex; align-items: center;">
+                            <span style="font-size:12px; color:#475569; font-weight: 600; margin-right:6px;">XP Reward:</span>
+                            <input type="number" name="defaultPoints" value="10" class="points-input" style="width: 70px; padding: 5px 8px; border-radius: 8px; background: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; font-weight: 700; text-align: center;" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-actions" style="display: flex; gap: 12px; justify-content: flex-end; align-items: center; margin-top: 20px; flex-wrap: wrap;">
+                    <button type="button" class="btn-cancel" onclick="closeResultsModal()" style="padding: 10px 20px; border-radius: 10px; background: #f1f5f9; border: 1px solid #cbd5e1; color: #475569 !important; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s;"><i class="fas fa-times"></i> Cancel</button>
+                    <button type="submit" class="btn btn-success" style="padding: 10px 22px; border-radius: 10px; background: linear-gradient(135deg, #10b981, #059669); color: #ffffff !important; font-weight: 700; font-size: 13px; border: none; cursor: pointer; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);"><i class="fas fa-check"></i> Submit &amp; Complete</button>
                 </div>
             </form>
         </div>
     </div>
 
     <!-- -- Finalist Selection Modal -- -->
-    <div class="modal-overlay" id="finalistModal">
+    <div class="modal-overlay" id="finalistModal" onclick="if(event.target === this) closeFinalistModal();">
         <div class="modal-box" style="max-width: 600px;">
-            <h2><i class="fas fa-star" style="color:#10b981; margin-right:10px;"></i> Nominate Top 3 Finalists</h2>
+            <button type="button" class="modal-close-btn" onclick="closeFinalistModal()" aria-label="Close" title="Close Modal">&times;</button>
+            <h2 style="padding-right: 40px;"><i class="fas fa-star" style="color:#10b981; margin-right:10px;"></i> Nominate Top 3 Finalists</h2>
             <p style="font-size:13px; color:rgba(255,255,255,0.5); margin-bottom: 20px;">
                 Select up to 3 candidates who will enter the Final Voting Phase. The event status will switch to
                 <b>VOTING</b> where users can cast their votes.
@@ -1240,7 +1506,13 @@
             document.getElementById('resultsModal').classList.add('open');
         }
         function closeResultsModal() {
-            document.getElementById('resultsModal').classList.remove('open');
+            const m = document.getElementById('resultsModal');
+            if (m) m.classList.remove('open');
+            const url = new URL(window.location);
+            if (url.searchParams.has('declare')) {
+                url.searchParams.delete('declare');
+                window.history.replaceState({}, document.title, url.toString());
+            }
         }
 
         function openFinalistModal() {
@@ -1257,6 +1529,33 @@
                 openResultsModal();
             }
         };
+    </script>
+
+
+    <script>
+        function updateThemeIcon() {
+            const icon = document.getElementById('themeToggleIcon');
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            if (icon) {
+                icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+            }
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            if (newTheme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                document.body.classList.add('dark-theme');
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+                document.body.classList.remove('dark-theme');
+            }
+            localStorage.setItem('zentrix_theme', newTheme);
+            updateThemeIcon();
+        }
+
+        document.addEventListener('DOMContentLoaded', updateThemeIcon);
     </script>
 
 </body>
