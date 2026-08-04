@@ -375,7 +375,7 @@ public class EventController {
         }
         
         if (minStartingPrice != null) {
-            String formattedPrice = "₹" + String.format("%,.0f", minStartingPrice);
+            String formattedPrice = "\u20B9" + String.format("%,.0f", minStartingPrice);
             model.addAttribute("startingPriceFormatted", formattedPrice);
         } else {
             model.addAttribute("startingPriceFormatted", "Sold Out");
@@ -666,8 +666,8 @@ public class EventController {
         model.addAttribute("user", dbUser);
         model.addAttribute("isDiscounted", isDiscounted);
         model.addAttribute("quantity", quantity);
-        model.addAttribute("basePrice", "₹" + String.format("%,.0f", priceVal));
-        model.addAttribute("finalPrice", "₹" + String.format("%,.0f", finalPrice));
+        model.addAttribute("basePrice", "\u20B9" + String.format("%,.0f", priceVal));
+        model.addAttribute("finalPrice", "\u20B9" + String.format("%,.0f", finalPrice));
         return "payment";
     }
 

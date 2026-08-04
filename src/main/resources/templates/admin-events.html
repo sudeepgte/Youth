@@ -1227,13 +1227,13 @@
         <button class="mobile-menu-btn" onclick="const s=document.querySelector('.sidebar'); if(s) { s.classList.toggle('mobile-open'); const isOpen = s.classList.contains('mobile-open'); document.body.style.overflow = isOpen ? 'hidden' : ''; } const o=document.querySelector('.mobile-menu-overlay'); if(o) o.classList.toggle('active');">
             <i class="fas fa-bars"></i>
         </button>
-<<<<<<< HEAD
+
         <a th:href="@{/events}" onclick="if (document.referrer && document.referrer.includes(window.location.host) && !document.referrer.endsWith('/events/admin/manage')) { history.back(); return false; }" class="btn-back-exit" title="Back to Events Dashboard">
             <i class="fas fa-arrow-left"></i>
             <span>Back</span>
         </a>
         <a class="dashboard-logo" th:href="@{/admin}">Zentrix <span style="font-size: 14px; font-weight: 500; opacity: 0.8; color: var(--primary);">Admin</span></a>
-=======
+
         <a class="dashboard-logo" th:href="@{/admin}" style="display: inline-flex; flex-direction: column; align-items: center; text-decoration: none; line-height: 1.1; margin-right: 15px;">
     <svg width="28" height="28" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
         <defs>
@@ -1250,7 +1250,7 @@
     </svg>
     <span style="font-size: 11px; font-weight: 800; color: #1e3a8a; letter-spacing: 1px; margin-top: 2px;">YOUTHIAN <span style="font-size: 9px; color: var(--primary);">ADMIN</span></span>
 </a>
->>>>>>> 13839f55fcd8768c94a74c35eb67556aafcb32c3
+
 
         <div class="dashboard-spacer"></div>
         <button id="themeToggleBtn" onclick="toggleTheme()" class="theme-toggle-btn" title="Toggle Light / Dark Mode" aria-label="Toggle Theme">

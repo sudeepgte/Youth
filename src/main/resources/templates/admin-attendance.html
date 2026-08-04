@@ -1270,17 +1270,17 @@
                                 th:text="${reg.email != null ? reg.email : reg.user.email}">email</div>
                         </td>
                         <td style="color:var(--text-secondary); font-size:12px;"
-<<<<<<< HEAD
+
                             th:text="${reg.phone != null ? reg.phone : ''}">Phone</td>
                         <td><span class="ticket-chip" th:text="${reg.ticketId}">ZTX-XX-XXXX</span></td>
                         <td style="color:var(--text-secondary); font-size:12px;"
                             th:text="${reg.registrationDate != null ? #temporals.format(reg.registrationDate, 'MMM dd, yyyy') : ''}">
-=======
+
                             th:text="${reg.phone != null ? reg.phone : '—'}">Phone</td>
                         <td><span class="ticket-chip" th:text="${reg.ticketId}">ZTX-XX-XXXX</span></td>
                         <td style="color:var(--text-secondary); font-size:12px;"
                             th:text="${reg.registrationDate != null ? #temporals.format(reg.registrationDate, 'MMM dd, yyyy') : '—'}">
->>>>>>> 13839f55fcd8768c94a74c35eb67556aafcb32c3
+
                             Date</td>
                         <td>
                             <span th:if="${reg.attendanceMarked}" class="att-yes">
@@ -1292,17 +1292,17 @@
                         </td>
                         <td style="font-weight:700; font-size:12px;"
                             th:classappend="${reg.position == 'Winner'} ? 'num-pink' : (${reg.position == 'Runner'} ? 'num-yellow' : '')"
-<<<<<<< HEAD
+
                             th:text="${reg.position != null ? reg.position : ''}"></td>
                         <td style="color:#4ade80; font-weight:800;"
                             th:text="${reg.pointsEarned != null and reg.pointsEarned > 0 ? '+' + reg.pointsEarned + ' XP' : ''}">
                             </td>
-=======
+
                             th:text="${reg.position != null ? reg.position : '—'}">—</td>
                         <td style="color:#4ade80; font-weight:800;"
                             th:text="${reg.pointsEarned != null and reg.pointsEarned > 0 ? '+' + reg.pointsEarned + ' XP' : '—'}">
                             —</td>
->>>>>>> 13839f55fcd8768c94a74c35eb67556aafcb32c3
+
                     </tr>
                 </tbody>
             </table>

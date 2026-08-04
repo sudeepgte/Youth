@@ -1175,13 +1175,10 @@
             <div class="stat-card">
                 <div class="stat-icon" style="background: rgba(245, 158, 11, 0.15);"><i class="fas fa-hand-holding-usd" style="color: #f59e0b;"></i></div>
                 <div>
-<<<<<<< HEAD
-                    <h3 class="stat-num" style="font-size: 24px; font-weight: 800; color: var(--text-primary);" th:text="${'₹' + #numbers.formatDecimal(totalAdminCommission, 1, 2)}">₹0.00</h3>
+
+                    <h3 class="stat-num" style="font-size: 24px; font-weight: 800; color: var(--text-primary);" th:text="${'\u20B9 ' + #numbers.formatDecimal(totalAdminCommission, 1, 2)}">&#8377;0.00</h3>
                     <span class="stat-lbl" style="color: var(--text-secondary); font-size: 14px;">Battle Revenue (7%)</span>
-=======
-                    <h3 style="font-size: 24px; color: #fff;" th:text="${'â‚¹' + #numbers.formatDecimal(totalAdminCommission, 1, 2)}">â‚¹0.00</h3>
-                    <span style="color: #94a3b8; font-size: 14px;">Battle Revenue (7%)</span>
->>>>>>> 13839f55fcd8768c94a74c35eb67556aafcb32c3
+
                 </div>
             </div>
         </div>
@@ -1334,13 +1331,12 @@
                             <span>Results Declared</span>
                         </div>
                     </div>
-<<<<<<< HEAD
-=======
+
                     <a th:href="@{'/events/admin/' + ${event.id} + '/attendance'}"
                         style="display:flex; align-items:center; gap:8px; color:#10b981; text-decoration:none; font-size:12px; font-weight:700;">
-                        <i class="fas fa-award"></i> Review Final Standings &amp; XP â†’
+                        <i class="fas fa-award"></i> Review Final Standings &amp; XP &rarr;
                     </a>
->>>>>>> 13839f55fcd8768c94a74c35eb67556aafcb32c3
+
                 </div>
             </div>
         </div>
