@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 
 <head>
@@ -834,7 +834,22 @@
         <button class="mobile-menu-btn" onclick="const s=document.querySelector('.sidebar'); if(s) { s.classList.toggle('mobile-open'); const isOpen = s.classList.contains('mobile-open'); document.body.style.overflow = isOpen ? 'hidden' : ''; } const o=document.querySelector('.mobile-menu-overlay'); if(o) o.classList.toggle('active');">
             <i class="fas fa-bars"></i>
         </button>
-        <a class="dashboard-logo" th:href="@{/admin}">Zentrix <span style="font-size: 14px; font-weight: 500; opacity: 0.8; color: var(--primary);">Admin</span></a>
+        <a class="dashboard-logo" th:href="@{/admin}" style="display: inline-flex; flex-direction: column; align-items: center; text-decoration: none; line-height: 1.1; margin-right: 15px;">
+    <svg width="28" height="28" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <linearGradient id="yg" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#6b21a8" />
+                <stop offset="50%" stop-color="#2563eb" />
+                <stop offset="100%" stop-color="#0ea5e9" />
+            </linearGradient>
+        </defs>
+        <circle cx="50" cy="22" r="12" fill="url(#yg)" />
+        <path d="M 25 25 Q 40 50 45 65 L 45 90 Q 55 90 55 65 Q 60 50 80 25 Q 65 45 55 55 L 45 55 Q 35 45 25 25 Z" fill="url(#yg)" />
+        <path d="M 15 60 Q 50 90 90 40 Q 80 50 50 80 Q 25 70 15 60 Z" fill="url(#yg)" />
+        <polygon points="75,10 80,15 85,10 80,5" fill="#0ea5e9" />
+    </svg>
+    <span style="font-size: 11px; font-weight: 800; color: #1e3a8a; letter-spacing: 1px; margin-top: 2px;">YOUTHIAN <span style="font-size: 9px; color: var(--primary);">ADMIN</span></span>
+</a>
 
         <div class="dashboard-spacer"></div>
         <div class="dashboard-nav-links">
@@ -1639,8 +1654,8 @@
                             </div>
                             <div id="paidAmountField">
                                 <input type="number" name="price" id="priceInput"
-                                    th:value="${event.price != null and !event.price.startsWith('F') ? event.price.replace('₹','') : ''}"
-                                    placeholder="Enter amount in ₹" min="1" onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();">
+                                    th:value="${event.price != null and !event.price.startsWith('F') ? event.price.replace('â‚¹','') : ''}"
+                                    placeholder="Enter amount in â‚¹" min="1" onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();">
                             </div>
                         </div>
 
@@ -1687,12 +1702,12 @@
                                     placeholder="e.g. 10" min="0" onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();">
                             </div>
                             <div class="field-group">
-                                <label>VIP Seat Price (₹)</label>
+                                <label>VIP Seat Price (â‚¹)</label>
                                 <input type="number" name="vipPrice" th:value="${event.vipPrice}" placeholder="500"
                                     min="0" onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();">
                             </div>
                             <div class="field-group">
-                                <label>Regular Seat Price (₹)</label>
+                                <label>Regular Seat Price (â‚¹)</label>
                                 <input type="number" name="regularPrice" th:value="${event.regularPrice}"
                                     placeholder="200" min="0" onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();">
                             </div>
@@ -1873,7 +1888,7 @@
     </div>
 
     <script>
-        // â”€â”€ Paid fee toggle â”€â”€
+        // Ã¢â€â‚¬Ã¢â€â‚¬ Paid fee toggle Ã¢â€â‚¬Ã¢â€â‚¬
         function togglePaidField(radio) {
             const field = document.getElementById('paidAmountField');
             const input = document.getElementById('priceInput');
@@ -2099,7 +2114,7 @@
             }
         }
 
-        // â”€â”€ Poster file live preview â”€â”€
+        // Ã¢â€â‚¬Ã¢â€â‚¬ Poster file live preview Ã¢â€â‚¬Ã¢â€â‚¬
         function previewImageFile(input) {
             const preview = document.getElementById('posterPreview');
             const img = document.getElementById('posterImg');
@@ -2116,7 +2131,7 @@
             }
         }
 
-        // â”€â”€ Form validation â”€â”€
+        // Ã¢â€â‚¬Ã¢â€â‚¬ Form validation Ã¢â€â‚¬Ã¢â€â‚¬
         function validateForm() {
             const cat = document.querySelector('input[name="category"]:checked');
             if (!cat) { alert('Please select an event category.'); return false; }
@@ -2144,7 +2159,7 @@
         }
 
 
-        // â”€â”€ Publish button animation â”€â”€
+        // Ã¢â€â‚¬Ã¢â€â‚¬ Publish button animation Ã¢â€â‚¬Ã¢â€â‚¬
         document.querySelector('form').addEventListener('submit', function () {
             if (!validateForm()) return false;
             const btn = document.getElementById('publishBtn');
@@ -2365,6 +2380,8 @@
 </body>
 
 </html>
+
+
 
 
 
