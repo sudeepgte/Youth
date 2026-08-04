@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 
 <head>
@@ -1137,7 +1137,7 @@
         }
 
         .chat-area.vanish-active .messages-area::before {
-            content: "🤫 🤫 🤫 🤫 🤫 🤫 🤫 🤫 🤫 🤫 🤫 🤫 🤫 🤫 🤫 🤫 🤫 🤫 🤫 🤫 🤫 🤫 🤫 🤫";
+            content: "ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤«";
             position: absolute;
             top: 0;
             left: 0;
@@ -1798,7 +1798,22 @@
         <button class="mobile-menu-btn" onclick="const s=document.querySelector('.sidebar');if(s)s.classList.toggle('mobile-open'); const o=document.querySelector('.mobile-menu-overlay');if(o)o.classList.toggle('active');" style="display:none; background:none; border:none; color:var(--text-primary); font-size:20px; cursor:pointer; margin-right:15px; margin-left: 5px; padding: 0;">
             <i class="fas fa-bars"></i>
         </button>
-        <a class="dashboard-logo" th:href="@{/home}">Zentrix</a>
+        <a class="dashboard-logo" th:href="@{/home}" style="display: inline-flex; flex-direction: column; align-items: center; text-decoration: none; line-height: 1.1; margin-right: 15px;">
+    <svg width="28" height="28" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <linearGradient id="yg" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#6b21a8" />
+                <stop offset="50%" stop-color="#2563eb" />
+                <stop offset="100%" stop-color="#0ea5e9" />
+            </linearGradient>
+        </defs>
+        <circle cx="50" cy="22" r="12" fill="url(#yg)" />
+        <path d="M 25 25 Q 40 50 45 65 L 45 90 Q 55 90 55 65 Q 60 50 80 25 Q 65 45 55 55 L 45 55 Q 35 45 25 25 Z" fill="url(#yg)" />
+        <path d="M 15 60 Q 50 90 90 40 Q 80 50 50 80 Q 25 70 15 60 Z" fill="url(#yg)" />
+        <polygon points="75,10 80,15 85,10 80,5" fill="#0ea5e9" />
+    </svg>
+    <span style="font-size: 11px; font-weight: 800; color: #1e3a8a; letter-spacing: 1px; margin-top: 2px;">YOUTHIAN</span>
+</a>
         <div class="dashboard-spacer"></div>
         <div class="dashboard-nav-links">
             <a th:href="@{/dashboard}"><i class="fas fa-home"></i></a>
@@ -1808,12 +1823,7 @@
                     <img th:src="${currentUser != null and currentUser.profilePhotoUrl != null ? currentUser.profilePhotoUrl : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=1780&auto=format&fit=crop'}"
                         class="user-avatar" style="width:32px; height:32px; border:none;">
                 </a>
-                <div class="dropdown-menu">
-                    <a th:href="@{/profile}" class="dropdown-item"><i class="fas fa-user-circle"></i> View Profile</a>
-                    <a th:href="@{/settings}" class="dropdown-item"><i class="fas fa-cog"></i> Settings</a>
-                    <div class="dropdown-divider"></div>
-                    <a th:href="@{/logout}" class="dropdown-item" style="color: #ff4444;"><i class="fas fa-sign-out-alt"></i> Logout</a>
-                </div>
+
             </div>
         </div>
     </nav>
@@ -1833,6 +1843,7 @@
             <a th:href="@{/wallet}" class="sidebar-link"><i class="fas fa-wallet"></i> Wallet</a>
             <a th:href="@{/user/my-bookings}" class="sidebar-link"><i class="fas fa-ticket-alt"></i> My Bookings</a>
             <a href="javascript:void(0)" class="sidebar-link" onclick="openCreateModal()"><i class="fas fa-plus-circle" style="color: var(--accent);"></i> Create Post</a>
+            <a th:href="@{/settings}" class="sidebar-link"><i class="fas fa-cog"></i> Settings</a>
             <a th:href="@{/logout}" class="sidebar-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </aside>
 
@@ -1961,7 +1972,7 @@
                         </div>
                         <div class="header-icon" id="vanishToggle" title="Toggle Vanish Mode"
                             onclick="toggleVanishMode()">
-                            <span id="vanishHeaderIcon" style="font-size: 20px;">🤫</span>
+                            <span id="vanishHeaderIcon" style="font-size: 20px;">ðŸ¤«</span>
                         </div>
                         <div class="header-icon" title="Search messages" onclick="toggleMessageSearch()">
                             <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor"
@@ -2008,7 +2019,7 @@
 
                 <div class="messages-area" id="messagesArea">
                     <div class="vanish-indicator">
-                        🤫 Vanish Mode<br>
+                        ðŸ¤« Vanish Mode<br>
                         Messages will disappear when you close the chat.
                     </div>
                     <!-- Messages will be injected here -->
@@ -2076,10 +2087,10 @@
                         <input type="file" id="fileInput" style="display: none;" accept="image/*,video/*"
                             onchange="handleFileUpload(this)">
                         <div class="header-icon" title="Emoji" onclick="toggleEmojiPicker()" style="margin: 0 4px;">
-                            <span style="font-size:20px; line-height:1;">😊</span>
+                            <span style="font-size:20px; line-height:1;">ðŸ˜Š</span>
                         </div>
                         <div class="header-icon" title="Stickers" onclick="toggleStickerPicker()" style="margin: 0 4px;">
-                            <span style="font-size:20px; line-height:1;">🧩</span>
+                            <span style="font-size:20px; line-height:1;">ðŸ§©</span>
                         </div>
                         <input type="text" id="chatInput" placeholder="Message..." onkeypress="handleKeyStroke(event)" oninput="toggleSendButton()">
                         <div class="header-icon" id="voiceBtn" title="Record voice message" onclick="startRecording()"
@@ -2284,7 +2295,7 @@
         let manageGroupState = { creatorId: null, participants: [], isAdmin: false };
 
         // Emoji + Sticker pickers
-        const EMOJIS = ['😀', '😁', '😂', '🤣', '😊', '😍', '😘', '😎', '🥳', '😇', '🤔', '😅', '😭', '😡', '👍', '👎', '🙏', '🔥', '🎉', '💯', '❤️', '✨', '🌟', '😴', '🤝', '🙌', '😮', '😬', '🤩', '😜', '🤗', '💡'];
+        const EMOJIS = ['ðŸ˜€', 'ðŸ˜', 'ðŸ˜‚', 'ðŸ¤£', 'ðŸ˜Š', 'ðŸ˜', 'ðŸ˜˜', 'ðŸ˜Ž', 'ðŸ¥³', 'ðŸ˜‡', 'ðŸ¤”', 'ðŸ˜…', 'ðŸ˜­', 'ðŸ˜¡', 'ðŸ‘', 'ðŸ‘Ž', 'ðŸ™', 'ðŸ”¥', 'ðŸŽ‰', 'ðŸ’¯', 'â¤ï¸', 'âœ¨', 'ðŸŒŸ', 'ðŸ˜´', 'ðŸ¤', 'ðŸ™Œ', 'ðŸ˜®', 'ðŸ˜¬', 'ðŸ¤©', 'ðŸ˜œ', 'ðŸ¤—', 'ðŸ’¡'];
         const STICKERS = [
             '/stickers/sticker-hello.svg',
             '/stickers/sticker-lol.svg',
@@ -2368,7 +2379,7 @@
                 <div class="search-result-item" onclick="toggleGroupUserSelection(${u.id}, '${u.username}')">
                     <div class="result-avatar">${u.username.charAt(0)}</div>
                     <div>${u.username}</div>
-                    <div style="margin-left:auto;">${selectedGroupUsers.some(su => su.id === u.id) ? '✅' : '+'}</div>
+                    <div style="margin-left:auto;">${selectedGroupUsers.some(su => su.id === u.id) ? 'âœ…' : '+'}</div>
                 </div>
             `).join('');
         }
@@ -2385,7 +2396,7 @@
             const container = document.getElementById('selectedUsersArea');
             container.innerHTML = selectedGroupUsers.map(u => `
                 <div style="background:var(--active-bg); padding:4px 10px; border-radius:15px; font-size:12px; display:flex; align-items:center; gap:5px;">
-                    ${u.username} <span onclick="toggleGroupUserSelection(${u.id})" style="cursor:pointer;">Ã—</span>
+                    ${u.username} <span onclick="toggleGroupUserSelection(${u.id})" style="cursor:pointer;">Ãƒâ€”</span>
                 </div>
             `).join('');
         }
@@ -3043,7 +3054,7 @@
                 // Re-add top vanish indicator
                 const topInd = document.createElement('div');
                 topInd.className = 'vanish-indicator';
-                topInd.innerHTML = '🤫 Vanish Mode<br>Messages will disappear when you close the chat.';
+                topInd.innerHTML = 'ðŸ¤« Vanish Mode<br>Messages will disappear when you close the chat.';
                 container.appendChild(topInd);
 
                 history.forEach(m => appendMessageToUI(m));
@@ -3169,7 +3180,7 @@
             let reactionsHtml = '';
             if (msg.reactions) {
                 Object.values(msg.reactions).forEach(r => {
-                    if (r === 'heart') reactionsHtml += '❤️';
+                    if (r === 'heart') reactionsHtml += 'â¤ï¸';
                 });
             }
 
@@ -3388,7 +3399,7 @@
                 if (msg.reactions) {
                     // msg.reactions is a map of User -> String
                     Object.values(msg.reactions).forEach(r => {
-                        if (r === 'heart') reactionsHtml += '❤️';
+                        if (r === 'heart') reactionsHtml += 'â¤ï¸';
                     });
                 }
                 badge.innerText = reactionsHtml;
@@ -4133,7 +4144,7 @@
             wrapper.className = 'vanish-pattern-wrapper';
             wrapper.style.cssText = 'position:absolute; top:0; left:0; width:100%; height:100%; display:flex; flex-wrap:wrap; justify-content:space-around; align-content:space-around; font-size:40px; opacity:0.03; pointer-events:none; z-index:0; padding:20px; line-height:80px; overflow:hidden;';
             
-            const emojis = ["🤫", "🤫", "🤫", "🤫", "🤫", "🤫", "🤫", "🤫"];
+            const emojis = ["ðŸ¤«", "ðŸ¤«", "ðŸ¤«", "ðŸ¤«", "ðŸ¤«", "ðŸ¤«", "ðŸ¤«", "ðŸ¤«"];
             for (let i = 0; i < 50; i++) {
                 const span = document.createElement('span');
                 span.innerText = emojis[Math.floor(Math.random() * emojis.length)];
@@ -4309,5 +4320,7 @@
 </body>
 
 </html>
+
+
 
 

@@ -395,6 +395,12 @@
                 <div className="main-game-container" style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "#060e0a", padding: 20 }}>
                     <div className="table-id-badge" style={{ position: "absolute", top: 20, right: 20, background: "#fff2", padding: "8px 16px", borderRadius: 20, color: "#e0e0e0" }}>Table: <span style={{ color: "#d62828", fontWeight: 900 }}>{roomId}</span></div>
                     
+                    <div style={{ position: "absolute", top: 20, left: 20, zIndex: 100 }}>
+                        <a href={gamesUrl} style={{ textDecoration: "none", padding: "10px 20px", background: "rgba(255,255,255,0.1)", color: "#ffffff", borderRadius: "8px", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: "8px", border: "1px solid rgba(255,255,255,0.2)", backdropFilter: "blur(5px)" }}>
+                            <i className="fas fa-sign-out-alt" style={{ color: "#ffffff" }}></i> Exit
+                        </a>
+                    </div>
+
                     <div style={{ color: colT.main, textTransform: "uppercase", fontWeight: 900, fontSize: 14, marginBottom: 10 }}>{roomState.currentColor} Active</div>
                     <div style={{ color: "#e0e0e0", background: "#fff1", padding: "10px 20px", borderRadius: 12, marginBottom: 20 }}>{roomState.lastMessage}</div>
                     
@@ -487,10 +493,13 @@
 
                     {pickingColor && <ColorPicker onPick={handleColorPick} />}
                     {roomState.status === 'finished' && (
-                        <div style={{ position: "fixed", inset: 0, background: "#000c", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <div style={{ position: "fixed", inset: 0, background: "#000c", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999 }}>
                             <div style={{ textAlign: "center" }}>
                                 <div style={{ fontSize: 60, color: "#fbcc15", fontWeight: 900 }}>{roomState.lastMessage}</div>
-                                <button onClick={() => stompClient.current.send(`/app/uno/${roomId}/restart`, {}, "{}")} style={{ padding: "14px 40px", borderRadius: 12, background: "#d62828", border: "none", color: "#fff", fontWeight: 900, marginTop: 20, cursor: "pointer" }}>PLAY AGAIN</button>
+                                <div style={{ display: "flex", gap: "20px", justifyContent: "center", marginTop: 20 }}>
+                                    <button onClick={() => stompClient.current.send(`/app/uno/${roomId}/restart`, {}, "{}")} style={{ padding: "14px 40px", borderRadius: 12, background: "#d62828", border: "none", color: "#fff", fontWeight: 900, cursor: "pointer" }}>PLAY AGAIN</button>
+                                    <button onClick={() => window.location.href = gamesUrl} style={{ padding: "14px 40px", borderRadius: 12, background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.3)", color: "#fff", fontWeight: 900, cursor: "pointer" }}>EXIT</button>
+                                </div>
                             </div>
                         </div>
                     )}
