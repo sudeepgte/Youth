@@ -3,10 +3,10 @@
 <head th:fragment="head(title)">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${title}">Zentrix</title>
+    <title th:text="${title}">Youthian</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <script th:src="@{/js/game-rewards.js}"></script>
+    <script defer th:src="@{/js/game-rewards.js}"></script>
 </head>
 <body>
 	<header th:fragment="navbar(active)"
@@ -52,7 +52,20 @@
             <div class="nav-shell navbar-inner" style="display: flex; align-items: center; justify-content: space-between; width: 100%; height: 100%; padding: 0;">
                 
                 <a class="logo" th:href="@{/home}" style="font-size: 22px; font-weight: 900; color: #0f172a; text-decoration: none; font-family: 'Outfit', sans-serif; letter-spacing: -0.5px; z-index: 1010; display: flex; align-items: center; gap: 6px;">
-                    <i class="fa-solid fa-compass" style="color: var(--primary);"></i> Zentrix
+                    <svg width="28" height="28" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="yg-navbar" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#6b21a8" />
+                                <stop offset="50%" stop-color="#2563eb" />
+                                <stop offset="100%" stop-color="#0ea5e9" />
+                            </linearGradient>
+                        </defs>
+                        <circle cx="50" cy="22" r="12" fill="url(#yg-navbar)" />
+                        <path d="M 25 25 Q 40 50 45 65 L 45 90 Q 55 90 55 65 Q 60 50 80 25 Q 65 45 55 55 L 45 55 Q 35 45 25 25 Z" fill="url(#yg-navbar)" />
+                        <path d="M 15 60 Q 50 90 90 40 Q 80 50 50 80 Q 25 70 15 60 Z" fill="url(#yg-navbar)" />
+                        <polygon points="75,10 80,15 85,10 80,5" fill="#0ea5e9" />
+                    </svg>
+                    YOUTHIAN
                 </a>
 
                 <!-- Games/Events page: minimal header (Dashboard button only) -->
@@ -184,7 +197,7 @@
 
     <header th:fragment="musicNavbar(active, auth, coins)" class="navbar music-navbar">
         <div class="nav-shell navbar-inner" style="display: flex; align-items: center; justify-content: space-between; width: 100%; height: 100%; padding: 0;">
-            <a class="logo" th:href="@{/dashboard(auth=${auth})}">Zentrix</a>
+            <a class="logo" th:href="@{/dashboard(auth=${auth})}">Youthian</a>
             <div class="nav-links">
                 <a th:href="@{/home}"><i class="fas fa-house"></i> Home</a>
                 <a th:href="@{/wallet(auth=${auth})}" th:classappend="${active} == 'wallet' ? ' active' : ''"><i class="fas fa-wallet"></i> Wallet</a>
@@ -226,7 +239,7 @@
         <div class="footer-content">
             <!-- Column 1: Brand & Description -->
             <div class="footer-col" style="display: flex; flex-direction: column; gap: 15px;">
-                <h3 style="font-size: 24px; font-weight: 800; color: var(--text-primary); margin-bottom: 5px;">Zentrix</h3>
+                <h3 style="font-size: 24px; font-weight: 800; color: var(--text-primary); margin-bottom: 5px;">Youthian</h3>
                 <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.6; margin: 0; max-width: 280px;">
                     Everything you need, all in one place. Discover events, play games, share music, and build connections.
                 </p>
@@ -288,7 +301,7 @@
 
         <!-- Divider & Bottom Branding -->
         <div class="footer-bottom">
-            <p style="margin: 0; font-weight: 600;">&copy; 2026 Zentrix. All rights reserved.</p>
+            <p style="margin: 0; font-weight: 600;">&copy; 2026 Youthian. All rights reserved.</p>
             <p style="margin: 0; font-weight: 600; display: flex; align-items: center; gap: 6px;">
                 Made with <i class="fa-solid fa-heart" style="color: #ec4899; animation: float 3s ease-in-out infinite;"></i> for youth globally.
             </p>
