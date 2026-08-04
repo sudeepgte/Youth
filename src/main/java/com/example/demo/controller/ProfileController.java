@@ -7,6 +7,8 @@ import com.example.demo.repository.PostRepository;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.service.RewardService;
 import jakarta.servlet.http.HttpSession;
+import com.example.demo.model.UserReward;
+import com.example.demo.repository.UserRewardRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -19,7 +21,7 @@ import java.util.Set;
 import java.util.HashSet;
 
 @Controller
-@RequestMapping("/profile")
+@RequestMapping(value = "/profile")
 public class ProfileController {
 
     @Autowired
@@ -72,16 +74,29 @@ public class ProfileController {
     private NotificationRepository notificationRepository;
 
     @Autowired
+    private UserRewardRepository userRewardRepository;
+
+    @Autowired
     private FollowRequestRepository followRequestRepository;
 
     @Autowired
     private com.example.demo.repository.EventRegistrationRepository eventRegistrationRepository;
 
     @Autowired
+    private com.example.demo.repository.BattleRepository battleRepository;
+
+    @Autowired
+    private com.example.demo.repository.BattleParticipantRepository battleParticipantRepository;
+
+    @Autowired
     private com.example.demo.repository.UserActivityRepository userActivityRepository;
 
+    @Autowired
+    private com.example.demo.config.JwtUtil jwtUtil;
+
+
     @Transactional(readOnly = true)
-    @GetMapping("/{username}")
+    @RequestMapping(value = "/{username}", method = RequestMethod.GET)
     public String showPublicProfile(@PathVariable String username, HttpSession session, Model model) {
         User currentUser = (User) session.getAttribute("user");
         if (currentUser == null) {
@@ -92,22 +107,40 @@ public class ProfileController {
         if (targetUser == null) {
             return "redirect:/dashboard";
         }
+        if ("BANNED".equals(targetUser.getStatus()) || "SUSPENDED".equals(targetUser.getStatus())) {
+            return "redirect:/dashboard?error=user_blocked";
+        }
 
         // Refresh current user to get latest following list
         currentUser = userRepository.findById(currentUser.getId()).orElse(currentUser);
         session.setAttribute("user", currentUser);
 
         // Calculate Talent Score Stats
-        long eventsJoined = eventRegistrationRepository.countByUser(targetUser);
-        long eventsWon = eventRegistrationRepository.countByUserAndPosition(targetUser, "Winner");
+        long gamesJoined = eventRegistrationRepository.countByUser(targetUser);
+        long battlesJoined = battleParticipantRepository.countByUser(targetUser);
+        long eventsJoined = gamesJoined + battlesJoined;
+        
+        long gamesWon = eventRegistrationRepository.countByUserAndPosition(targetUser, "Winner");
+        long battlesWon = battleRepository.countBattlesWonByUser(targetUser);
+        long eventsWon = gamesWon + battlesWon;
 
-        // Calculate Rank (simplistic query-based approach: all users with XP >
-        // targetUser's XP + 1)
-        long higherXpCount = userRepository.findAll().stream()
-                .filter(u -> (u.getXp() != null ? u.getXp() : 0) > (targetUser.getXp() != null ? targetUser.getXp()
-                        : 0))
-                .count();
-        long rank = higherXpCount + 1;
+        // Calculate Rank with XP descending and ID ascending as a tie-breaker
+        long rank = 1;
+        List<User> allUsers = userRepository.findAll();
+        allUsers.sort((u1, u2) -> {
+            int xp1 = u1.getXp() != null ? u1.getXp() : 0;
+            int xp2 = u2.getXp() != null ? u2.getXp() : 0;
+            if (xp1 != xp2) {
+                return Integer.compare(xp2, xp1);
+            }
+            return Long.compare(u1.getId(), u2.getId());
+        });
+        for (int i = 0; i < allUsers.size(); i++) {
+            if (allUsers.get(i).getId().equals(targetUser.getId())) {
+                rank = i + 1;
+                break;
+            }
+        }
 
         String badge = targetUser.getLevel() != null ? targetUser.getLevel() : "Novice";
 
@@ -116,19 +149,29 @@ public class ProfileController {
         model.addAttribute("isOwnProfile", isOwnProfile);
 
         // Add Talent Score to model
+        long talentScore = (eventsJoined * 10) + (eventsWon * 50) + (targetUser.getXp() != null ? targetUser.getXp() : 0);
+        model.addAttribute("talentScore", talentScore);
         model.addAttribute("eventsJoined", eventsJoined);
         model.addAttribute("eventsWon", eventsWon);
+        model.addAttribute("gamesWon", gamesWon);
+        model.addAttribute("battlesWon", battlesWon);
         model.addAttribute("userRank", rank);
         model.addAttribute("userBadge", badge);
-        model.addAttribute("isFollowing", currentUser.getFollowing().contains(targetUser));
+        boolean isFollowing = currentUser.getFollowing().contains(targetUser);
+        model.addAttribute("isFollowing", isFollowing);
+
+        boolean hasSentFollowRequest = followRequestRepository.findBySenderAndReceiver(currentUser, targetUser).isPresent();
+        model.addAttribute("hasSentFollowRequest", hasSentFollowRequest);
+
+        boolean isPrivateAndNotFollowing = targetUser.isPrivateAccount() && !isOwnProfile && !isFollowing;
+        model.addAttribute("isPrivateAndNotFollowing", isPrivateAndNotFollowing);
 
         model.addAttribute("followersCount", targetUser.getFollowers().size());
         model.addAttribute("followingCount", targetUser.getFollowing().size());
-        model.addAttribute("followers", targetUser.getFollowers());
-        model.addAttribute("following", targetUser.getFollowing());
 
-        // Fetch posts
+        // Fetch posts to get the count
         List<Post> posts = postRepository.findByUserAndPostTypeNotOrderByCreatedAtDesc(targetUser, "STORY");
+        posts.removeIf(p -> p.isBlocked());
         List<com.example.demo.model.PostCollaboration> collaborations = postCollaborationRepository
                 .findByUserAndStatus(targetUser, com.example.demo.model.CollaborationStatus.ACCEPTED);
         for (com.example.demo.model.PostCollaboration col : collaborations) {
@@ -136,8 +179,24 @@ public class ProfileController {
         }
         posts.sort((p1, p2) -> p2.getCreatedAt().compareTo(p1.getCreatedAt()));
 
-        model.addAttribute("posts", posts);
         model.addAttribute("postsCount", posts.size());
+
+        if (isPrivateAndNotFollowing) {
+            model.addAttribute("followers", new java.util.HashSet<>());
+            model.addAttribute("following", new java.util.HashSet<>());
+            model.addAttribute("posts", new java.util.ArrayList<>());
+        } else {
+            model.addAttribute("followers", targetUser.getFollowers());
+            model.addAttribute("following", targetUser.getFollowing());
+
+            // Initialize lazy collaborations for posts
+            for (Post post : posts) {
+                if (post.getCollaborations() != null) {
+                    post.getCollaborations().size();
+                }
+            }
+            model.addAttribute("posts", posts);
+        }
 
         // Check for active stories
         boolean hasStory = !postRepository.findByUserAndPostTypeAndCreatedAtAfterOrderByCreatedAtAsc(
@@ -167,7 +226,32 @@ public class ProfileController {
                     .map(UserActivity::getPost)
                     .distinct()
                     .collect(java.util.stream.Collectors.toList());
+
+            // Initialize lazy collaborations for saved posts
+            for (Post post : savedPosts) {
+                if (post.getCollaborations() != null) {
+                    post.getCollaborations().size();
+                }
+            }
             model.addAttribute("savedPosts", savedPosts);
+
+            // Fetch user rewards
+            List<UserReward> userRewards = userRewardRepository.findByUserOrderByIssueDateDesc(currentUser);
+            // Initialize lazy secretReward for rewards
+            for (UserReward reward : userRewards) {
+                if (reward.getSecretReward() != null) {
+                    reward.getSecretReward().getId(); // Triggers loading the lazy relationship
+                }
+            }
+            model.addAttribute("userRewards", userRewards);
+        } else {
+            model.addAttribute("pendingRequests", new java.util.ArrayList<>());
+            model.addAttribute("notifications", new java.util.ArrayList<>());
+            model.addAttribute("unreadNotifCount", 0);
+            model.addAttribute("followRequests", new java.util.ArrayList<>());
+            model.addAttribute("followingUserIds", new java.util.HashSet<>());
+            model.addAttribute("savedPosts", new java.util.ArrayList<>());
+            model.addAttribute("userRewards", new java.util.ArrayList<>());
         }
 
         return "profile";
@@ -179,20 +263,23 @@ public class ProfileController {
         if (user == null) {
             return "redirect:/login";
         }
-        return showPublicProfile(user.getUsername(), session, model);
+        return "redirect:/profile/" + user.getUsername();
     }
 
     @Transactional
-    @PostMapping("/update")
+    @RequestMapping(value = "/update", method = RequestMethod.POST)
     public String updateProfile(@RequestParam String username,
             @RequestParam String email,
             @RequestParam(required = false) String dob,
             @RequestParam(required = false) String gender,
             @RequestParam(required = false) String profilePhotoUrl,
+            @RequestParam(required = false) org.springframework.web.multipart.MultipartFile profilePhotoFile,
             @RequestParam(required = false) String aboutMe,
             @RequestParam(required = false) String skills,
             @RequestParam(required = false) String collegeName,
-            HttpSession session) {
+            @RequestParam(required = false, defaultValue = "false") boolean privateAccount,
+            HttpSession session,
+            jakarta.servlet.http.HttpServletResponse response) {
         Object sessionUser = session.getAttribute("user");
         if (!(sessionUser instanceof User)) {
             return "redirect:/login";
@@ -202,6 +289,7 @@ public class ProfileController {
         try {
             User dbUser = userRepository.findById(user.getId()).orElse(null);
             if (dbUser != null) {
+                String oldUsername = dbUser.getUsername();
                 dbUser.setUsername(username);
                 dbUser.setEmail(email);
                 if (dob != null && !dob.trim().isEmpty()) {
@@ -214,15 +302,52 @@ public class ProfileController {
                 }
                 if (gender != null)
                     dbUser.setGender(gender);
-                if (profilePhotoUrl != null)
+
+                if (profilePhotoFile != null && !profilePhotoFile.isEmpty()) {
+                    String contentType = profilePhotoFile.getContentType();
+                    if (contentType != null && contentType.startsWith("image")) {
+                        try {
+                            String fileName = java.util.UUID.randomUUID().toString() + "_" + profilePhotoFile.getOriginalFilename();
+                            String uploadDir = "src/main/resources/static/uploads/";
+                            java.nio.file.Path uploadPath = java.nio.file.Paths.get(uploadDir);
+                            if (!java.nio.file.Files.exists(uploadPath)) {
+                                java.nio.file.Files.createDirectories(uploadPath);
+                            }
+                            String targetUploadDir = "target/classes/static/uploads/";
+                            java.nio.file.Path targetUploadPath = java.nio.file.Paths.get(targetUploadDir);
+                            if (!java.nio.file.Files.exists(targetUploadPath)) {
+                                java.nio.file.Files.createDirectories(targetUploadPath);
+                            }
+                            java.nio.file.Files.copy(profilePhotoFile.getInputStream(), uploadPath.resolve(fileName),
+                                    java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                            java.nio.file.Files.copy(profilePhotoFile.getInputStream(), targetUploadPath.resolve(fileName),
+                                    java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                            dbUser.setProfilePhotoUrl("/uploads/" + fileName);
+                        } catch (java.io.IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                } else if (profilePhotoUrl != null) {
                     dbUser.setProfilePhotoUrl(profilePhotoUrl.length() > 255 ? profilePhotoUrl.substring(0, 255) : profilePhotoUrl);
+                }
                 if (aboutMe != null)
                     dbUser.setAboutMe(aboutMe.length() > 1000 ? aboutMe.substring(0, 1000) : aboutMe);
                 if (skills != null)
                     dbUser.setSkills(skills.length() > 255 ? skills.substring(0, 255) : skills);
                 if (collegeName != null)
                     dbUser.setCollegeName(collegeName.length() > 255 ? collegeName.substring(0, 255) : collegeName);
+                dbUser.setPrivateAccount(privateAccount);
                 userRepository.save(dbUser);
+                
+                // If username is changed, generate a new token and update the client-side cookie
+                if (!oldUsername.equals(username)) {
+                    String newToken = jwtUtil.generateToken(username);
+                    jakarta.servlet.http.Cookie cookie = new jakarta.servlet.http.Cookie("jwtToken", newToken);
+                    cookie.setHttpOnly(true);
+                    cookie.setPath("/");
+                    response.addCookie(cookie);
+                }
+                
                 // Force reload with collections if needed, or just set the basic user
                 session.setAttribute("user", dbUser);
             }
@@ -239,7 +364,7 @@ public class ProfileController {
         }
     }
 
-    @PostMapping("/reset-password")
+    @RequestMapping(value = "/reset-password", method = RequestMethod.POST)
     public String resetPassword(@RequestParam String newPassword, HttpSession session) {
         Object sessionUser = session.getAttribute("user");
         if (!(sessionUser instanceof User)) {
@@ -255,13 +380,15 @@ public class ProfileController {
         return "redirect:/profile?passwordReset";
     }
 
-    @PostMapping("/post")
+    @RequestMapping(value = "/post", method = RequestMethod.POST)
     public String createPost(@RequestParam String content,
             @RequestParam(required = false) org.springframework.web.multipart.MultipartFile file,
             @RequestParam(required = false) String hashtags,
             @RequestParam(required = false) String collaborators,
             @RequestParam(required = false, defaultValue = "POST") String postType,
             @RequestParam(required = false) String category,
+            @RequestParam(required = false) String bgColor,
+            @RequestParam(required = false) String textColor,
             HttpSession session) {
         Object sessionUser = session.getAttribute("user");
         if (!(sessionUser instanceof User)) {
@@ -314,6 +441,19 @@ public class ProfileController {
             return "redirect:/login";
         }
 
+        if ("STORY".equals(postType) && (mediaUrl == null || mediaUrl.isEmpty())) {
+            String prefix = "";
+            if (bgColor != null && !bgColor.isEmpty()) {
+                prefix += "[BG:" + bgColor + "]";
+            }
+            if (textColor != null && !textColor.isEmpty()) {
+                prefix += "[TXT:" + textColor + "]";
+            }
+            if (!prefix.isEmpty()) {
+                content = prefix + content;
+            }
+        }
+
         Post post = new Post(content, user, mediaUrl, mediaType, hashtags, postType, category);
         feedAlgorithmService.savePost(post);
 
@@ -351,7 +491,7 @@ public class ProfileController {
         return "redirect:/profile";
     }
 
-    @PostMapping("/post/delete/{id}")
+    @RequestMapping(value = "/post/delete/{id}", method = RequestMethod.POST)
     @ResponseBody
     public org.springframework.http.ResponseEntity<?> deletePost(@PathVariable Long id, HttpSession session) {
         User user = (User) session.getAttribute("user");
@@ -376,7 +516,7 @@ public class ProfileController {
     }
 
     @Transactional
-    @PostMapping("/{id}/follow")
+    @RequestMapping(value = "/{id}/follow", method = RequestMethod.POST)
     public String followUser(@PathVariable Long id, HttpSession session,
             @RequestHeader(value = "Referer", required = false) String referer) {
         User currentUser = (User) session.getAttribute("user");
@@ -399,20 +539,29 @@ public class ProfileController {
                 return (referer != null) ? "redirect:" + referer : "redirect:/profile";
             }
 
-            // Create FollowRequest
-            FollowRequest request = new FollowRequest(dbCurrentUser, dbTargetUser);
-            followRequestRepository.save(request);
+            if (!dbTargetUser.isPrivateAccount()) {
+                dbTargetUser.getFollowers().add(dbCurrentUser);
+                dbCurrentUser.getFollowing().add(dbTargetUser);
+                userRepository.save(dbTargetUser);
+                userRepository.save(dbCurrentUser);
+                notificationRepository.save(new Notification(dbTargetUser, dbCurrentUser,
+                        "@" + dbCurrentUser.getUsername() + " started following you!", "FOLLOW_ACCEPT"));
+            } else {
+                // Create FollowRequest
+                FollowRequest request = new FollowRequest(dbCurrentUser, dbTargetUser);
+                followRequestRepository.save(request);
 
-            // Create Notification
-            Notification notif = new Notification(dbTargetUser, dbCurrentUser,
-                    "@" + dbCurrentUser.getUsername() + " wants to follow you!", "FOLLOW_REQUEST");
-            notificationRepository.save(notif);
+                // Create Notification
+                Notification notif = new Notification(dbTargetUser, dbCurrentUser,
+                        "@" + dbCurrentUser.getUsername() + " wants to follow you!", "FOLLOW_REQUEST");
+                notificationRepository.save(notif);
+            }
         }
         return (referer != null) ? "redirect:" + referer : "redirect:/profile";
     }
 
     @Transactional
-    @PostMapping("/{id}/follow/ajax")
+    @RequestMapping(value = "/{id}/follow/ajax", method = RequestMethod.POST)
     @ResponseBody
     public org.springframework.http.ResponseEntity<?> followUserAjax(@PathVariable Long id, HttpSession session) {
         User currentUser = (User) session.getAttribute("user");
@@ -437,11 +586,11 @@ public class ProfileController {
                 return org.springframework.http.ResponseEntity.ok(java.util.Map.of("status", "FOLLOWING"));
             }
 
-            // Direct follow if target follows current user (Follow Back)
+            // Direct follow if target follows current user (Follow Back) AND target is not private
             final Long targetUserId = dbTargetUser.getId();
             boolean targetFollowsMe = dbCurrentUser.getFollowers().stream()
                     .anyMatch(f -> f.getId().equals(targetUserId));
-            if (targetFollowsMe) {
+            if (targetFollowsMe && !dbTargetUser.isPrivateAccount()) {
                 dbTargetUser.getFollowers().add(dbCurrentUser);
                 dbCurrentUser.getFollowing().add(dbTargetUser); // Bidirectional update
                 userRepository.save(dbTargetUser);
@@ -454,20 +603,31 @@ public class ProfileController {
                 return org.springframework.http.ResponseEntity.ok(java.util.Map.of("status", "FOLLOWING"));
             }
 
-            // Otherwise, create FollowRequest
+            // Otherwise, process based on privacy
             java.util.Optional<FollowRequest> existingReq = followRequestRepository
                     .findBySenderAndReceiver(dbCurrentUser, dbTargetUser);
             if (existingReq.isEmpty()) {
-                FollowRequest request = new FollowRequest(dbCurrentUser, dbTargetUser);
-                followRequestRepository.save(request);
+                if (!dbTargetUser.isPrivateAccount()) {
+                    // Direct follow for public accounts
+                    dbTargetUser.getFollowers().add(dbCurrentUser);
+                    dbCurrentUser.getFollowing().add(dbTargetUser);
+                    userRepository.save(dbTargetUser);
+                    userRepository.save(dbCurrentUser);
+                    notificationRepository.save(new Notification(dbTargetUser, dbCurrentUser,
+                            "@" + dbCurrentUser.getUsername() + " started following you!", "FOLLOW_ACCEPT"));
+                    return org.springframework.http.ResponseEntity.ok(java.util.Map.of("status", "FOLLOWING"));
+                } else {
+                    // Follow request for private accounts
+                    FollowRequest request = new FollowRequest(dbCurrentUser, dbTargetUser);
+                    followRequestRepository.save(request);
 
-                Notification notif = new Notification(dbTargetUser, dbCurrentUser,
-                        "@" + dbCurrentUser.getUsername() + " wants to follow you!", "FOLLOW_REQUEST");
-                notificationRepository.save(notif);
-                return org.springframework.http.ResponseEntity.ok(java.util.Map.of("status", "REQUESTED"));
+                    Notification notif = new Notification(dbTargetUser, dbCurrentUser,
+                            "@" + dbCurrentUser.getUsername() + " wants to follow you!", "FOLLOW_REQUEST");
+                    notificationRepository.save(notif);
+                    return org.springframework.http.ResponseEntity.ok(java.util.Map.of("status", "REQUESTED"));
+                }
             } else {
                 // If it already exists, we return REQUESTED so the frontend knows it's there.
-                // The frontend can then choose to call cancel if the user clicks again.
                 return org.springframework.http.ResponseEntity.ok(java.util.Map.of("status", "REQUESTED"));
             }
         }
@@ -477,7 +637,7 @@ public class ProfileController {
     }
 
     @Transactional
-    @PostMapping("/{id}/cancel-follow/ajax")
+    @RequestMapping(value = "/{id}/cancel-follow/ajax", method = RequestMethod.POST)
     @ResponseBody
     public org.springframework.http.ResponseEntity<?> cancelFollowAjax(@PathVariable Long id, HttpSession session) {
         User currentUser = (User) session.getAttribute("user");
@@ -499,7 +659,7 @@ public class ProfileController {
     }
 
     @Transactional
-    @PostMapping("/{id}/unfollow")
+    @RequestMapping(value = "/{id}/unfollow", method = RequestMethod.POST)
     public String unfollowUser(@PathVariable Long id, HttpSession session,
             @RequestHeader(value = "Referer", required = false) String referer) {
         User currentUser = (User) session.getAttribute("user");
@@ -519,7 +679,37 @@ public class ProfileController {
         return (referer != null) ? "redirect:" + referer : "redirect:/profile";
     }
 
-    @GetMapping("/api/users/search")
+    @Transactional
+    @RequestMapping(value = "/{id}/unfollow/ajax", method = RequestMethod.POST)
+    @ResponseBody
+    public org.springframework.http.ResponseEntity<?> unfollowUserAjax(@PathVariable Long id, HttpSession session) {
+        User currentUser = (User) session.getAttribute("user");
+        if (currentUser == null) {
+            return org.springframework.http.ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
+        }
+
+        User dbTargetUser = userRepository.findById(id).orElse(null);
+        User dbCurrentUser = userRepository.findById(currentUser.getId()).orElse(null);
+
+        if (dbCurrentUser != null && dbTargetUser != null) {
+            // Remove from both sides to ensure consistency
+            dbTargetUser.getFollowers().remove(dbCurrentUser);
+            dbCurrentUser.getFollowing().remove(dbTargetUser);
+            userRepository.save(dbTargetUser);
+            userRepository.save(dbCurrentUser);
+
+            // Clean up follow notification
+            notificationRepository.deleteByActorAndUserAndType(dbCurrentUser, dbTargetUser, "FOLLOW_ACCEPT");
+
+            // Refresh session user
+            session.setAttribute("user", dbCurrentUser);
+
+            return org.springframework.http.ResponseEntity.ok(java.util.Map.of("status", "FOLLOW"));
+        }
+        return org.springframework.http.ResponseEntity.badRequest().build();
+    }
+
+    @RequestMapping(value = "/api/users/search", method = RequestMethod.GET)
     @ResponseBody
     public List<Map<String, Object>> searchUsers(@RequestParam String q) {
         List<User> users = userRepository.findByUsernameContainingIgnoreCase(q);
@@ -533,7 +723,7 @@ public class ProfileController {
         return result;
     }
 
-    @PostMapping("/collaboration/{id}/accept")
+    @RequestMapping(value = "/collaboration/{id}/accept", method = RequestMethod.POST)
     public String acceptCollaboration(@PathVariable Long id, HttpSession session) {
         User user = (User) session.getAttribute("user");
         if (user == null) {
@@ -548,7 +738,7 @@ public class ProfileController {
         return "redirect:/profile";
     }
 
-    @PostMapping("/collaboration/{id}/reject")
+    @RequestMapping(value = "/collaboration/{id}/reject", method = RequestMethod.POST)
     public String rejectCollaboration(@PathVariable Long id, HttpSession session) {
         User user = (User) session.getAttribute("user");
         if (user == null) {
@@ -564,7 +754,7 @@ public class ProfileController {
     }
 
     @Transactional
-    @PostMapping("/notifications/mark-all-read")
+    @RequestMapping(value = "/notifications/mark-all-read", method = RequestMethod.POST)
     @ResponseBody
     public org.springframework.http.ResponseEntity<?> markAllNotificationsRead(HttpSession session) {
         User user = (User) session.getAttribute("user");
@@ -583,7 +773,7 @@ public class ProfileController {
     }
 
     @Transactional
-    @PostMapping("/follow-request/{id}/accept/ajax")
+    @RequestMapping(value = "/follow-request/{id}/accept/ajax", method = RequestMethod.POST)
     @ResponseBody
     public org.springframework.http.ResponseEntity<?> acceptFollowAjax(@PathVariable Long id, HttpSession session) {
         User user = (User) session.getAttribute("user");
@@ -649,7 +839,7 @@ public class ProfileController {
     }
 
     @Transactional
-    @PostMapping("/follow-request/{id}/reject/ajax")
+    @RequestMapping(value = "/follow-request/{id}/reject/ajax", method = RequestMethod.POST)
     @ResponseBody
     public org.springframework.http.ResponseEntity<?> rejectFollowAjax(@PathVariable Long id, HttpSession session) {
         User user = (User) session.getAttribute("user");
@@ -673,47 +863,18 @@ public class ProfileController {
     }
 
     @Transactional
-    @PostMapping("/follow-request/{id}/accept")
+    @RequestMapping(value = "/follow-request/{id}/accept", method = RequestMethod.POST)
     public String acceptFollow(@PathVariable Long id, HttpSession session) {
         acceptFollowAjax(id, session);
         return "redirect:/profile";
     }
 
     @Transactional
-    @PostMapping("/follow-request/{id}/reject")
+    @RequestMapping(value = "/follow-request/{id}/reject", method = RequestMethod.POST)
     public String rejectFollow(@PathVariable Long id, HttpSession session) {
         rejectFollowAjax(id, session);
         return "redirect:/profile";
     }
 
-    @Transactional
-    @PostMapping("/notifications/{id}/delete")
-    @ResponseBody
-    public org.springframework.http.ResponseEntity<?> deleteNotification(@PathVariable Long id, HttpSession session) {
-        User user = (User) session.getAttribute("user");
-        if (user == null) {
-            return org.springframework.http.ResponseEntity.status(401).build();
-        }
-
-        Notification notif = notificationRepository.findById(id).orElse(null);
-        if (notif != null && notif.getUser().getId().equals(user.getId())) {
-            notificationRepository.delete(notif);
-            return org.springframework.http.ResponseEntity.ok().build();
-        }
-        return org.springframework.http.ResponseEntity.notFound().build();
-    }
-
-    @Transactional
-    @PostMapping("/notifications/clear-all")
-    @ResponseBody
-    public org.springframework.http.ResponseEntity<?> clearAllNotifications(HttpSession session) {
-        User user = (User) session.getAttribute("user");
-        if (user == null) {
-            return org.springframework.http.ResponseEntity.status(401).build();
-        }
-
-        List<Notification> notifications = notificationRepository.findByUserOrderByCreatedAtDesc(user);
-        notificationRepository.deleteAll(notifications);
-        return org.springframework.http.ResponseEntity.ok().build();
-    }
+    // Endpoints moved to NotificationController.java
 }

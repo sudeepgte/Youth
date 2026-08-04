@@ -44,7 +44,31 @@ public class Battle {
     @JoinColumn(name = "winner_id")
     private User winner;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "winner2_id")
+    private User winner2;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "winner3_id")
+    private User winner3;
+
     private Integer winnerXp = 500;
+
+    private String mode = "ONLINE"; // ONLINE or OFFLINE
+    private String venue;
+    private String eventDate;
+    private String eventTime;
+    private Double entryFee = 0.0;
+    private Double prize1 = 0.0;
+    private Double prize2 = 0.0;
+    private Double prize3 = 0.0;
+    private Double judgeWeight = 70.0;
+    private Double audienceWeight = 30.0;
+
+    private Integer durationMinutes; // For live battles (1, 3, 5, 10 min)
+    private Integer likeCount = 0;
+    private Integer giftCount = 0;
+    private Boolean isLive = false;
 
     @JsonIgnore
     @OneToMany(mappedBy = "battle", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -57,6 +81,18 @@ public class Battle {
     @JsonIgnore
     @OneToMany(mappedBy = "battle", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BattleVote> votes = new ArrayList<>();
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "battle", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BattleLiveComment> comments = new ArrayList<>();
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "battle", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BattleLike> likes = new ArrayList<>();
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "battle", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BattleGift> gifts = new ArrayList<>();
 
     @PrePersist
     public void prePersist() {
@@ -122,4 +158,73 @@ public class Battle {
 
     public List<BattleVote> getVotes() { return votes; }
     public void setVotes(List<BattleVote> votes) { this.votes = votes; }
+
+    public String getMode() { return mode; }
+    public void setMode(String mode) { this.mode = mode; }
+
+    public String getVenue() { return venue; }
+    public void setVenue(String venue) { this.venue = venue; }
+
+    public String getEventDate() { return eventDate; }
+    public void setEventDate(String eventDate) { this.eventDate = eventDate; }
+
+    public String getEventTime() { return eventTime; }
+    public void setEventTime(String eventTime) { this.eventTime = eventTime; }
+
+    public Double getEntryFee() { return entryFee; }
+    public void setEntryFee(Double entryFee) { this.entryFee = entryFee; }
+
+    public Double getJudgeWeight() { return judgeWeight; }
+    public void setJudgeWeight(Double judgeWeight) { this.judgeWeight = judgeWeight; }
+
+    public Double getAudienceWeight() { return audienceWeight; }
+    public void setAudienceWeight(Double audienceWeight) { this.audienceWeight = audienceWeight; }
+
+    public User getWinner2() { return winner2; }
+    public void setWinner2(User winner2) { this.winner2 = winner2; }
+
+    public User getWinner3() { return winner3; }
+    public void setWinner3(User winner3) { this.winner3 = winner3; }
+
+    public Double getPrize1() {
+        if (entryFee != null && entryFee > 0 && participants != null && !participants.isEmpty()) {
+            double totalPool = entryFee * participants.size();
+            double pct = (durationMinutes != null && durationMinutes > 0) ? 0.80 : 0.60;
+            return Math.round(totalPool * pct * 100.0) / 100.0;
+        }
+        return prize1 != null ? prize1 : 0.0;
+    }
+    public void setPrize1(Double prize1) { this.prize1 = prize1; }
+
+    public Double getPrize2() {
+        if (entryFee != null && entryFee > 0 && participants != null && !participants.isEmpty()) {
+            double totalPool = entryFee * participants.size();
+            double pct = (durationMinutes != null && durationMinutes > 0) ? 0.20 : 0.30;
+            return Math.round(totalPool * pct * 100.0) / 100.0;
+        }
+        return prize2 != null ? prize2 : 0.0;
+    }
+    public void setPrize2(Double prize2) { this.prize2 = prize2; }
+
+    public Double getPrize3() {
+        if (durationMinutes != null && durationMinutes > 0) return 0.0;
+        if (entryFee != null && entryFee > 0 && participants != null && !participants.isEmpty()) {
+            double totalPool = entryFee * participants.size();
+            return Math.round(totalPool * 0.10 * 100.0) / 100.0;
+        }
+        return prize3 != null ? prize3 : 0.0;
+    }
+    public void setPrize3(Double prize3) { this.prize3 = prize3; }
+
+    public Integer getDurationMinutes() { return durationMinutes; }
+    public void setDurationMinutes(Integer durationMinutes) { this.durationMinutes = durationMinutes; }
+
+    public Integer getLikeCount() { return likeCount; }
+    public void setLikeCount(Integer likeCount) { this.likeCount = likeCount; }
+
+    public Integer getGiftCount() { return giftCount; }
+    public void setGiftCount(Integer giftCount) { this.giftCount = giftCount; }
+
+    public Boolean getIsLive() { return isLive; }
+    public void setIsLive(Boolean isLive) { this.isLive = isLive; }
 }

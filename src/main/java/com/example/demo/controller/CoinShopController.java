@@ -8,11 +8,13 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+
 import jakarta.servlet.http.HttpSession;
 import java.time.LocalDateTime;
 
 @Controller
-@RequestMapping("/shop")
+@RequestMapping(value = "/shop")
 public class CoinShopController {
 
     @Autowired
@@ -35,7 +37,7 @@ public class CoinShopController {
         return "shop";
     }
 
-    @PostMapping("/buy-discount")
+    @RequestMapping(value = "/buy-discount", method = RequestMethod.POST)
     public String buyDiscount(HttpSession session) {
         User user = getUserFromSession(session);
         if (user == null) return "redirect:/login";
@@ -49,7 +51,7 @@ public class CoinShopController {
         return "redirect:/shop?error=insufficient_coins";
     }
 
-    @PostMapping("/buy-boost")
+    @RequestMapping(value = "/buy-boost", method = RequestMethod.POST)
     public String buyBoost(HttpSession session) {
         User user = getUserFromSession(session);
         if (user == null) return "redirect:/login";
@@ -63,7 +65,7 @@ public class CoinShopController {
         return "redirect:/shop?error=insufficient_coins";
     }
 
-    @PostMapping("/buy-badge")
+    @RequestMapping(value = "/buy-badge", method = RequestMethod.POST)
     public String buyBadge(HttpSession session) {
         User user = getUserFromSession(session);
         if (user == null) return "redirect:/login";
@@ -77,7 +79,7 @@ public class CoinShopController {
         return "redirect:/shop?error=insufficient_coins";
     }
 
-    @PostMapping("/buy-free-entry")
+    @RequestMapping(value = "/buy-free-entry", method = RequestMethod.POST)
     public String buyFreeEntry(HttpSession session) {
         User user = getUserFromSession(session);
         if (user == null) return "redirect:/login";

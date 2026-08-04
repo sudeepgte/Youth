@@ -13,6 +13,7 @@ public class UnoRoom {
     public String currentColor = "";
     public String status = "waiting";
     public String lastMessage = "Waiting for players...";
+    public long turnStartedAt = System.currentTimeMillis();
 
     private static final AtomicInteger cardIdGenerator = new AtomicInteger(0);
 
@@ -47,9 +48,23 @@ public class UnoRoom {
         Collections.shuffle(deck);
     }
 
+    public void resetGame() {
+        deck.clear();
+        discardPile.clear();
+        for (UnoPlayer p : players) {
+            p.hand.clear();
+            p.calledUno = false;
+        }
+        currentPlayerIndex = 0;
+        direction = 1;
+        initializeDeck();
+        startGame();
+    }
+
     public void startGame() {
         status = "active";
         for (UnoPlayer p : players) {
+            p.calledUno = false;
             for (int i = 0; i < 7; i++) {
                 p.hand.add(deck.remove(0));
             }
@@ -64,6 +79,7 @@ public class UnoRoom {
         discardPile.add(startCard);
         currentColor = startCard.color;
         lastMessage = "Game started! Player 1's turn.";
+        turnStartedAt = System.currentTimeMillis();
     }
 
     public void playCard(int playerIdx, int cardId, String chosenColor) {
@@ -92,6 +108,10 @@ public class UnoRoom {
             skipNext = true;
         }
 
+        if (p.hand.size() > 1) {
+            p.calledUno = false;
+        }
+
         if (p.hand.isEmpty()) {
             status = "finished";
             lastMessage = p.name + " wins!";
@@ -100,7 +120,16 @@ public class UnoRoom {
             if (skipNext) {
                 currentPlayerIndex = getNextPlayerIndex();
             }
-            lastMessage = players.get(currentPlayerIndex).name + "'s turn.";
+            if (p.hand.size() == 1) {
+                if (p.calledUno) {
+                    lastMessage = p.name + " Telled UNO! It's " + players.get(currentPlayerIndex).name + "'s turn.";
+                } else {
+                    lastMessage = p.name + " has 1 card left and must say UNO within 5 seconds!";
+                }
+            } else {
+                lastMessage = players.get(currentPlayerIndex).name + "'s turn.";
+            }
+            turnStartedAt = System.currentTimeMillis();
         }
     }
 
@@ -116,8 +145,33 @@ public class UnoRoom {
         if (!deck.isEmpty()) {
             p.hand.add(deck.remove(0));
         }
+        if (p.hand.size() > 1) {
+            p.calledUno = false;
+        }
         currentPlayerIndex = getNextPlayerIndex();
         lastMessage = players.get(currentPlayerIndex).name + "'s turn.";
+        turnStartedAt = System.currentTimeMillis();
+    }
+
+    public void skipTurn(int playerIdx) {
+        if (currentPlayerIndex != playerIdx) return;
+        UnoPlayer p = players.get(playerIdx);
+        if (deck.isEmpty()) {
+            UnoCard top = discardPile.remove(discardPile.size() - 1);
+            deck.addAll(discardPile);
+            Collections.shuffle(deck);
+            discardPile.clear();
+            discardPile.add(top);
+        }
+        if (!deck.isEmpty()) {
+            p.hand.add(deck.remove(0));
+        }
+        if (p.hand.size() > 1) {
+            p.calledUno = false;
+        }
+        currentPlayerIndex = getNextPlayerIndex();
+        lastMessage = p.name + " ran out of time! They drew a card. It's " + players.get(currentPlayerIndex).name + "'s turn.";
+        turnStartedAt = System.currentTimeMillis();
     }
 
     private int getNextPlayerIndex() {
@@ -127,9 +181,36 @@ public class UnoRoom {
     }
 
     private void drawCardsForPlayer(int pIdx, int count) {
+        UnoPlayer p = players.get(pIdx);
         for (int i = 0; i < count; i++) {
             if (deck.isEmpty()) break;
-            players.get(pIdx).hand.add(deck.remove(0));
+            p.hand.add(deck.remove(0));
+        }
+        if (p.hand.size() > 1) {
+            p.calledUno = false;
+        }
+    }
+
+    public void callUno(int playerIdx) {
+        UnoPlayer p = players.get(playerIdx);
+        if (p.hand.size() == 1) {
+            p.calledUno = true;
+            lastMessage = p.name + " yelled UNO!";
+        }
+    }
+
+    public void catchUno(int catcherIdx, int targetIdx) {
+        UnoPlayer target = players.get(targetIdx);
+        UnoPlayer catcher = players.get(catcherIdx);
+        
+        if (target.hand.size() == 1 && !target.calledUno) {
+            drawCardsForPlayer(targetIdx, 2);
+            target.calledUno = false;
+            if (catcherIdx == targetIdx) {
+                lastMessage = target.name + " missed the 5-second UNO window and drew 2 penalty cards!";
+            } else {
+                lastMessage = catcher.name + " caught " + target.name + " not saying UNO! " + target.name + " drew 2 penalty cards.";
+            }
         }
     }
 
@@ -142,6 +223,7 @@ public class UnoRoom {
         map.put("topCard", discardPile.isEmpty() ? null : discardPile.get(discardPile.size() - 1));
         map.put("lastMessage", lastMessage);
         map.put("direction", direction);
+        map.put("turnStartedAt", turnStartedAt);
         
         List<Map<String, Object>> playersList = new ArrayList<>();
         for (int i = 0; i < players.size(); i++) {
@@ -149,6 +231,7 @@ public class UnoRoom {
             Map<String, Object> pMap = new HashMap<>();
             pMap.put("name", p.name);
             pMap.put("cardCount", p.hand.size());
+            pMap.put("calledUno", p.calledUno);
             if (i == forPlayerIdx) {
                 pMap.put("hand", p.hand);
             }
@@ -162,6 +245,7 @@ public class UnoRoom {
         public String name;
         public int index;
         public List<UnoCard> hand = new ArrayList<>();
+        public boolean calledUno = false;
 
         public UnoPlayer(String name, int index) {
             this.name = name;

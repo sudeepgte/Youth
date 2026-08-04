@@ -342,6 +342,99 @@
             transform: scale(1.1) rotate(5deg);
             background: rgba(168, 85, 247, 0.1);
         }
+
+        /* --- Mobile Controls Styling --- */
+        #mobile-controls-container {
+            display: none;
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 360px;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            z-index: 150;
+            pointer-events: none;
+        }
+
+        .mobile-control-btn {
+            pointer-events: auto;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            transition: transform 0.1s, background 0.2s, border-color 0.2s;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: none;
+        }
+
+        #btn-left { border-color: var(--neon-blue); box-shadow: 0 0 15px rgba(0, 210, 255, 0.3); }
+        #btn-right { border-color: var(--neon-blue); box-shadow: 0 0 15px rgba(0, 210, 255, 0.3); }
+        #btn-jump { border-color: var(--neon-pink); box-shadow: 0 0 15px rgba(255, 0, 127, 0.3); width: 80px; height: 80px; font-size: 2.2rem; }
+
+        .mobile-control-btn:active {
+            transform: scale(0.9);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        @media (max-width: 1024px), (pointer: coarse) {
+            #mobile-controls-container {
+                display: flex;
+            }
+            #powerup-ui {
+                bottom: 140px !important;
+            }
+        @media (max-width: 768px) {
+            .glass-menu {
+                padding: 40px 20px;
+                width: 95%;
+            }
+            .game-title {
+                font-size: 2.8rem !important;
+            }
+            .score-value {
+                font-size: 3rem !important;
+            }
+            #mobile-controls-container {
+                width: 100%;
+                padding: 0 15px;
+                bottom: 20px;
+                gap: 15px;
+                box-sizing: border-box;
+                max-width: none;
+            }
+            .mobile-control-btn {
+                width: 60px;
+                height: 60px;
+                font-size: 1.5rem;
+            }
+            #btn-jump {
+                width: 70px !important;
+                height: 70px !important;
+                font-size: 1.8rem !important;
+            }
+            .btn-premium {
+                padding: 15px 20px !important;
+                font-size: 1rem !important;
+                width: 100%;
+                box-sizing: border-box;
+            }
+            #powerup-ui {
+                bottom: 110px !important;
+            }
+        }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
@@ -392,7 +485,13 @@
             <div class="p-bar-track">
                 <div id="powerup-fill" class="p-bar-fill"></div>
             </div>
-        </div>
+    </div>
+
+    <!-- Mobile Controls Interface -->
+    <div id="mobile-controls-container">
+        <button id="btn-left" class="mobile-control-btn"><i class="fas fa-arrow-left"></i></button>
+        <button id="btn-jump" class="mobile-control-btn"><i class="fas fa-arrow-up"></i></button>
+        <button id="btn-right" class="mobile-control-btn"><i class="fas fa-arrow-right"></i></button>
     </div>
 
     <div id="overlay">
@@ -409,7 +508,7 @@
                 <div class="control-item"><span class="kbd">S</span> SLIDE</div>
             </div>
             
-            <a href="/games" style="display: block; margin-top: 30px; color: rgba(255,255,255,0.3); text-decoration: none; font-weight: 800; font-size: 0.8rem; letter-spacing: 2px;">RETURN TO HUB</a>
+            <a th:href="@{/games}" style="display: block; margin-top: 30px; color: rgba(255,255,255,0.3); text-decoration: none; font-weight: 800; font-size: 0.8rem; letter-spacing: 2px;">RETURN TO HUB</a>
         </div>
 
         <!-- Mystery Box -->
@@ -575,9 +674,9 @@
             // Post-processing Setup
             const renderScene = new THREE.RenderPass(scene, camera);
             bloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
-            bloomPass.threshold = 0.35; // Increased threshold to glow only bright parts
-            bloomPass.strength = 0.8;    // Reduced strength for clarity
-            bloomPass.radius = 0.4;
+            bloomPass.threshold = 0.4;
+            bloomPass.strength = 0.15; // Greatly reduced for road clarity
+            bloomPass.radius = 0.1;
 
             composer = new THREE.EffectComposer(renderer);
             composer.addPass(renderScene);
@@ -616,6 +715,128 @@
             document.getElementById('restart-btn').onclick = startGame;
             document.getElementById('box-opener').onclick = openMysteryBox;
             document.getElementById('claim-btn').onclick = claimReward;
+
+            // --- Mobile Controls Initialization ---
+            let leftInterval = null;
+            let rightInterval = null;
+
+            function startMoveLeft() {
+                if (!gameActive) return;
+                if (currentLane > 0) {
+                    currentLane--;
+                    targetX = lanes[currentLane];
+                }
+                if (leftInterval) clearInterval(leftInterval);
+                leftInterval = setInterval(() => {
+                    if (currentLane > 0) {
+                        currentLane--;
+                        targetX = lanes[currentLane];
+                    }
+                }, 220); // Repeat interval for holding down
+            }
+
+            function stopMoveLeft() {
+                if (leftInterval) {
+                    clearInterval(leftInterval);
+                    leftInterval = null;
+                }
+            }
+
+            function startMoveRight() {
+                if (!gameActive) return;
+                if (currentLane < 2) {
+                    currentLane++;
+                    targetX = lanes[currentLane];
+                }
+                if (rightInterval) clearInterval(rightInterval);
+                rightInterval = setInterval(() => {
+                    if (currentLane < 2) {
+                        currentLane++;
+                        targetX = lanes[currentLane];
+                    }
+                }, 220);
+            }
+
+            function stopMoveRight() {
+                if (rightInterval) {
+                    clearInterval(rightInterval);
+                    rightInterval = null;
+                }
+            }
+
+            function triggerJump() {
+                if (!gameActive) return;
+                if (!isJumping && !isFlying) {
+                    isJumping = true;
+                    jumpVelocity = 0.85;
+                }
+            }
+
+            const btnLeft = document.getElementById('btn-left');
+            const btnRight = document.getElementById('btn-right');
+            const btnJump = document.getElementById('btn-jump');
+            const mobileContainer = document.getElementById('mobile-controls-container');
+
+            if (btnLeft && btnRight && btnJump) {
+                // Prevent gesture defaults (double-tap zoom, scrolling, etc.)
+                const preventDefaultTouch = (e) => {
+                    if (e.cancelable) e.preventDefault();
+                };
+
+                // Left Button
+                btnLeft.addEventListener('pointerdown', (e) => {
+                    preventDefaultTouch(e);
+                    startMoveLeft();
+                });
+                btnLeft.addEventListener('pointerup', (e) => {
+                    preventDefaultTouch(e);
+                    stopMoveLeft();
+                });
+                btnLeft.addEventListener('pointercancel', (e) => {
+                    preventDefaultTouch(e);
+                    stopMoveLeft();
+                });
+                btnLeft.addEventListener('pointerleave', (e) => {
+                    preventDefaultTouch(e);
+                    stopMoveLeft();
+                });
+
+                // Right Button
+                btnRight.addEventListener('pointerdown', (e) => {
+                    preventDefaultTouch(e);
+                    startMoveRight();
+                });
+                btnRight.addEventListener('pointerup', (e) => {
+                    preventDefaultTouch(e);
+                    stopMoveRight();
+                });
+                btnRight.addEventListener('pointercancel', (e) => {
+                    preventDefaultTouch(e);
+                    stopMoveRight();
+                });
+                btnRight.addEventListener('pointerleave', (e) => {
+                    preventDefaultTouch(e);
+                    stopMoveRight();
+                });
+
+                // Jump Button
+                btnJump.addEventListener('pointerdown', (e) => {
+                    preventDefaultTouch(e);
+                    triggerJump();
+                });
+
+                // Extra safety for touch events
+                btnLeft.addEventListener('touchstart', preventDefaultTouch, { passive: false });
+                btnRight.addEventListener('touchstart', preventDefaultTouch, { passive: false });
+                btnJump.addEventListener('touchstart', preventDefaultTouch, { passive: false });
+            }
+
+            if (mobileContainer) {
+                // Prevent scrolling when touching the controls area
+                mobileContainer.addEventListener('touchmove', (e) => {
+                    if (e.cancelable) e.preventDefault();
+                }, { passive: false });
+            }
 
             let prog = 0;
             const iv = setInterval(() => {
@@ -706,7 +927,9 @@
             const backPatch = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.2, 0.2), new THREE.MeshStandardMaterial({ color: 0xffffff }));
             backPatch.position.set(0, 3.2, -0.6); humanoid.add(backPatch);
 
-            player = humanoid; scene.add(player);
+            player = humanoid; 
+            player.scale.set(1.6, 1.6, 1.6);
+            scene.add(player);
         }
 
         function createInspector() {
@@ -963,8 +1186,8 @@
             if ((e.key === 'd' || e.key === 'ArrowRight') && currentLane < 2) { currentLane++; targetX = lanes[currentLane]; }
             if ((e.key === ' ' || e.key === 'w' || e.key === 'ArrowUp') && !isJumping && !isFlying) { isJumping = true; jumpVelocity = 0.85; }
             if ((e.key === 's' || e.key === 'ArrowDown') && !isFlying) {
-                if (isJumping) jumpVelocity = -1.3;
-                else if (!isSliding) { isSliding = true; slideTimer = 0.95; player.scale.y = 0.45; }
+                if (isJumping && isFlying) {}
+                else if (!isSliding) { isSliding = true; slideTimer = 0.95; player.scale.y = 0.45 * 1.6; }
             }
         }
 
@@ -1012,7 +1235,7 @@
                 if(L_leg) L_leg.rotation.x = -0.5; if(R_leg) R_leg.rotation.x = 0.3;
             } else if (isSliding) {
                 slideTimer -= delta;
-                if (slideTimer <= 0) { isSliding = false; player.scale.y = 1; }
+                if (slideTimer <= 0) { isSliding = false; player.scale.y = 1.6; }
                 if(L_leg) L_leg.rotation.x = -Math.PI/2.5; if(R_leg) R_leg.rotation.x = -Math.PI/2.5;
             } else {
                 // RUN CYCLE
@@ -1215,9 +1438,15 @@
             collectedBoxes--;
         }
 
+        function getContextPath() {
+            const path = window.location.pathname;
+            const match = path.match(/^\/([^\/]+)\/play-runner/);
+            return match ? '/' + match[1] : '';
+        }
+
         async function saveGameResult(type, scoreValue) {
             try {
-                const response = await fetch('/api/games/reward', {
+                const response = await fetch(getContextPath() + '/api/games/reward', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -1289,3 +1518,4 @@
 </body>
 
 </html>
+

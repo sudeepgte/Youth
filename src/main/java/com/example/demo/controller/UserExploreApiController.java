@@ -11,13 +11,16 @@ import java.util.*;
  * GET /api/users/explore?name=&college=
  */
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping(value = "/api/users")
 public class UserExploreApiController {
 
     @Autowired
     private UserRepository userRepository;
 
-    @GetMapping("/explore")
+    @Autowired
+    private com.example.demo.repository.PostRepository postRepository;
+
+    @RequestMapping(value = "/explore", method = RequestMethod.GET)
     public List<Map<String, Object>> exploreUsers(
             @RequestParam(required = false, defaultValue = "") String name,
             @RequestParam(required = false, defaultValue = "") String college) {
@@ -38,6 +41,7 @@ public class UserExploreApiController {
             // No filter → return all
             users = userRepository.findAll();
         }
+        users.removeIf(u -> "BANNED".equals(u.getStatus()) || "SUSPENDED".equals(u.getStatus()));
 
         // Map to safe DTO (no password / email exposed)
         List<Map<String, Object>> result = new ArrayList<>();
@@ -52,5 +56,52 @@ public class UserExploreApiController {
             result.add(dto);
         }
         return result;
+    }
+
+    @RequestMapping(value = "/preview/{id}", method = RequestMethod.GET)
+    public org.springframework.http.ResponseEntity<?> getProfilePreview(@PathVariable Long id, jakarta.servlet.http.HttpSession session) {
+        User currentUser = null;
+        Object sessionUser = session.getAttribute("user");
+        if (sessionUser instanceof User) {
+            User sUser = (User) sessionUser;
+            currentUser = userRepository.findById(sUser.getId()).orElse(null);
+        }
+
+        User targetUser = userRepository.findById(id).orElse(null);
+        if (targetUser == null) {
+            return org.springframework.http.ResponseEntity.notFound().build();
+        }
+        if ("BANNED".equals(targetUser.getStatus()) || "SUSPENDED".equals(targetUser.getStatus())) {
+            return org.springframework.http.ResponseEntity.badRequest().body("User blocked");
+        }
+
+        boolean isFollowing = currentUser != null && currentUser.getFollowing().contains(targetUser);
+        boolean isOwnProfile = currentUser != null && currentUser.getId().equals(targetUser.getId());
+        boolean isPrivateAndNotFollowing = targetUser.isPrivateAccount() && !isOwnProfile && !isFollowing;
+
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("id", targetUser.getId());
+        response.put("username", targetUser.getUsername());
+        response.put("profilePhotoUrl", targetUser.getProfilePhotoUrl());
+        response.put("collegeName", targetUser.getCollegeName());
+        response.put("level", targetUser.getLevel() != null ? targetUser.getLevel() : "Novice");
+        response.put("followersCount", targetUser.getFollowers().size());
+        response.put("followingCount", targetUser.getFollowing().size());
+        response.put("isPrivateAndNotFollowing", isPrivateAndNotFollowing);
+
+        if (!isPrivateAndNotFollowing) {
+            long postsCount = postRepository.findByUserAndPostTypeNotOrderByCreatedAtDesc(targetUser, "STORY").size();
+            long reelsCount = postRepository.findByPostTypeOrderByCreatedAtDesc("REEL").stream()
+                    .filter(p -> p.getUser().getId().equals(targetUser.getId()))
+                    .count();
+            // Or a more optimal query:
+            // long postsCount = postRepository.countByUserAndPostTypeNot(targetUser, "STORY");
+            // long reelsCount = postRepository.countByUserAndPostType(targetUser, "REEL");
+            
+            response.put("postsCount", postsCount);
+            response.put("reelsCount", reelsCount);
+        }
+
+        return org.springframework.http.ResponseEntity.ok(response);
     }
 }

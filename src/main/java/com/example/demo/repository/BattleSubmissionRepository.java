@@ -9,4 +9,5 @@ import java.util.List;
 public interface BattleSubmissionRepository extends JpaRepository<BattleSubmission, Long> {
     List<BattleSubmission> findByBattleOrderByVoteCountDesc(Battle battle);
     boolean existsByBattleAndUser(Battle battle, User user);
+    java.util.Optional<BattleSubmission> findByBattleAndUser(Battle battle, User user);
 }

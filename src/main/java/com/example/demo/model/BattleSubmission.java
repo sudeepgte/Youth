@@ -31,6 +31,13 @@ public class BattleSubmission {
 
     private Integer voteCount = 0;
 
+    private Integer judgeCreativity = 0;
+    private Integer judgeQuality = 0;
+    private Integer judgeSpeed = 0;
+    private Integer judgePresentation = 0;
+    private Integer judgeAccuracy = 0;
+    private Integer judgeTotalScore = 0;
+
     private LocalDateTime submittedAt;
 
     @PrePersist
@@ -62,4 +69,22 @@ public class BattleSubmission {
 
     public LocalDateTime getSubmittedAt() { return submittedAt; }
     public void setSubmittedAt(LocalDateTime submittedAt) { this.submittedAt = submittedAt; }
+
+    public Integer getJudgeCreativity() { return judgeCreativity != null ? judgeCreativity : 0; }
+    public void setJudgeCreativity(Integer judgeCreativity) { this.judgeCreativity = judgeCreativity; }
+
+    public Integer getJudgeQuality() { return judgeQuality != null ? judgeQuality : 0; }
+    public void setJudgeQuality(Integer judgeQuality) { this.judgeQuality = judgeQuality; }
+
+    public Integer getJudgeSpeed() { return judgeSpeed != null ? judgeSpeed : 0; }
+    public void setJudgeSpeed(Integer judgeSpeed) { this.judgeSpeed = judgeSpeed; }
+
+    public Integer getJudgePresentation() { return judgePresentation != null ? judgePresentation : 0; }
+    public void setJudgePresentation(Integer judgePresentation) { this.judgePresentation = judgePresentation; }
+
+    public Integer getJudgeAccuracy() { return judgeAccuracy != null ? judgeAccuracy : 0; }
+    public void setJudgeAccuracy(Integer judgeAccuracy) { this.judgeAccuracy = judgeAccuracy; }
+
+    public Integer getJudgeTotalScore() { return judgeTotalScore != null ? judgeTotalScore : 0; }
+    public void setJudgeTotalScore(Integer judgeTotalScore) { this.judgeTotalScore = judgeTotalScore; }
 }

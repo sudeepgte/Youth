@@ -6,6 +6,8 @@ import com.example.demo.service.RewardService;
 import com.example.demo.repository.CoinTransactionRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,11 +15,14 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/games")
+@RequestMapping(value = "/api/games")
 public class GameApiController {
+
+    private static final Logger logger = LoggerFactory.getLogger(GameApiController.class);
 
     @Autowired
     private RewardService rewardService;
@@ -31,8 +36,11 @@ public class GameApiController {
     @Autowired
     private CoinTransactionRepository coinTransactionRepository;
 
-    @PostMapping("/reward")
-    public ResponseEntity<?> awardReward(@RequestBody Map<String, String> payload, HttpSession session) {
+    // Deduplication cache for processed reward session nonces
+    private static final Map<String, Long> processedSessions = new ConcurrentHashMap<>();
+
+    @RequestMapping(value = "/reward", method = RequestMethod.POST)
+    public ResponseEntity<?> awardReward(@RequestBody Map<String, Object> payload, HttpSession session) {
         // Authenticate user
         User user = getUserFromSession(session);
         if (user == null || user.getId() == null) {
@@ -42,21 +50,58 @@ public class GameApiController {
         // Refresh user from DB to ensure state is current
         user = userRepository.findById(user.getId()).orElse(user);
 
-        String result = payload.get("result"); // "WIN", "PLAY", or "SCORE"
-        String gameName = payload.getOrDefault("gameName", "Unknown Game");
-        String scoreStr = payload.get("score");
+        String result = payload.get("result") != null ? payload.get("result").toString() : "PLAY";
+        String gameName = payload.getOrDefault("gameName", "Unknown Game").toString();
+        String scoreStr = payload.get("score") != null ? payload.get("score").toString() : null;
+        String sessionId = payload.get("sessionId") != null ? payload.get("sessionId").toString() : null;
+
+        // Parse coinsEarned
+        int coinsEarned = -1;
+        if (payload.containsKey("coinsEarned") && payload.get("coinsEarned") != null) {
+            try {
+                coinsEarned = Integer.parseInt(payload.get("coinsEarned").toString());
+            } catch (Exception ignored) {}
+        }
+
+        // Deduplication Check
+        if (sessionId != null && !sessionId.isBlank()) {
+            String dedupKey = user.getId() + "_" + sessionId;
+            if (processedSessions.containsKey(dedupKey)) {
+                logger.info("Duplicate reward request suppressed for session: {}", dedupKey);
+                Map<String, Object> resp = new HashMap<>();
+                resp.put("coins", user.getCoins());
+                resp.put("coinsAwarded", 0);
+                resp.put("message", null);
+                return ResponseEntity.ok(resp);
+            }
+            processedSessions.put(dedupKey, System.currentTimeMillis());
+            // Evict old session nonces (older than 10 mins)
+            long cutoff = System.currentTimeMillis() - 600000;
+            processedSessions.entrySet().removeIf(e -> e.getValue() < cutoff);
+        }
 
         Map<String, Object> response = new HashMap<>();
+
+        // If coinsEarned is explicitly provided and <= 0 (e.g. Mario played but collected 0 coins):
+        if (coinsEarned == 0) {
+            logger.info("Player {} collected 0 coins in {}. No reward awarded.", user.getUsername(), gameName);
+            response.put("coins", user.getCoins());
+            response.put("coinsAwarded", 0);
+            response.put("message", null);
+            return ResponseEntity.ok(response);
+        }
 
         if ("SCORE".equalsIgnoreCase(result) && scoreStr != null) {
             try {
                 int score = Integer.parseInt(scoreStr);
                 int coinsToAward = score / 1000;
-                if (coinsToAward > 0) {
+                if (coinsToAward > 0 && (coinsEarned < 0 || coinsEarned > 0)) {
                     rewardService.awardGameScore(user, gameName, coinsToAward);
-                    response.put("message", "Amazing! You earned " + coinsToAward + " coins for your score of " + score + " in " + gameName + "!");
+                    response.put("coinsAwarded", coinsToAward);
+                    response.put("message", "Amazing! You earned " + coinsToAward + " coins for your score in " + gameName + "!");
                 } else {
-                    response.put("message", "Keep going! Reach 1000 points to earn your next coin.");
+                    response.put("coinsAwarded", 0);
+                    response.put("message", null);
                 }
                 response.put("coins", user.getCoins());
                 return ResponseEntity.ok(response);
@@ -65,19 +110,35 @@ public class GameApiController {
             }
         }
 
+        if (coinsEarned > 0) {
+            // Valid coins collected in gameplay
+            int winBonus = "WIN".equalsIgnoreCase(result) ? rewardService.getConfig().getGameWin() : 0;
+            int totalAward = coinsEarned + winBonus;
+            rewardService.awardGameScore(user, gameName, totalAward);
+            response.put("coinsAwarded", totalAward);
+            response.put("message", "Great job! You earned " + totalAward + " coins in " + gameName + "!");
+            response.put("coins", user.getCoins());
+            return ResponseEntity.ok(response);
+        }
+
+        // Generic fallback for other games where coinsEarned is not explicitly passed (coinsEarned == -1)
         if ("WIN".equalsIgnoreCase(result)) {
             rewardService.awardGameWin(user, gameName);
-            response.put("message", "Congratulations! You earned " + rewardService.getConfig().getGameWin() + " coins for winning " + gameName);
+            int winAmount = rewardService.getConfig().getGameWin();
+            response.put("coinsAwarded", winAmount);
+            response.put("message", "Congratulations! You earned " + winAmount + " coins for winning " + gameName);
         } else {
             rewardService.awardGamePlay(user, gameName);
-            response.put("message", "You earned " + rewardService.getConfig().getGamePlay() + " coins for playing " + gameName);
+            int playAmount = rewardService.getConfig().getGamePlay();
+            response.put("coinsAwarded", playAmount);
+            response.put("message", "You earned " + playAmount + " coins for playing " + gameName);
         }
         
         response.put("coins", user.getCoins());
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/history")
+    @RequestMapping(value = "/history", method = RequestMethod.GET)
     public ResponseEntity<?> getHistory(HttpSession session) {
         User user = getUserFromSession(session);
         if (user == null || user.getId() == null) {

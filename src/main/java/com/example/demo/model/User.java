@@ -25,6 +25,7 @@ public class User implements Serializable {
     private String email;
     @JsonIgnore
     private String password;
+    private boolean emailVerified = false;
     private LocalDate dob;
     private String gender;
     private String profilePicture;
@@ -38,6 +39,7 @@ public class User implements Serializable {
     private String aboutMe;
     private String skills;
     private String collegeName;
+    private boolean privateAccount = false;
 
     // Gamification & Ranking
     private Integer xp = 0;
@@ -59,6 +61,10 @@ public class User implements Serializable {
 
     // Zentrix Coins & Rewards
     private Integer coins = 0;
+    
+    @Column(name = "wallet_balance")
+    private Double walletBalance = 0.0;
+
     private LocalDate lastLoginDate;
 
     // Music reward bookkeeping (Option C MVP)
@@ -116,6 +122,14 @@ public class User implements Serializable {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public boolean isEmailVerified() {
+        return emailVerified;
+    }
+
+    public void setEmailVerified(boolean emailVerified) {
+        this.emailVerified = emailVerified;
     }
 
     public LocalDate getDob() {
@@ -190,6 +204,14 @@ public class User implements Serializable {
         this.collegeName = collegeName;
     }
 
+    public boolean isPrivateAccount() {
+        return privateAccount;
+    }
+
+    public void setPrivateAccount(boolean privateAccount) {
+        this.privateAccount = privateAccount;
+    }
+
     @JsonIgnore
     public Set<User> getFollowers() {
         return followers;
@@ -252,6 +274,21 @@ public class User implements Serializable {
     public void setCoins(Integer coins) { this.coins = coins; }
     public void addCoins(int amount) { this.coins = getCoins() + amount; }
 
+    public Double getWalletBalance() { return walletBalance != null ? walletBalance : 0.0; }
+    public void setWalletBalance(Double walletBalance) { this.walletBalance = walletBalance; }
+    public void addWalletBalance(Double amount) {
+        if (this.walletBalance == null) this.walletBalance = 0.0;
+        this.walletBalance += amount;
+    }
+    public boolean deductWalletBalance(Double amount) {
+        if (this.walletBalance == null) this.walletBalance = 0.0;
+        if (this.walletBalance >= amount) {
+            this.walletBalance -= amount;
+            return true;
+        }
+        return false;
+    }
+
     public LocalDate getLastLoginDate() { return lastLoginDate; }
     public void setLastLoginDate(LocalDate lastLoginDate) { this.lastLoginDate = lastLoginDate; }
 
@@ -294,4 +331,8 @@ public class User implements Serializable {
 
     public boolean isHasFreeEntry() { return hasFreeEntry; }
     public void setHasFreeEntry(boolean hasFreeEntry) { this.hasFreeEntry = hasFreeEntry; }
+
+    private String status = "ACTIVE";
+    public String getStatus() { return status != null ? status : "ACTIVE"; }
+    public void setStatus(String status) { this.status = status; }
 }

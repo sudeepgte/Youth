@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/redeem")
+@RequestMapping(value = "/api/redeem")
 public class CouponController {
 
     @Autowired

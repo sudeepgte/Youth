@@ -9,6 +9,7 @@ public class LudoRoom {
     public int diceValue = 1;
     public boolean diceRolled = false;
     public String status = "waiting";
+    public long lastTurnStartTime = System.currentTimeMillis();
 
     public LudoRoom(String roomId, String playerName) {
         this.roomId = roomId;
@@ -40,12 +41,17 @@ public class LudoRoom {
         map.put("diceValue", diceValue);
         map.put("diceRolled", diceRolled);
         map.put("status", status);
+        long elapsed = (System.currentTimeMillis() - lastTurnStartTime) / 1000;
+        long remaining = Math.max(0, 30 - elapsed);
+        map.put("remainingSeconds", "active".equals(status) ? remaining : 30);
         return map;
     }
 
     public void applyRoll(int val) {
+        if (diceRolled) return; // Prevent double rolling
         this.diceValue = val;
         this.diceRolled = true;
+        this.lastTurnStartTime = System.currentTimeMillis();
     }
 
     private static final int[] STARTS = {0, 13, 26, 39};
@@ -76,7 +82,7 @@ public class LudoRoom {
 
         diceRolled = false;
 
-        // Check if current player won
+        // Check if current player won the game
         boolean allHome = true;
         for (int p : players.get(playerIdx).pieces) {
             if (p < 57) {
@@ -86,13 +92,20 @@ public class LudoRoom {
         }
         if (allHome) {
             this.status = "finished";
+            this.lastTurnStartTime = System.currentTimeMillis();
             return;
         }
         
-        // Handle next turn if not a 6 and no capture
-        if (diceValue != 6 && !captured) {
+        // Grant extra turn for rolling 6, capturing, or reaching home
+        boolean getsExtraTurn = false;
+        if (diceValue == 6) getsExtraTurn = true;
+        if (captured) getsExtraTurn = true;
+        if (newPos == 57) getsExtraTurn = true;
+        
+        if (!getsExtraTurn) {
             nextTurn();
         }
+        this.lastTurnStartTime = System.currentTimeMillis();
     }
 
     private void nextTurn() {
@@ -105,5 +118,6 @@ public class LudoRoom {
     public void skipTurn() {
         diceRolled = false;
         nextTurn();
+        this.lastTurnStartTime = System.currentTimeMillis();
     }
 }

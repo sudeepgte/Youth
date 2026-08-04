@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/feed")
+@RequestMapping(value = "/api/feed")
 public class FeedApiController {
 
     @Autowired
@@ -54,7 +54,7 @@ public class FeedApiController {
      * GET /api/feed/trending?limit=20
      * Returns top posts by engagement in the last 48 hours.
      */
-    @GetMapping("/trending")
+    @RequestMapping(value = "/trending", method = RequestMethod.GET)
     public ResponseEntity<List<Post>> getTrending(
             @RequestParam(defaultValue = "20") int limit) {
 
@@ -68,7 +68,7 @@ public class FeedApiController {
      * GET /api/feed/recommended?userId=1&limit=10
      * Returns highly-engaging posts from outside the viewer's following list.
      */
-    @GetMapping("/recommended")
+    @RequestMapping(value = "/recommended", method = RequestMethod.GET)
     public ResponseEntity<?> getRecommended(
             @RequestParam Long userId,
             @RequestParam(defaultValue = "10") int limit) {
@@ -88,7 +88,7 @@ public class FeedApiController {
      * Body: { "userId": 1, "postId": 5, "action": "SHARE", "watchTime": 0 }
      * Records a user activity (VIEW, LIKE, COMMENT, SHARE, SAVE).
      */
-    @PostMapping("/activity")
+    @RequestMapping(value = "/activity", method = RequestMethod.POST)
     public ResponseEntity<?> recordActivity(@RequestBody Map<String, Object> body) {
         try {
             Long userId = Long.valueOf(body.get("userId").toString());

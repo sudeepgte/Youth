@@ -1,18 +1,26 @@
 package com.example.demo.snake;
 
+import com.example.demo.service.MultiplayerRoomService;
+import com.example.demo.util.RoomCodeUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Controller
 public class SnakeWebSocketController {
 
+    private static final Logger logger = LoggerFactory.getLogger(SnakeWebSocketController.class);
+
     private final SimpMessagingTemplate messagingTemplate;
-    private final Map<String, SnakeRoom> rooms = new ConcurrentHashMap<>();
+
+    @Autowired
+    private MultiplayerRoomService roomService;
 
     public SnakeWebSocketController(SimpMessagingTemplate messagingTemplate) {
         this.messagingTemplate = messagingTemplate;
@@ -21,81 +29,103 @@ public class SnakeWebSocketController {
     @PostMapping("/api/snake/create")
     @ResponseBody
     public Map<String, Object> createRoom(@RequestBody Map<String, String> body) {
-        String roomId = generateRoomId();
-        String playerName = body.get("playerName");
+        String playerName = body.getOrDefault("playerName", "Player 1");
         int maxPlayers = Integer.parseInt(body.getOrDefault("maxPlayers", "2"));
+        String roomId = roomService.generateUniqueRoomId();
         
         SnakeRoom room = new SnakeRoom(roomId, playerName, maxPlayers);
-        rooms.put(roomId, room);
+        roomService.registerRoom(roomId, "snake", room, playerName, maxPlayers);
         
+        logger.info("Snake Room created: {} by player: {}", roomId, playerName);
         Map<String, Object> resp = new HashMap<>(room.toStateMap());
         resp.put("playerIndex", 0);
+        resp.put("roomId", roomId);
         return resp;
     }
 
     @PostMapping("/api/snake/join")
     @ResponseBody
     public Map<String, Object> joinRoom(@RequestBody Map<String, String> body) {
-        String roomId = body.get("roomId").toUpperCase();
-        String playerName = body.get("playerName");
+        String rawRoomId = body.get("roomId");
+        String playerName = body.getOrDefault("playerName", "Player 2");
 
-        SnakeRoom room = rooms.get(roomId);
-        if (room == null) return Map.of("error", "Room not found");
+        if (rawRoomId == null || rawRoomId.isBlank()) {
+            return Map.of("error", "Room code is required");
+        }
+
+        SnakeRoom room = roomService.getRoom(rawRoomId, SnakeRoom.class);
+        if (room == null) {
+            logger.warn("Snake Join failed - Room not found for code: {}", rawRoomId);
+            return Map.of("error", "Room not found");
+        }
 
         // Allow Re-join
         for (int i = 0; i < room.players.size(); i++) {
-            if (room.players.get(i).equals(playerName)) {
+            if (room.players.get(i).equalsIgnoreCase(playerName)) {
                 Map<String, Object> resp = new HashMap<>(room.toStateMap());
                 resp.put("playerIndex", i);
+                resp.put("roomId", room.roomId);
                 return resp;
             }
         }
 
-        if (room.players.size() >= room.maxPlayers) return Map.of("error", "Room is full");
+        if (room.players.size() >= room.maxPlayers) {
+            return Map.of("error", "Room is full");
+        }
 
         int playerIdx = room.players.size();
         room.players.add(playerName);
-        
-        if (room.players.size() == room.maxPlayers) {
-            room.status = "active";
-        }
+        roomService.registerRoom(room.roomId, "snake", room, room.players.get(0), room.maxPlayers);
 
-        messagingTemplate.convertAndSend("/topic/snake/" + roomId, (Object) room.toStateMap());
+        broadcastState(room);
         Map<String, Object> resp = new HashMap<>(room.toStateMap());
         resp.put("playerIndex", playerIdx);
+        resp.put("roomId", room.roomId);
         return resp;
     }
 
-    // WebSocket: Roll Dice (Sends roll value, then updates state)
+    @MessageMapping("/snake/{roomId}/start")
+    public void startGame(@DestinationVariable String roomId) {
+        SnakeRoom room = roomService.getRoom(roomId, SnakeRoom.class);
+        if (room == null) return;
+        if (room.players.size() > 1) {
+            room.status = "active";
+            broadcastState(room);
+        }
+    }
+
+    @MessageMapping("/snake/{roomId}/leave")
+    public void leaveGame(@DestinationVariable String roomId) {
+        SnakeRoom room = roomService.getRoom(roomId, SnakeRoom.class);
+        if (room == null) return;
+        room.status = "opponent_left";
+        broadcastState(room);
+    }
+
+    // WebSocket: Roll Dice
     @MessageMapping("/snake/{roomId}/roll")
     public void rollDice(@DestinationVariable String roomId, SnakeRollMessage msg) {
-        SnakeRoom room = rooms.get(roomId);
+        SnakeRoom room = roomService.getRoom(roomId, SnakeRoom.class);
         if (room == null) return;
 
-        // Broadcast the roll animation event first
-        messagingTemplate.convertAndSend("/topic/snake/" + roomId + "/rollEvent", msg);
+        messagingTemplate.convertAndSend("/topic/snake/" + room.roomId + "/rollEvent", msg);
+        messagingTemplate.convertAndSend("/topic/snake/" + RoomCodeUtil.normalize(roomId) + "/rollEvent", msg);
 
-        // Apply to room state
         room.applyRoll(msg.getSteps(), msg.getPlayerIndex());
-
-        // Broadcast new state
-        messagingTemplate.convertAndSend("/topic/snake/" + roomId, (Object) room.toStateMap());
+        broadcastState(room);
     }
 
     @MessageMapping("/snake/{roomId}/subscribe")
     public void subscribe(@DestinationVariable String roomId) {
-        SnakeRoom room = rooms.get(roomId);
+        SnakeRoom room = roomService.getRoom(roomId, SnakeRoom.class);
         if (room != null) {
-            messagingTemplate.convertAndSend("/topic/snake/" + roomId, (Object) room.toStateMap());
+            broadcastState(room);
         }
     }
 
-    private String generateRoomId() {
-        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-        StringBuilder sb = new StringBuilder(6);
-        Random rnd = new Random();
-        for (int i = 0; i < 6; i++)
-            sb.append(chars.charAt(rnd.nextInt(chars.length())));
-        return sb.toString();
+    private void broadcastState(SnakeRoom room) {
+        if (room == null) return;
+        messagingTemplate.convertAndSend("/topic/snake/" + room.roomId, (Object) room.toStateMap());
+        messagingTemplate.convertAndSend("/topic/snake/" + RoomCodeUtil.normalize(room.roomId), (Object) room.toStateMap());
     }
 }

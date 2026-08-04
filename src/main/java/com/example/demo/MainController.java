@@ -13,9 +13,16 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.transaction.annotation.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
@@ -23,6 +30,8 @@ import java.util.stream.Collectors;
 
 @Controller
 public class MainController {
+
+    private static final Logger logger = LoggerFactory.getLogger(MainController.class);
 
     @Autowired
     private HttpServletRequest httpServletRequest;
@@ -112,6 +121,30 @@ public class MainController {
             } catch (Exception e) {
             }
         }
+
+        // Fallback to JWT Cookie (for game pages where AuthInterceptor is bypassed)
+        String token = null;
+        if (httpServletRequest.getCookies() != null) {
+            for (Cookie c : httpServletRequest.getCookies()) {
+                if ("jwtToken".equals(c.getName())) {
+                    token = c.getValue();
+                    break;
+                }
+            }
+        }
+        if (token != null && !token.isBlank() && !tokenBlacklist.isBlacklisted(token)) {
+            try {
+                String username = jwtUtil.extractUsername(token);
+                if (username != null) {
+                    User user = userRepository.findByUsername(username);
+                    if (user != null && jwtUtil.validateToken(token, username)) {
+                        session.setAttribute("user", user);
+                        session.setAttribute("userId", user.getId());
+                        return user;
+                    }
+                }
+            } catch (Exception e) {}
+        }
         return null;
     }
 
@@ -148,40 +181,23 @@ public class MainController {
     @Autowired
     private com.example.demo.repository.GameRepository gameRepository;
 
+    @Autowired
+    private ContactMessageRepository contactMessageRepository;
+
+    @Autowired
+    private BattleRepository battleRepository;
+
+    @Autowired
+    private BattleParticipantRepository battleParticipantRepository;
+
     @GetMapping("/")
-    public String root(jakarta.servlet.http.HttpSession session, jakarta.servlet.http.HttpServletResponse response) {
-        // Clear session to ensure we start fresh on landing
-        if (session != null) {
-            session.invalidate();
-        }
-        // Clear the JWT cookie
-        jakarta.servlet.http.Cookie cookie = new jakarta.servlet.http.Cookie("jwtToken", null);
-        cookie.setPath("/");
-        cookie.setHttpOnly(true);
-        cookie.setMaxAge(0); // Delete cookie
-        response.addCookie(cookie);
-        
+    public String root() {
         return "redirect:/home";
     }
 
     @GetMapping("/home")
     public String home(Model model, HttpSession session, HttpServletRequest request, jakarta.servlet.http.HttpServletResponse response) {
-        String authParam = request.getParameter("auth");
-        
-        // If arriving at home without an explicit auth token, force Guest view
-        if (authParam == null || authParam.isBlank()) {
-            if (session != null) {
-                try { session.invalidate(); } catch (Exception e) {}
-                session = request.getSession(true);
-            }
-            jakarta.servlet.http.Cookie cookie = new jakarta.servlet.http.Cookie("jwtToken", null);
-            cookie.setPath("/");
-            cookie.setHttpOnly(true);
-            cookie.setMaxAge(0);
-            response.addCookie(cookie);
-        } else {
-            validateSessionOnPublicPage(session, request);
-        }
+        validateSessionOnPublicPage(session, request);
 
         model.addAttribute("user", getUserFromSession(session));
         // Fetch real student thoughts
@@ -207,6 +223,44 @@ public class MainController {
                 content, user, null, null, null, "THOUGHT", category);
         feedAlgorithmService.savePost(post);
         return "redirect:/home?thoughtShared=true";
+    }
+
+    @GetMapping("/featured-events")
+    public String featuredEvents() {
+        return "redirect:/home#featured-events";
+    }
+
+    @GetMapping("/categories")
+    public String categories() {
+        return "redirect:/home#categories";
+    }
+
+    @GetMapping("/about-us")
+    public String aboutUs(Model model, HttpSession session, HttpServletRequest request) {
+        validateSessionOnPublicPage(session, request);
+        model.addAttribute("user", getUserFromSession(session));
+        return "about";
+    }
+
+    @GetMapping("/careers")
+    public String careers(Model model, HttpSession session, HttpServletRequest request) {
+        validateSessionOnPublicPage(session, request);
+        model.addAttribute("user", getUserFromSession(session));
+        return "careers";
+    }
+
+    @GetMapping("/privacy-policy")
+    public String privacyPolicy(Model model, HttpSession session, HttpServletRequest request) {
+        validateSessionOnPublicPage(session, request);
+        model.addAttribute("user", getUserFromSession(session));
+        return "privacy";
+    }
+
+    @GetMapping("/terms-of-service")
+    public String termsOfService(Model model, HttpSession session, HttpServletRequest request) {
+        validateSessionOnPublicPage(session, request);
+        model.addAttribute("user", getUserFromSession(session));
+        return "terms";
     }
 
     @GetMapping("/features")
@@ -327,7 +381,12 @@ public class MainController {
     @GetMapping("/play-car-game")
     public String playCarGame() {
         return "car-game";
+    }
 
+    @GetMapping("/settings")
+    public String settings(HttpSession session) {
+        if (!isLoggedIn(session)) return "redirect:/login";
+        return "redirect:/profile?tab=settings";
     }
 
     @Transactional
@@ -368,7 +427,7 @@ public class MainController {
             final String catKey = normalizedCategory.trim().toUpperCase();
             personalized = personalized.stream()
                     .filter(p -> p.getCategory() != null && p.getCategory().trim().equalsIgnoreCase(catKey))
-                    .toList();
+                    .collect(Collectors.toList());
         }
         model.addAttribute("posts", personalized);
         model.addAttribute("activeCategory", normalizedCategory);
@@ -407,7 +466,9 @@ public class MainController {
         model.addAttribute("user", user);
         model.addAttribute("pendingCount", pendingRequests.size());
 
-        model.addAttribute("posts", postRepository.findByPostTypeOrderByCreatedAtDesc("REEL"));
+        List<Post> reels = new java.util.ArrayList<>(postRepository.findByPostTypeOrderByCreatedAtDesc("REEL"));
+        reels.removeIf(p -> p.isBlocked() || "BANNED".equals(p.getUser().getStatus()) || "SUSPENDED".equals(p.getUser().getStatus()));
+        model.addAttribute("posts", reels);
         model.addAttribute("activeCategory", null);
         model.addAttribute("isReelsPage", true);
 
@@ -444,12 +505,10 @@ public class MainController {
                 user, "STORY", java.time.LocalDateTime.now().minusHours(24)).isEmpty();
         model.addAttribute("hasStory", hasStory);
 
-        // Find all users (except self) with active stories
+        // Find all followed users with active stories
         java.time.LocalDateTime cutoff = java.time.LocalDateTime.now().minusHours(24);
         List<User> storyUsers = new java.util.ArrayList<>();
-        for (User otherUser : allUsers) {
-            if (otherUser.getId().equals(user.getId()))
-                continue; // skip self
+        for (User otherUser : user.getFollowing()) {
             boolean fHasStory = !postRepository.findByUserAndPostTypeAndCreatedAtAfterOrderByCreatedAtAsc(
                     otherUser, "STORY", cutoff).isEmpty();
             if (fHasStory) {
@@ -480,6 +539,7 @@ public class MainController {
     }
 
     @GetMapping("/admin")
+    @Transactional
     public String admin(Model model, HttpSession session) {
         // Only let admin session through
         if (!"admin".equals(session.getAttribute("user")))
@@ -492,9 +552,204 @@ public class MainController {
         model.addAttribute("votingCount", eventRepository.countByStatus("VOTING"));
         model.addAttribute("completedCount", eventRepository.countByStatus("COMPLETED"));
         model.addAttribute("rewardConfig", rewardService.getConfig());
+        model.addAttribute("contactMessages", contactMessageRepository.findAllByOrderByCreatedAtDesc());
+        model.addAttribute("posts", postRepository.findAllByOrderByCreatedAtDesc());
+        
+        // Battle details for admin overview
+        List<Battle> battles = battleRepository.findAllByOrderByCreatedAtDesc();
+        long runningBattles = battles.stream().filter(b -> "ACTIVE".equals(b.getStatus())).count();
+        long totalJoinedUsers = battleParticipantRepository.count();
+        
+        double totalAdminCommission = 0.0;
+        for (Battle b : battles) {
+            double entryFee = b.getEntryFee() != null ? b.getEntryFee() : 0.0;
+            // Creator auto-joins and is stored in b.participants, so other joining users are (participants size - 1)
+            int joinsCount = b.getParticipants() != null ? Math.max(0, b.getParticipants().size() - 1) : 0;
+            totalAdminCommission += entryFee * 0.07 * joinsCount;
+        }
+
+        model.addAttribute("battles", battles);
+        model.addAttribute("totalBattles", battles.size());
+        model.addAttribute("runningBattles", runningBattles);
+        model.addAttribute("totalJoinedUsers", totalJoinedUsers);
+        model.addAttribute("totalAdminCommission", totalAdminCommission);
+
         User user = getUserFromSession(session);
         model.addAttribute("user", user);
         return "admin-dashboard";
+    }
+
+    @GetMapping("/admin/battles")
+    @Transactional
+    public String adminBattles(Model model, HttpSession session) {
+        if (!"admin".equals(session.getAttribute("user")))
+            return "redirect:/login";
+
+        List<Battle> battles = battleRepository.findAllByOrderByCreatedAtDesc();
+        long runningBattles = battles.stream().filter(b -> "ACTIVE".equals(b.getStatus())).count();
+        long totalJoinedUsers = battleParticipantRepository.count();
+        
+        double totalAdminCommission = 0.0;
+        for (Battle b : battles) {
+            double entryFee = b.getEntryFee() != null ? b.getEntryFee() : 0.0;
+            int joinsCount = b.getParticipants() != null ? Math.max(0, b.getParticipants().size() - 1) : 0;
+            totalAdminCommission += entryFee * 0.07 * joinsCount;
+        }
+
+        model.addAttribute("battles", battles);
+        model.addAttribute("totalBattles", battles.size());
+        model.addAttribute("runningBattles", runningBattles);
+        model.addAttribute("totalJoinedUsers", totalJoinedUsers);
+        model.addAttribute("totalAdminCommission", totalAdminCommission);
+
+        User user = getUserFromSession(session);
+        model.addAttribute("user", user);
+        return "admin-battles";
+    }
+
+    @PostMapping("/admin/users/{id}/status")
+    @Transactional
+    public String updateUserStatus(
+            @PathVariable Long id,
+            @org.springframework.web.bind.annotation.RequestParam String status,
+            HttpSession session,
+            RedirectAttributes redirectAttributes
+    ) {
+        return processUserStatusChange(id, status, session, redirectAttributes);
+    }
+
+    @PostMapping("/admin/users/{id}/suspend")
+    @Transactional
+    public String suspendUser(
+            @PathVariable Long id,
+            HttpSession session,
+            RedirectAttributes redirectAttributes
+    ) {
+        return processUserStatusChange(id, "SUSPENDED", session, redirectAttributes);
+    }
+
+    @PostMapping("/admin/users/{id}/unsuspend")
+    @Transactional
+    public String unsuspendUser(
+            @PathVariable Long id,
+            HttpSession session,
+            RedirectAttributes redirectAttributes
+    ) {
+        return processUserStatusChange(id, "ACTIVE", session, redirectAttributes);
+    }
+
+    @PostMapping("/admin/users/{id}/ban")
+    @Transactional
+    public String banUser(
+            @PathVariable Long id,
+            HttpSession session,
+            RedirectAttributes redirectAttributes
+    ) {
+        return processUserStatusChange(id, "BANNED", session, redirectAttributes);
+    }
+
+    @PostMapping("/admin/users/{id}/unban")
+    @Transactional
+    public String unbanUser(
+            @PathVariable Long id,
+            HttpSession session,
+            RedirectAttributes redirectAttributes
+    ) {
+        return processUserStatusChange(id, "ACTIVE", session, redirectAttributes);
+    }
+
+    private String processUserStatusChange(
+            Long id,
+            String targetStatus,
+            HttpSession session,
+            RedirectAttributes redirectAttributes
+    ) {
+        if (!"admin".equals(session.getAttribute("user")))
+            return "redirect:/login";
+
+        User targetUser = userRepository.findById(id).orElse(null);
+        if (targetUser == null) {
+            String err = "User not found.";
+            logger.warn("Admin attempted status change on non-existent user ID {}", id);
+            redirectAttributes.addFlashAttribute("userError", err);
+            return "redirect:/admin?userErr=" + encodeUrl(err) + "#users-section";
+        }
+
+        String currentStatus = targetUser.getStatus();
+        if (currentStatus == null) currentStatus = "ACTIVE";
+        String normalizedTarget = targetStatus != null ? targetStatus.toUpperCase().trim() : "ACTIVE";
+
+        if ("SUSPENDED".equals(normalizedTarget) && "SUSPENDED".equals(currentStatus)) {
+            String err = "User is already suspended.";
+            logger.warn("Admin tried to suspend user {} (ID {}) who is already suspended", targetUser.getUsername(), id);
+            redirectAttributes.addFlashAttribute("userError", err);
+            return "redirect:/admin?userErr=" + encodeUrl(err) + "#users-section";
+        }
+
+        if ("BANNED".equals(normalizedTarget) && "BANNED".equals(currentStatus)) {
+            String err = "User is already banned.";
+            logger.warn("Admin tried to ban user {} (ID {}) who is already banned", targetUser.getUsername(), id);
+            redirectAttributes.addFlashAttribute("userError", err);
+            return "redirect:/admin?userErr=" + encodeUrl(err) + "#users-section";
+        }
+
+        String successMsg;
+        if ("SUSPENDED".equals(normalizedTarget)) {
+            successMsg = "User has been successfully suspended.";
+        } else if ("BANNED".equals(normalizedTarget)) {
+            successMsg = "User has been successfully banned.";
+        } else if ("ACTIVE".equals(normalizedTarget)) {
+            if ("SUSPENDED".equals(currentStatus)) {
+                successMsg = "User has been successfully unsuspended.";
+            } else if ("BANNED".equals(currentStatus)) {
+                successMsg = "User has been successfully unbanned.";
+            } else {
+                String err = "User is already active.";
+                redirectAttributes.addFlashAttribute("userError", err);
+                return "redirect:/admin?userErr=" + encodeUrl(err) + "#users-section";
+            }
+        } else {
+            String err = "Invalid status requested: " + targetStatus;
+            redirectAttributes.addFlashAttribute("userError", err);
+            return "redirect:/admin?userErr=" + encodeUrl(err) + "#users-section";
+        }
+
+        targetUser.setStatus(normalizedTarget);
+        userRepository.save(targetUser);
+        feedAlgorithmService.evictFeedCache();
+
+        logger.info("Admin updated status for user {} (ID {}) from [{}] to [{}]",
+                targetUser.getUsername(), id, currentStatus, normalizedTarget);
+
+        redirectAttributes.addFlashAttribute("userSuccess", successMsg);
+        return "redirect:/admin?userMsg=" + encodeUrl(successMsg) + "#users-section";
+    }
+
+    private String encodeUrl(String val) {
+        try {
+            return URLEncoder.encode(val, StandardCharsets.UTF_8.toString());
+        } catch (Exception e) {
+            return val;
+        }
+    }
+
+    @org.springframework.web.bind.annotation.PostMapping("/admin/posts/{id}/block")
+    @Transactional
+    public String updatePostBlockStatus(
+            @org.springframework.web.bind.annotation.PathVariable Long id,
+            @org.springframework.web.bind.annotation.RequestParam boolean blocked,
+            HttpSession session
+    ) {
+        if (!"admin".equals(session.getAttribute("user")))
+            return "redirect:/login";
+
+        Post post = postRepository.findById(id).orElse(null);
+        if (post != null) {
+            post.setBlocked(blocked);
+            postRepository.save(post);
+            feedAlgorithmService.evictFeedCache();
+        }
+        return "redirect:/admin#posts-section";
     }
 
     // ── Stub routes: sidebar links that don't have full pages yet ──
@@ -570,7 +825,12 @@ public class MainController {
             model.addAttribute("achievements", List.of());
         }
 
-        List<User> leaderboard = userRepository.findAllByOrderByXpDesc();
+        List<User> leaderboard = userRepository.findAll();
+        leaderboard.sort((u1, u2) -> {
+            int xp1 = u1.getXp() != null ? u1.getXp() : 0;
+            int xp2 = u2.getXp() != null ? u2.getXp() : 0;
+            return Integer.compare(xp2, xp1);
+        });
         model.addAttribute("leaderboard", leaderboard);
 
         return "achievements";

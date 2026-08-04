@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 @Controller
 public class ChatViewController {
@@ -38,7 +40,7 @@ public class ChatViewController {
         return null;
     }
 
-    @GetMapping("/messages")
+    @RequestMapping(value = "/messages", method = RequestMethod.GET)
     public String messagesPage(HttpSession session, Model model) {
         // Triggering auto-restart to fix expired session bug!
         User user = getUserFromSession(session);

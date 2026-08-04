@@ -101,7 +101,7 @@ class ZentrixPromoPlayer {
                 radius: Math.random() * 2 + 1,
                 vx: (Math.random() - 0.5) * 0.4,
                 vy: (Math.random() - 0.5) * 0.4 - 0.1, // slowly float upwards
-                color: Math.random() > 0.5 ? "rgba(139, 92, 246, 0.4)" : "rgba(59, 130, 246, 0.4)"
+                color: Math.random() > 0.5 ? "rgba(59, 130, 246, 0.5)" : "rgba(14, 165, 233, 0.5)" // Light theme particles
             });
         }
     }
@@ -132,7 +132,7 @@ class ZentrixPromoPlayer {
 
         // Initialize background video if available
         if (this.videoBg) {
-            this.videoBg.src = "/images/grid_space_video.mp4";
+            this.videoBg.src = "https://v1.pinimg.com/videos/iht/expMp4/26/fc/31/26fc318f8f7f56ae9a721cb1e58dd988_720w.mp4";
             this.videoBg.addEventListener("canplaythrough", () => {
                 console.log("Background MP4 video loaded successfully.");
                 this.isVideoLoaded = true;
@@ -543,7 +543,7 @@ class ZentrixPromoPlayer {
             }
 
             if (activeIdx === 5 && !this.coinBurstTriggered) {
-                this.triggerCoinBurst();
+                // this.triggerCoinBurst();
             }
 
             if (activeIdx === 6) {
@@ -636,8 +636,6 @@ class ZentrixPromoPlayer {
                 this.ctx.scale(scale, scale);
                 this.ctx.translate(-this.canvas.width / 2 + dx, -this.canvas.height / 2 + dy);
 
-                // Draw image covering the canvas
-                this.drawCoverImage(activeImg);
                 this.ctx.restore();
             } else {
                 // Draw digital fallback shader grid
@@ -701,15 +699,15 @@ class ZentrixPromoPlayer {
     }
 
     drawFallbackGrid() {
-        // Draw neon space gradient
+        // Draw light modern gradient
         const grad = this.ctx.createLinearGradient(0, 0, 0, this.canvas.height);
-        grad.addColorStop(0, "#05050e");
-        grad.addColorStop(1, "#0a0a22");
+        grad.addColorStop(0, "#f8fafc");
+        grad.addColorStop(1, "#e2e8f0");
         this.ctx.fillStyle = grad;
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-        // Draw cyberpunk grid
-        this.ctx.strokeStyle = "rgba(139, 92, 246, 0.15)";
+        // Draw light grid
+        this.ctx.strokeStyle = "rgba(59, 130, 246, 0.08)";
         this.ctx.lineWidth = 1;
         const gridSize = 40;
         

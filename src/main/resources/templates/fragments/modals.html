@@ -73,7 +73,8 @@
     </style>
 
     <!-- Create Post Modal -->
-    <div class="modal" id="createPostModal" style="display:none; flex-direction: column;">
+    <div class="overlay" id="createPostModal" style="display:none;" onclick="if(event.target===this)closeM('createPostModal')">
+        <div class="modal" style="display:none; flex-direction: column; max-height: 90vh; width: 90% !important; max-width: 500px !important;">
             <div style="padding:20px; border-bottom:1px solid var(--glass-border); display:flex; justify-content:space-between; align-items:center;">
                 <h3 style="font-size:16px; display:flex; align-items:center; gap:8px;">
                     <i class="fas fa-plus-circle" style="color:var(--accent);"></i>
@@ -82,11 +83,13 @@
                 <button class="nav-btn" onclick="closeM('createPostModal')"
                     style="background:none; border:none; color:var(--text-secondary); font-size:20px;">&times;</button>
             </div>
-            <div style="padding:20px;">
+            <div style="padding:20px; overflow-y:auto; flex:1;">
                 <form id="createPostForm" th:action="@{/profile/post}" method="post" enctype="multipart/form-data">
-                    <!-- Hidden fields for type & category -->
+                    <!-- Hidden fields for type & category & bgColor & textColor -->
                     <input type="hidden" name="postType" id="postTypeInput" value="POST">
                     <input type="hidden" name="category" id="categoryInput" value="">
+                    <input type="hidden" name="bgColor" id="bgColorInput" value="#000000">
+                    <input type="hidden" name="textColor" id="textColorInput" value="#ffffff">
 
                     <!-- Post Type Segmented Selector -->
                     <div class="form-group">
@@ -127,6 +130,35 @@
                         <div class="mdrop" id="mentionDrop"></div>
                     </div>
 
+                    <!-- Background and Text Color for Text Stories -->
+                    <div class="form-group" id="storyColorSelector" style="display:none;">
+                        <label style="font-size:12px; color:var(--text-secondary); margin-bottom:6px; display:block;">
+                            <i class="fas fa-palette"></i> &nbsp;Background Color
+                        </label>
+                        <div style="display:flex; gap:8px; margin-bottom: 12px;">
+                            <button type="button" class="color-btn" data-color="#000000" onclick="selectStoryColor(this)" style="width:30px; height:30px; border-radius:50%; border:2px solid var(--accent); background:#000000; cursor:pointer;"></button>
+                            <button type="button" class="color-btn" data-color="#ffffff" onclick="selectStoryColor(this)" style="width:30px; height:30px; border-radius:50%; border:2px solid transparent; background:#ffffff; cursor:pointer;"></button>
+                            <button type="button" class="color-btn" data-color="#f84464" onclick="selectStoryColor(this)" style="width:30px; height:30px; border-radius:50%; border:2px solid transparent; background:#f84464; cursor:pointer;"></button>
+                            <button type="button" class="color-btn" data-color="#8b5cf6" onclick="selectStoryColor(this)" style="width:30px; height:30px; border-radius:50%; border:2px solid transparent; background:#8b5cf6; cursor:pointer;"></button>
+                            <button type="button" class="color-btn" data-color="#3b82f6" onclick="selectStoryColor(this)" style="width:30px; height:30px; border-radius:50%; border:2px solid transparent; background:#3b82f6; cursor:pointer;"></button>
+                            <button type="button" class="color-btn" data-color="#10b981" onclick="selectStoryColor(this)" style="width:30px; height:30px; border-radius:50%; border:2px solid transparent; background:#10b981; cursor:pointer;"></button>
+                            <button type="button" class="color-btn" data-color="#f59e0b" onclick="selectStoryColor(this)" style="width:30px; height:30px; border-radius:50%; border:2px solid transparent; background:#f59e0b; cursor:pointer;"></button>
+                        </div>
+                        
+                        <label style="font-size:12px; color:var(--text-secondary); margin-bottom:6px; display:block;">
+                            <i class="fas fa-font"></i> &nbsp;Text Color
+                        </label>
+                        <div style="display:flex; gap:8px;">
+                            <button type="button" class="txt-color-btn" data-color="#ffffff" onclick="selectStoryTextColor(this)" style="width:30px; height:30px; border-radius:50%; border:2px solid var(--accent); background:#ffffff; cursor:pointer;"></button>
+                            <button type="button" class="txt-color-btn" data-color="#000000" onclick="selectStoryTextColor(this)" style="width:30px; height:30px; border-radius:50%; border:2px solid transparent; background:#000000; cursor:pointer;"></button>
+                            <button type="button" class="txt-color-btn" data-color="#f84464" onclick="selectStoryTextColor(this)" style="width:30px; height:30px; border-radius:50%; border:2px solid transparent; background:#f84464; cursor:pointer;"></button>
+                            <button type="button" class="txt-color-btn" data-color="#8b5cf6" onclick="selectStoryTextColor(this)" style="width:30px; height:30px; border-radius:50%; border:2px solid transparent; background:#8b5cf6; cursor:pointer;"></button>
+                            <button type="button" class="txt-color-btn" data-color="#3b82f6" onclick="selectStoryTextColor(this)" style="width:30px; height:30px; border-radius:50%; border:2px solid transparent; background:#3b82f6; cursor:pointer;"></button>
+                            <button type="button" class="txt-color-btn" data-color="#10b981" onclick="selectStoryTextColor(this)" style="width:30px; height:30px; border-radius:50%; border:2px solid transparent; background:#10b981; cursor:pointer;"></button>
+                            <button type="button" class="txt-color-btn" data-color="#f59e0b" onclick="selectStoryTextColor(this)" style="width:30px; height:30px; border-radius:50%; border:2px solid transparent; background:#f59e0b; cursor:pointer;"></button>
+                        </div>
+                    </div>
+
                     <!-- Category -->
                     <div class="form-group">
                         <label style="font-size:12px; color:var(--text-secondary); margin-bottom:6px; display:block;">
@@ -143,6 +175,7 @@
                             <button type="button" class="cat-btn" data-cat="Fashion" onclick="selectCategory(this)">👗 Fashion</button>
                             <button type="button" class="cat-btn" data-cat="Comedy" onclick="selectCategory(this)">😂 Comedy</button>
                             <button type="button" class="cat-btn" data-cat="Gaming" onclick="selectCategory(this)">🎮 Gaming</button>
+                            <button type="button" class="cat-btn" data-cat="Others" onclick="selectCategory(this)">✨ Others</button>
                         </div>
                     </div>
 
@@ -190,6 +223,7 @@
                 </form>
             </div>
         </div>
+    </div>
 
     <script th:inline="javascript">
         // Helper constants
@@ -251,6 +285,29 @@
             }
         }
 
+        /* ===== Story Color Selector ===== */
+        function selectStoryColor(btn) {
+            const color = btn.dataset.color;
+            document.getElementById('bgColorInput').value = color;
+            document.querySelectorAll('.color-btn').forEach(b => {
+                b.style.borderColor = 'transparent';
+                if(b.dataset.color === '#ffffff') b.style.border = '1px solid #ccc';
+            });
+            btn.style.borderColor = 'var(--accent)';
+            if(color === '#ffffff') btn.style.border = '2px solid var(--accent)';
+        }
+
+        function selectStoryTextColor(btn) {
+            const color = btn.dataset.color;
+            document.getElementById('textColorInput').value = color;
+            document.querySelectorAll('.txt-color-btn').forEach(b => {
+                b.style.borderColor = 'transparent';
+                if(b.dataset.color === '#ffffff') b.style.border = '1px solid #ccc';
+            });
+            btn.style.borderColor = 'var(--accent)';
+            if(color === '#ffffff') btn.style.border = '2px solid var(--accent)';
+        }
+
         /* ===== Drag-and-drop media ===== */
         function handleFileDrop(event) {
             event.preventDefault();
@@ -268,11 +325,42 @@
             const wrap = document.getElementById('mediaPreview'); 
             wrap.innerHTML = '';
             if (!inp.files || !inp.files[0]) { wrap.style.display = 'none'; return; }
-            const f = inp.files[0], url = URL.createObjectURL(f);
-            wrap.style.display = 'block';
-            wrap.innerHTML = f.type.startsWith('video')
-                ? `<video src="${url}" controls style="width:100%; max-height:180px; border-radius:8px;"></video>`
-                : `<img src="${url}" style="width:100%; max-height:180px; border-radius:8px;">`;
+            const f = inp.files[0];
+            
+            if (f.type.startsWith('video') && f.size > 50 * 1024 * 1024) {
+                alert('Video file is too large! Maximum allowed is 50MB.');
+                inp.value = '';
+                return;
+            }
+            if (f.type.startsWith('image') && f.size > 5 * 1024 * 1024) {
+                alert('Image file is too large! Maximum allowed is 5MB.');
+                inp.value = '';
+                return;
+            }
+            
+            const url = URL.createObjectURL(f);
+            
+            if (f.type.startsWith('video')) {
+                const videoEl = document.createElement('video');
+                videoEl.preload = 'metadata';
+                videoEl.src = url;
+                videoEl.onloadedmetadata = function() {
+                    const duration = videoEl.duration;
+                    const postType = document.getElementById('postTypeInput').value;
+                    if (postType === 'REEL' && duration > 60) {
+                        alert('Reel video duration cannot exceed 1 minute!');
+                        inp.value = '';
+                        wrap.innerHTML = '';
+                        wrap.style.display = 'none';
+                        return;
+                    }
+                    wrap.style.display = 'block';
+                    wrap.innerHTML = `<video src="${url}" controls style="width:100%; max-height:180px; border-radius:8px;"></video>`;
+                };
+            } else {
+                wrap.style.display = 'block';
+                wrap.innerHTML = `<img src="${url}" style="width:100%; max-height:180px; border-radius:8px;">`;
+            }
         }
 
         /* ===== Post Type Selector ===== */
@@ -304,6 +392,12 @@
 
             const prev = document.getElementById('mediaPreview');
             prev.innerHTML = ''; prev.style.display = 'none';
+
+            // Show color selector only for STORY
+            const colorSelector = document.getElementById('storyColorSelector');
+            if (colorSelector) {
+                colorSelector.style.display = (type === 'STORY') ? 'block' : 'none';
+            }
         }
 
         /* Mention/Collab Autocomplete logic */
@@ -322,8 +416,7 @@
                 });
         }
 
-        // Initialize listeners after DOM loads
-        document.addEventListener('DOMContentLoaded', () => {
+        function initModalListeners() {
             const postContent = document.getElementById('postContent');
             const mentionDrop = document.getElementById('mentionDrop');
             if (postContent && mentionDrop) {
@@ -363,8 +456,29 @@
                     });
                 };
             }
-        });
+
+            const createPostForm = document.getElementById('createPostForm');
+            if (createPostForm) {
+                createPostForm.onsubmit = function(e) {
+                    const content = document.getElementById('postContent').value.trim();
+                    const mediaFiles = document.getElementById('mediaFile').files.length;
+                    if (!content && mediaFiles === 0) {
+                        e.preventDefault();
+                        alert('Please add content before posting');
+                        return false;
+                    }
+                    return true;
+                };
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initModalListeners);
+        } else {
+            initModalListeners();
+        }
     </script>
+    <script th:src="@{/js/session-keepalive.js}"></script>
 </div>
 
 </body>

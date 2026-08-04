@@ -9,51 +9,177 @@
     <script th:src="@{/js/game-rewards.js}"></script>
 </head>
 <body>
-    <header th:fragment="navbar(active)" th:style="${active} != 'home' and ${active} != 'games' and ${active} != 'about' and ${active} != 'support' and ${active} != 'events' and ${active} != 'event-details' ? '--nav-height: 86px;' : '--nav-height: 56px;'">
-        <div class="top-bar" th:if="${active} != 'home' and ${active} != 'games' and ${active} != 'about' and ${active} != 'support' and ${active} != 'events' and ${active} != 'event-details'">
+	<header th:fragment="navbar(active)"
+	th:style="${active} != 'home'
+	and ${active} != 'games'
+	and ${active} != 'about'
+	and ${active} != 'careers'
+	and ${active} != 'faq'
+	and ${active} != 'support'
+	and ${active} != 'events'
+	and ${active} != 'event-details'
+	? '--nav-height: 86px;' : '--nav-height: 56px;'">
+	<div class="top-bar"
+	th:if="${active} != 'home'
+	and ${active} != 'games'
+	and ${active} != 'about'
+	and ${active} != 'careers'
+	and ${active} != 'faq'
+	and ${active} != 'support'
+	and ${active} != 'events'
+	and ${active} != 'event-details'">
             <div class="nav-shell top-bar-inner">
                 <div class="top-bar-message">
                     <i class="fa-solid fa-bullhorn"></i>
                     <span>Join the Spring Tech Fest 2026 — Registrations now open!</span>
                 </div>
                 <div class="top-links">
-                    <a href="/support">Support</a>
-                    <a href="/home#faq">Help Center</a>
+                    <a th:href="@{/support}">Support</a>
+                    <a th:href="@{/faq}">Help Center</a>
                 </div>
             </div>
         </div>
-        <nav class="navbar" th:classappend="(${active} != 'home' and ${active} != 'games' and ${active} != 'about' and ${active} != 'support' and ${active} != 'events' and ${active} != 'event-details' ? ' has-topbar' : '') + (${active} == 'home' ? ' navbar-home' : '')">
+		<nav class="navbar"
+		th:classappend="(${active} != 'home'
+		and ${active} != 'games'
+		and ${active} != 'about'
+		and ${active} != 'careers'
+		and ${active} != 'faq'
+		and ${active} != 'support'
+		and ${active} != 'events'
+		and ${active} != 'event-details'
+		? ' has-topbar' : '') + ' navbar-home' + (${active} != 'home' ? ' solid-bg' : '')">
             <div class="nav-shell navbar-inner" style="display: flex; align-items: center; justify-content: space-between; width: 100%; height: 100%; padding: 0;">
+                
+                <a class="logo" th:href="@{/home}" style="font-size: 22px; font-weight: 900; color: #0f172a; text-decoration: none; font-family: 'Outfit', sans-serif; letter-spacing: -0.5px; z-index: 1010; display: flex; align-items: center; gap: 6px;">
+                    <i class="fa-solid fa-compass" style="color: var(--primary);"></i> Zentrix
+                </a>
+
                 <!-- Games/Events page: minimal header (Dashboard button only) -->
                 <th:block th:if="${active} == 'games' or ${active} == 'events' or ${active} == 'event-details'">
-                    <div class="nav-links" style="justify-content:flex-start;">
-                        <a href="/dashboard" class="btn btn-outline">Dashboard</a>
+                    <div class="nav-links minimalist-links" style="justify-content:flex-start;">
+                        <a th:href="@{/dashboard}" class="btn btn-outline">Dashboard</a>
                     </div>
                 </th:block>
 
                 <!-- All other public pages -->
                 <th:block th:if="${active} != 'games' and ${active} != 'events' and ${active} != 'event-details'">
-                    <a class="logo" href="/home">Zentrix</a>
                     <div class="nav-links">
-                        <a href="/home#featured-events">Events</a>
-                        <a href="/games" th:if="${active} != 'home'" th:classappend="${active} == 'games' ? ' active' : ''">Games</a>
-                        <a href="/home#about">About Us</a>
-                        <a href="/home#contact">Contact</a>
-                        <a href="/home#faq">FAQs</a>
+                        <a th:href="@{/home}" th:classappend="${active} == 'home' ? ' active' : ''">Home</a>
+                        <a th:href="@{/featured-events}">Events</a>
+                        <a th:href="@{/games}" th:classappend="${active} == 'games' ? ' active' : ''">Games</a>
+						<a th:href="@{/about-us}"
+						   th:classappend="${active} == 'about' ? ' active' : ''">
+						    About Us
+						</a>
+						<a th:href="@{/careers}"
+						   th:classappend="${active} == 'careers' ? ' active' : ''">
+						    Careers
+						</a>
+                        <a th:href="@{/home} + '#contact'">Contact</a>
+							<a th:href="@{/faq}"
+						   th:classappend="${active} == 'faq' ? ' active' : ''">
+						    FAQs
+						</a>
+						<a href="javascript:void(0)" onclick="scrollToHeatmap()">Heat Map</a>
                     </div>
                     <div class="nav-actions">
                         <th:block th:if="${session.user == null}">
-                            <a href="/login" class="btn btn-outline">Login</a>
-                            <a href="/register" class="btn btn-primary">Register</a>
+                            <a th:href="@{/login}" class="btn btn-outline">Login</a>
+                            <a th:href="@{/register}" class="btn btn-primary">Register</a>
                         </th:block>
                         <th:block th:if="${session.user != null}">
-                            <a href="/dashboard" class="btn btn-outline">Dashboard</a>
-                            <a href="/logout" class="btn btn-primary">Logout</a>
+                            <a th:href="@{/dashboard}" class="btn btn-outline">Dashboard</a>
+                            <a th:href="@{/logout}" class="btn btn-primary">Logout</a>
                         </th:block>
                     </div>
+
+                    <button class="nav-hamburger" onclick="toggleMobileNav()" style="display: none; background: #0f172a; border: none; color: white !important; font-size: 16px; cursor: pointer; z-index: 1010; width: 36px; height: 36px; border-radius: 50%; align-items: center; justify-content: center; outline: none; padding: 0;">
+                        <i class="fas fa-bars"></i>
+                    </button>
+
+                    <!-- Mobile drawer menu -->
+                    <div class="mobile-nav-drawer" id="mobileNavDrawer" onclick="event.stopPropagation()">
+                        <div class="nav-links">
+                            <a th:href="@{/home}" onclick="toggleMobileNav()">Home</a>
+                            <a th:href="@{/featured-events}" onclick="toggleMobileNav()">Events</a>
+                            <a th:href="@{/games}" onclick="toggleMobileNav()">Games</a>
+                            <a th:href="@{/about-us}" onclick="toggleMobileNav()">About Us</a>
+                <a th:href="@{/careers}" style="margin-bottom: 10px; font-size: 14px; color: var(--text-secondary);">Careers</a>
+                            <a th:href="@{/home} + '#contact'" onclick="toggleMobileNav()">Contact</a>
+                            <a th:href="@{/faq}" onclick="toggleMobileNav()">FAQs</a>
+                            <a href="javascript:void(0)" onclick="toggleMobileNav(); scrollToHeatmap()">Heat Map</a>
+                        </div>
+                        <div class="nav-actions">
+                            <th:block th:if="${session.user == null}">
+                                <a th:href="@{/login}" class="btn btn-outline" onclick="toggleMobileNav()">Login</a>
+                                <a th:href="@{/register}" class="btn btn-primary" onclick="toggleMobileNav()">Register</a>
+                            </th:block>
+                            <th:block th:if="${session.user != null}">
+                                <a th:href="@{/dashboard}" class="btn btn-outline" onclick="toggleMobileNav()">Dashboard</a>
+                                <a th:href="@{/logout}" class="btn btn-primary" onclick="toggleMobileNav()">Logout</a>
+                            </th:block>
+                        </div>
+                    </div>
+                    <div class="mobile-nav-backdrop" id="mobileNavBackdrop" onclick="toggleMobileNav()"></div>
                 </th:block>
             </div>
         </nav>
+        <script>
+            function toggleMobileNav() {
+                const drawer = document.getElementById('mobileNavDrawer');
+                const backdrop = document.getElementById('mobileNavBackdrop');
+                const icon = document.querySelector('.nav-hamburger i');
+                if (drawer && backdrop) {
+                    drawer.classList.toggle('open');
+                    backdrop.classList.toggle('open');
+                    if (drawer.classList.contains('open')) {
+                        icon.className = 'fas fa-times';
+                    } else {
+                        icon.className = 'fas fa-bars';
+                    }
+                }
+            }
+
+            document.addEventListener("DOMContentLoaded", function() {
+                if (window.location.hash === '#featured-events' || window.location.hash === '#contact') {
+                    document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+                    if (window.location.hash === '#featured-events') {
+                        const eventLinks = Array.from(document.querySelectorAll('.nav-links a')).filter(a => a.textContent.trim() === 'Events');
+                        eventLinks.forEach(link => link.classList.add('active'));
+                    } else if (window.location.hash === '#contact') {
+                        const contactLinks = Array.from(document.querySelectorAll('.nav-links a')).filter(a => a.textContent.trim() === 'Contact');
+                        contactLinks.forEach(link => link.classList.add('active'));
+                    }
+                }
+            });
+
+            function scrollToHeatmap() {
+                var section = document.getElementById('event-heatmap');
+                if (section) {
+                    var rect = section.getBoundingClientRect();
+                    var isInView = rect.top >= -100 && rect.top <= window.innerHeight * 0.5;
+                    if (isInView) {
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    } else {
+                        section.scrollIntoView({ behavior: 'smooth' });
+                    }
+                } else {
+                    var base = document.querySelector('a.logo');
+                    var href = base ? base.getAttribute('href') : '/home';
+                    window.location.href = href + '#event-heatmap';
+                }
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                if (window.location.hash === '#event-heatmap') {
+                    setTimeout(function() {
+                        var el = document.getElementById('event-heatmap');
+                        if (el) el.scrollIntoView({ behavior: 'smooth' });
+                    }, 500);
+                }
+            });
+        </script>
     </header>
 
     <header th:fragment="musicNavbar(active, auth, coins)" class="navbar music-navbar">
@@ -61,7 +187,7 @@
             <a class="logo" th:href="@{/dashboard(auth=${auth})}">Zentrix</a>
             <div class="nav-links">
                 <a th:href="@{/home}"><i class="fas fa-house"></i> Home</a>
-                <a th:href="@{/music(auth=${auth})}" th:classappend="${active} == 'music' ? ' active' : ''"><i class="fas fa-music"></i> Music</a>
+                <a th:href="@{/wallet(auth=${auth})}" th:classappend="${active} == 'wallet' ? ' active' : ''"><i class="fas fa-wallet"></i> Wallet</a>
                 <a th:href="@{/music/rooms(auth=${auth})}" th:classappend="${active} == 'rooms' ? ' active' : ''"><i class="fas fa-users"></i> Rooms</a>
                 <a th:href="@{/music/leaderboard(auth=${auth})}" th:classappend="${active} == 'leaderboard' ? ' active' : ''"><i class="fas fa-trophy"></i> Leaderboard</a>
             </div>
@@ -69,38 +195,35 @@
                 <a href="javascript:void(0)" onclick="GameRewards.showHistory()" class="btn btn-outline" style="gap:8px;">
                     <i class="fas fa-coins" style="color: #f59e0b;"></i> <span th:text="${coins}">0</span>
                 </a>
-                <a href="/logout" class="btn btn-primary">Logout</a>
+                <a th:href="@{/logout}" class="btn btn-primary">Logout</a>
             </div>
         </div>
     </header>
 
     <header th:fragment="adminNavbar(active)" class="admin-header">
-        <nav class="navbar" style="background: rgba(5, 5, 8, 0.95) !important; border-bottom: 2px solid rgba(255, 255, 255, 0.1) !important;">
-            <a class="logo" href="/admin" style="color: #fff !important;">Zentrix<span>Admin</span></a>
+        <nav class="navbar" style="background: rgba(255, 255, 255, 0.85) !important; border-bottom: 1px solid rgba(255, 255, 255, 0.5) !important; backdrop-filter: blur(20px); position: sticky; top: 0; z-index: 1000;">
+            <a class="logo" th:href="@{/admin}" style="color: #0284c7 !important; font-weight: 900; font-size: 1.3rem; text-decoration: none;">Zentrix<span style="color: #0f172a !important; font-weight: 400; font-size: 0.9rem; margin-left: 4px;">Admin</span></a>
             
             <div class="nav-links">
-                <a href="/events/admin/manage" th:classappend="${active} == 'manage' ? ' active' : ''">
+                <a th:href="@{/events/admin/manage}" th:classappend="${active} == 'manage' ? ' active' : ''" style="color: #334155 !important; text-decoration: none; font-size: 14px;">
                     <i class="fas fa-calendar-alt"></i> Manage Events
                 </a>
-                <a href="/admin/music" th:classappend="${active} == 'music' ? ' active' : ''">
-                    <i class="fas fa-music"></i> Music
-                </a>
-                <a href="/events/admin/create" th:classappend="${active} == 'create' ? ' active' : ''">
+                <a th:href="@{/events/admin/create}" th:classappend="${active} == 'create' ? ' active' : ''" style="color: #334155 !important; text-decoration: none; font-size: 14px;">
                     <i class="fas fa-plus"></i> Create
                 </a>
             </div>
 
             <div class="nav-actions">
-                <a href="/dashboard" class="btn btn-outline" style="border-color: rgba(255,255,255,0.4); color: #fff !important;">
+                <a th:href="@{/dashboard}" class="btn btn-outline" style="border: 1px solid rgba(2, 132, 199, 0.4); color: #0284c7 !important; border-radius: 10px; padding: 8px 16px; text-decoration: none; font-size: 13px; font-weight: 600;">
                     <i class="fas fa-arrow-left"></i> App
                 </a>
-                <a href="/logout" class="btn btn-primary">Logout</a>
+                <a th:href="@{/logout}" class="btn btn-primary" style="background: linear-gradient(135deg, #f84464, #ff6b9d); color: #fff !important; border-radius: 10px; padding: 8px 18px; text-decoration: none; font-size: 13px; font-weight: 700;">Logout</a>
             </div>
         </nav>
     </header>
 
     <footer th:fragment="footer">
-        <div class="footer-content" style="display: grid; grid-template-columns: 1.2fr 0.8fr 0.8fr 1.2fr; gap: 40px; width: 100%; max-width: 1440px; margin: 0 auto; flex-wrap: wrap;">
+        <div class="footer-content">
             <!-- Column 1: Brand & Description -->
             <div class="footer-col" style="display: flex; flex-direction: column; gap: 15px;">
                 <h3 style="font-size: 24px; font-weight: 800; color: var(--text-primary); margin-bottom: 5px;">Zentrix</h3>
@@ -120,19 +243,20 @@
             <!-- Column 2: Quick Links -->
             <div class="footer-col">
                 <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 20px; color: var(--text-primary);">Navigation</h3>
-                <a href="/home#about" style="margin-bottom: 10px; font-size: 14px; color: var(--text-secondary);">About Us</a>
-                <a href="/home#featured-events" style="margin-bottom: 10px; font-size: 14px; color: var(--text-secondary);">Events</a>
-                <a href="/home#organizers" style="margin-bottom: 10px; font-size: 14px; color: var(--text-secondary);">Organizers</a>
-                <a href="/games" style="margin-bottom: 10px; font-size: 14px; color: var(--text-secondary);">Games Arena</a>
+                <a th:href="@{/about-us}" style="margin-bottom: 10px; font-size: 14px; color: var(--text-secondary);">About Us</a>
+                <a th:href="@{/careers}" style="margin-bottom: 10px; font-size: 14px; color: var(--text-secondary);">Careers</a>
+                <a th:href="@{/featured-events}" style="margin-bottom: 10px; font-size: 14px; color: var(--text-secondary);">Events</a>
+                <a th:href="@{/home} + '#organizers'" style="margin-bottom: 10px; font-size: 14px; color: var(--text-secondary);">Organizers</a>
+                <a th:href="@{/games}" style="margin-bottom: 10px; font-size: 14px; color: var(--text-secondary);">Games Arena</a>
             </div>
 
             <!-- Column 3: Help & Support -->
             <div class="footer-col">
                 <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 20px; color: var(--text-primary);">Support</h3>
-                <a href="/home#contact" style="margin-bottom: 10px; font-size: 14px; color: var(--text-secondary);">Contact Us</a>
-                <a href="/home#faq" style="margin-bottom: 10px; font-size: 14px; color: var(--text-secondary);">FAQs</a>
-                <a href="/home#terms" style="margin-bottom: 10px; font-size: 14px; color: var(--text-secondary);">Terms of Service</a>
-                <a href="/home#privacy" style="margin-bottom: 10px; font-size: 14px; color: var(--text-secondary);">Privacy Policy</a>
+                <a th:href="@{/home} + '#contact'" style="margin-bottom: 10px; font-size: 14px; color: var(--text-secondary);">Contact Us</a>
+                <a th:href="@{/faq}" style="margin-bottom: 10px; font-size: 14px; color: var(--text-secondary);">FAQs</a>
+                <a th:href="@{/terms-of-service}" style="margin-bottom: 10px; font-size: 14px; color: var(--text-secondary);">Terms of Service</a>
+                <a th:href="@{/privacy-policy}" style="margin-bottom: 10px; font-size: 14px; color: var(--text-secondary);">Privacy Policy</a>
             </div>
 
             <!-- Column 4: Social media & CTA -->
@@ -163,7 +287,7 @@
         </div>
 
         <!-- Divider & Bottom Branding -->
-        <div class="footer-bottom" style="margin-top: 40px; padding-top: 25px; border-top: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 1440px; margin-left: auto; margin-right: auto; flex-wrap: wrap; gap: 15px; font-size: 13px; color: var(--text-muted);">
+        <div class="footer-bottom">
             <p style="margin: 0; font-weight: 600;">&copy; 2026 Zentrix. All rights reserved.</p>
             <p style="margin: 0; font-weight: 600; display: flex; align-items: center; gap: 6px;">
                 Made with <i class="fa-solid fa-heart" style="color: #ec4899; animation: float 3s ease-in-out infinite;"></i> for youth globally.
@@ -173,3 +297,6 @@
     </footer>
 </body>
 </html>
+
+
+

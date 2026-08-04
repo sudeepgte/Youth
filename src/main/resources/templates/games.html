@@ -49,13 +49,40 @@
         .game-content h3 {
             margin: 0;
             font-size: 18px;
+            color: var(--text-primary) !important;
         }
 
         .game-content p {
             margin: 0;
             font-size: 14px;
             flex: 1;
-            opacity: 0.8;
+            opacity: 0.9;
+            color: var(--text-secondary) !important;
+        }
+
+        /* ── Lobby Modal Accessibility Overrides ── */
+        #room-modal {
+            color: #ffffff !important;
+        }
+        #room-modal h2,
+        #room-modal h3,
+        #room-modal p,
+        #room-modal span {
+            color: #ffffff !important;
+        }
+        #room-modal #modal-game-title {
+            color: #FFC107 !important;
+        }
+        #room-modal #lobby-display-code {
+            color: #FFC107 !important;
+        }
+        #room-modal button.btn-game.btn-play,
+        #room-modal button.btn-game.btn-invite {
+            color: #000000 !important;
+        }
+        #room-modal button.btn-game.btn-play i,
+        #room-modal button.btn-game.btn-invite i {
+            color: #000000 !important;
         }
 
         .game-content .game-footer {
@@ -178,6 +205,36 @@
                 transform: translate(-50%, -20px);
             }
         }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .games-grid {
+                grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+                padding: 20px 10px;
+                gap: 16px;
+            }
+
+            .about-hero h1 {
+                font-size: 32px !important;
+            }
+
+            .join-room-container {
+                flex-direction: column;
+            }
+
+            .join-room-container button {
+                width: 100%;
+                flex: none !important;
+            }
+
+            .modal-selection-grid {
+                grid-template-columns: 1fr !important;
+            }
+            
+            .game-actions {
+                flex-direction: column;
+            }
+        }
     </style>
 
     <div th:replace="~{fragments/template :: navbar('games')}"></div>
@@ -193,7 +250,7 @@
             <!-- Rock Paper Scissors -->
             <div class="game-card">
                 <div class="game-img-wrap">
-                    <img src="/images/rps.jpg" class="game-img" alt="Rock Paper Scissors">
+                    <img th:src="@{/images/rps.jpg}" class="game-img" alt="Rock Paper Scissors">
                 </div>
                 <div class="game-content">
                     <h3>Rock Paper Scissors</h3>
@@ -215,7 +272,7 @@
             <!-- Snake & Ladder -->
             <div class="game-card">
                 <div class="game-img-wrap">
-                    <img src="/images/snake.jpg" class="game-img" alt="Snake and Ladder">
+                    <img th:src="@{/images/snake.jpg}" class="game-img" alt="Snake and Ladder">
                 </div>
                 <div class="game-content">
                     <h3>Snake & Ladder Legends</h3>
@@ -236,7 +293,7 @@
             <!-- Chess -->
             <div class="game-card">
                 <div class="game-img-wrap">
-                    <img src="https://images.unsplash.com/photo-1529699211952-734e80c4d42b?q=80&w=2071&auto=format&fit=crop"
+                    <img src="https://images.unsplash.com/photo-1586165368502-1bad197a6461?q=80&w=1258&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                         class="game-img" alt="Chess">
                 </div>
                 <div class="game-content">
@@ -259,7 +316,7 @@
             <!-- Uno -->
             <div class="game-card">
                 <div class="game-img-wrap">
-                    <img src="/images/uno.jpg" class="game-img" alt="Uno">
+                    <img th:src="@{/images/uno.jpg}" class="game-img" alt="Uno">
                 </div>
                 <div class="game-content">
                     <h3>Uno Realistic</h3>
@@ -279,7 +336,7 @@
             <!-- Ludo -->
             <div class="game-card">
                 <div class="game-img-wrap">
-                    <img src="/images/ludo.png" class="game-img" alt="Ludo">
+                    <img th:src="@{/images/ludo.png}" class="game-img" alt="Ludo">
                 </div>
                 <div class="game-content">
                     <h3>Ludo King</h3>
@@ -299,7 +356,7 @@
             <!-- Super Mario -->
             <div class="game-card">
                 <div class="game-img-wrap">
-                    <img src="https://images.unsplash.com/photo-1612036782180-6f0b6cd846fe?q=80&w=2070&auto=format&fit=crop"
+                    <img th:src="@{/images/mario.jpg}"
                         class="game-img" alt="Super Mario">
                 </div>
                 <div class="game-content">
@@ -309,7 +366,7 @@
                         <span style="color: #00bcd4; font-weight: 700; font-size: 12px; text-transform: uppercase;">Solo
                             Adventure</span>
                         <div class="game-actions">
-                            <a href="/play-mario" class="btn-game btn-play">Play Now</a>
+                            <a th:href="@{/play-mario}" class="btn-game btn-play">Play Now</a>
                         </div>
                     </div>
                 </div>
@@ -318,7 +375,7 @@
             <!-- Memory Game -->
             <div class="game-card">
                 <div class="game-img-wrap">
-                    <img src="https://images.unsplash.com/photo-1596443686812-2f45229eebc3?q=80&w=2071&auto=format&fit=crop"
+                    <img th:src="@{/images/memory.jpg}"
                         class="game-img" alt="Memory Game">
                 </div>
                 <div class="game-content">
@@ -327,7 +384,7 @@
                     <div class="game-footer">
                         <span style="color: #00bcd4; font-weight: 700; font-size: 12px; text-transform: uppercase;">Mind Training</span>
                         <div class="game-actions">
-                            <a href="/play-memory" class="btn-game btn-play">Play Now</a>
+                            <a th:href="@{/play-memory}" class="btn-game btn-play">Play Now</a>
                         </div>
                     </div>
                 </div>
@@ -336,7 +393,7 @@
             <!-- Bubble Shooter -->
             <div class="game-card">
                 <div class="game-img-wrap">
-                    <img src="/images/bubble.png" class="game-img" alt="Bubble Shooter">
+                    <img th:src="@{/images/bubble.png}" class="game-img" alt="Bubble Shooter">
                 </div>
                 <div class="game-content">
                     <h3>Bubble Shooter</h3>
@@ -346,7 +403,7 @@
                             style="color: #00bcd4; font-weight: 700; font-size: 12px; text-transform: uppercase;">Arcade
                             Fun</span>
                         <div class="game-actions">
-                            <a href="/play-bubble-shooter" class="btn-game btn-play">Play Now</a>
+                            <a th:href="@{/play-bubble-shooter}" class="btn-game btn-play">Play Now</a>
                         </div>
                     </div>
                 </div>
@@ -355,7 +412,7 @@
             <!-- Candy Crush -->
             <div class="game-card">
                 <div class="game-img-wrap">
-                    <img src="/images/candy.jpg" class="game-img" alt="Candy Crush">
+                    <img th:src="@{/images/candy.jpg}" class="game-img" alt="Candy Crush">
                 </div>
                 <div class="game-content">
                     <h3>Candy Crush</h3>
@@ -365,7 +422,7 @@
                             style="color: #00bcd4; font-weight: 700; font-size: 12px; text-transform: uppercase;">Sugar
                             Rush</span>
                         <div class="game-actions">
-                            <a href="/play-candy-crush" class="btn-game btn-play">Play Now</a>
+                            <a th:href="@{/play-candy-crush}" class="btn-game btn-play">Play Now</a>
                         </div>
                     </div>
                 </div>
@@ -374,7 +431,7 @@
             <!-- Zentrix Runner -->
             <div class="game-card">
                 <div class="game-img-wrap">
-                    <img src="/images/runner.jpg" class="game-img" alt="Zentrix Runner">
+                    <img th:src="@{/images/runner.jpg}" class="game-img" alt="Zentrix Runner">
                 </div>
                 <div class="game-content">
                     <h3>Zentrix Runner</h3>
@@ -384,7 +441,7 @@
                             style="color: #00bcd4; font-weight: 700; font-size: 12px; text-transform: uppercase;">Speed
                             Run</span>
                         <div class="game-actions">
-                            <a href="/play-runner" class="btn-game btn-play">Play Now</a>
+                            <a th:href="@{/play-runner}" class="btn-game btn-play">Play Now</a>
                         </div>
                     </div>
                 </div>
@@ -393,7 +450,7 @@
             <!-- Zentrix Racing -->
             <div class="game-card">
                 <div class="game-img-wrap">
-                    <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=2070&auto=format&fit=crop"
+                    <img th:src="@{/images/racing.jpg}"
                         class="game-img" alt="Zentrix Racing">
                 </div>
                 <div class="game-content">
@@ -405,7 +462,7 @@
                             style="color: #00bcd4; font-weight: 700; font-size: 12px; text-transform: uppercase;">Turbo
                             Drive</span>
                         <div class="game-actions">
-                            <a href="/play-car-game" class="btn-game btn-play">Play Now</a>
+                            <a th:href="@{/play-car-game}" class="btn-game btn-play">Play Now</a>
                         </div>
                     </div>
                 </div>
@@ -422,7 +479,7 @@
                 <h2 style="font-size: 24px; font-weight: 800; margin-bottom: 5px;">Have a Room Code?</h2>
                 <p style="opacity: 0.6; font-size: 14px;">Enter the 6-character code to join your friend's game.</p>
             </div>
-            <div style="display: flex; gap: 12px; width: 100%; max-width: 400px;">
+            <div class="join-room-container" style="display: flex; gap: 12px; width: 100%; max-width: 400px;">
                 <input type="text" id="join-room-code" placeholder="ENTER CODE" maxlength="6"
                     style="flex: 1; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px 20px; color: #fff; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; text-align: center;">
                 <button onclick="handleJoinWithCode()" class="btn-game btn-play"
@@ -448,7 +505,7 @@
 
                 <!-- Main Lobby Selection -->
                 <div id="lobby-selection-state">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                    <div class="modal-selection-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
                         <button onclick="showCreateSettings()" class="btn-game btn-play"
                             style="flex-direction: column; height: 120px; gap: 10px;">
                             <i class="fas fa-plus-circle" style="font-size: 20px;"></i>
@@ -558,7 +615,16 @@
         let currentGameName = null;
         let selectedPlayerCount = 2;
         let generatedRoomId = null;
-        const userName = /*[[${session.user != null ? session.user.username : 'Player'}]]*/ 'Player';
+        const userName = /*[[${user != null ? user.username : 'Player'}]]*/ 'Player';
+        const contextPath = /*[[@{/}]]*/ '/';
+        
+        function getFullPath(url) {
+            if (url.startsWith('http')) return url;
+            let path = contextPath;
+            if (path.endsWith('/')) path = path.slice(0, -1);
+            if (!url.startsWith('/')) url = '/' + url;
+            return path + url;
+        }
 
         function openGameLobby(gameName, skipToCreate = false) {
             currentGameName = gameName;
@@ -618,7 +684,7 @@
                 this.textContent = 'Generating Room...';
                 this.disabled = true;
 
-                const response = await fetch(config.createApi, {
+                const response = await fetch(getFullPath(config.createApi), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ playerName: userName, maxPlayers: selectedPlayerCount })
@@ -646,11 +712,13 @@
                 alert('Code must be 6 characters.');
                 return;
             }
-            window.location.href = gameConfigs[currentGameName].gameUrl + '?room=' + code;
+            const auth = new URLSearchParams(window.location.search).get('auth');
+            const authParam = auth ? `&auth=${auth}` : '';
+            window.location.href = getFullPath(gameConfigs[currentGameName].gameUrl) + '?room=' + code + authParam;
         }
 
         document.getElementById('lobby-copy-link').onclick = function () {
-            const url = window.location.origin + gameConfigs[currentGameName].gameUrl + '?room=' + generatedRoomId;
+            const url = window.location.origin + getFullPath(gameConfigs[currentGameName].gameUrl) + '?room=' + generatedRoomId;
             copyToClipboard(url);
         };
 
@@ -658,14 +726,16 @@
             const auth = new URLSearchParams(window.location.search).get('auth');
             const glue = gameConfigs[currentGameName].gameUrl.includes('?') ? '&' : '?';
             const authParam = auth ? `&auth=${auth}` : '';
-            window.location.href = gameConfigs[currentGameName].gameUrl + glue + 'room=' + generatedRoomId + authParam;
+            window.location.href = getFullPath(gameConfigs[currentGameName].gameUrl) + glue + 'room=' + generatedRoomId + authParam;
         };
 
         function handleJoinWithCode() {
             const code = document.getElementById('join-room-code').value.trim().toUpperCase();
             if (code.length === 6) {
                 const url = currentGameName ? gameConfigs[currentGameName].gameUrl : '/play-chess';
-                window.location.href = url + '?room=' + code;
+                const auth = new URLSearchParams(window.location.search).get('auth');
+                const authParam = auth ? `&auth=${auth}` : '';
+                window.location.href = getFullPath(url) + '?room=' + code + authParam;
             }
         }
 
@@ -685,3 +755,4 @@
 </body>
 
 </html>
+

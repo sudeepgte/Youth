@@ -11,6 +11,7 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import com.example.demo.repository.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -26,6 +27,8 @@ class ReelFeedAlgorithmServiceTest {
     private ReelRepository reelRepository;
     @Mock
     private UserInterestProfileRepository profileRepository;
+    @Mock
+    private UserRepository userRepository;
 
     @InjectMocks
     private ReelFeedAlgorithmService reelFeedService;
@@ -38,6 +41,8 @@ class ReelFeedAlgorithmServiceTest {
         creator = new User();
         creator.setId(99L);
         creator.setUsername("creator");
+        
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(new User()));
     }
 
     // ─────────────────────────────────────────────────────────────────────────

@@ -1,6 +1,8 @@
 package com.example.demo.controller;
 
 import com.example.demo.model.Event;
+import com.example.demo.model.LadiesPartyDetails;
+import com.example.demo.repository.LadiesPartyDetailsRepository;
 import com.example.demo.model.EventRegistration;
 import com.example.demo.model.User;
 import com.example.demo.model.EventSeatTier;
@@ -12,7 +14,20 @@ import com.example.demo.repository.EventRepository;
 import com.example.demo.repository.EventRegistrationRepository;
 import com.example.demo.repository.EventSeatTierRepository;
 import com.example.demo.repository.VoteRepository;
+import com.example.demo.repository.LadiesPartyDetailsRepository;
+import com.example.demo.repository.AdventureDetailsRepository;
+import com.example.demo.repository.TrekkingDetailsRepository;
+import com.example.demo.repository.BikeRidingDetailsRepository;
+import com.example.demo.model.LadiesPartyDetails;
+import com.example.demo.model.AdventureDetails;
+import com.example.demo.model.TrekkingDetails;
+import com.example.demo.model.BikeRidingDetails;
+import com.example.demo.model.TrekkingDetails;
 import com.example.demo.service.RewardService;
+import com.example.demo.service.SecretRewardService;
+import com.example.demo.repository.UserRewardRepository;
+import com.example.demo.model.SecretRewardPartner;
+import com.example.demo.model.UserReward;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -26,6 +41,12 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import org.springframework.web.multipart.MultipartFile;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Comparator;
 import java.util.UUID;
 import java.util.Set;
@@ -34,7 +55,7 @@ import java.util.stream.Collectors;
 import java.net.InetAddress;
 
 @Controller
-@RequestMapping("/events")
+@RequestMapping(value = "/events")
 public class EventController {
 
     @Autowired
@@ -57,6 +78,24 @@ public class EventController {
 
     @Autowired
     private RewardService rewardService;
+
+    @Autowired
+    private LadiesPartyDetailsRepository ladiesPartyDetailsRepository;
+
+    @Autowired
+    private AdventureDetailsRepository adventureDetailsRepository;
+
+    @Autowired
+    private TrekkingDetailsRepository trekkingDetailsRepository;
+
+    @Autowired
+    private BikeRidingDetailsRepository bikeRidingDetailsRepository;
+
+    @Autowired
+    private SecretRewardService secretRewardService;
+
+    @Autowired
+    private UserRewardRepository userRewardRepository;
 
     @Autowired
     private HttpServletRequest httpServletRequest;
@@ -136,10 +175,17 @@ public class EventController {
                 .filter(e -> e.getVotingEndDate() == null || e.getVotingEndDate().isAfter(LocalDateTime.now()))
                 .collect(Collectors.toList());
 
+        LocalDateTime eightDaysAgo = LocalDateTime.now().minusDays(8);
         List<Event> regularEvents = allItems.stream()
                 .filter(e -> {
                     String status = e.getStatus();
-                    return status == null || (!"VOTING".equals(status) && !"REJECTED".equals(status));
+                    if ("VOTING".equals(status) || "REJECTED".equals(status)) return false;
+                    
+                    if (e.getDateTime() != null && e.getDateTime().isBefore(eightDaysAgo)) {
+                        return false;
+                    }
+                    
+                    return true;
                 })
                 .collect(Collectors.toList());
 
@@ -164,10 +210,25 @@ public class EventController {
         }
         model.addAttribute("votedPollIds", votedPollIds);
 
+        // Fetch dynamic booking counts for displayed events
+        java.util.List<Long> allEventIds = java.util.stream.Stream.concat(
+            java.util.stream.Stream.concat(regularEvents.stream(), votingPolls.stream()),
+            trending.stream()
+        ).map(Event::getId).distinct().collect(Collectors.toList());
+
+        java.util.Map<Long, Long> bookingCounts = new java.util.HashMap<>();
+        if (!allEventIds.isEmpty()) {
+            java.util.List<Object[]> counts = eventRegistrationRepository.countActiveBookingsForEvents(allEventIds);
+            for (Object[] row : counts) {
+                bookingCounts.put((Long) row[0], (Long) row[1]);
+            }
+        }
+        model.addAttribute("bookingCounts", bookingCounts);
+
         return "events";
     }
 
-    @PostMapping("/{id}/poll-vote")
+    @RequestMapping(value = "/{id}/poll-vote", method = RequestMethod.POST)
     public String castPollVote(@PathVariable Long id, HttpSession session, HttpServletRequest request) {
         User user = getUserFromSession(session);
         if (user == null) return "redirect:/login";
@@ -233,11 +294,24 @@ public class EventController {
         }
     }
 
+    private void resolveExpiredEvents() {
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        java.util.List<Event> upcomingEvents = eventRepository.findAll().stream()
+                .filter(e -> "UPCOMING".equals(e.getStatus()) || "ONGOING".equals(e.getStatus()))
+                .filter(e -> e.getDateTime() != null && e.getDateTime().isBefore(now))
+                .collect(java.util.stream.Collectors.toList());
+        for (Event e : upcomingEvents) {
+            e.setStatus("COMPLETED");
+            eventRepository.save(e);
+        }
+    }
+
     // ─────────────────────────────────────────────────────────
     //  PUBLIC: Event Detail Page
     // ─────────────────────────────────────────────────────────
-    @GetMapping("/{id}")
+    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
     public String eventDetails(@PathVariable Long id, Model model, HttpSession session) {
+        resolveExpiredEvents();
         User user = getUserFromSession(session);
         boolean adminViewing = isAdmin(session);
 
@@ -263,12 +337,12 @@ public class EventController {
             }
         }
         boolean isRegistered = !userRegs.isEmpty();
-        long dbRegistrationCount = eventRegistrationRepository.countByEvent(event);
+        long dbRegistrationCount = eventRegistrationRepository.sumQuantityByEvent(event);
         long registrationCount = dbRegistrationCount;
         
         // Use -1 for unlimited spots
         Integer totalCapacity = event.getMaxParticipants();
-        if (event.getSeatTiers() != null && !event.getSeatTiers().isEmpty()) {
+        if (event.getSeatTiers() != null && !event.getSeatTiers().isEmpty() && event.getTotalRows() > 0) {
             totalCapacity = event.getSeatTiers().stream().mapToInt(EventSeatTier::getCapacity).sum();
             // sync maxParticipants for UI consistency if needed
         }
@@ -279,7 +353,7 @@ public class EventController {
 
         // Calculate minimum starting price for available seats
         Double minStartingPrice = null;
-        if (event.getSeatTiers() != null && !event.getSeatTiers().isEmpty()) {
+        if (event.getSeatTiers() != null && !event.getSeatTiers().isEmpty() && event.getTotalRows() > 0) {
             for (EventSeatTier tier : event.getSeatTiers()) {
                 int capacity = tier.getCapacity() != null ? tier.getCapacity() : 0;
                 int registered = tier.getRegisteredCount() != null ? tier.getRegisteredCount() : 0;
@@ -288,6 +362,15 @@ public class EventController {
                         minStartingPrice = tier.getPrice();
                     }
                 }
+            }
+        } else {
+            // For non-seated events, parse the base price
+            try {
+                if (spotsLeft != 0 && event.getPrice() != null && !event.getPrice().equalsIgnoreCase("Free")) {
+                    minStartingPrice = Double.parseDouble(event.getPrice().replaceAll("[^0-9.]", ""));
+                }
+            } catch (Exception e) {
+                // Ignore parsing errors
             }
         }
         
@@ -348,6 +431,24 @@ public class EventController {
         List<EventSeat> seats = event.getSeats();
         seats.sort(Comparator.comparing(EventSeat::getRowLabel).thenComparing(EventSeat::getSeatNumber));
 
+        // Fetch category-specific details based on the event's category
+        if ("House Party".equalsIgnoreCase(event.getCategory())) {
+            ladiesPartyDetailsRepository.findByEvent(event).ifPresent(lpd -> model.addAttribute("housePartyDetails", lpd));
+        } else if ("Adventure".equalsIgnoreCase(event.getCategory())) {
+            adventureDetailsRepository.findByEvent(event).ifPresent(ad -> model.addAttribute("adventureDetails", ad));
+        } else if ("Trekking".equalsIgnoreCase(event.getCategory())) {
+            trekkingDetailsRepository.findByEvent(event).ifPresent(td -> model.addAttribute("trekkingDetails", td));
+        } else if ("Bike Riding".equalsIgnoreCase(event.getCategory())) {
+            bikeRidingDetailsRepository.findByEvent(event).ifPresent(bd -> model.addAttribute("bikeRidingDetails", bd));
+        }
+
+        boolean isCompleted = ("COMPLETED".equalsIgnoreCase(event.getStatus())) ||
+                              (event.getDateTime() != null && event.getDateTime().isBefore(LocalDateTime.now()));
+        if (isCompleted && !"COMPLETED".equals(event.getStatus())) {
+            event.setStatus("COMPLETED");
+            eventRepository.save(event);
+        }
+        model.addAttribute("isCompleted", isCompleted);
         model.addAttribute("event", event);
         model.addAttribute("seats", seats);
         model.addAttribute("user", user);
@@ -362,10 +463,18 @@ public class EventController {
         return "event-registration";
     }
 
+    public boolean isEventCompletedOrCancelled(Event event) {
+        if (event == null) return true;
+        if ("COMPLETED".equalsIgnoreCase(event.getStatus()) || "CANCELLED".equalsIgnoreCase(event.getStatus())) {
+            return true;
+        }
+        return event.getDateTime() != null && event.getDateTime().isBefore(LocalDateTime.now());
+    }
+
     // ─────────────────────────────────────────────────────────
     //  PUBLIC VOTING
     // ─────────────────────────────────────────────────────────
-    @PostMapping("/{id}/vote/{regId}")
+    @RequestMapping(value = "/{id}/vote/{regId}", method = RequestMethod.POST)
     public String castVote(@PathVariable Long id, @PathVariable Long regId, HttpSession session) {
         User user = getUserFromSession(session);
         if (user == null) return "redirect:/login";
@@ -395,7 +504,7 @@ public class EventController {
     // ─────────────────────────────────────────────────────────
     //  SEATING: Hold seats for 5 minutes
     // ─────────────────────────────────────────────────────────
-    @PostMapping("/{id}/hold-seats")
+    @RequestMapping(value = "/{id}/hold-seats", method = RequestMethod.POST)
     @ResponseBody
     public Map<String, Object> holdSeats(@PathVariable Long id, @RequestBody List<Long> seatIds, HttpSession session) {
         Map<String, Object> response = new java.util.HashMap<>();
@@ -407,9 +516,9 @@ public class EventController {
         }
 
         Event event = eventRepository.findById(id).orElse(null);
-        if (event == null) {
+        if (event == null || isEventCompletedOrCancelled(event)) {
             response.put("success", false);
-            response.put("message", "Event not found.");
+            response.put("message", "This event has ended or been cancelled.");
             return response;
         }
 
@@ -426,13 +535,8 @@ public class EventController {
             }
         }
 
-        // Apply HOLD
-        for (EventSeat seat : seatsToHold) {
-            seat.setStatus("HOLD");
-            seat.setHoldExpiresAt(now.plusMinutes(5));
-            seat.setBookedByUser(user);
-        }
-        eventSeatRepository.saveAll(seatsToHold);
+        // DO NOT APPLY HOLD. Seats remain open until payment is completed.
+        // The check above ensures they are available at the time of selection.
 
         response.put("success", true);
         return response;
@@ -456,7 +560,7 @@ public class EventController {
     // ─────────────────────────────────────────────────────────
     //  REGISTER: Entry point — decides Free vs Paid
     // ─────────────────────────────────────────────────────────
-    @PostMapping("/{id}/register")
+    @RequestMapping(value = "/{id}/register", method = RequestMethod.POST)
     public String initiateRegistration(
             @PathVariable Long id,
             @RequestParam(required = false) String fullName,
@@ -467,16 +571,26 @@ public class EventController {
             @RequestParam(required = false) String selectedTier,
             @RequestParam(required = false) List<Long> selectedSeatIds,
             @RequestParam(defaultValue = "1") Integer quantity,
+            @RequestParam(required = false) Integer lp_age,
+            @RequestParam(required = false) String lp_city,
+            @RequestParam(required = false) String lp_emergencyContactName,
+            @RequestParam(required = false) String lp_emergencyContactMobile,
+            @RequestParam(required = false) String lp_dietaryPreference,
+            @RequestParam(required = false) String lp_specialRequests,
             HttpSession session) {
         User user = getUserFromSession(session);
         if (user == null) return "redirect:/login";
 
         Event event = eventRepository.findById(id).orElse(null);
-        if (event == null) return "redirect:/events";
+        if (event == null || isEventCompletedOrCancelled(event)) return "redirect:/events/" + id + "?error=event_completed";
 
         // If seat map is used, quantity is the number of seats selected
         if (selectedSeatIds != null && !selectedSeatIds.isEmpty()) {
             quantity = selectedSeatIds.size();
+        }
+        
+        if ("House Party".equalsIgnoreCase(event.getCategory())) {
+            LadiesPartyDetails lpd = ladiesPartyDetailsRepository.findByEvent(event).orElse(null);
         }
 
         // Store reg info in session temporarily for paid flow
@@ -488,30 +602,36 @@ public class EventController {
         session.setAttribute("regTier", selectedTier);
         session.setAttribute("regSeatIds", selectedSeatIds);
         session.setAttribute("regQuantity", quantity);
+        session.setAttribute("lp_age", lp_age);
+        session.setAttribute("lp_city", lp_city);
+        session.setAttribute("lp_emergencyContactName", lp_emergencyContactName);
+        session.setAttribute("lp_emergencyContactMobile", lp_emergencyContactMobile);
+        session.setAttribute("lp_dietaryPreference", lp_dietaryPreference);
+        session.setAttribute("lp_specialRequests", lp_specialRequests);
 
         if ("Paid".equalsIgnoreCase(event.getEntryFeeType()) || (event.getPrice() != null && !event.getPrice().equalsIgnoreCase("Free"))) {
             User dbUser = userRepository.findById(user.getId()).orElse(user);
             if (dbUser.isHasFreeEntry()) {
                 dbUser.setHasFreeEntry(false);
                 userRepository.save(dbUser);
-                return completeRegistration(event, dbUser, "FREE", fullName, email, phone, college, yearOfStudy, selectedTier, selectedSeatIds, quantity);
+                return completeRegistration(event, dbUser, "FREE", fullName, email, phone, college, yearOfStudy, selectedTier, selectedSeatIds, quantity, session);
             }
             return "redirect:/events/" + id + "/payment";
         } else {
-            return completeRegistration(event, user, "FREE", fullName, email, phone, college, yearOfStudy, selectedTier, selectedSeatIds, quantity);
+            return completeRegistration(event, user, "FREE", fullName, email, phone, college, yearOfStudy, selectedTier, selectedSeatIds, quantity, session);
         }
     }
 
     // ─────────────────────────────────────────────────────────
     //  PAYMENT: Show payment gateway page
     // ─────────────────────────────────────────────────────────
-    @GetMapping("/{id}/payment")
+    @RequestMapping(value = "/{id}/payment", method = RequestMethod.GET)
     public String showPaymentPage(@PathVariable Long id, Model model, HttpSession session) {
         User user = getUserFromSession(session);
         if (user == null) return "redirect:/login";
 
         Event event = eventRepository.findById(id).orElse(null);
-        if (event == null) return "redirect:/events";
+        if (event == null || isEventCompletedOrCancelled(event)) return "redirect:/events/" + id + "?error=event_completed";
         
         Integer quantity = (Integer) session.getAttribute("regQuantity");
         if (quantity == null) quantity = 1;
@@ -554,7 +674,7 @@ public class EventController {
     // ─────────────────────────────────────────────────────────
     //  PAYMENT: Process payment (simulate success)
     // ─────────────────────────────────────────────────────────
-    @PostMapping("/{id}/payment/confirm")
+    @RequestMapping(value = "/{id}/payment/confirm", method = RequestMethod.POST)
     @SuppressWarnings("unchecked")
     public String confirmPayment(
             @PathVariable Long id,
@@ -566,7 +686,7 @@ public class EventController {
         if (user == null) return "redirect:/login";
 
         Event event = eventRepository.findById(id).orElse(null);
-        if (event == null) return "redirect:/events";
+        if (event == null || isEventCompletedOrCancelled(event)) return "redirect:/events/" + id + "?error=event_completed";
 
         // Retrieve registration info stored in session
         String fullName    = (String) session.getAttribute("regFullName");
@@ -587,13 +707,26 @@ public class EventController {
             paymentStatus = "PAID (DISCOUNTED)";
         }
 
-        return completeRegistration(event, dbUser, paymentStatus, fullName, email, phone, college, yearOfStudy, selectedTier, selectedSeatIds, quantity);
+        return completeRegistration(event, dbUser, paymentStatus, fullName, email, phone, college, yearOfStudy, selectedTier, selectedSeatIds, quantity, session);
     }
 
     // ─────────────────────────────────────────────────────────
     //  TICKET: Show confirmation + ticket
     // ─────────────────────────────────────────────────────────
-    @GetMapping("/ticket/{ticketId}")
+    @RequestMapping(value = "/booking-success", method = RequestMethod.GET)
+    public String showBookingSuccess(@RequestParam String ticketId, Model model, HttpSession session) {
+        User user = getUserFromSession(session);
+        if (user == null) return "redirect:/login";
+
+        EventRegistration reg = eventRegistrationRepository.findByTicketId(ticketId).orElse(null);
+        if (reg == null) return "redirect:/events";
+
+        model.addAttribute("registration", reg);
+        model.addAttribute("user", user);
+        return "booking-success";
+    }
+
+    @RequestMapping(value = "/ticket/{ticketId}", method = RequestMethod.GET)
     public String showTicket(@PathVariable String ticketId, Model model, HttpSession session, HttpServletRequest request) {
         User user = getUserFromSession(session);
         boolean adminViewing = isAdmin(session);
@@ -648,6 +781,11 @@ public class EventController {
         model.addAttribute("registration", reg);
         model.addAttribute("event", reg.getEvent());
         
+        if (reg.getEvent().isEnableSecretRewards() && reg.getUser() != null) {
+            userRewardRepository.findByUserAndEvent(reg.getUser(), reg.getEvent())
+                    .ifPresent(reward -> model.addAttribute("userReward", reward));
+        }
+
         boolean canSeePII = adminViewing || (user != null && reg.getUser() != null && reg.getUser().getId().equals(user.getId()));
         model.addAttribute("canSeePII", canSeePII);
         
@@ -659,13 +797,19 @@ public class EventController {
     // ─────────────────────────────────────────────────────────
     //  ADMIN: Manage Events
     // ─────────────────────────────────────────────────────────
-    @GetMapping("/admin/manage")
-    public String adminManageEvents(Model model, HttpSession session) {
+    @RequestMapping(value = "/admin/manage", method = RequestMethod.GET)
+    public String adminManageEvents(@RequestParam(required = false) String status, Model model, HttpSession session) {
         if (!isAdmin(session)) return "redirect:/login";
 
-        List<Event> events = eventRepository.findAll();
+        List<Event> events;
+        if (status != null && !status.isEmpty()) {
+            events = eventRepository.findByStatusOrderByCreatedAtDesc(status);
+        } else {
+            events = eventRepository.findAll();
+        }
+        
         model.addAttribute("events", events);
-        model.addAttribute("totalEvents", events.size());
+        model.addAttribute("totalEvents", eventRepository.count());
         model.addAttribute("upcomingCount", eventRepository.countByStatus("UPCOMING"));
         model.addAttribute("ongoingCount", eventRepository.countByStatus("ONGOING"));
         model.addAttribute("completedCount", eventRepository.countByStatus("COMPLETED"));
@@ -673,26 +817,27 @@ public class EventController {
         return "admin-events";
     }
 
-    @GetMapping("/admin/create")
+    @RequestMapping(value = "/admin/create", method = RequestMethod.GET)
     public String showCreateEventForm(Model model, HttpSession session) {
         if (!isAdmin(session)) return "redirect:/login";
         model.addAttribute("event", new Event());
         return "admin-create-event";
     }
 
-    @PostMapping("/admin/create")
+    @RequestMapping(value = "/admin/create", method = RequestMethod.POST)
     public String createEvent(
+            @ModelAttribute("formEvent") Event formEvent,
             @RequestParam String title,
             @RequestParam String category,
             @RequestParam String description,
             @RequestParam String dateTime,
-            @RequestParam String venue,
+            @RequestParam(required = false) String venue,
             @RequestParam String entryFeeType,
             @RequestParam(required = false) String price,
             @RequestParam Integer maxParticipants,
             @RequestParam(required = false, defaultValue = "Offline") String eventMode,
             @RequestParam(required = false) String meetingLink,
-            @RequestParam(required = false) String imageUrl,
+            @RequestParam(required = false) MultipartFile imageFile,
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String votingStartDate,
             @RequestParam(required = false) String votingEndDate,
@@ -703,6 +848,9 @@ public class EventController {
             @RequestParam(required = false, defaultValue = "0.0") Double vipPrice,
             @RequestParam(required = false, defaultValue = "0.0") Double regularPrice,
             @RequestParam(required = false, defaultValue = "false") boolean finalVotingEnabled,
+            @RequestParam(required = false) Double latitude,
+            @RequestParam(required = false) Double longitude,
+            HttpServletRequest request,
             HttpSession session) {
 
         if (!isAdmin(session)) return "redirect:/login";
@@ -719,6 +867,20 @@ public class EventController {
         event.setEventMode(eventMode);
         event.setMeetingLink(meetingLink);
         event.setFinalVotingEnabled(finalVotingEnabled);
+        event.setLatitude(latitude);
+        event.setLongitude(longitude);
+
+        // Secret Rewards Binding
+        event.setEnableSecretRewards(formEvent.isEnableSecretRewards());
+        if (formEvent.isEnableSecretRewards() && formEvent.getSecretRewards() != null) {
+            for (SecretRewardPartner partner : formEvent.getSecretRewards()) {
+                if (partner.getBusinessName() != null && !partner.getBusinessName().isBlank()) {
+                    partner.setRemainingQuantity(partner.getQuantity());
+                    partner.setEvent(event);
+                    event.getSecretRewards().add(partner);
+                }
+            }
+        }
 
         if ("Free".equals(entryFeeType)) {
             event.setPrice("Free");
@@ -730,9 +892,25 @@ public class EventController {
             event.setDateTime(LocalDateTime.parse(dateTime, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm")));
         } catch (Exception ignored) {}
 
-        // Use provided URL or fallback
-        if (imageUrl != null && !imageUrl.isBlank()) {
-            event.setImageUrl(imageUrl);
+        // Handle File Upload
+        if (imageFile != null && !imageFile.isEmpty()) {
+            try {
+                String originalFilename = imageFile.getOriginalFilename();
+                String extension = "";
+                if(originalFilename != null && originalFilename.contains(".")) {
+                    extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+                }
+                String newFilename = UUID.randomUUID().toString() + extension;
+                Path uploadDir = Paths.get("src/main/resources/static/uploads");
+                if (!Files.exists(uploadDir)) {
+                    Files.createDirectories(uploadDir);
+                }
+                Path filePath = uploadDir.resolve(newFilename);
+                Files.copy(imageFile.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+                event.setImageUrl("/uploads/" + newFilename);
+            } catch (IOException e) {
+                event.setImageUrl(getDefaultImage(category));
+            }
         } else {
             event.setImageUrl(getDefaultImage(category));
         }
@@ -775,10 +953,163 @@ public class EventController {
         generateSeatGrid(event);
 
         eventRepository.save(event);
+        
+        if ("House Party".equalsIgnoreCase(category)) {
+            LadiesPartyDetails lpd = new LadiesPartyDetails();
+            lpd.setEvent(event);
+            lpd.setTheme(request.getParameter("lp_theme"));
+            lpd.setPartyType(request.getParameter("lp_partyType"));
+            lpd.setDressCode(request.getParameter("lp_dressCode"));
+            lpd.setAgeGroup(request.getParameter("lp_ageGroup"));
+            lpd.setVenueName(request.getParameter("lp_venueName"));
+            lpd.setActivities(request.getParameter("lp_activities"));
+            
+            ladiesPartyDetailsRepository.save(lpd);
+        }
+
+        if ("Adventure".equalsIgnoreCase(category)) {
+            AdventureDetails ad = new AdventureDetails();
+            ad.setEvent(event);
+            ad.setAdventureType(request.getParameter("adv_type"));
+            ad.setDifficultyLevel(request.getParameter("adv_difficulty"));
+            ad.setAdventureDuration(request.getParameter("adv_duration"));
+            
+            try {
+                if(request.getParameter("adv_distance") != null && !request.getParameter("adv_distance").isBlank())
+                    ad.setDistanceCovered(Double.parseDouble(request.getParameter("adv_distance")));
+            } catch(Exception e) {}
+            
+            ad.setElevation(request.getParameter("adv_elevation"));
+            ad.setFitnessLevelRequired(request.getParameter("adv_fitness"));
+            
+            try {
+                if(request.getParameter("adv_minAge") != null && !request.getParameter("adv_minAge").isBlank())
+                    ad.setMinAge(Integer.parseInt(request.getParameter("adv_minAge")));
+            } catch(Exception e) {}
+            
+            try {
+                if(request.getParameter("adv_maxAge") != null && !request.getParameter("adv_maxAge").isBlank())
+                    ad.setMaxAge(Integer.parseInt(request.getParameter("adv_maxAge")));
+            } catch(Exception e) {}
+            
+            String[] safetyEquipments = request.getParameterValues("adv_safetyEquipment");
+            if (safetyEquipments != null && safetyEquipments.length > 0) {
+                ad.setSafetyEquipment(String.join(", ", safetyEquipments));
+            }
+            
+            ad.setThingsToBring(request.getParameter("adv_thingsToBring"));
+            ad.setMedicalCertificateRequired("Yes".equalsIgnoreCase(request.getParameter("adv_medical")));
+            ad.setProfessionalGuideAvailable("Yes".equalsIgnoreCase(request.getParameter("adv_guide")));
+            ad.setInsuranceIncluded("Yes".equalsIgnoreCase(request.getParameter("adv_insurance")));
+            ad.setEmergencyRescueSupport("Yes".equalsIgnoreCase(request.getParameter("adv_rescue")));
+            ad.setFoodIncluded(request.getParameter("adv_food"));
+            ad.setStayIncluded(request.getParameter("adv_stay"));
+            ad.setTransportationIncluded("Yes".equalsIgnoreCase(request.getParameter("adv_transport")));
+            ad.setPhotographyIncluded("Yes".equalsIgnoreCase(request.getParameter("adv_photography")));
+            
+            adventureDetailsRepository.save(ad);
+        }
+
+        if ("Trekking".equalsIgnoreCase(category)) {
+            TrekkingDetails td = new TrekkingDetails();
+            td.setEvent(event);
+            td.setTrekType(request.getParameter("trek_type"));
+            td.setTrekDifficulty(request.getParameter("trek_difficulty"));
+            
+            try {
+                if(request.getParameter("trek_distance") != null && !request.getParameter("trek_distance").isBlank())
+                    td.setTrekDistance(Double.parseDouble(request.getParameter("trek_distance")));
+            } catch(Exception e) {}
+            
+            td.setEstimatedDuration(request.getParameter("trek_duration"));
+            td.setMaxElevation(request.getParameter("trek_elevation"));
+            td.setTrailType(request.getParameter("trek_trailType"));
+            td.setFitnessLevel(request.getParameter("trek_fitness"));
+            
+            try {
+                if(request.getParameter("trek_minAge") != null && !request.getParameter("trek_minAge").isBlank())
+                    td.setMinAge(Integer.parseInt(request.getParameter("trek_minAge")));
+            } catch(Exception e) {}
+            
+            try {
+                if(request.getParameter("trek_maxAge") != null && !request.getParameter("trek_maxAge").isBlank())
+                    td.setMaxAge(Integer.parseInt(request.getParameter("trek_maxAge")));
+            } catch(Exception e) {}
+            
+            td.setReportingPoint(request.getParameter("trek_reportingPoint"));
+            td.setReportingTime(request.getParameter("trek_reportingTime"));
+            td.setDepartureTime(request.getParameter("trek_departureTime"));
+            td.setReturnTime(request.getParameter("trek_returnTime"));
+            
+            String[] inclusions = request.getParameterValues("trek_inclusions");
+            if (inclusions != null && inclusions.length > 0) {
+                td.setTrekInclusions(String.join(", ", inclusions));
+            }
+            
+            td.setParticipantsMustCarry(request.getParameter("trek_mustCarry"));
+            td.setMedicalCertificateRequired("Yes".equalsIgnoreCase(request.getParameter("trek_medical")));
+            td.setEmergencyRescueSupport("Yes".equalsIgnoreCase(request.getParameter("trek_rescue")));
+            td.setForestPermissionRequired("Yes".equalsIgnoreCase(request.getParameter("trek_forest")));
+            td.setMobileNetworkAvailability(request.getParameter("trek_network"));
+            td.setWashroomFacility("Yes".equalsIgnoreCase(request.getParameter("trek_washroom")));
+            td.setDrinkingWaterAvailability("Yes".equalsIgnoreCase(request.getParameter("trek_drinkingWater")));
+            td.setTrekSchedule(request.getParameter("trek_schedule"));
+            
+            trekkingDetailsRepository.save(td);
+        }
+
+        if ("Bike Riding".equalsIgnoreCase(category)) {
+            BikeRidingDetails bd = new BikeRidingDetails();
+            bd.setEvent(event);
+            bd.setRideType(request.getParameter("bike_type"));
+            
+            String[] bikeTypes = request.getParameterValues("bike_allowed");
+            if (bikeTypes != null && bikeTypes.length > 0) {
+                bd.setBikeTypeAllowed(String.join(", ", bikeTypes));
+            }
+            
+            bd.setMinEngineCapacity(request.getParameter("bike_engine"));
+            bd.setRidingExperience(request.getParameter("bike_experience"));
+            bd.setStartPoint(request.getParameter("bike_startPoint"));
+            bd.setDestination(request.getParameter("bike_destination"));
+            
+            try {
+                if(request.getParameter("bike_distance") != null && !request.getParameter("bike_distance").isBlank())
+                    bd.setTotalDistance(Double.parseDouble(request.getParameter("bike_distance")));
+            } catch(Exception e) {}
+            
+            bd.setEstimatedDuration(request.getParameter("bike_duration"));
+            bd.setReportingTime(request.getParameter("bike_reportingTime"));
+            bd.setRideStartTime(request.getParameter("bike_startTime"));
+            bd.setEstimatedFinishTime(request.getParameter("bike_finishTime"));
+            
+            String[] safetyGears = request.getParameterValues("bike_safety");
+            if (safetyGears != null && safetyGears.length > 0) {
+                bd.setSafetyGearMandatory(String.join(", ", safetyGears));
+            }
+            
+            String[] supports = request.getParameterValues("bike_support");
+            if (supports != null && supports.length > 0) {
+                bd.setSupportAvailable(String.join(", ", supports));
+            }
+            
+            String[] inclusions = request.getParameterValues("bike_inclusions");
+            if (inclusions != null && inclusions.length > 0) {
+                bd.setRideInclusions(String.join(", ", inclusions));
+            }
+            
+            bd.setRiderRequirements(request.getParameter("bike_requirements"));
+            bd.setFuelPolicy(request.getParameter("bike_fuel"));
+            bd.setRideDifficulty(request.getParameter("bike_difficulty"));
+            bd.setRoadType(request.getParameter("bike_road"));
+            
+            bikeRidingDetailsRepository.save(bd);
+        }
+
         return "redirect:/events/admin/manage?created=true";
     }
 
-    @GetMapping("/admin/edit/{id}")
+    @RequestMapping(value = "/admin/edit/{id}", method = RequestMethod.GET)
     public String showEditEventForm(@PathVariable Long id, Model model, HttpSession session) {
         if (!isAdmin(session)) return "redirect:/login";
         Event event = eventRepository.findById(id).orElse(null);
@@ -787,21 +1118,21 @@ public class EventController {
         return "admin-create-event";
     }
 
-    @PostMapping("/admin/edit/{id}")
+    @RequestMapping(value = "/admin/edit/{id}", method = RequestMethod.POST)
     public String updateEvent(
             @PathVariable Long id,
             @RequestParam String title,
             @RequestParam String category,
             @RequestParam String description,
             @RequestParam String dateTime,
-            @RequestParam String venue,
+            @RequestParam(required = false) String venue,
             @RequestParam String entryFeeType,
             @RequestParam(required = false) String price,
             @RequestParam Integer maxParticipants,
             @RequestParam(required = false, defaultValue = "Offline") String eventMode,
             @RequestParam(required = false) String meetingLink,
             @RequestParam String status,
-            @RequestParam(required = false) String imageUrl,
+            @RequestParam(required = false) MultipartFile imageFile,
             @RequestParam(required = false) String votingStartDate,
             @RequestParam(required = false) String votingEndDate,
             @RequestParam(required = false, defaultValue = "0") Integer totalRows,
@@ -811,6 +1142,8 @@ public class EventController {
             @RequestParam(required = false, defaultValue = "0.0") Double vipPrice,
             @RequestParam(required = false, defaultValue = "0.0") Double regularPrice,
             @RequestParam(required = false, defaultValue = "false") boolean finalVotingEnabled,
+            @RequestParam(required = false) Double latitude,
+            @RequestParam(required = false) Double longitude,
             HttpSession session) {
 
         if (!isAdmin(session)) return "redirect:/login";
@@ -826,6 +1159,8 @@ public class EventController {
         event.setStatus(status);
         event.setMeetingLink(meetingLink);
         event.setFinalVotingEnabled(finalVotingEnabled);
+        event.setLatitude(latitude);
+        event.setLongitude(longitude);
 
         if ("Free".equals(entryFeeType)) {
             event.setPrice("Free");
@@ -846,11 +1181,26 @@ public class EventController {
             event.setDateTime(LocalDateTime.parse(dateTime, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm")));
         } catch (Exception ignored) {}
 
-        // Update imageUrl if a new one is provided
-        if (imageUrl != null && !imageUrl.isBlank()) {
-            event.setImageUrl(imageUrl);
+        // Handle File Upload for edit
+        if (imageFile != null && !imageFile.isEmpty()) {
+            try {
+                String originalFilename = imageFile.getOriginalFilename();
+                String extension = "";
+                if(originalFilename != null && originalFilename.contains(".")) {
+                    extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+                }
+                String newFilename = UUID.randomUUID().toString() + extension;
+                Path uploadDir = Paths.get("src/main/resources/static/uploads");
+                if (!Files.exists(uploadDir)) {
+                    Files.createDirectories(uploadDir);
+                }
+                Path filePath = uploadDir.resolve(newFilename);
+                Files.copy(imageFile.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+                event.setImageUrl("/uploads/" + newFilename);
+            } catch (IOException e) {
+                // Keep existing
+            }
         }
-        // else keep existing imageUrl unchanged
 
         // Update Seat Grid Configuration
         boolean reGenGrid = false;
@@ -894,7 +1244,7 @@ public class EventController {
     }
 
     @Transactional
-    @PostMapping("/admin/delete/{id}")
+    @RequestMapping(value = "/admin/delete/{id}", method = RequestMethod.POST)
     public String deleteEvent(@PathVariable Long id, HttpSession session) {
         if (!isAdmin(session)) return "redirect:/login";
         
@@ -925,7 +1275,7 @@ public class EventController {
     // ─────────────────────────────────────────────────────────
     //  ADMIN: Attendance Dashboard
     // ─────────────────────────────────────────────────────────
-    @GetMapping("/admin/{id}/attendance")
+    @RequestMapping(value = "/admin/{id}/attendance", method = RequestMethod.GET)
     public String adminAttendancePage(@PathVariable Long id, Model model, HttpSession session) {
         if (!isAdmin(session)) return "redirect:/login";
 
@@ -943,7 +1293,7 @@ public class EventController {
     }
 
     /** Mark event as ONGOING */
-    @PostMapping("/admin/{id}/start")
+    @RequestMapping(value = "/admin/{id}/start", method = RequestMethod.POST)
     public String startEvent(@PathVariable Long id, HttpSession session) {
         if (!isAdmin(session)) return "redirect:/login";
         Event event = eventRepository.findById(id).orElse(null);
@@ -955,7 +1305,7 @@ public class EventController {
     }
 
     /** Mark event as COMPLETED and Assign XP/Results */
-    @PostMapping("/admin/{id}/complete")
+    @RequestMapping(value = "/admin/{id}/complete", method = RequestMethod.POST)
     public String completeEvent(
             @PathVariable Long id,
             @RequestParam(required = false) List<Long> winnerIds,
@@ -1041,7 +1391,7 @@ public class EventController {
         return "redirect:/events/admin/" + id + "/attendance?completed=true";
     }
 
-    @PostMapping("/admin/{id}/nominate-finalists")
+    @RequestMapping(value = "/admin/{id}/nominate-finalists", method = RequestMethod.POST)
     public String nominateFinalists(
             @PathVariable Long id,
             @RequestParam(required = false) Long finalist1_id,
@@ -1097,7 +1447,7 @@ public class EventController {
     }
 
     /** Mark attendance for a specific ticket ID (offline scan) */
-    @PostMapping("/admin/{id}/attendance/mark")
+    @RequestMapping(value = "/admin/{id}/attendance/mark", method = RequestMethod.POST)
     public String markAttendance(@PathVariable Long id,
                                   @RequestParam String ticketId,
                                   HttpSession session) {
@@ -1114,12 +1464,13 @@ public class EventController {
         reg.setAttendedAt(LocalDateTime.now());
         eventRegistrationRepository.save(reg);
         
+        secretRewardService.assignReward(reg);
         rewardService.awardAttendance(reg.getUser()); // award coins for attending 🪙
         return "redirect:/events/admin/" + id + "/attendance?marked=" + ticketId;
     }
 
     /** Mark ALL registered participants as attended */
-    @PostMapping("/admin/{id}/attendance/mark-all")
+    @RequestMapping(value = "/admin/{id}/attendance/mark-all", method = RequestMethod.POST)
     public String markAllAttendance(@PathVariable Long id, 
                                      @RequestParam(required = false) String next, 
                                      HttpSession session) {
@@ -1131,6 +1482,7 @@ public class EventController {
                 if (!reg.isAttendanceMarked()) {
                     reg.setAttendanceMarked(true);
                     reg.setAttendedAt(LocalDateTime.now());
+                    secretRewardService.assignReward(reg);
                     rewardService.awardAttendance(reg.getUser()); // Coins for attending 🪙
                 }
             }
@@ -1144,7 +1496,7 @@ public class EventController {
     // ─────────────────────────────────────────────────────────
     //  STUDENT: Join Online Event (auto-marks attendance)
     // ─────────────────────────────────────────────────────────
-    @PostMapping("/{id}/join")
+    @RequestMapping(value = "/{id}/join", method = RequestMethod.POST)
     public String joinOnlineEvent(@PathVariable Long id, HttpSession session) {
         User user = getUserFromSession(session);
         if (user == null) return "redirect:/login";
@@ -1158,6 +1510,7 @@ public class EventController {
             reg.setAttendanceMarked(true);
             reg.setAttendedAt(LocalDateTime.now());
             eventRegistrationRepository.save(reg);
+            secretRewardService.assignReward(reg);
             rewardService.awardAttendance(user); // Zen Coins for joining 🪙
         }
 
@@ -1175,13 +1528,13 @@ public class EventController {
     private String completeRegistration(Event event, User user, String paymentStatus,
                                          String fullName, String email, String phone,
                                          String college, String yearOfStudy, String selectedTier,
-                                         List<Long> selectedSeatIds, Integer quantity) {
+                                         List<Long> selectedSeatIds, Integer quantity, HttpSession session) {
         
         if (quantity == null || quantity < 1) quantity = 1;
 
         // Enforce seat limit in backend
         if (event.getMaxParticipants() != null && event.getMaxParticipants() > 0) {
-            long currentCount = eventRegistrationRepository.countByEvent(event);
+            long currentCount = eventRegistrationRepository.sumQuantityByEvent(event);
             if (currentCount + quantity > event.getMaxParticipants()) {
                 return "redirect:/events/" + event.getId() + "?error=full";
             }
@@ -1210,6 +1563,14 @@ public class EventController {
         // Individual Seats Check & Update
         if (selectedSeatIds != null && !selectedSeatIds.isEmpty()) {
             List<EventSeat> seatsToBook = eventSeatRepository.findAllById(selectedSeatIds);
+            
+            // Re-verify that none of the selected seats were booked by someone else during the payment flow
+            for (EventSeat seat : seatsToBook) {
+                if ("BOOKED".equals(seat.getStatus())) {
+                    return "redirect:/events/" + event.getId() + "?error=seat_unavailable";
+                }
+            }
+
             for (EventSeat seat : seatsToBook) {
                 seat.setStatus("BOOKED");
                 seat.setBookedByUser(user);
@@ -1237,10 +1598,27 @@ public class EventController {
         reg.setYearOfStudy(yearOfStudy);
         reg.setQuantity(quantity);
         reg.setTotalPrice(totalPrice);
+        
+        try {
+            if (session.getAttribute("lp_age") != null) reg.setAge((Integer) session.getAttribute("lp_age"));
+            if (session.getAttribute("lp_city") != null) reg.setCity((String) session.getAttribute("lp_city"));
+            if (session.getAttribute("lp_emergencyContactName") != null) reg.setEmergencyContactName((String) session.getAttribute("lp_emergencyContactName"));
+            if (session.getAttribute("lp_emergencyContactMobile") != null) reg.setEmergencyContactMobile((String) session.getAttribute("lp_emergencyContactMobile"));
+            if (session.getAttribute("lp_dietaryPreference") != null) reg.setDietaryPreference((String) session.getAttribute("lp_dietaryPreference"));
+            if (session.getAttribute("lp_specialRequests") != null) reg.setSpecialRequests((String) session.getAttribute("lp_specialRequests"));
+            
+            session.removeAttribute("lp_age");
+            session.removeAttribute("lp_city");
+            session.removeAttribute("lp_emergencyContactName");
+            session.removeAttribute("lp_emergencyContactMobile");
+            session.removeAttribute("lp_dietaryPreference");
+            session.removeAttribute("lp_specialRequests");
+        } catch (Exception e) {}
+        
         eventRegistrationRepository.save(reg);
         eventRepository.save(event); // Save the incremented tier count
         rewardService.awardRegistration(user); // Award coins for registering 🍪
-        return "redirect:/events/ticket/" + reg.getTicketId() + "?success=true";
+        return "redirect:/events/booking-success?ticketId=" + reg.getTicketId();
     }
 
     private void generateSeatGrid(Event event) {

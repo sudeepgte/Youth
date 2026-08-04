@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 
 <head>
@@ -588,6 +588,7 @@
 
         .input-container input {
             flex: 1;
+            min-width: 0;
             border: none;
             outline: none;
             padding: 10px 12px;
@@ -703,6 +704,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
         }
 
         .header-icon:hover {
@@ -1135,7 +1137,7 @@
         }
 
         .chat-area.vanish-active .messages-area::before {
-            content: "🤫 🤫 🤫 🤫 🤫 🤫 🤫 🤫 🤫 🤫 🤫 🤫 🤫 🤫 🤫 🤫 🤫 🤫 🤫 🤫 🤫 🤫 🤫 🤫";
+            content: "ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤« ðŸ¤«";
             position: absolute;
             top: 0;
             left: 0;
@@ -1249,25 +1251,59 @@
             display: block;
         }
 
-        /* Media Queries for Responsive Design */
         @media (max-width: 768px) {
-            .sidebar {
-                width: 80px;
+            body .dashboard-container {
+                grid-template-columns: 1fr;
+                margin-top: calc(var(--dashboard-nav-height));
+                padding: 0;
+                gap: 0;
             }
-
-            .chat-sidebar-header h1,
-            .search-container,
-            .conv-info {
-                display: none;
+            body .content-main {
+                border-right: none !important;
+                height: calc(100dvh - var(--dashboard-nav-height)) !important;
             }
-
-            .conv-item {
-                justify-content: center;
-                padding: 15px 0;
+            .app-container { 
+                position: relative; 
+                border-left: none; 
+                border-right: none; 
+                height: calc(100dvh - var(--dashboard-nav-height)) !important;
+                overflow: hidden;
             }
-
-            .avatar-container {
-                margin-right: 0;
+            .chat-sidebar { width: 100% !important; border-right: none; }
+            
+            .chat-main { 
+                display: none !important; 
+                position: absolute; 
+                top: 0; left: 0; right: 0; bottom: 0; 
+                z-index: 20; 
+                background: var(--bg-color); 
+                height: 100% !important;
+                overflow: hidden;
+            }
+            
+            .app-container.mobile-chat-active .chat-sidebar { display: none !important; }
+            .app-container.mobile-chat-active .chat-main { display: flex !important; width: 100% !important; }
+            
+            .mobile-back-btn { display: flex !important; }
+            
+            /* Input and Send button mobile layout enhancements */
+            .input-area {
+                padding: 10px 8px !important;
+                background: var(--bg-color) !important;
+                border-top: 1px solid var(--border-color) !important;
+            }
+            .input-container {
+                padding: 4px 8px !important;
+            }
+            .input-container input {
+                padding: 8px 6px !important;
+                font-size: 14px !important;
+            }
+            #sendBtn {
+                display: flex !important;
+            }
+            #voiceBtn {
+                display: none !important;
             }
         }
 
@@ -1348,6 +1384,25 @@
             border-radius: 8px;
             font-weight: 600;
             cursor: pointer;
+        }
+
+        .msg-sender-name {
+            font-family: 'Inter', 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            color: #54656F;
+            margin-bottom: 8px;
+            margin-top: 12px;
+            padding: 0;
+            line-height: normal;
+        }
+        .msg-sender-name.sent {
+            align-self: flex-end;
+            margin-right: 2px;
+        }
+        .msg-sender-name.received {
+            align-self: flex-start;
+            margin-left: 2px;
         }
 
         /* Message Actions & Reactions */
@@ -1736,23 +1791,39 @@
 </head>
 <body style="overflow: hidden; height: 100vh; margin: 0;">
     <!-- Navbar -->
+    <!-- Mobile Sidebar Overlay -->
+    <div class="mobile-menu-overlay" onclick="document.querySelector('.sidebar').classList.remove('mobile-open'); this.classList.remove('active');"></div>
+
     <nav class="dashboard-navbar">
-        <a class="dashboard-logo" href="/home">Zentrix</a>
+        <button class="mobile-menu-btn" onclick="const s=document.querySelector('.sidebar');if(s)s.classList.toggle('mobile-open'); const o=document.querySelector('.mobile-menu-overlay');if(o)o.classList.toggle('active');" style="display:none; background:none; border:none; color:var(--text-primary); font-size:20px; cursor:pointer; margin-right:15px; margin-left: 5px; padding: 0;">
+            <i class="fas fa-bars"></i>
+        </button>
+        <a class="dashboard-logo" th:href="@{/home}" style="display: inline-flex; flex-direction: column; align-items: center; text-decoration: none; line-height: 1.1; margin-right: 15px;">
+    <svg width="28" height="28" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <linearGradient id="yg" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#6b21a8" />
+                <stop offset="50%" stop-color="#2563eb" />
+                <stop offset="100%" stop-color="#0ea5e9" />
+            </linearGradient>
+        </defs>
+        <circle cx="50" cy="22" r="12" fill="url(#yg)" />
+        <path d="M 25 25 Q 40 50 45 65 L 45 90 Q 55 90 55 65 Q 60 50 80 25 Q 65 45 55 55 L 45 55 Q 35 45 25 25 Z" fill="url(#yg)" />
+        <path d="M 15 60 Q 50 90 90 40 Q 80 50 50 80 Q 25 70 15 60 Z" fill="url(#yg)" />
+        <polygon points="75,10 80,15 85,10 80,5" fill="#0ea5e9" />
+    </svg>
+    <span style="font-size: 11px; font-weight: 800; color: #1e3a8a; letter-spacing: 1px; margin-top: 2px;">YOUTHIAN</span>
+</a>
         <div class="dashboard-spacer"></div>
         <div class="dashboard-nav-links">
-            <a href="/dashboard"><i class="fas fa-home"></i></a>
-            <a href="/explore"><i class="fas fa-compass"></i></a>
+            <a th:href="@{/dashboard}"><i class="fas fa-home"></i></a>
+            <a th:href="@{/explore}"><i class="fas fa-compass"></i></a>
             <div class="profile-dropdown">
-                <a href="/profile">
+                <a th:href="@{/profile}">
                     <img th:src="${currentUser != null and currentUser.profilePhotoUrl != null ? currentUser.profilePhotoUrl : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=1780&auto=format&fit=crop'}"
                         class="user-avatar" style="width:32px; height:32px; border:none;">
                 </a>
-                <div class="dropdown-menu">
-                    <a href="/profile" class="dropdown-item"><i class="fas fa-user-circle"></i> View Profile</a>
-                    <a href="/settings" class="dropdown-item"><i class="fas fa-cog"></i> Settings</a>
-                    <div class="dropdown-divider"></div>
-                    <a href="/logout" class="dropdown-item" style="color: #ff4444;"><i class="fas fa-sign-out-alt"></i> Logout</a>
-                </div>
+
             </div>
         </div>
     </nav>
@@ -1760,18 +1831,19 @@
     <div class="dashboard-container">
         <!-- Sidebar Navigation -->
         <aside class="sidebar" style="height: calc(100vh - var(--dashboard-nav-height));">
-            <a href="/dashboard" class="sidebar-link"><i class="fas fa-home"></i> Home</a>
-            <a href="/explore" class="sidebar-link"><i class="fas fa-compass"></i> Explore</a>
-            <a href="/events" class="sidebar-link"><i class="fas fa-calendar-alt"></i> Events</a>
-            <a href="/battles" class="sidebar-link"><i class="fas fa-fire"></i> Battle Arena</a>
-            <a href="/achievements" class="sidebar-link"><i class="fas fa-trophy"></i> Achievements</a>
-            <a href="/messages" class="sidebar-link active"><i class="fas fa-comment-dots"></i> Chat</a>
-            <a href="/reels" class="sidebar-link"><i class="fas fa-film"></i> Reels</a>
-            <a href="/profile" class="sidebar-link"><i class="fas fa-user"></i> Profile</a>
-            <a href="/games" class="sidebar-link"><i class="fas fa-gamepad"></i> Games</a>
-            <a href="/music" class="sidebar-link"><i class="fas fa-music"></i> Music</a>
+            <a th:href="@{/dashboard}" class="sidebar-link"><i class="fas fa-home"></i> Home</a>
+            <a th:href="@{/explore}" class="sidebar-link"><i class="fas fa-compass"></i> Explore</a>
+            <a th:href="@{/events}" class="sidebar-link"><i class="fas fa-calendar-alt"></i> Events</a>
+            <a th:href="@{/battles}" class="sidebar-link"><i class="fas fa-fire"></i> Battle Arena</a>
+            <a th:href="@{/achievements}" class="sidebar-link"><i class="fas fa-trophy"></i> Achievements</a>
+            <a th:href="@{/messages}" class="sidebar-link active"><i class="fas fa-comment-dots"></i> Chat</a>
+            <a th:href="@{/reels}" class="sidebar-link"><i class="fas fa-film"></i> Reels</a>
+            <a th:href="@{/profile}" class="sidebar-link"><i class="fas fa-user"></i> Profile</a>
+            <a th:href="@{/games}" class="sidebar-link"><i class="fas fa-gamepad"></i> Games</a>
+            <a th:href="@{/wallet}" class="sidebar-link"><i class="fas fa-wallet"></i> Wallet</a>
+            <a th:href="@{/user/my-bookings}" class="sidebar-link"><i class="fas fa-ticket-alt"></i> My Bookings</a>
             <a href="javascript:void(0)" class="sidebar-link" onclick="openCreateModal()"><i class="fas fa-plus-circle" style="color: var(--accent);"></i> Create Post</a>
-            <a href="/logout" class="sidebar-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            <a th:href="@{/logout}" class="sidebar-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </aside>
 
         <main class="content-main" style="padding: 0; overflow: hidden; height: calc(100vh - var(--dashboard-nav-height)); border-right: 1px solid var(--glass-border);">
@@ -1874,6 +1946,9 @@
                     </div>
                 </div>
                 <div class="chat-header">
+                    <div class="header-icon mobile-back-btn" onclick="closeMobileChat()" style="display:none; margin-right: 10px; cursor: pointer;">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                    </div>
                     <div class="header-avatar" id="activeAvatar">U</div>
                     <div class="header-info">
                         <h2 id="activeUserName">Username</h2>
@@ -1896,7 +1971,7 @@
                         </div>
                         <div class="header-icon" id="vanishToggle" title="Toggle Vanish Mode"
                             onclick="toggleVanishMode()">
-                            <span id="vanishHeaderIcon" style="font-size: 20px;">🤫</span>
+                            <span id="vanishHeaderIcon" style="font-size: 20px;">ðŸ¤«</span>
                         </div>
                         <div class="header-icon" title="Search messages" onclick="toggleMessageSearch()">
                             <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor"
@@ -1943,7 +2018,7 @@
 
                 <div class="messages-area" id="messagesArea">
                     <div class="vanish-indicator">
-                        🤫 Vanish Mode<br>
+                        ðŸ¤« Vanish Mode<br>
                         Messages will disappear when you close the chat.
                     </div>
                     <!-- Messages will be injected here -->
@@ -1999,7 +2074,7 @@
                                 </svg>
                             </div>
                         </div>
-                        <div style="cursor: pointer; padding: 0 4px;"
+                        <div style="cursor: pointer; padding: 0 4px; flex-shrink: 0;"
                             onclick="document.getElementById('fileInput').click()">
                             <svg aria-label="Add Photo or Video" color="var(--text-main)" fill="var(--text-main)"
                                 height="24" role="img" viewBox="0 0 24 24" width="24">
@@ -2011,12 +2086,12 @@
                         <input type="file" id="fileInput" style="display: none;" accept="image/*,video/*"
                             onchange="handleFileUpload(this)">
                         <div class="header-icon" title="Emoji" onclick="toggleEmojiPicker()" style="margin: 0 4px;">
-                            <span style="font-size:20px; line-height:1;">😊</span>
+                            <span style="font-size:20px; line-height:1;">ðŸ˜Š</span>
                         </div>
                         <div class="header-icon" title="Stickers" onclick="toggleStickerPicker()" style="margin: 0 4px;">
-                            <span style="font-size:20px; line-height:1;">🧩</span>
+                            <span style="font-size:20px; line-height:1;">ðŸ§©</span>
                         </div>
-                        <input type="text" id="chatInput" placeholder="Message..." onkeypress="handleKeyStroke(event)">
+                        <input type="text" id="chatInput" placeholder="Message..." onkeypress="handleKeyStroke(event)" oninput="toggleSendButton()">
                         <div class="header-icon" id="voiceBtn" title="Record voice message" onclick="startRecording()"
                             style="margin: 0 5px;">
                             <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor"
@@ -2027,7 +2102,12 @@
                                 <line x1="8" y1="23" x2="16" y2="23"></line>
                             </svg>
                         </div>
-                        <div class="btn-send" onclick="sendChatMessage()">Send</div>
+                        <div class="header-icon" id="sendBtn" title="Send message" onclick="sendChatMessage()"
+                            style="margin: 0 5px; display: none; color: var(--primary-accent);">
+                            <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
+                            </svg>
+                        </div>
 
                         <div class="picker-panel" id="emojiPicker">
                             <div class="picker-grid" id="emojiGrid"></div>
@@ -2164,10 +2244,12 @@
 
     <script th:inline="javascript">
         window.Zentrix = {
+            contextPath: /*[[@{/}]]*/ '/',
             currentUser: {
                 id: /*[[${currentUser.id}]]*/ 0,
                 username: /*[[${currentUser.username}]]*/ 'Unknown',
-                profilePicture: /*[[${currentUser.profilePicture}]]*/ null
+                profilePhotoUrl: /*[[${currentUser.profilePhotoUrl}]]*/ null,
+                profilePicture: /*[[${currentUser.profilePhotoUrl}]]*/ null
             },
             paths: {
                 conversations: /*[[@{/api/chat/conversations}]]*/ '/api/chat/conversations',
@@ -2186,6 +2268,21 @@
 
     <script th:inline="none">
         const currentUser = window.Zentrix.currentUser;
+
+        function resolveUrl(url) {
+            if (!url) return url;
+            if (url.startsWith('http') || url.startsWith('data:')) return url;
+            if (url.startsWith('/')) {
+                const cp = window.Zentrix.contextPath;
+                const base = cp.endsWith('/') ? cp.slice(0, -1) : cp;
+                if (base && url.startsWith(base)) {
+                    return url;
+                }
+                return base + url;
+            }
+            return url;
+        }
+
         let stompClient = null;
         let activeConversationId = null;
         let activeRecipientId = null;
@@ -2197,7 +2294,7 @@
         let manageGroupState = { creatorId: null, participants: [], isAdmin: false };
 
         // Emoji + Sticker pickers
-        const EMOJIS = ['😀', '😁', '😂', '🤣', '😊', '😍', '😘', '😎', '🥳', '😇', '🤔', '😅', '😭', '😡', '👍', '👎', '🙏', '🔥', '🎉', '💯', '❤️', '✨', '🌟', '😴', '🤝', '🙌', '😮', '😬', '🤩', '😜', '🤗', '💡'];
+        const EMOJIS = ['ðŸ˜€', 'ðŸ˜', 'ðŸ˜‚', 'ðŸ¤£', 'ðŸ˜Š', 'ðŸ˜', 'ðŸ˜˜', 'ðŸ˜Ž', 'ðŸ¥³', 'ðŸ˜‡', 'ðŸ¤”', 'ðŸ˜…', 'ðŸ˜­', 'ðŸ˜¡', 'ðŸ‘', 'ðŸ‘Ž', 'ðŸ™', 'ðŸ”¥', 'ðŸŽ‰', 'ðŸ’¯', 'â¤ï¸', 'âœ¨', 'ðŸŒŸ', 'ðŸ˜´', 'ðŸ¤', 'ðŸ™Œ', 'ðŸ˜®', 'ðŸ˜¬', 'ðŸ¤©', 'ðŸ˜œ', 'ðŸ¤—', 'ðŸ’¡'];
         const STICKERS = [
             '/stickers/sticker-hello.svg',
             '/stickers/sticker-lol.svg',
@@ -2239,10 +2336,11 @@
             const pos = start + emoji.length;
             input.setSelectionRange(pos, pos);
             input.focus();
+            toggleSendButton();
         }
 
         function sendSticker(stickerUrl) {
-            if (!stompClient || !activeConversationId) return;
+            if (!stompClient || !stompClient.connected || !activeConversationId) return;
             const conv = conversationsData.find(c => c.id == activeConversationId);
             const isGroup = conv && conv.type === 'GROUP';
             const payload = {
@@ -2280,7 +2378,7 @@
                 <div class="search-result-item" onclick="toggleGroupUserSelection(${u.id}, '${u.username}')">
                     <div class="result-avatar">${u.username.charAt(0)}</div>
                     <div>${u.username}</div>
-                    <div style="margin-left:auto;">${selectedGroupUsers.some(su => su.id === u.id) ? '✅' : '+'}</div>
+                    <div style="margin-left:auto;">${selectedGroupUsers.some(su => su.id === u.id) ? 'âœ…' : '+'}</div>
                 </div>
             `).join('');
         }
@@ -2297,7 +2395,7 @@
             const container = document.getElementById('selectedUsersArea');
             container.innerHTML = selectedGroupUsers.map(u => `
                 <div style="background:var(--active-bg); padding:4px 10px; border-radius:15px; font-size:12px; display:flex; align-items:center; gap:5px;">
-                    ${u.username} <span onclick="toggleGroupUserSelection(${u.id})" style="cursor:pointer;">×</span>
+                    ${u.username} <span onclick="toggleGroupUserSelection(${u.id})" style="cursor:pointer;">Ãƒâ€”</span>
                 </div>
             `).join('');
         }
@@ -2398,8 +2496,8 @@
             const stickerGrid = document.getElementById('stickerGrid');
             if (stickerGrid && stickerGrid.children.length === 0) {
                 stickerGrid.innerHTML = STICKERS.map(u => `
-                    <div class="picker-item picker-sticker" onclick="sendSticker('${u}')">
-                        <img src="${u}" alt="sticker">
+                    <div class="picker-item picker-sticker" onclick="sendSticker('${resolveUrl(u)}')">
+                        <img src="${resolveUrl(u)}" alt="sticker">
                     </div>
                 `).join('');
             }
@@ -2447,7 +2545,7 @@
                     const data = JSON.parse(msg.body);
                     if (activeConversationId === data.conversationId) {
                         const seenIndicator = document.getElementById('seenIndicator');
-                        seenIndicator.innerText = 'Seen · ' + formatTime(data.seenAt);
+                        seenIndicator.innerText = 'Seen \u00B7 ' + formatTime(data.seenAt);
                         seenIndicator.style.display = 'block';
                     }
                 });
@@ -2495,6 +2593,30 @@
                         activeConversationId = null;
                     }
                 });
+
+                if (activeConversationId) {
+                    subscribeToGroupTyping(activeConversationId);
+                }
+            }, function (error) {
+                console.warn('STOMP connection error or disconnect. Retrying in 5 seconds...', error);
+                setTimeout(connectWebSocket, 5000);
+            });
+        }
+
+        function subscribeToGroupTyping(convId) {
+            if (!stompClient || !stompClient.connected) return;
+            if (window.typingSubscription) {
+                try {
+                    window.typingSubscription.unsubscribe();
+                } catch (e) {
+                    console.warn('[WARN] Failed to unsubscribe dynamic subscription:', e);
+                }
+            }
+            window.typingSubscription = stompClient.subscribe('/topic/chat.' + convId + '.typing', function (msg) {
+                const data = JSON.parse(msg.body);
+                if (data.senderId != currentUser.id) {
+                    showTypingIndicator(data.isTyping);
+                }
             });
         }
 
@@ -2584,8 +2706,8 @@
                     avatarHtml = `<div style="display:flex; flex-wrap:wrap; width:100%; height:100%;">
                         ${c.participants.slice(0, 4).map(p => `<div style="width:50%; height:50%; background:var(--avatar-bg); font-size:10px; display:flex; align-items:center; justify-content:center; border-radius:2px;">${p.username.charAt(0)}</div>`).join('')}
                     </div>`;
-                } else if (partner && partner.profilePicture) {
-                    avatarHtml = `<img src="${partner.profilePicture}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+                } else if (partner && (partner.profilePhotoUrl || partner.profilePicture)) {
+                    avatarHtml = `<img src="${resolveUrl(partner.profilePhotoUrl || partner.profilePicture)}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
                 } else {
                     avatarHtml = convName.charAt(0).toUpperCase();
                 }
@@ -2601,7 +2723,7 @@
                 </div>
                 <div class="conv-info">
                     <div class="conv-name">${convName}</div>
-                    <div class="conv-preview">${previewText} · ${formatTime(c.lastMessageTime)}</div>
+                    <div class="conv-preview">${previewText} \u00B7 ${formatTime(c.lastMessageTime)}</div>
                 </div>
                 <div class="unread-dot"></div>
             `;
@@ -2609,18 +2731,86 @@
             });
         }
 
+        let globalSearchTimeout = null;
         function filterConversations() {
-            const query = document.getElementById('userSearch').value.toLowerCase();
+            const query = document.getElementById('userSearch').value.trim().toLowerCase();
             const filtered = conversationsData.filter(c => {
                 if (c.type === 'GROUP') return c.name.toLowerCase().includes(query);
                 const partner = getConvPartner(c);
                 return partner && partner.username.toLowerCase().includes(query);
             });
             renderConversationList(filtered);
+
+            if (query.length >= 2) {
+                clearTimeout(globalSearchTimeout);
+                globalSearchTimeout = setTimeout(async () => {
+                    try {
+                        const url = window.Zentrix.paths.searchUsers + '?query=' + encodeURIComponent(query);
+                        const res = await fetch(url);
+                        if (res.ok) {
+                            const globalUsers = await res.json();
+                            
+                            // Filter out users we already have a conversation with
+                            const existingUserIds = new Set();
+                            conversationsData.forEach(c => {
+                                if (c.type !== 'GROUP') {
+                                    const partner = getConvPartner(c);
+                                    if (partner) existingUserIds.add(partner.id);
+                                }
+                            });
+                            
+                            const newUsers = globalUsers.filter(u => !existingUserIds.has(u.id));
+                            
+                            if (newUsers.length > 0) {
+                                const listContainer = document.getElementById('convList');
+                                const divider = document.createElement('div');
+                                divider.innerHTML = '<div style="padding: 10px 15px; font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase;">Other People</div>';
+                                listContainer.appendChild(divider);
+                                
+                                newUsers.forEach(u => {
+                                    const div = document.createElement('div');
+                                    div.className = 'conv-item';
+                                    div.onclick = () => selectUserForChat(u);
+                                    
+                                    const avatarHtml = (u.profilePhotoUrl || u.profilePicture) ?
+                                        `<img src="${resolveUrl(u.profilePhotoUrl || u.profilePicture)}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">` :
+                                        u.username.charAt(0).toUpperCase();
+                                        
+                                    div.innerHTML = `
+                                        <div class="avatar-container">
+                                            <div class="avatar-inner">${avatarHtml}</div>
+                                        </div>
+                                        <div class="conv-info">
+                                            <div class="conv-name">${u.username}</div>
+                                            <div class="conv-preview">Start a new chat</div>
+                                        </div>
+                                    `;
+                                    listContainer.appendChild(div);
+                                });
+                            }
+                        }
+                    } catch (e) {
+                        console.error('[ERROR] Global search failed:', e);
+                    }
+                }, 300);
+            }
+        }
+
+        function closeMobileChat() {
+            const container = document.querySelector('.app-container');
+            if (container) {
+                container.classList.remove('mobile-chat-active');
+            }
         }
 
         async function selectConversation(conv, partner) {
             try {
+                // For mobile responsiveness
+                const container = document.querySelector('.app-container');
+                if (container) {
+                    container.classList.add('mobile-chat-active');
+                }
+                
                 console.log('[DEBUG] selectConversation called for conv:', conv.id, 'partner:', partner ? partner.username : 'none');
                 activeConversationId = conv.id;
                 activeRecipientId = partner ? partner.id : null; // null for groups
@@ -2679,6 +2869,19 @@
 
                 const convName = conv.type === 'GROUP' ? conv.name : (partner ? partner.username : 'Direct Chat');
                 document.getElementById('activeUserName').innerText = convName;
+                
+                const statusEl = document.getElementById('activeUserStatus');
+                if (statusEl) {
+                    if (conv.type === 'GROUP') {
+                        statusEl.innerText = conv.participants.length + ' members';
+                    } else if (partner) {
+                        const isOnline = partner.lastActiveAt && (new Date() - new Date(partner.lastActiveAt) < 300000);
+                        statusEl.innerText = isOnline ? 'Active now' : 'Offline';
+                        statusEl.style.color = isOnline ? '#4ade80' : '#8696a0';
+                    } else {
+                        statusEl.innerText = '';
+                    }
+                }
                 updateManageGroupButton(conv);
 
                 const avatarEl = document.getElementById('activeAvatar');
@@ -2686,8 +2889,8 @@
                     avatarEl.innerHTML = `<div style="display:flex; flex-wrap:wrap; width:100%; height:100%;">
                         ${conv.participants.slice(0, 4).map(p => `<div style="width:50%; height:50%; background:var(--avatar-bg); font-size:10px; display:flex; align-items:center; justify-content:center; border-radius:2px;">${p.username.charAt(0)}</div>`).join('')}
                     </div>`;
-                } else if (partner && partner.profilePicture) {
-                    avatarEl.innerHTML = `<img src="${partner.profilePicture}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+                } else if (partner && (partner.profilePhotoUrl || partner.profilePicture)) {
+                    avatarEl.innerHTML = `<img src="${resolveUrl(partner.profilePhotoUrl || partner.profilePicture)}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
                 } else {
                     avatarEl.innerText = convName.charAt(0).toUpperCase();
                 }
@@ -2700,13 +2903,7 @@
                 
                 // Subscribe to typing topic for groups
                 if (activeConversationId) {
-                    if (window.typingSubscription) window.typingSubscription.unsubscribe();
-                    window.typingSubscription = stompClient.subscribe('/topic/chat.' + activeConversationId + '.typing', function (msg) {
-                        const data = JSON.parse(msg.body);
-                        if (data.senderId != currentUser.id) {
-                            showTypingIndicator(data.isTyping);
-                        }
-                    });
+                    subscribeToGroupTyping(activeConversationId);
                 }
 
                 await loadMessages(conv.id);
@@ -2856,7 +3053,7 @@
                 // Re-add top vanish indicator
                 const topInd = document.createElement('div');
                 topInd.className = 'vanish-indicator';
-                topInd.innerHTML = '🤫 Vanish Mode<br>Messages will disappear when you close the chat.';
+                topInd.innerHTML = 'ðŸ¤« Vanish Mode<br>Messages will disappear when you close the chat.';
                 container.appendChild(topInd);
 
                 history.forEach(m => appendMessageToUI(m));
@@ -2900,7 +3097,7 @@
             if (deletedForMe.includes(msg.id)) return;
 
             const container = document.getElementById('messagesArea');
-            const isSent = msg.sender.id == currentUser.id;
+            const isSent = msg.sender && msg.sender.id == currentUser.id;
 
             const wrapper = document.createElement('div');
             const isVanish = msg.isVanish || msg.vanish;
@@ -2947,29 +3144,29 @@
 
                 if (lowerUrl.includes('/stickers/')) {
                     bubble.classList.add('sticker');
-                    mediaDiv.innerHTML = `<img src="${msg.mediaUrl}" alt="sticker">`;
+                    mediaDiv.innerHTML = `<img src="${resolveUrl(msg.mediaUrl)}" alt="sticker">`;
                 } else
                 if (lowerUrl.endsWith('.mp4') || lowerUrl.endsWith('.mov')) {
                     // Standard Video
-                    mediaDiv.innerHTML = `<video src="${msg.mediaUrl}" controls></video>`;
+                    mediaDiv.innerHTML = `<video src="${resolveUrl(msg.mediaUrl)}" controls></video>`;
                 } else if (lowerUrl.includes('voice-message') || lowerUrl.endsWith('.webm') || lowerUrl.endsWith('.mp3') || lowerUrl.endsWith('.wav') || lowerUrl.endsWith('.m4a') || lowerUrl.endsWith('.ogg') || lowerUrl.endsWith('.aac')) {
                     // Voice Message
                     bubble.classList.remove('media-only');
                     const voiceContainer = document.createElement('div');
                     voiceContainer.className = 'voice-msg-bubble';
                     voiceContainer.innerHTML = `
-                        <div class="voice-play-btn" onclick="playVoice('${msg.mediaUrl}', this)">
+                        <div class="voice-play-btn" onclick="playVoice('${resolveUrl(msg.mediaUrl)}', this)">
                             <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M8 5.14v14l11-7-11-7z"></path></svg>
                         </div>
                         <div class="voice-wave">
                             ${Array(15).fill('<div class="wave-bar"></div>').join('')}
                         </div>
-                        <div class="voice-duration">Voice</div>
+                        <div class="voice-duration">0:00</div>
                     `;
                     mediaDiv.appendChild(voiceContainer);
                 } else {
                     // Image
-                    mediaDiv.innerHTML = `<img src="${msg.mediaUrl}" style="cursor:pointer;" onclick="window.open('${msg.mediaUrl}')">`;
+                    mediaDiv.innerHTML = `<img src="${resolveUrl(msg.mediaUrl)}" style="cursor:pointer;" onclick="window.open('${resolveUrl(msg.mediaUrl)}')">`;
                 }
                 bubble.appendChild(mediaDiv);
             }
@@ -2982,7 +3179,7 @@
             let reactionsHtml = '';
             if (msg.reactions) {
                 Object.values(msg.reactions).forEach(r => {
-                    if (r === 'heart') reactionsHtml += '❤️';
+                    if (r === 'heart') reactionsHtml += 'â¤ï¸';
                 });
             }
 
@@ -3010,6 +3207,27 @@
             meta.className = `msg-meta ${isSent ? 'sent' : 'received'}`;
             meta.innerText = formatTime(msg.timestamp);
 
+            let isGroupConv = false;
+            try {
+                if (msg.conversation && msg.conversation.type === 'GROUP') {
+                    isGroupConv = true;
+                } else if (typeof conversationsData !== 'undefined' && conversationsData && Array.isArray(conversationsData)) {
+                    const conv = conversationsData.find(c => String(c.id) === String(activeConversationId));
+                    if (conv && conv.type === 'GROUP') {
+                        isGroupConv = true;
+                    }
+                }
+            } catch (e) {
+                console.warn('Error checking if group conv:', e);
+            }
+            
+            if (isGroupConv) {
+                const senderNameDiv = document.createElement('div');
+                senderNameDiv.className = `msg-sender-name ${isSent ? 'sent' : 'received'}`;
+                senderNameDiv.innerText = isSent ? 'You' : (msg.sender ? (msg.sender.username || msg.sender.name || 'Unknown') : 'Unknown');
+                container.appendChild(senderNameDiv);
+            }
+
             container.appendChild(wrapper);
             container.appendChild(meta);
             container.scrollTop = container.scrollHeight;
@@ -3017,6 +3235,10 @@
 
         async function handleFileUpload(input) {
             console.log('[DEBUG] handleFileUpload called with input:', input);
+            if (!stompClient || !stompClient.connected) {
+                alert('Connection lost. Please wait until connection is re-established.');
+                return;
+            }
             if (!input.files || !input.files[0]) {
                 console.log('[DEBUG] No file selected.');
                 return;
@@ -3108,10 +3330,11 @@
             }
             const isGroup = conv && conv.type === 'GROUP';
 
+            const isDummyConv = activeConversationId && String(activeConversationId).startsWith('dummy_');
             const payload = {
                 senderId: currentUser.id,
                 recipientId: isGroup ? activeConversationId : activeRecipientId,
-                conversationId: activeConversationId,
+                conversationId: isDummyConv ? null : activeConversationId,
                 content: text,
                 mediaUrl: null,
                 parentId: replyingToId,
@@ -3122,12 +3345,27 @@
             console.log('Sending message:', payload);
             stompClient.send("/app/chat.send", {}, JSON.stringify(payload));
             input.value = '';
+            toggleSendButton();
             cancelReply();
+        }
+
+        function toggleSendButton() {
+            const input = document.getElementById('chatInput');
+            const voiceBtn = document.getElementById('voiceBtn');
+            const sendBtn = document.getElementById('sendBtn');
+            
+            if (input && input.value.trim().length > 0) {
+                if (voiceBtn) voiceBtn.style.display = 'none';
+                if (sendBtn) sendBtn.style.display = 'flex';
+            } else {
+                if (voiceBtn) voiceBtn.style.display = 'flex';
+                if (sendBtn) sendBtn.style.display = 'none';
+            }
         }
 
         function onNewMessage(msg) {
             // If this is the first message in a new conversation, update the ID
-            if (!activeConversationId && msg.conversation.type !== 'GROUP') {
+            if ((!activeConversationId || String(activeConversationId).startsWith('dummy_')) && msg.conversation.type !== 'GROUP') {
                 const isMatch = msg.conversation.participants.some(p => String(p.id) === String(activeRecipientId));
                 if (isMatch) {
                     activeConversationId = msg.conversation.id;
@@ -3160,7 +3398,7 @@
                 if (msg.reactions) {
                     // msg.reactions is a map of User -> String
                     Object.values(msg.reactions).forEach(r => {
-                        if (r === 'heart') reactionsHtml += '❤️';
+                        if (r === 'heart') reactionsHtml += 'â¤ï¸';
                     });
                 }
                 badge.innerText = reactionsHtml;
@@ -3177,7 +3415,7 @@
         }
 
         function reactToMessage(messageId) {
-            if (!stompClient) return;
+            if (!stompClient || !stompClient.connected) return;
             const payload = {
                 messageId: messageId,
                 senderId: currentUser.id,
@@ -3211,7 +3449,10 @@
             if (!messageToDeleteId) return;
             
             if (type === 'everyone') {
-                if (!stompClient) return;
+                if (!stompClient || !stompClient.connected) {
+                    alert('Connection lost. Cannot delete message for everyone.');
+                    return;
+                }
                 const payload = {
                     messageId: messageToDeleteId,
                     senderId: currentUser.id,
@@ -3235,7 +3476,7 @@
                 return;
             }
 
-            if (stompClient && activeRecipientId) {
+            if (stompClient && stompClient.connected && activeRecipientId) {
                 stompClient.send("/app/chat.typing", {}, JSON.stringify({
                     senderId: currentUser.id,
                     recipientId: activeRecipientId,
@@ -3359,8 +3600,8 @@
                 item.className = 'search-result-item';
                 item.onclick = () => selectUserForChat(u);
 
-                const avatarHtml = u.profilePicture ?
-                    `<img src="${u.profilePicture}" style="width:100%; height:100%; object-fit:cover;">` :
+                const avatarHtml = (u.profilePhotoUrl || u.profilePicture) ?
+                    `<img src="${resolveUrl(u.profilePhotoUrl || u.profilePicture)}" style="width:100%; height:100%; object-fit:cover;">` :
                     u.username.charAt(0).toUpperCase();
 
                 item.innerHTML = `
@@ -3395,14 +3636,16 @@
                 } else {
                     // Initialize a "pending" conversation object
                     const dummyConv = {
-                        id: null,
+                        id: 'dummy_' + partner.id,
                         participants: [currentUser, partner],
                         type: 'DIRECT',
                         status: 'NEW', // Allows typing
                         creator: currentUser,
-                        lastMessage: null,
-                        lastMessageTime: null
+                        lastMessage: 'New Chat',
+                        lastMessageTime: new Date().toISOString()
                     };
+                    conversationsData.unshift(dummyConv);
+                    renderConversationList(conversationsData);
                     selectConversation(dummyConv, partner);
                     document.getElementById('messagesArea').innerHTML = '';
                     document.getElementById('seenIndicator').style.display = 'none';
@@ -3411,6 +3654,10 @@
         }
 
         async function performForward(msgId, recipientId) {
+            if (!stompClient || !stompClient.connected) {
+                alert('Connection lost. Message cannot be forwarded.');
+                return;
+            }
             const bubble = document.getElementById(`msg-bubble-${msgId}`);
             if (!bubble) return;
 
@@ -3555,13 +3802,13 @@
 
                 if (m.mediaUrl.toLowerCase().endsWith('.mp4') || m.mediaUrl.toLowerCase().endsWith('.webm')) {
                     item.innerHTML = `
-                        <video src="${m.mediaUrl}"></video>
+                        <video src="${resolveUrl(m.mediaUrl)}"></video>
                         <div class="video-overlay">
                             <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
                         </div>
                     `;
                 } else {
-                    item.innerHTML = `<img src="${m.mediaUrl}">`;
+                    item.innerHTML = `<img src="${resolveUrl(m.mediaUrl)}">`;
                 }
                 grid.appendChild(item);
             });
@@ -3700,34 +3947,50 @@
             }
         }
 
-        let currentAudio = null;
-        let currentPlayBtn = null;
-        let currentUrl = null;
-
         function playVoice(url, btn) {
-            if (currentAudio && currentUrl === url) {
-                if (currentAudio.paused) {
-                    currentAudio.play();
-                } else {
-                    currentAudio.pause();
-                }
-                return;
+            const container = btn.closest('.voice-msg-bubble');
+            const durationEl = container.querySelector('.voice-duration');
+
+            // If there's already an audio element playing, pause it
+            if (window.currentVoiceAudio && window.currentVoiceAudio.dataset.url !== url) {
+                window.currentVoiceAudio.pause();
+                // Reset previous button
             }
 
-            if (currentAudio) {
-                currentAudio.pause();
-                currentAudio = null; // Clear to avoid issues
+            if (!window.currentVoiceAudio || window.currentVoiceAudio.dataset.url !== url) {
+                window.currentVoiceAudio = new Audio(url);
+                window.currentVoiceAudio.dataset.url = url;
+
+                window.currentVoiceAudio.addEventListener('loadedmetadata', function() {
+                    const dur = Math.floor(this.duration);
+                    const mins = Math.floor(dur / 60);
+                    const secs = dur % 60;
+                    if (durationEl) durationEl.textContent = mins + ':' + (secs < 10 ? '0' : '') + secs;
+                });
+
+                window.currentVoiceAudio.addEventListener('timeupdate', function() {
+                    const cur = Math.floor(this.currentTime);
+                    const mins = Math.floor(cur / 60);
+                    const secs = cur % 60;
+                    if (durationEl) durationEl.textContent = mins + ':' + (secs < 10 ? '0' : '') + secs;
+                });
+
+                window.currentVoiceAudio.addEventListener('ended', function() {
+                    updatePlayBtnIcon(btn, false);
+                    const dur = Math.floor(this.duration);
+                    const mins = Math.floor(dur / 60);
+                    const secs = dur % 60;
+                    if (durationEl) durationEl.textContent = mins + ':' + (secs < 10 ? '0' : '') + secs;
+                });
             }
 
-            currentAudio = new Audio(url);
-            currentPlayBtn = btn;
-            currentUrl = url;
-
-            currentAudio.onplay = () => updatePlayBtnIcon(btn, true);
-            currentAudio.onpause = () => updatePlayBtnIcon(btn, false);
-            currentAudio.onended = () => updatePlayBtnIcon(btn, false);
-
-            currentAudio.play();
+            if (window.currentVoiceAudio.paused) {
+                window.currentVoiceAudio.play();
+                updatePlayBtnIcon(btn, true);
+            } else {
+                window.currentVoiceAudio.pause();
+                updatePlayBtnIcon(btn, false);
+            }
         }
 
         function updatePlayBtnIcon(btn, isPlaying) {
@@ -3815,6 +4078,10 @@
 
         function toggleVanishMode() {
             if (!activeConversationId) return;
+            if (!stompClient || !stompClient.connected) {
+                alert('Connection lost. Please wait until connection is re-established.');
+                return;
+            }
             vanishActive = !vanishActive;
 
             const payload = {
@@ -3876,7 +4143,7 @@
             wrapper.className = 'vanish-pattern-wrapper';
             wrapper.style.cssText = 'position:absolute; top:0; left:0; width:100%; height:100%; display:flex; flex-wrap:wrap; justify-content:space-around; align-content:space-around; font-size:40px; opacity:0.03; pointer-events:none; z-index:0; padding:20px; line-height:80px; overflow:hidden;';
             
-            const emojis = ["🤫", "🤫", "🤫", "🤫", "🤫", "🤫", "🤫", "🤫"];
+            const emojis = ["ðŸ¤«", "ðŸ¤«", "ðŸ¤«", "ðŸ¤«", "ðŸ¤«", "ðŸ¤«", "ðŸ¤«", "ðŸ¤«"];
             for (let i = 0; i < 50; i++) {
                 const span = document.createElement('span');
                 span.innerText = emojis[Math.floor(Math.random() * emojis.length)];
@@ -3935,6 +4202,11 @@
                 document.body.setAttribute('data-theme', theme);
             }
             closeThemeModal();
+
+            if (!stompClient || !stompClient.connected) {
+                console.warn('STOMP disconnected. Theme could not be sent to server.');
+                return;
+            }
 
             // Persist theme choice
             const payload = {
@@ -4047,3 +4319,7 @@
 </body>
 
 </html>
+
+
+
+

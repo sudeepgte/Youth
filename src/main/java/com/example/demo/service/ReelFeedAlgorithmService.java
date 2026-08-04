@@ -25,6 +25,9 @@ public class ReelFeedAlgorithmService {
     @Autowired
     private UserInterestProfileRepository profileRepository;
 
+    @Autowired
+    private com.example.demo.repository.UserRepository userRepository;
+
     // Configurable Algorithm Weights
     private static final double WEIGHT_LIKE = 1.5;
     private static final double WEIGHT_COMMENT = 2.0;
@@ -43,8 +46,14 @@ public class ReelFeedAlgorithmService {
         Page<Reel> candidateReels = reelRepository.findByIsApprovedTrue(
                 PageRequest.of(0, 100, Sort.by(Sort.Direction.DESC, "createdAt")));
 
+        // Fetch IDs of users the viewer follows
+        java.util.Set<Long> followingIds = userRepository.findById(userId)
+                .map(u -> u.getFollowing().stream().map(com.example.demo.model.User::getId).collect(Collectors.toSet()))
+                .orElse(java.util.Collections.emptySet());
+
         // 3. Score and sort candidates
         List<Reel> rankedReels = candidateReels.getContent().stream()
+                .filter(reel -> !reel.getUser().isPrivateAccount() || followingIds.contains(reel.getUser().getId()) || reel.getUser().getId().equals(userId))
                 .sorted(Comparator.comparingDouble((Reel reel) -> calculateScore(reel, profile, userId)).reversed())
                 .limit(limit)
                 .collect(Collectors.toList());

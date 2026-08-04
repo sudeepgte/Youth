@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${user.username + ' • Zentrix'}">Profile</title>
+    <title th:text="${user.username + ' &bull; Zentrix'}">Profile</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap"
@@ -13,6 +13,27 @@
         rel="stylesheet">
 <style>
         /* Additional profile-specific styles that aren't in style.css */
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 30px;
+            max-width: 1200px;
+            margin: calc(var(--dashboard-nav-height) + 16px) auto 0;
+            padding: 0 20px;
+        }
+
+        .sidebar {
+            grid-column: 1;
+        }
+
+        .social-feed {
+            max-width: 935px;
+            width: 100%;
+            margin: 0 auto;
+            min-width: 0;
+            grid-column: 2;
+        }
+
         .follow-list-container {
             max-width: 600px;
             margin: 0 auto;
@@ -52,6 +73,7 @@
 
         .profile-header {
             display: flex;
+            flex-wrap: wrap;
             gap: 52px;
             align-items: flex-start;
             margin-bottom: 40px;
@@ -193,9 +215,10 @@
             border: 1px solid rgba(190, 18, 60, 0.35);
             border-radius: 16px;
             padding: 20px;
-            margin-top: 20px;
-            margin-bottom: 20px;
+            margin-top: 10px;
+            margin-bottom: 0px;
             box-shadow: 0 22px 60px rgba(236, 72, 153, 0.18);
+            width: 100%;
         }
 
         .talent-score-card h4 {
@@ -321,7 +344,7 @@
             opacity: 1;
         }
 
-        .grid-overlay span {
+        .grid-overlay span { font-family: 'Inter', sans-serif;
             color: #fff;
             font-weight: 700;
             font-size: 14px;
@@ -486,6 +509,63 @@
             background-color: var(--bg-color);
             color: var(--text-primary);
         }
+        
+        @media (max-width: 920px) {
+            .dashboard-container {
+                grid-template-columns: 220px 1fr;
+                gap: 20px;
+                padding: 0 15px;
+            }
+            .sidebar {
+                grid-column: 1;
+            }
+            .social-feed {
+                grid-column: 2;
+                max-width: 100%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-container {
+                grid-template-columns: 1fr;
+                padding: 0 12px;
+                gap: 15px;
+                margin-top: calc(var(--dashboard-nav-height) + 10px);
+            }
+            .sidebar {
+                grid-column: auto;
+            }
+            .social-feed {
+                grid-column: auto;
+                max-width: 100%;
+                margin: 0;
+            }
+            .profile-header {
+                flex-direction: column;
+                gap: 20px;
+                padding: 20px;
+                align-items: center;
+                text-align: center;
+            }
+            .profile-top {
+                justify-content: center;
+            }
+            .stats-row {
+                justify-content: center;
+                gap: 20px;
+            }
+            .ts-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .tabs {
+                flex-wrap: wrap;
+            }
+            .tab-btn {
+                padding: 10px 15px;
+                flex: 1 1 auto;
+                justify-content: center;
+            }
+        }
     </style>
     <script th:src="@{/js/tab-support.js}"></script>
 </head>
@@ -493,12 +573,33 @@
 <body>
 
     <!-- Navbar -->
+    <!-- Mobile Sidebar Overlay -->
+    <div class="mobile-menu-overlay" onclick="document.querySelector('.sidebar').classList.remove('mobile-open'); this.classList.remove('active');"></div>
+
     <nav class="dashboard-navbar">
-        <a class="dashboard-logo" href="/home">Zentrix</a>
+        <button class="mobile-menu-btn" onclick="const s=document.querySelector('.sidebar');if(s)s.classList.toggle('mobile-open'); const o=document.querySelector('.mobile-menu-overlay');if(o)o.classList.toggle('active');" style="display:none; background:none; border:none; color:var(--text-primary); font-size:20px; cursor:pointer; margin-right:15px; margin-left: 5px; padding: 0;">
+            <i class="fas fa-bars"></i>
+        </button>
+        <a class="dashboard-logo" th:href="@{/home}" style="display: inline-flex; flex-direction: column; align-items: center; text-decoration: none; line-height: 1.1; margin-right: 15px;">
+    <svg width="28" height="28" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <linearGradient id="yg" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#6b21a8" />
+                <stop offset="50%" stop-color="#2563eb" />
+                <stop offset="100%" stop-color="#0ea5e9" />
+            </linearGradient>
+        </defs>
+        <circle cx="50" cy="22" r="12" fill="url(#yg)" />
+        <path d="M 25 25 Q 40 50 45 65 L 45 90 Q 55 90 55 65 Q 60 50 80 25 Q 65 45 55 55 L 45 55 Q 35 45 25 25 Z" fill="url(#yg)" />
+        <path d="M 15 60 Q 50 90 90 40 Q 80 50 50 80 Q 25 70 15 60 Z" fill="url(#yg)" />
+        <polygon points="75,10 80,15 85,10 80,5" fill="#0ea5e9" />
+    </svg>
+    <span style="font-size: 11px; font-weight: 800; color: #1e3a8a; letter-spacing: 1px; margin-top: 2px;">YOUTHIAN</span>
+</a>
         <div class="dashboard-spacer"></div>
         <div class="dashboard-nav-links">
-            <a href="/dashboard"><i class="fas fa-home"></i></a>
-            <a href="/messages" style="position: relative;">
+            <a th:href="@{/dashboard}"><i class="fas fa-home"></i></a>
+            <a th:href="@{/messages}" style="position: relative;">
                 <i class="fas fa-comment-dots"></i>
                 <span th:if="${unreadMessageCount != null && unreadMessageCount > 0}" id="msg-badge"
                     style="position: absolute; top: -5px; right: -5px; background: red; color: white; border-radius: 50%; padding: 2px 5px; font-size: 10px; font-weight: bold;"
@@ -510,16 +611,11 @@
                     th:text="${unreadNotifCount}"></span>
             </a>
             <div class="profile-dropdown">
-                <a href="/profile" class="active">
-                    <img th:src="${session.user.profilePhotoUrl != null and !session.user.profilePhotoUrl.isEmpty()} ? ${session.user.profilePhotoUrl} : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=1780&auto=format&fit=crop'"
+                <a th:href="@{/profile}" class="active">
+                    <img th:src="${user != null and user.profilePhotoUrl != null and !user.profilePhotoUrl.isEmpty()} ? @{${user.profilePhotoUrl}} : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=1780&auto=format&fit=crop'"
                         class="user-avatar" style="width: 32px; height: 32px; border: none;">
                 </a>
-                <div class="dropdown-menu">
-                    <a href="/profile" class="dropdown-item"><i class="fas fa-user-circle"></i> View Profile</a>
-                    <a href="/settings" class="dropdown-item"><i class="fas fa-cog"></i> Settings</a>
-                    <div class="dropdown-divider"></div>
-                    <a href="/logout" class="dropdown-item" style="color: #ff4444;"><i class="fas fa-sign-out-alt"></i> Logout</a>
-                </div>
+
             </div>
         </div>
     </nav>
@@ -539,18 +635,19 @@
 
         <!-- Left Sidebar -->
         <aside class="sidebar">
-            <a href="/dashboard" class="sidebar-link"><i class="fas fa-home"></i> Home</a>
-            <a href="/explore" class="sidebar-link"><i class="fas fa-compass"></i> Explore</a>
-            <a href="/events" class="sidebar-link"><i class="fas fa-calendar-alt"></i> Events</a>
-            <a href="/battles" class="sidebar-link"><i class="fas fa-fire"></i> Battle Arena</a>
-            <a href="/achievements" class="sidebar-link"><i class="fas fa-trophy"></i> Achievements</a>
-            <a href="/messages" class="sidebar-link"><i class="fas fa-comment-dots"></i> Chat</a>
-            <a href="/reels" class="sidebar-link"><i class="fas fa-film"></i> Reels</a>
-            <a href="/profile" class="sidebar-link active"><i class="fas fa-user"></i> Profile</a>
-            <a href="/games" class="sidebar-link"><i class="fas fa-gamepad"></i> Games</a>
-            <a href="/music" class="sidebar-link"><i class="fas fa-music"></i> Music</a>
+            <a th:href="@{/dashboard}" class="sidebar-link"><i class="fas fa-home"></i> Home</a>
+            <a th:href="@{/explore}" class="sidebar-link"><i class="fas fa-compass"></i> Explore</a>
+            <a th:href="@{/events}" class="sidebar-link"><i class="fas fa-calendar-alt"></i> Events</a>
+            <a th:href="@{/battles}" class="sidebar-link"><i class="fas fa-fire"></i> Battle Arena</a>
+            <a th:href="@{/achievements}" class="sidebar-link"><i class="fas fa-trophy"></i> Achievements</a>
+            <a th:href="@{/messages}" class="sidebar-link"><i class="fas fa-comment-dots"></i> Chat</a>
+            <a th:href="@{/reels}" class="sidebar-link"><i class="fas fa-film"></i> Reels</a>
+            <a th:href="@{/profile}" class="sidebar-link active"><i class="fas fa-user"></i> Profile</a>
+            <a th:href="@{/games}" class="sidebar-link"><i class="fas fa-gamepad"></i> Games</a>
+            <a th:href="@{/wallet}" class="sidebar-link"><i class="fas fa-wallet"></i> Wallet</a>
+            <a th:href="@{/user/my-bookings}" class="sidebar-link"><i class="fas fa-ticket-alt"></i> My Bookings</a>
             <a href="javascript:void(0)" class="sidebar-link" onclick="openCreateModal()"><i class="fas fa-plus-circle" style="color: var(--accent);"></i> Create Post</a>
-            <a href="/logout" class="sidebar-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            <a th:href="@{/logout}" class="sidebar-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </aside>
 
         <!-- Center Feed -->
@@ -563,9 +660,7 @@
                     <div th:style="${hasStory} ? 'width:148px;height:148px;border-radius:50%;padding:3px;cursor:pointer;background:linear-gradient(45deg,#f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%);' : 'width:148px;height:148px;border-radius:50%;padding:3px;cursor:pointer;background:linear-gradient(135deg,var(--accent),var(--accent2));'"
                         th:attr="onclick='openStoryViewer(' + ${user.id} + ')'" title="View Story">
                         <img id="mainAvatar"
-                            th:src="${user.profilePhotoUrl != null and !user.profilePhotoUrl.isEmpty()}
-                                 ? ${user.profilePhotoUrl}
-                                 : ${'https://ui-avatars.com/api/?name=' + user.username + '&background=e8427c&color=fff&size=200'}"
+                            th:src="${user.profilePhotoUrl != null and !user.profilePhotoUrl.isEmpty()} ? @{${user.profilePhotoUrl}} : ${'https://ui-avatars.com/api/?name=' + user.username + '&background=e8427c&color=fff&size=200'}"
                             style="width:100%;height:100%;border-radius:50%;border:3px solid var(--bg-color);object-fit:cover;display:block;pointer-events:none;"
                             alt="avatar">
                     </div>
@@ -574,7 +669,6 @@
                         <i class="fas fa-plus"></i>
                     </div>
                 </div>
-            </div>
 
             <div class="profile-info">
                 <div class="profile-top">
@@ -585,7 +679,7 @@
                     </span>
 
                     <!-- Coin Balance -->
-                    <a href="/shop" class="coin-nav"
+                    <a th:href="@{/shop}" class="coin-nav"
                         style="background: rgba(255, 215, 0, 0.1); border: 1px solid rgba(255, 215, 0, 0.2); border-radius: 20px; padding: 5px 12px; height: auto; display: flex; align-items: center; gap: 8px; text-decoration: none; color: #ffd700; font-weight: 800; font-size: 13px; margin-left: 10px;">
                         <i class="fas fa-coins" style="font-size: 14px;"></i>
                         <span th:text="${user.coins}">0</span>
@@ -602,11 +696,11 @@
                         </button>
                         <!-- Request Sent -->
                         <button
-                            th:if="${!isFollowing and followRequests != null and #lists.contains(followRequests.![sender.id], session.user.id)}"
+                            th:if="${!isFollowing and hasSentFollowRequest}"
                             class="btn-edit" th:onclick="'followUserAjax(' + ${user.id} + ', this)'">Requested</button>
                         <!-- Not Following & No Request -->
                         <button
-                            th:if="${!isFollowing and (followRequests == null or !#lists.contains(followRequests.![sender.id], session.user.id))}"
+                            th:if="${!isFollowing and !hasSentFollowRequest}"
                             th:onclick="'followUserAjax(' + ${user.id} + ', this)'" class="btn-follow">
                             <i class="fas fa-user-plus"></i> Follow
                         </button>
@@ -616,11 +710,11 @@
                 <div class="stats-row">
                     <div class="stat" style="cursor:pointer;"
                         onclick="switchTab('grid', document.querySelector('.tab-btn'))">
-                        <span class="stat-num" th:text="${#lists.size(posts)}">0</span>
+                        <span class="stat-num" th:text="${postsCount}">0</span>
                         <span class="stat-label">Posts</span>
                     </div>
                     <div class="stat" style="cursor:pointer;" onclick="openFollowList('followers')">
-                        <span class="stat-num" th:text="${followersCount}">0</span>
+                        <span id="followers-count" class="stat-num" th:text="${followersCount}">0</span>
                         <span class="stat-label">Followers</span>
                     </div>
                     <div class="stat" style="cursor:pointer;" onclick="openFollowList('following')">
@@ -629,8 +723,10 @@
                     </div>
                 </div>
 
-                <p class="bio-text" th:if="${isOwnProfile}" style="color:var(--text-primary); font-weight:500;" th:text="${user.email}">
-                    email</p>
+                <p class="bio-text" th:if="${isOwnProfile}" style="color:var(--text-primary); font-weight:500; display:flex; align-items:center; gap:8px;">
+                    <span th:text="${user.email}">email</span>
+                    <span th:if="${user.emailVerified}" style="color: #4ade80; font-size: 13px;" title="Verified"><i class="fas fa-check-circle"></i></span>
+                </p>
                 <p class="bio-text" th:if="${user.collegeName != null and !user.collegeName.isEmpty()}" style="color:var(--primary); font-weight:600; margin-top:-4px;">
                     <i class="fas fa-university" style="font-size:12px; margin-right:4px;"></i>
                     <span th:text="${user.collegeName}">College</span>
@@ -642,24 +738,66 @@
                     <span class="skill-pill" th:each="s : ${#strings.arraySplit(user.skills,',')}"
                         th:text="${#strings.trim(s)}">skill</span>
                 </div>
-
-                <!-- Talent Score Box -->
-                <div class="talent-score-card">
-                    <h4><i class="fas fa-crown" style="color:#fbbf24;"></i> Public Profile Talent Score</h4>
-                    <div class="ts-grid">
-                        <div class="ts-item"><span class="ts-v" th:text="${eventsJoined}">0</span><span
-                                class="ts-l">Joined</span></div>
-                        <div class="ts-item"><span class="ts-v" th:text="${eventsWon}">0</span><span
-                                class="ts-l">Wins</span></div>
-                        <div class="ts-item"><span class="ts-v" th:text="${'#' + userRank}">#1</span><span
-                                class="ts-l">Rank</span></div>
-                        <div class="ts-item"><span class="ts-v" style="color:#fff; font-size:14px;"
-                                th:text="${user.premium ? '👑 Premium' : userBadge}">Novice</span><span
-                                class="ts-l">Badge</span></div>
-                    </div>
-                </div>
             </div>
 
+            <!-- Talent Score Box -->
+            <div class="talent-score-card">
+                <h4>
+                    <i class="fas fa-crown" style="color:#fbbf24;"></i> Public Profile Talent Score
+                    <span style="float:right; font-size: 1.2em; color: #fbbf24; margin-left: auto;" th:text="${talentScore}">0</span>
+                </h4>
+                <div class="ts-grid">
+                    <div class="ts-item"><span class="ts-v" th:text="${eventsJoined}">0</span><span
+                            class="ts-l">Joined</span></div>
+                    
+                    <div class="ts-item" style="padding: 8px;">
+                        <div style="display:flex; justify-content: space-around; width: 100%; margin-bottom: 2px;">
+                            <div style="text-align: center;">
+                                <span class="ts-v" style="font-size: 16px;" th:text="${battlesWon}">0</span><br>
+                                <span class="ts-l" style="font-size: 9px;">Battles</span>
+                            </div>
+                            <div style="width: 1px; background: rgba(255,255,255,0.2);"></div>
+                            <div style="text-align: center;">
+                                <span class="ts-v" style="font-size: 16px;" th:text="${gamesWon}">0</span><br>
+                                <span class="ts-l" style="font-size: 9px;">Games</span>
+                            </div>
+                        </div>
+                        <div style="font-size: 10px; color: rgba(255,255,255,0.9); font-weight: 600; text-transform: uppercase; background: rgba(0,0,0,0.15); border-radius: 4px; padding: 2px;">
+                            Total Wins: <span th:text="${eventsWon}">0</span>
+                        </div>
+                    </div>
+
+                    <div class="ts-item"><span class="ts-v" th:text="${'#' + userRank}">#1</span><span
+                            class="ts-l">Rank</span></div>
+                    <div class="ts-item"><span class="ts-v" style="color:#fff; font-size:14px;"
+                            th:text="${user.premium ? 'ðŸ‘‘ Premium' : userBadge}">Novice</span><span
+                            class="ts-l">Badge</span></div>
+                </div>
+            </div>
+        </div>
+
+    <!-- Private Account Lock -->
+    <div th:if="${isPrivateAndNotFollowing}" class="empty-state" style="margin-top: 50px;">
+        <i class="fas fa-lock" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 15px;"></i>
+        <h3>This Account is Private</h3>
+        <p>Follow to see their photos and videos.</p>
+    </div>
+
+    <th:block th:if="${!isPrivateAndNotFollowing}">
+    <script>
+        function switchTab(tabId, btn) {
+            // Hide all tab panels
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            // Show target tab panel
+            const panel = document.getElementById('tab-' + tabId);
+            if (panel) panel.classList.add('active');
+            
+            // Deactivate all tab buttons
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            // Activate clicked button
+            if (btn) btn.classList.add('active');
+        }
+    </script>
     <!-- Tabs -->
     <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('grid',this)"><i class="fas fa-th"></i> Posts</button>
@@ -667,6 +805,7 @@
         <button class="tab-btn" onclick="switchTab('followers',this)"><i class="fas fa-users"></i> Followers</button>
         <button class="tab-btn" onclick="switchTab('following',this)"><i class="fas fa-user-friends"></i> Following</button>
         <button class="tab-btn" th:if="${isOwnProfile}" onclick="switchTab('saved',this)"><i class="fas fa-bookmark"></i> Saved</button>
+        <button class="tab-btn" th:if="${isOwnProfile}" onclick="switchTab('rewards',this)"><i class="fas fa-gift"></i> My Rewards</button>
         <button class="tab-btn" th:if="${isOwnProfile}" onclick="switchTab('settings',this)"><i class="fas fa-cog"></i> Settings</button>
     </div>
 
@@ -701,8 +840,8 @@
                 </div>
 
                 <div class="grid-overlay">
-                    <span><i class="fas fa-heart"></i> <span class="lc">—</span></span>
-                    <span><i class="fas fa-comment"></i> <span class="cc">—</span></span>
+                    <span><i class="fas fa-heart"></i> <span class="lc">-</span></span>
+                    <span><i class="fas fa-comment"></i> <span class="cc">-</span></span>
                 </div>
             </div>
         </div>
@@ -734,7 +873,7 @@
 
                 <div class="grid-overlay">
                     <span><i class="fas fa-play"></i></span>
-                    <span><i class="fas fa-heart"></i> <span class="lc">—</span></span>
+                    <span><i class="fas fa-heart"></i> <span class="lc">-</span></span>
                 </div>
                 <div style="position:absolute;top:6px;left:6px;background:rgba(0,0,0,0.6);border-radius:4px;padding:2px 6px;font-size:10px;color:#fff;"><i class="fas fa-film"></i> REEL</div>
             </div>
@@ -756,7 +895,7 @@
             </div>
             <div th:each="f : ${followers}" class="follow-item">
                 <div class="follow-info">
-                    <img th:src="${f.profilePhotoUrl != null and !f.profilePhotoUrl.isEmpty() ? f.profilePhotoUrl : 'https://ui-avatars.com/api/?name=' + f.username + '&background=F84464&color=fff'}" class="follow-avatar">
+                    <img th:src="${f.profilePhotoUrl != null and !f.profilePhotoUrl.isEmpty()} ? @{${f.profilePhotoUrl}} : ${'https://ui-avatars.com/api/?name=' + f.username + '&background=F84464&color=fff'}" class="follow-avatar">
                     <div>
                         <a th:href="@{'/profile/' + ${f.username}}" class="follow-name" th:text="${f.username}">username</a>
                         <p class="follow-college" th:if="${f.collegeName != null and !f.collegeName.isEmpty()}" th:text="${f.collegeName}">College</p>
@@ -776,7 +915,7 @@
             </div>
             <div th:each="f : ${following}" class="follow-item">
                 <div class="follow-info">
-                    <img th:src="${f.profilePhotoUrl != null and !f.profilePhotoUrl.isEmpty() ? f.profilePhotoUrl : 'https://ui-avatars.com/api/?name=' + f.username + '&background=F84464&color=fff'}" class="follow-avatar">
+                    <img th:src="${f.profilePhotoUrl != null and !f.profilePhotoUrl.isEmpty()} ? @{${f.profilePhotoUrl}} : ${'https://ui-avatars.com/api/?name=' + f.username + '&background=F84464&color=fff'}" class="follow-avatar">
                     <div>
                         <a th:href="@{'/profile/' + ${f.username}}" class="follow-name" th:text="${f.username}">username</a>
                         <p class="follow-college" th:if="${f.collegeName != null and !f.collegeName.isEmpty()}" th:text="${f.collegeName}">College</p>
@@ -827,12 +966,45 @@
                 </div>
             </div>
         </div>
-        <div th:if="${savedPosts == null or #lists.isEmpty(savedPosts)}" class="empty-state">
-            <i class="far fa-bookmark"></i>
-            <p style="font-weight:600;">No Saved Posts Yet</p>
+         <div class="empty-state" th:if="${savedPosts == null or #lists.isEmpty(savedPosts)}">
+            <i class="fas fa-bookmark" style="font-size:3rem; color:var(--text-muted); margin-bottom:15px;"></i>
+            <h3>No saved posts yet</h3>
+            <p>Posts you save will appear here</p>
+        </div>
+    </div>
+    
+    <!-- My Rewards Tab -->
+    <div class="tab-panel" id="tab-rewards" th:if="${isOwnProfile}">
+        <div style="max-width:800px; margin: 0 auto;">
+            <div th:if="${userRewards != null and not #lists.isEmpty(userRewards)}" style="display:flex; flex-direction:column; gap:15px;">
+                <div th:each="reward : ${userRewards}" style="background:var(--surface); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:20px; display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <h4 style="color:#ffd700; margin-bottom:5px; font-weight:700;" th:text="${reward.secretReward.rewardName}">Reward Name</h4>
+                        <p style="font-size:14px; color:rgba(255,255,255,0.7); margin-bottom:10px;">Sponsored by <strong th:text="${reward.secretReward.businessName}">Business</strong></p>
+                        
+                        <div style="display:flex; gap:10px; font-size:12px;">
+                            <span style="background:rgba(255,255,255,0.1); padding:4px 8px; border-radius:4px;"><i class="far fa-calendar-alt"></i> Valid till <span th:text="${#temporals.format(reward.expiryDate, 'dd MMM yyyy')}">Date</span></span>
+                            <span th:if="${reward.status == 'AVAILABLE'}" style="background:rgba(16,185,129,0.2); color:#10b981; padding:4px 8px; border-radius:4px;"><i class="fas fa-check-circle"></i> Available</span>
+                            <span th:if="${reward.status == 'REDEEMED'}" style="background:rgba(255,255,255,0.1); color:#aaa; padding:4px 8px; border-radius:4px;"><i class="fas fa-check-double"></i> Redeemed</span>
+                        </div>
+                    </div>
+                    
+                    <div th:if="${reward.status == 'AVAILABLE'}" style="text-align:center;">
+                        <img th:src="@{/api/qrcode/generate(text='http://localhost:8080/rewards/redeem/' + ${reward.rewardCode})}" style="width:100px; height:100px; border-radius:8px; border:2px solid #fff;" alt="QR Code" />
+                        <p style="font-size:10px; margin-top:5px; color:#aaa;" th:text="${reward.rewardCode}">CODE</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="empty-state" th:if="${userRewards == null or #lists.isEmpty(userRewards)}">
+                <i class="fas fa-gift" style="font-size:3rem; color:var(--text-muted); margin-bottom:15px;"></i>
+                <h3>No rewards yet</h3>
+                <p>Attend events with secret rewards to unlock them!</p>
+            </div>
         </div>
     </div>
 
+    </th:block>
     </main>
     </div>
 
@@ -848,17 +1020,34 @@
                     style="background:none; border:none; color:var(--text-secondary); font-size:20px;">&times;</button>
             </div>
             <div style="padding:20px;">
-                <form th:action="@{/profile/update}" method="post">
+                <form th:action="@{/profile/update}" method="post" enctype="multipart/form-data" onsubmit="return validateEditProfileForm(this)">
                     <div style="display:flex; align-items:center; gap:15px; margin-bottom:20px;">
-                        <img id="editAvatarPrev"
-                            th:src="${user.profilePhotoUrl != null and !user.profilePhotoUrl.isEmpty()} ? ${user.profilePhotoUrl} : ${'https://ui-avatars.com/api/?name='+user.username+'&background=e8427c&color=fff&size=200'}"
-                            style="width:70px; height:70px; border-radius:50%; object-fit:cover; border:2px solid var(--accent);">
+                        <div style="position:relative; width:70px; height:70px; cursor:pointer;" onclick="document.getElementById('profilePhotoFileInput').click()">
+                            <img id="editAvatarPrev"
+                                th:src="${user.profilePhotoUrl != null and !user.profilePhotoUrl.isEmpty()} ? @{${user.profilePhotoUrl}} : ${'https://ui-avatars.com/api/?name='+user.username+'&background=e8427c&color=fff&size=200'}"
+                                style="width:70px; height:70px; border-radius:50%; object-fit:cover; border:2px solid var(--accent); display:block;">
+                            <div style="position:absolute; bottom:0; right:0; width:24px; height:24px; border-radius:50%; background:var(--accent); display:flex; align-items:center; justify-content:center; border:2px solid #fff;">
+                                <i class="fas fa-camera" style="font-size:11px; color:#fff;"></i>
+                            </div>
+                            <input type="file" id="profilePhotoFileInput" name="profilePhotoFile" accept="image/*" style="display:none;" onchange="previewProfilePhoto(this)">
+                            <input type="hidden" name="profilePhotoUrl" th:value="${user.profilePhotoUrl}">
+                        </div>
                         <div style="flex:1;">
-                            <label style="font-size:12px; color:var(--text-secondary);">Photo URL</label>
-                            <input type="text" name="profilePhotoUrl" th:value="${user.profilePhotoUrl}" maxlength="255"
-                                class="form-input" style="padding:8px;" oninput="livePhoto(this.value)">
+                            <span style="font-size:13px; font-weight:700; color:var(--accent);">Change photo</span>
+                            <p style="font-size:11px; color:var(--text-secondary); margin-top:2px;">Tap your photo to upload a new one</p>
                         </div>
                     </div>
+                    <script>
+                        function previewProfilePhoto(input) {
+                            if (input.files && input.files[0]) {
+                                const reader = new FileReader();
+                                reader.onload = function(e) {
+                                    document.getElementById('editAvatarPrev').src = e.target.result;
+                                };
+                                reader.readAsDataURL(input.files[0]);
+                            }
+                        }
+                    </script>
                     <div class="form-group">
                         <label>Username</label>
                         <input type="text" name="username" th:value="${user.username}" class="form-input" maxlength="255" required>
@@ -873,6 +1062,15 @@
                     </div>
                     <script>
                         document.getElementById('dobInput').max = new Date().toISOString().split("T")[0];
+                        function validateEditProfileForm(form) {
+                            const email = form.email.value.trim();
+                            const emailRegex = /^[a-zA-Z0-9][a-zA-Z0-9._-]*@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+                            if (!emailRegex.test(email)) {
+                                alert('Please enter a valid email address.');
+                                return false;
+                            }
+                            return true;
+                        }
                     </script>
                     <div class="form-group">
                         <label>Gender</label>
@@ -893,6 +1091,13 @@
                             placeholder="e.g. IIT Bombay">
                     </div>
                     <div class="form-group">
+                        <label>Account Privacy</label>
+                        <select name="privateAccount" class="form-input">
+                            <option value="false" th:selected="${!user.privateAccount}">Public</option>
+                            <option value="true" th:selected="${user.privateAccount}">Private</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
                         <label>About Me</label>
                         <textarea name="aboutMe" class="form-input" rows="3" maxlength="1000" th:text="${user.aboutMe}"></textarea>
                     </div>
@@ -904,6 +1109,7 @@
 
     <!-- Create Post Modal -->
     <div th:replace="~{fragments/modals :: createPostModal}"></div>
+    <div class="overlay" id="overlay" onclick="closeM('createPostModal'); closeM('editModal'); closeM('postDetailModal');"></div>
 
 
     <!-- Post Detail Modal -->
@@ -1221,14 +1427,37 @@
             if (!btnWrapper) return;
 
             const btnEl = btnWrapper.querySelector('button');
-            const isRequested = btnEl && btnEl.innerText.trim() === 'Requested';
-            const endpoint = isRequested ? `/profile/${userId}/cancel-follow/ajax` : `/profile/${userId}/follow/ajax`;
+            const isRequested = btnEl && btnEl.innerText.trim().includes('Requested');
+            const isFollowing = btnEl && btnEl.innerText.trim().includes('Following');
+
+            // Parse context path dynamically to support Tomcat deployments
+            const pathParts = window.location.pathname.split('/');
+            let dynamicCtx = '';
+            const appPages = ['profile', 'explore', 'dashboard', 'messages', 'settings', 'wallet', 'shop', 'events', 'games'];
+            for (let i = 1; i < pathParts.length; i++) {
+                if (appPages.includes(pathParts[i])) {
+                    dynamicCtx = pathParts.slice(0, i).join('/');
+                    break;
+                }
+            }
+
+            let endpoint = `${dynamicCtx}/profile/${userId}/follow/ajax`;
+            if (isRequested) {
+                endpoint = `${dynamicCtx}/profile/${userId}/cancel-follow/ajax`;
+            } else if (isFollowing) {
+                if (!confirm("Are you sure you want to unfollow this user?")) {
+                    return;
+                }
+                endpoint = `${dynamicCtx}/profile/${userId}/unfollow/ajax`;
+            }
 
             const originalContent = btnWrapper.innerHTML;
 
             // Optimistic update
             if (isRequested) {
                 btnWrapper.innerHTML = `<button class="btn-follow" disabled><i class="fas fa-user-plus"></i> Follow</button>`;
+            } else if (isFollowing) {
+                btnWrapper.innerHTML = `<button class="btn-edit" disabled><i class="fas fa-user-check"></i> Following</button>`;
             } else {
                 btnWrapper.innerHTML = `<button class="btn-edit" style="opacity: 0.7;" disabled>Requested</button>`;
             }
@@ -1249,7 +1478,13 @@
                     if (btnWrapper.closest('.notification-item')) {
                         btnWrapper.innerHTML = '<span style="font-size: 11px; color: var(--text-secondary);"><i class="fas fa-user-check"></i> Following</span>';
                     } else {
-                        btnWrapper.innerHTML = `<button class="btn-edit" disabled><i class="fas fa-user-check"></i> Following</button>`;
+                        btnWrapper.innerHTML = `<button class="btn-edit" onclick="followUserAjax(${userId}, this)"><i class="fas fa-user-check"></i> Following</button>`;
+                    }
+                    // Update follower count on profile
+                    const countEl = document.getElementById('followers-count');
+                    if (countEl) {
+                        let current = parseInt(countEl.innerText) || 0;
+                        countEl.innerText = current + 1;
                     }
                 } else if (data.status === 'REQUESTED') {
                     if (btnWrapper.closest('.notification-item')) {
@@ -1258,8 +1493,16 @@
                         btnWrapper.innerHTML = `<button class="btn-edit" onclick="followUserAjax(${userId}, this)">Requested</button>`;
                     }
                 } else if (data.status === 'FOLLOW') {
-                    // Canceled case
+                    // Canceled/Unfollowed case
                     btnWrapper.innerHTML = `<button onclick="followUserAjax(${userId}, this)" class="btn-follow"><i class="fas fa-user-plus"></i> Follow</button>`;
+                    // Decrement follower count if it was unfollowed
+                    if (isFollowing) {
+                        const countEl = document.getElementById('followers-count');
+                        if (countEl) {
+                            let current = parseInt(countEl.innerText) || 0;
+                            countEl.innerText = Math.max(0, current - 1);
+                        }
+                    }
                 }
             } catch (err) {
                 console.error(err);
@@ -1322,18 +1565,6 @@
             }
         }
 
-        function switchTab(tabId, btn) {
-            // Hide all tab panels
-            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-            // Show target tab panel
-            const panel = document.getElementById('tab-' + tabId);
-            if (panel) panel.classList.add('active');
-            
-            // Deactivate all tab buttons
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            // Activate clicked button
-            if (btn) btn.classList.add('active');
-        }
 
         // --- STORY VIEWER LOGIC ---
         let currentStoryIndex = 0;
@@ -1341,11 +1572,11 @@
         let storyTimer = null;
         const CURRENT_USER_ID = /*[[${session.user != null ? session.user.id : null}]]*/ null;
 
+        let currentSharePostId = null;
         let allFollowers = [];
         async function openShareModal(postId) {
             currentSharePostId = postId;
-            const modal = document.getElementById('shareModal');
-            if (modal) { modal.style.display = 'flex'; }
+            openM('shareModal');
             document.getElementById('shareSearchInput').value = '';
 
             try {
@@ -1395,10 +1626,13 @@
             }
         }
         function closeShareModal() {
-            const modal = document.getElementById('shareModal');
-            if (modal) { modal.style.display = 'none'; }
+            closeM('shareModal');
         }
         async function shareToUser(userId) {
+            if (!currentSharePostId) {
+                alert('Please add content before sharing');
+                return;
+            }
             const res = await fetch('/api/chat/share-post-to-user', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -1421,6 +1655,12 @@
                 if (currentStories.length === 0) {
                     if (userId == CURRENT_USER_ID) {
                         openM('createPostModal');
+                        setTimeout(() => {
+                            const btn = document.querySelector('#typeSelector button[data-type="STORY"]');
+                            if (btn && typeof selectPostType === 'function') {
+                                selectPostType(btn);
+                            }
+                        }, 50);
                     } else {
                         console.log('No active stories for this user.');
                     }
@@ -1499,7 +1739,7 @@
                     })
                 });
                 if (res.ok) {
-                    toast("Reaction sent! ❤️");
+                    toast("Reaction sent! â¤ï¸");
                 }
             } catch (e) {
                 console.error("Failed to send reaction", e);
@@ -1530,7 +1770,7 @@
                     })
                 });
                 if (res.ok) {
-                    toast("Reply sent! ✉️");
+                    toast("Reply sent! âœ‰ï¸");
                     input.blur();
                 }
             } catch (e) {
@@ -1625,7 +1865,7 @@
                 usernameSpan.textContent = story.username || 'Unknown';
             }
             if (timeSpan) {
-                timeSpan.textContent = '• ' + formatRelativeTime(story.createdAt);
+                timeSpan.textContent = 'â€¢ ' + formatRelativeTime(story.createdAt);
             }
 
             // Show/hide bottom reply panel or viewers panel based on ownership
@@ -1676,7 +1916,28 @@
                 `;
                 clearTimeout(storyTimer);
             } else {
-                mediaHtml = `<div style="padding: 20px; color: white; text-align: center; font-size: 20px; font-family: 'DM Sans', sans-serif;">${story.content || 'Text Story'}</div>`;
+                let textContent = story.content || 'Text Story';
+                let bgColor = '#000000'; // Default black background
+                let textColor = 'white'; // Default white text
+                
+                if (textContent.includes('[TXT:')) {
+                    const txtMatch = textContent.match(/\[TXT:(#[0-9a-fA-F]{3,6})\]/);
+                    if (txtMatch) {
+                        textColor = txtMatch[1];
+                        textContent = textContent.replace(txtMatch[0], '');
+                    }
+                }
+                
+                if (textContent.includes('[BG:')) {
+                    const bgMatch = textContent.match(/\[BG:(#[0-9a-fA-F]{3,6})\]/);
+                    if (bgMatch) {
+                        bgColor = bgMatch[1];
+                        textContent = textContent.replace(bgMatch[0], '');
+                    }
+                }
+                
+                textContent = textContent.trim();
+                mediaHtml = `<div style="width: 100%; height: 100%; padding: 20px; background: ${bgColor}; color: ${textColor}; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 28px; font-weight: bold; font-family: 'DM Sans', sans-serif;">${textContent}</div>`;
                 startStoryTimer(5000);
             }
 
@@ -1731,7 +1992,7 @@
                 listContent.innerHTML = viewers.map(v => `
                     <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px; text-align: left;">
                         <img src="${v.profilePhotoUrl || 'https://ui-avatars.com/api/?name=' + v.username + '&background=f84464&color=fff&size=80'}" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;">
-                        <span style="color: #fff; font-size: 14px; font-weight: 600;">@${v.username}</span>
+                        <span style="color: rgb(255, 255, 255); font-size: 14px; font-weight: 600;">@${v.username}</span>
                     </div>
                 `).join('');
             } catch (e) {
@@ -1857,15 +2118,15 @@
             <!-- Story Header (Avatar & Username) -->
             <div id="storyViewerHeader" style="position: absolute; top: 28px; left: 16px; display: flex; align-items: center; gap: 10px; z-index: 110; color: white;">
                 <img id="storyViewerAvatar" src="" style="width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid #fff; object-fit: cover; box-shadow: 0 2px 8px rgba(0,0,0,0.5);">
-                <span id="storyViewerUsername" style="font-weight: 700; font-size: 13.5px; text-shadow: 0 2px 5px rgba(0,0,0,0.95); font-family: 'DM Sans', sans-serif;">Username</span>
-                <span id="storyViewerTime" style="font-size: 11px; color: rgba(255,255,255,0.7); text-shadow: 0 2px 5px rgba(0,0,0,0.95); font-family: 'DM Sans', sans-serif;">• 2h ago</span>
+                <span id="storyViewerUsername" style="font-weight: 700; font-size: 13.5px; text-shadow: 0 2px 5px rgba(0,0,0,0.95); font-family: 'DM Sans', sans-serif; color: #ffffff !important;">Username</span>
+                <span id="storyViewerTime" style="font-size: 11px; color: rgba(255,255,255,0.7) !important; text-shadow: 0 2px 5px rgba(0,0,0,0.95); font-family: 'DM Sans', sans-serif;">â€¢ 2h ago</span>
             </div>
 
             <button
                 style="position: absolute; top: 28px; right: 16px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: #fff; background: rgba(0,0,0,0.4); border-radius: 50%; border: none; z-index: 120; font-weight: bold; transition: background 0.2s;"
                 onmouseover="this.style.background='rgba(0,0,0,0.7)'"
                 onmouseout="this.style.background='rgba(0,0,0,0.4)'"
-                onclick="closeStoryViewer()">✕</button>
+                onclick="closeStoryViewer()">âœ•</button>
 
             <!-- Delete button (only for owner) -->
             <button id="storyDeleteBtn"
@@ -1886,12 +2147,12 @@
             <div id="storyViewerBottom" onclick="event.stopPropagation()" style="position: absolute; bottom: 0; left: 0; right: 0; padding: 16px; background: linear-gradient(transparent, rgba(0,0,0,0.9)); z-index: 110; display: flex; flex-direction: column; gap: 10px;">
                 <!-- Quick React Emojis -->
                 <div class="story-reactions" style="display: flex; justify-content: space-around; font-size: 22px; user-select: none;">
-                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('❤️')">❤️</span>
-                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('😂')">😂</span>
-                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('😮')">😮</span>
-                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('😢')">😢</span>
-                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('👏')">👏</span>
-                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('🔥')">🔥</span>
+                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('â¤ï¸')">â¤ï¸</span>
+                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('ðŸ˜‚')">ðŸ˜‚</span>
+                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('ðŸ˜®')">ðŸ˜®</span>
+                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('ðŸ˜¢')">ðŸ˜¢</span>
+                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('ðŸ‘')">ðŸ‘</span>
+                    <span style="cursor: pointer; transition: transform 0.15s; display: inline-block;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" onclick="sendStoryReaction('ðŸ”¥')">ðŸ”¥</span>
                 </div>
                 <!-- Message Input -->
                 <div style="display: flex; gap: 8px; align-items: center; position: relative;">
@@ -1901,7 +2162,7 @@
                                onfocus="pauseStoryTimer()" onblur="resumeStoryTimer()"
                                onkeydown="if(event.key === 'Enter') sendStoryReply()">
                         <button type="button" onclick="event.stopPropagation(); toggleStoryEmojiPicker()" 
-                                style="position: absolute; right: 12px; background: none; border: none; font-size: 16px; cursor: pointer; color: #aaa; outline: none; user-select: none;">😀</button>
+                                style="position: absolute; right: 12px; background: none; border: none; font-size: 16px; cursor: pointer; color: #aaa; outline: none; user-select: none;">ðŸ˜€</button>
                     </div>
                     <button onclick="sendStoryReply()" 
                             style="background: #f84464; border: none; border-radius: 50%; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; flex-shrink: 0;">
@@ -1914,12 +2175,12 @@
                          onclick="event.stopPropagation()">
                          <!-- Categories / Tabs -->
                          <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px; margin-bottom: 8px; font-size: 14px; color: #aaa; font-weight: 700; user-select: none;">
-                             <span style="cursor: pointer; color: #fff;" onclick="switchStoryEmojiCategory(this, 'smileys')">😀</span>
-                             <span style="cursor: pointer;" onclick="switchStoryEmojiCategory(this, 'gestures')">👍</span>
-                             <span style="cursor: pointer;" onclick="switchStoryEmojiCategory(this, 'hearts')">❤️</span>
-                             <span style="cursor: pointer;" onclick="switchStoryEmojiCategory(this, 'animals')">🐱</span>
-                             <span style="cursor: pointer;" onclick="switchStoryEmojiCategory(this, 'food')">🍕</span>
-                             <span style="cursor: pointer;" onclick="switchStoryEmojiCategory(this, 'activities')">⚽</span>
+                             <span style="cursor: pointer; color: #fff;" onclick="switchStoryEmojiCategory(this, 'smileys')">ðŸ˜€</span>
+                             <span style="cursor: pointer;" onclick="switchStoryEmojiCategory(this, 'gestures')">ðŸ‘</span>
+                             <span style="cursor: pointer;" onclick="switchStoryEmojiCategory(this, 'hearts')">â¤ï¸</span>
+                             <span style="cursor: pointer;" onclick="switchStoryEmojiCategory(this, 'animals')">ðŸ±</span>
+                             <span style="cursor: pointer;" onclick="switchStoryEmojiCategory(this, 'food')">ðŸ•</span>
+                             <span style="cursor: pointer;" onclick="switchStoryEmojiCategory(this, 'activities')">âš½</span>
                          </div>
                          <!-- Emoji Content Area -->
                          <div class="emoji-picker-content" style="height: 140px; overflow-y: auto; display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; font-size: 18px; text-align: center;">
@@ -1949,7 +2210,7 @@
         <div style="background:#1e1e2e; border:1px solid rgba(255,255,255,0.1); border-radius:20px; width:100%; max-width:360px; max-height:60vh; display:flex; flex-direction:column; box-shadow:0 25px 60px rgba(0,0,0,0.6); overflow:hidden;">
             <!-- Header -->
             <div style="padding:16px 20px; border-bottom:1px solid rgba(255,255,255,0.1); display:flex; justify-content:space-between; align-items:center;">
-                <h3 style="font-size:15px; font-weight:700; color:#fff; margin:0;"><i class="fas fa-eye" style="margin-right:8px; color:#f84464;"></i>Viewers</h3>
+                <h3 style="font-size:15px; font-weight:700; color:rgb(255, 255, 255); margin:0;"><i class="fas fa-eye" style="margin-right:8px; color:#f84464;"></i>Viewers</h3>
                 <button onclick="closeStoryViewersList()" style="background:rgba(255,255,255,0.08); border:none; color:#aaa; width:28px; height:28px; border-radius:50%; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'"><i class="fas fa-times"></i></button>
             </div>
             <!-- Body -->
@@ -2004,7 +2265,6 @@
     <style>
         /* Reel grid hover preview */
         .reel-grid-item .reel-thumb-vid { width:100%; height:100%; object-fit:cover; pointer-events:none; }
-        .reel-grid-item:hover .reel-thumb-vid { }
 
         /* Live stats loading dots on grid */
         @keyframes dotPulse { 0%,80%,100%{opacity:0} 40%{opacity:1} }
@@ -2185,8 +2445,11 @@
             const inp = document.getElementById('rvCmtInput');
             if (!inp.value.trim()) return;
             const id = reelItems[rvIndex].dataset.id;
-            const params = new URLSearchParams({ content: inp.value });
-            const r = await fetch(`/api/posts/${id}/comment`, { method: 'POST', body: params });
+            const r = await fetch(`/api/posts/${id}/comment`, { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'content=' + encodeURIComponent(inp.value)
+            });
             if (r.ok) {
                 const d = await r.json();
                 document.getElementById('rvCmtCount').textContent = d.count;
@@ -2241,6 +2504,25 @@
         </div>
     </div>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const tabParam = urlParams.get('tab');
+            if (tabParam) {
+                const tabBtn = document.querySelector(`.tab-btn[onclick*="${tabParam}"]`);
+                if (tabBtn) {
+                    switchTab(tabParam, tabBtn);
+                    document.querySelector('.tabs').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+        });
+    </script>
 </body>
 
 </html>
+
+
+
+
+
+

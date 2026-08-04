@@ -1,10 +1,11 @@
+
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bubble Shot – Realistic | Zentrix</title>
+    <title>Bubble Shot â€“ Realistic | Zentrix</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Rajdhani:wght@400;600;700&display=swap');
 
@@ -48,6 +49,7 @@
             flex-direction: column;
             align-items: center;
             filter: drop-shadow(0 30px 80px rgba(0, 0, 0, 0.95)) drop-shadow(0 0 60px rgba(200, 120, 30, 0.15));
+            transform-origin: top center;
         }
 
         /* Wooden frame top */
@@ -362,10 +364,145 @@
         .exit-btn:hover {
             background: rgba(255, 255, 255, 0.12);
         }
+        /* In-game Exit Button */
+        .ingame-exit-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            background: rgba(200, 40, 40, 0.8);
+            color: #fff;
+            border: 2px solid #ff5555;
+            border-radius: 8px;
+            font-family: 'Cinzel', serif;
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            cursor: pointer;
+            z-index: 500;
+            transition: 0.3s;
+            backdrop-filter: blur(5px);
+        }
+        .ingame-exit-btn:hover {
+            background: rgba(220, 50, 50, 1);
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(255, 80, 80, 0.6);
+        }
+
+        /* Exit Confirmation Modal */
+        #exit-confirm-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        #exit-confirm-modal.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        .exit-modal-box {
+            background: linear-gradient(180deg, #1a0800 0%, #3a1d02 100%);
+            border: 3px solid #ffd070;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 0 40px rgba(255, 180, 50, 0.3);
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+        }
+        #exit-confirm-modal.active .exit-modal-box {
+            transform: translateY(0);
+        }
+        .exit-modal-box h2 {
+            font-family: 'Cinzel', serif;
+            color: #ffd070;
+            font-size: 2rem;
+            margin-bottom: 15px;
+            text-shadow: 0 0 10px rgba(255, 180, 50, 0.5);
+        }
+        .exit-modal-box p {
+            color: #ddd;
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+            font-family: 'Rajdhani', sans-serif;
+        }
+        .exit-modal-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+        .exit-modal-btn {
+            padding: 12px 25px;
+            font-family: 'Cinzel', serif;
+            font-weight: 700;
+            font-size: 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: 0.2s;
+        }
+        .btn-cancel {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .btn-cancel:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        .btn-confirm {
+            background: linear-gradient(135deg, #c8832a 0%, #ffd070 50%, #c8832a 100%);
+            color: #1a0800;
+            border: none;
+            box-shadow: 0 4px 15px rgba(200, 130, 40, 0.4);
+        }
+        .btn-confirm:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(200, 130, 40, 0.6);
+        }
+
+        /* Mobile responsivenes */
+        @media (max-width: 768px) {
+            .ingame-exit-btn {
+                top: 10px;
+                left: 10px;
+                padding: 8px 15px;
+                font-size: 0.9rem;
+            }
+            .exit-modal-box {
+                padding: 30px 20px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+        }
     </style>
 </head>
 
 <body>
+
+    <button class="ingame-exit-btn" onclick="document.getElementById('exit-confirm-modal').classList.add('active')">
+        &#10006; EXIT
+    </button>
+
+    <div id="exit-confirm-modal">
+        <div class="exit-modal-box">
+            <h2>EXIT GAME?</h2>
+            <p>Are you sure you want to exit the game?</p>
+            <div class="exit-modal-actions">
+                <button class="exit-modal-btn btn-cancel" onclick="document.getElementById('exit-confirm-modal').classList.remove('active')">NO</button>
+                <a th:href="@{/games}" class="exit-modal-btn btn-confirm">YES</a>
+            </div>
+        </div>
+    </div>
 
     <div id="cabinet">
         <div class="led-strip" style="width:490px;border-radius:12px 12px 0 0;"></div>
@@ -380,11 +517,11 @@
                 <canvas id="c" width="426" height="580"></canvas>
                 <div id="overlay">
                     <h2 id="ov-title">BUBBLE SHOT</h2>
-                    <p id="ov-msg">Aim with your mouse · Click to fire · Match 3+ bubbles to pop them</p>
+                    <p id="ov-msg">Aim with your mouse &middot; Click to fire &middot; Match 3+ bubbles to pop them</p>
                     <div class="ov-score" id="ov-score" style="display:none"></div>
                     <button id="play-btn">INSERT COIN</button>
                     <div style="margin-top: 20px;">
-                        <a href="/games" class="exit-btn">Exit Game</a>
+                        <a th:href="@{/games}" class="exit-btn">Exit Game</a>
                     </div>
                 </div>
             </div>
@@ -422,7 +559,7 @@
     <script th:inline="none">
         /*<![CDATA[*/
         // ═══════════════════════════════════════════════════
-        //  BUBBLE SHOT — Hyper-Realistic Renderer + Game Logic
+        //  BUBBLE SHOT &mdash; Hyper-Realistic Renderer + Game Logic
         // ═══════════════════════════════════════════════════
 
         const C = document.getElementById('c');
@@ -431,10 +568,33 @@
         const nctx = NX.getContext('2d');
         const arenaWrap = document.getElementById('arena-wrap');
 
-        const W = 426, H = 580, R = 21;
-        const COLS = 10, ROW_H = R * 1.73, TOP = 38, SY = H - 60, SX = W / 2, SPD = 11;
+        let R = 21;
+        let W = window.innerWidth - 64 - 40; // 64 for wood sides, 40 for safety margin
+        let H = window.innerHeight - 36 - 10 - 80 - 16; // 36 top, 10 bars, 80 bottom, 16 safety
+        
+        // Mobile fallback
+        if (W < 300) W = 300;
+        if (H < 400) H = 400;
 
-        // Realistic glass bubble color palette — each has base, light, dark, glow
+        let COLS = Math.floor((W - R) / (R * 2));
+        W = COLS * R * 2 + R; // Snap width perfectly to grid
+        
+        let ROW_H = R * 1.73;
+        let TOP = 38;
+        let SY = H - 60;
+        let SX = W / 2;
+        let SPD = 11;
+
+        // Apply dynamic sizes
+        C.width = W;
+        C.height = H;
+        const cabWidth = (W + 64) + 'px';
+        document.querySelector('.wood-top').style.width = cabWidth;
+        document.querySelector('.bottom-panel').style.width = cabWidth;
+        document.querySelectorAll('.metal-bar').forEach(el => el.style.width = cabWidth);
+        document.querySelectorAll('.led-strip').forEach(el => el.style.width = cabWidth);
+
+        // Realistic glass bubble color palette &mdash; each has base, light, dark, glow
         const PALETTE = [
             { id: 'ruby', base: '#d62e2e', mid: '#ff5555', hi: '#ffaaaa', dark: '#7a0a0a', glow: '#ff2200', rim: '#ff6644' },
             { id: 'sapph', base: '#1a5fb4', mid: '#3d90e0', hi: '#9fd0ff', dark: '#0a2a6a', glow: '#0088ff', rim: '#44aaff' },
@@ -446,9 +606,16 @@
         ];
 
         let grid = [], proj = null, nextPal, angle = -Math.PI / 2;
-        let score = 0, best = 0, level = 1, shots = 0;
+        let score = 0, shots = 0;
+        let best = parseInt(localStorage.getItem('bubble_best')) || 0;
+        let level = parseInt(localStorage.getItem('bubble_level')) || 1;
         let particles = [], sparkles = [], state = 'idle';
         let ripples = [];
+
+        // No scale needed anymore since we calculated exact sizes
+        function resizeCabinet() {
+            // we do nothing here on resize to prevent breaking the live grid
+        }
 
         // ── Grid helpers ──────────────────────────────────────────────────
         function rowOff(r) { return r % 2 === 0 ? 0 : R; }
@@ -583,15 +750,23 @@
 
         function doNextLevel() {
             level++;
+            localStorage.setItem('bubble_level', level);
             if (level > 10) { state = 'win'; showOv('YOU WIN!', 'All bubbles cleared!', score, 'PLAY AGAIN'); return; }
             initGrid(); nextPal = randPal(); proj = newProj(); updateHUD();
         }
         function triggerLose() {
-            state = 'over'; if (score > best) best = score; updateHUD();
+            state = 'over'; 
+            if (score > best) {
+                best = score;
+                localStorage.setItem('bubble_best', best);
+            }
+            updateHUD();
             showOv('GAME OVER', 'Bubbles reached the danger zone!', score, 'TRY AGAIN');
         }
         function startGame() {
-            score = 0; shots = 0; level = 1; particles = []; sparkles = []; ripples = [];
+            score = 0; shots = 0; 
+            level = parseInt(localStorage.getItem('bubble_level')) || 1;
+            particles = []; sparkles = []; ripples = [];
             initGrid(); nextPal = randPal(); proj = newProj();
             state = 'playing';
             document.getElementById('overlay').classList.add('hidden');
@@ -833,3 +1008,4 @@
 </body>
 
 </html>
+
