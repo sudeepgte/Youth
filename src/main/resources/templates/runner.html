@@ -462,6 +462,10 @@
     <div id="ui-container">
         <div id="top-hud">
             <div style="display: flex; flex-direction: column; gap: 10px;">
+                <a th:href="@{/games}" class="hud-card neon-purple" style="text-decoration: none; cursor: pointer; pointer-events: auto; justify-content: center; padding: 10px 16px;">
+                    <i class="fas fa-sign-out-alt" style="color: #fff; font-size: 1.2rem;"></i>
+                    <span class="score-label" style="color: #fff; font-size: 0.9rem; letter-spacing: 1px;">EXIT</span>
+                </a>
                 <div class="hud-card neon-gold">
                     <i class="fas fa-coins" style="color: var(--accent); font-size: 1.5rem;"></i>
                     <span class="score-value" id="coin-val" style="color: var(--accent);">0</span>
@@ -472,10 +476,18 @@
                 </div>
             </div>
             
-            <div class="hud-card neon-blue">
-                <div class="score-display">
-                    <span class="score-label">TOP SCORE</span>
-                    <span class="score-value" id="score-val">000000</span>
+            <div style="display: flex; flex-direction: column; gap: 10px; align-items: flex-end;">
+                <div class="hud-card neon-blue" style="border-color: #facc15; box-shadow: 0 0 15px rgba(250, 204, 21, 0.3); padding: 8px 16px;">
+                    <div class="score-display">
+                        <span class="score-label" style="color: #facc15;">BEST SCORE</span>
+                        <span class="score-value" id="best-score-val" style="color: #facc15; font-size: 1.8rem;">000000</span>
+                    </div>
+                </div>
+                <div class="hud-card neon-blue">
+                    <div class="score-display">
+                        <span class="score-label">SCORE</span>
+                        <span class="score-value" id="score-val">000000</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -549,6 +561,7 @@
         let isJumping = false, isSliding = false, isFlying = false;
         let jumpVelocity = 0, slideTimer = 0;
         let totalScore = 0, coinCount = 0, collectedBoxes = 0;
+        let bestScore = localStorage.getItem('runnerBestScore') || 0;
         let speed = 1.15, baseSpeed = 1.15;
         let gameActive = false, frameCount = 0;
         let inspectorChase = 0; // 0: none, >0: timer
@@ -715,6 +728,7 @@
             document.getElementById('restart-btn').onclick = startGame;
             document.getElementById('box-opener').onclick = openMysteryBox;
             document.getElementById('claim-btn').onclick = claimReward;
+            document.getElementById('best-score-val').textContent = String(bestScore).padStart(6, '0');
 
             // --- Mobile Controls Initialization ---
             let leftInterval = null;
@@ -1212,6 +1226,11 @@
             const worldMove = speed * 160 * delta;
             totalScore += Math.floor(speed * delta * 800); 
             document.getElementById('score-val').textContent = String(totalScore).padStart(6, '0');
+            if (totalScore > bestScore) {
+                bestScore = totalScore;
+                localStorage.setItem('runnerBestScore', bestScore);
+                document.getElementById('best-score-val').textContent = String(bestScore).padStart(6, '0');
+            }
             document.getElementById('coin-val').textContent = coinCount;
 
             const leanTarget = (targetX - player.position.x) * 0.12;

@@ -365,7 +365,7 @@ public class ProfileController {
     }
 
     @RequestMapping(value = "/reset-password", method = RequestMethod.POST)
-    public String resetPassword(@RequestParam String newPassword, HttpSession session) {
+    public String resetPassword(@RequestParam String oldPassword, @RequestParam String newPassword, HttpSession session) {
         Object sessionUser = session.getAttribute("user");
         if (!(sessionUser instanceof User)) {
             return "redirect:/login";
@@ -374,6 +374,10 @@ public class ProfileController {
 
         User dbUser = userRepository.findById(user.getId()).orElse(null);
         if (dbUser != null) {
+            // Verify old password
+            if (dbUser.getPassword() == null || !dbUser.getPassword().equals(oldPassword)) {
+                return "redirect:/profile?error=incorrect_old_password";
+            }
             dbUser.setPassword(newPassword);
             userRepository.save(dbUser);
         }
