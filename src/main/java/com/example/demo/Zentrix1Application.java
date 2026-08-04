@@ -22,5 +22,4 @@ public class Zentrix1Application {
 		SpringApplication.run(Zentrix1Application.class, args);
 		System.out.println("Hello folks");
 	}
-
 }

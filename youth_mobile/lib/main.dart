@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
-// Sections
+import 'providers/auth_provider.dart';
+import 'screens/auth/login_page.dart';
+import 'screens/auth/register_page.dart';
+import 'screens/shell/main_shell.dart';
 import 'widgets/hero_section.dart';
 import 'widgets/stats_section.dart';
 import 'widgets/features_section.dart';
@@ -14,12 +18,14 @@ import 'widgets/contact_section.dart';
 import 'widgets/faq_section.dart';
 import 'widgets/footer_section.dart';
 
-// Screens
-import 'screens/login_page.dart';
-import 'screens/register_page.dart';
-
 void main() {
-  runApp(const YouthApp());
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => AuthProvider()..bootstrap(),
+      child: const YouthApp(),
+    ),
+  );
 }
 
 class YouthApp extends StatelessWidget {
@@ -39,9 +45,27 @@ class YouthApp extends StatelessWidget {
         textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme),
         useMaterial3: true,
       ),
-      home: const LandingPage(),
+      home: const AuthGate(),
       debugShowCheckedModeBanner: false,
     );
+  }
+}
+
+class AuthGate extends StatelessWidget {
+  const AuthGate({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final auth = context.watch<AuthProvider>();
+    if (!auth.initialized) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (auth.isLoggedIn) {
+      return const MainShell();
+    }
+    return const LandingPage();
   }
 }
 
@@ -73,9 +97,7 @@ class LandingPage extends StatelessWidget {
           Builder(
             builder: (context) => IconButton(
               icon: const Icon(Icons.menu),
-              onPressed: () {
-                Scaffold.of(context).openEndDrawer();
-              },
+              onPressed: () => Scaffold.of(context).openEndDrawer(),
             ),
           ),
         ],
@@ -92,26 +114,13 @@ class LandingPage extends StatelessWidget {
                   onPressed: () => Navigator.pop(context),
                 ),
               ),
-              Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-                  children: [
-                    _buildDrawerItem('Home'),
-                    const Divider(color: Colors.white10, height: 32),
-                    _buildDrawerItem('Events'),
-                    const Divider(color: Colors.white10, height: 32),
-                    _buildDrawerItem('Games'),
-                    const Divider(color: Colors.white10, height: 32),
-                    _buildDrawerItem('About Us'),
-                    const Divider(color: Colors.white10, height: 32),
-                    _buildDrawerItem('Careers'),
-                    const Divider(color: Colors.white10, height: 32),
-                    _buildDrawerItem('Contact'),
-                    const Divider(color: Colors.white10, height: 32),
-                    _buildDrawerItem('FAQs'),
-                    const Divider(color: Colors.white10, height: 32),
-                    _buildDrawerItem('Heat Map'),
-                  ],
+              const Expanded(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                  child: Text(
+                    'Events · Games · Social · Battles · Music',
+                    style: TextStyle(color: Colors.white70, fontSize: 16),
+                  ),
                 ),
               ),
               Padding(
@@ -122,26 +131,20 @@ class LandingPage extends StatelessWidget {
                       width: double.infinity,
                       child: OutlinedButton(
                         onPressed: () {
-                          Navigator.pop(context); // close drawer
+                          Navigator.pop(context);
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => const LoginPage()),
+                            MaterialPageRoute(builder: (_) => const LoginPage()),
                           );
                         },
                         style: OutlinedButton.styleFrom(
-                          side: BorderSide(color: Colors.white.withOpacity(0.2)),
+                          side: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
                           padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         ),
                         child: Text(
                           'Login',
-                          style: GoogleFonts.inter(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
+                          style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
                         ),
                       ),
                     ),
@@ -150,26 +153,20 @@ class LandingPage extends StatelessWidget {
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: () {
-                          Navigator.pop(context); // close drawer
+                          Navigator.pop(context);
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => const RegisterPage()),
+                            MaterialPageRoute(builder: (_) => const RegisterPage()),
                           );
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blueAccent, // Use gradient in future if needed
+                          backgroundColor: Colors.blueAccent,
                           padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         ),
                         child: Text(
                           'Register',
-                          style: GoogleFonts.inter(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
+                          style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
                         ),
                       ),
                     ),
@@ -209,17 +206,6 @@ class LandingPage extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildDrawerItem(String title) {
-    return Text(
-      title,
-      style: GoogleFonts.inter(
-        color: Colors.white,
-        fontSize: 16,
-        fontWeight: FontWeight.bold,
       ),
     );
   }
