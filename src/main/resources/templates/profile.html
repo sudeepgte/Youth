@@ -1,7 +1,8 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 
 <head>
+    <script>if(localStorage.getItem('youthian_theme')==='dark') document.documentElement.classList.add('dark-theme');</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="${user.username + ' &bull; Zentrix'}">Profile</title>
@@ -17,7 +18,7 @@
             display: grid;
             grid-template-columns: 250px 1fr;
             gap: 30px;
-            max-width: 1200px;
+            max-width: 1440px;
             margin: calc(var(--dashboard-nav-height) + 16px) auto 0;
             padding: 0 20px;
         }
@@ -567,7 +568,7 @@
             }
         }
     </style>
-    <script th:src="@{/js/tab-support.js}"></script>
+    <script defer th:src="@{/js/tab-support.js}"></script>
 </head>
 
 <body>
@@ -928,16 +929,49 @@
 
     <!-- Settings -->
     <div class="tab-panel" id="tab-settings" th:if="${isOwnProfile}">
-        <div style="max-width:500px; margin:0 auto;">
-            <div class="feature-card" style="margin-bottom:20px;">
-                <h3 style="margin-bottom:15px;"><i class="fas fa-lock" style="color:var(--accent);"></i> Reset
-                    Password</h3>
-                <form th:action="@{/profile/reset-password}" method="post" style="display:flex; gap:10px;">
-                    <input type="password" name="newPassword" class="form-input" placeholder="New password" required>
-                    <button type="submit" class="cta-btn" style="padding:10px 20px;">Reset</button>
+        <div style="max-width:500px; margin:0 auto; display:flex; flex-direction:column; gap:20px;">
+            <div class="feature-card">
+                <h3 style="margin-bottom:15px;"><i class="fas fa-lock" style="color:var(--accent);"></i> Reset Password</h3>
+                <form th:action="@{/profile/reset-password}" method="post" style="display:flex; flex-direction:column; gap:15px;">
+                    <div>
+                        <label style="font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 5px; display: block;">Old Password</label>
+                        <input type="password" name="oldPassword" class="form-input" placeholder="Enter old password" required>
+                    </div>
+                    <div>
+                        <label style="font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 5px; display: block;">New Password</label>
+                        <input type="password" name="newPassword" class="form-input" placeholder="Enter new password" required>
+                    </div>
+                    <button type="submit" class="cta-btn" style="padding:10px 20px; align-self: flex-start;">Reset Password</button>
                 </form>
             </div>
+            
+            <div class="feature-card">
+                <h3 style="margin-bottom:15px;"><i class="fas fa-paint-roller" style="color:var(--primary);"></i> Theme Settings</h3>
+                <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 15px;">Customize the appearance of your Youthian dashboard.</p>
+                <div style="display: flex; gap: 15px;">
+                    <button type="button" class="btn btn-outline" onclick="setTheme('light')" style="flex: 1; padding: 12px; border-radius: 12px; display:flex; flex-direction:column; align-items:center; gap:8px;">
+                        <i class="fas fa-sun" style="font-size:24px; color:#f59e0b;"></i>
+                        <span style="font-size:13px; font-weight:700;">Light Mode</span>
+                    </button>
+                    <button type="button" class="btn btn-outline" onclick="setTheme('dark')" style="flex: 1; padding: 12px; border-radius: 12px; display:flex; flex-direction:column; align-items:center; gap:8px;">
+                        <i class="fas fa-moon" style="font-size:24px; color:#6366f1;"></i>
+                        <span style="font-size:13px; font-weight:700;">Dark Mode</span>
+                    </button>
+                </div>
+            </div>
         </div>
+        
+        <script>
+            function setTheme(theme) {
+                if (theme === 'dark') {
+                    document.body.classList.add('dark-theme');
+                    localStorage.setItem('youthian_theme', 'dark');
+                } else {
+                    document.body.classList.remove('dark-theme');
+                    localStorage.setItem('youthian_theme', 'light');
+                }
+            }
+        </script>
     </div>
 
     <!-- Saved Posts -->

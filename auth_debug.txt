@@ -2639,7 +2639,7 @@ redirecting to /login?error=timeout
 AuthInterceptor Debug Log
 token is NULL!
 redirecting to /login?error=timeout
->>>>>>> b824897191e531d043ab915ad3e458dd0bf267ff
+
 AuthInterceptor Debug Log
 token is NULL!
 redirecting to /login?error=timeout
@@ -2804,9 +2804,38 @@ token is NULL!
 redirecting to /login?error=timeout
 
 AuthInterceptor Debug Log
+
+
+token found = eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzeWVkIiwiaWF0IjoxNzg1NzM1NjEyLCJleHAiOjE3ODU3NzE2MTJ9.9cEKNkZ6Tdh63g3yTyrMHCuTSxDccxCqG-xHCp7O18A28bFvo3QV1CtD39Q4PFbk7dl9r_bHhXK3E-O8Yk_Bjw
+Exception caught: JWT expired at 2026-08-03T15:40:12Z. Current time: 2026-08-04T04:36:46Z, a difference of 46594544 milliseconds.  Allowed clock skew: 0 milliseconds.
+
+
 token found = eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJBYXNpZiBLaGFuIiwiaWF0IjoxNzg1NzM4NDU1LCJleHAiOjE3ODU3NzQ0NTV9.phA4liPeBVQGtBZpVK9mY_OWdfdkNSkxFQpPJ_fN3pcezrLeV7rFZbLFyPuZV8fp0cndwNdXRe6zSVQxOxn4Dg
 Exception caught: JWT expired at 2026-08-03T16:27:35Z. Current time: 2026-08-04T04:21:46Z, a difference of 42851643 milliseconds.  Allowed clock skew: 0 milliseconds.
+
 redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+
+token is NULL!
+redirecting to /login?error=timeout
+
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+
 AuthInterceptor Debug Log
 token is NULL!
 redirecting to /login?error=timeout
@@ -2819,12 +2848,19 @@ redirecting to /login?error=timeout
 AuthInterceptor Debug Log
 token is NULL!
 redirecting to /login?error=timeout
+
+
 AuthInterceptor Debug Log
 token is NULL!
 redirecting to /login?error=timeout
+
+
+
 AuthInterceptor Debug Log
 token is NULL!
 redirecting to /login?error=timeout
+
+
 AuthInterceptor Debug Log
 token is NULL!
 redirecting to /login?error=timeout

@@ -114,7 +114,54 @@
         const SYMBOL = { Skip: "\u2298", Reverse: "\u21BA", "Draw Two": "+2", Wild: "\u2605", "Wild Draw Four": "\u2605+4" };
 
         /* --- UI Components (SVG/ColorPicker/Toast) --- */
-        function CardFace({ card, width = 72, height = 108 }) {
+        
+        function showGlobalToast(msg) {
+            let toast = document.getElementById('global-invite-toast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'global-invite-toast';
+                document.body.appendChild(toast);
+            }
+            toast.style.cssText = 'position:fixed !important;top:25px !important;left:50% !important;transform:translateX(-50%) !important;background:linear-gradient(135deg, #10b981 0%, #059669 100%) !important;color:#ffffff !important;padding:12px 28px !important;border-radius:50px !important;font-weight:800 !important;font-size:14px !important;letter-spacing:0.5px !important;z-index:999999 !important;box-shadow:0 10px 30px rgba(16,185,129,0.45), 0 4px 12px rgba(0,0,0,0.5) !important;border:1px solid rgba(255,255,255,0.3) !important;display:inline-flex !important;align-items:center !important;gap:10px !important;white-space:nowrap !important;pointer-events:none !important;box-sizing:border-box !important;max-width:90vw !important;font-family:sans-serif !important;';
+            toast.innerHTML = '<i class="fas fa-check-circle" style="font-size:16px;color:#fff;"></i> <span>' + msg + '</span>';
+            toast.style.display = 'inline-flex';
+
+            if (window.toastTimeout) clearTimeout(window.toastTimeout);
+            window.toastTimeout = setTimeout(() => {
+                toast.style.display = 'none';
+            }, 2800);
+        }
+
+        function copyUnoCode(code) {
+            if (!code) return;
+            const dummy = document.createElement('textarea');
+            dummy.style.position = 'fixed';
+            dummy.style.opacity = '0';
+            document.body.appendChild(dummy);
+            dummy.value = code;
+            dummy.select();
+            document.execCommand('copy');
+            document.body.removeChild(dummy);
+            showGlobalToast("Room code copied successfully.");
+        }
+
+        function shareUnoCode(code) {
+            if (!code) return;
+            const origin = window.location.origin;
+            const joinUrl = origin + '/play-uno?room=' + code;
+            const message = `🎴 Join my Uno game!\n\nRoom Code: ${code}\n\nJoin here:\n${joinUrl}\n\nOr open the game and enter the room code.\n\nLet's Play! 🎮🔥`;
+            const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+
+            if (navigator.share && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+                navigator.share({ title: "Join my Uno game!", text: message, url: joinUrl }).catch(() => {
+                    window.open(waUrl, '_blank');
+                });
+            } else {
+                window.open(waUrl, '_blank');
+            }
+        }
+
+function CardFace({ card, width = 72, height = 108 }) {
             if (!card) return null;
             const t = THEME[card.color] || THEME.wild;
             const isWild = card.color === "wild";
@@ -395,6 +442,12 @@
                 <div className="main-game-container" style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "#060e0a", padding: 20 }}>
                     <div className="table-id-badge" style={{ position: "absolute", top: 20, right: 20, background: "#fff2", padding: "8px 16px", borderRadius: 20, color: "#e0e0e0" }}>Table: <span style={{ color: "#d62828", fontWeight: 900 }}>{roomId}</span></div>
                     
+                    <div style={{ position: "absolute", top: 20, left: 20, zIndex: 100 }}>
+                        <a href={gamesUrl} style={{ textDecoration: "none", padding: "10px 20px", background: "rgba(255,255,255,0.1)", color: "#ffffff", borderRadius: "8px", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: "8px", border: "1px solid rgba(255,255,255,0.2)", backdropFilter: "blur(5px)" }}>
+                            <i className="fas fa-sign-out-alt" style={{ color: "#ffffff" }}></i> Exit
+                        </a>
+                    </div>
+
                     <div style={{ color: colT.main, textTransform: "uppercase", fontWeight: 900, fontSize: 14, marginBottom: 10 }}>{roomState.currentColor} Active</div>
                     <div style={{ color: "#e0e0e0", background: "#fff1", padding: "10px 20px", borderRadius: 12, marginBottom: 20 }}>{roomState.lastMessage}</div>
                     
@@ -487,10 +540,13 @@
 
                     {pickingColor && <ColorPicker onPick={handleColorPick} />}
                     {roomState.status === 'finished' && (
-                        <div style={{ position: "fixed", inset: 0, background: "#000c", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <div style={{ position: "fixed", inset: 0, background: "#000c", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999 }}>
                             <div style={{ textAlign: "center" }}>
                                 <div style={{ fontSize: 60, color: "#fbcc15", fontWeight: 900 }}>{roomState.lastMessage}</div>
-                                <button onClick={() => stompClient.current.send(`/app/uno/${roomId}/restart`, {}, "{}")} style={{ padding: "14px 40px", borderRadius: 12, background: "#d62828", border: "none", color: "#fff", fontWeight: 900, marginTop: 20, cursor: "pointer" }}>PLAY AGAIN</button>
+                                <div style={{ display: "flex", gap: "20px", justifyContent: "center", marginTop: 20 }}>
+                                    <button onClick={() => stompClient.current.send(`/app/uno/${roomId}/restart`, {}, "{}")} style={{ padding: "14px 40px", borderRadius: 12, background: "#d62828", border: "none", color: "#fff", fontWeight: 900, cursor: "pointer" }}>PLAY AGAIN</button>
+                                    <button onClick={() => window.location.href = gamesUrl} style={{ padding: "14px 40px", borderRadius: 12, background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.3)", color: "#fff", fontWeight: 900, cursor: "pointer" }}>EXIT</button>
+                                </div>
                             </div>
                         </div>
                     )}

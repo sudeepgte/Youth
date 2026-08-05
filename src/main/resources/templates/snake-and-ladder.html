@@ -16,7 +16,7 @@
 <!-- SockJS + STOMP -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
-    <script th:src="@{/js/game-rewards.js}"></script>
+    <script defer th:src="@{/js/game-rewards.js}"></script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;700;900&display=swap');
@@ -594,7 +594,92 @@ const { useState, useEffect, useCallback, useRef, useMemo } = React;
             };
         }
 
-        function Game({ roomId, playerIndex, initialState }) {
+        
+        function copySnakeCode(code) {
+            if (!code) return;
+            copySnakeText(code, "Room code copied successfully.");
+        }
+
+        function shareSnakeCode(code) {
+            if (!code) return;
+            const origin = window.location.origin;
+            const joinUrl = origin + '/games/snake-and-ladder?room=' + code;
+            const message = `🎲 Join my Snake & Ladder Legends game!\n\nRoom Code: ${code}\n\nJoin here:\n${joinUrl}\n\nOr open the game and enter the room code.\n\nLet's Play! 🎮🔥`;
+            const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+
+            if (navigator.share && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+                navigator.share({
+                    title: "Join my Snake & Ladder Legends game!",
+                    text: message,
+                    url: joinUrl
+                }).catch(() => {
+                    openSnakeWhatsApp(waUrl, message);
+                });
+            } else {
+                openSnakeWhatsApp(waUrl, message);
+            }
+        }
+
+        function openSnakeWhatsApp(waUrl, message) {
+            try {
+                const win = window.open(waUrl, '_blank');
+                if (!win || win.closed || typeof win.closed === 'undefined') {
+                    copySnakeText(message, "Invitation copied successfully.");
+                } else {
+                    showSnakeToast("Opening WhatsApp...");
+                }
+            } catch (e) {
+                copySnakeText(message, "Invitation copied successfully.");
+            }
+        }
+
+        function copySnakeText(text, toastMsg) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showSnakeToast(toastMsg);
+                }).catch(() => {
+                    fallbackSnakeCopy(text, toastMsg);
+                });
+            } else {
+                fallbackSnakeCopy(text, toastMsg);
+            }
+        }
+
+        function fallbackSnakeCopy(text, toastMsg) {
+            const dummy = document.createElement('textarea');
+            dummy.style.position = 'fixed';
+            dummy.style.opacity = '0';
+            document.body.appendChild(dummy);
+            dummy.value = text;
+            dummy.select();
+            document.execCommand('copy');
+            document.body.removeChild(dummy);
+            showSnakeToast(toastMsg);
+        }
+
+        function showSnakeToast(msg) {
+            showGlobalToast(msg);
+        }
+
+        function showGlobalToast(msg) {
+            let toast = document.getElementById('global-invite-toast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'global-invite-toast';
+                document.body.appendChild(toast);
+            }
+            toast.style.cssText = 'position:fixed !important;top:25px !important;left:50% !important;transform:translateX(-50%) !important;background:linear-gradient(135deg, #10b981 0%, #059669 100%) !important;color:#ffffff !important;padding:12px 28px !important;border-radius:50px !important;font-weight:800 !important;font-size:14px !important;letter-spacing:0.5px !important;z-index:999999 !important;box-shadow:0 10px 30px rgba(16,185,129,0.45), 0 4px 12px rgba(0,0,0,0.5) !important;border:1px solid rgba(255,255,255,0.3) !important;display:inline-flex !important;align-items:center !important;gap:10px !important;white-space:nowrap !important;pointer-events:none !important;box-sizing:border-box !important;max-width:90vw !important;font-family:sans-serif !important;';
+            toast.innerHTML = '<i class="fas fa-check-circle" style="font-size:16px;color:#fff;"></i> <span>' + msg + '</span>';
+            toast.style.display = 'inline-flex';
+
+            if (window.toastTimeout) clearTimeout(window.toastTimeout);
+            window.toastTimeout = setTimeout(() => {
+                toast.style.display = 'none';
+            }, 2800);
+        }
+
+
+function Game({ roomId, playerIndex, initialState }) {
             const [state, setState] = useState(initialState || null);
             const [rolling, setRolling] = useState(false);
             const [animating, setAnimating] = useState(false);
@@ -712,7 +797,15 @@ const { useState, useEffect, useCallback, useRef, useMemo } = React;
                 return (
                     <div className="game-wrapper" style={{ flexDirection: "column", alignItems: "center", justifyContent: "center", width: "100%", maxWidth: 620, minHeight: 400, textAlign: "center", margin: "auto" }}>
                         <h2 style={{ color: "#FFC107", fontSize: 32 }}>GAME LOBBY</h2>
-                        <div style={{ background: "#000", padding: "20px", borderRadius: 12, fontSize: "clamp(24px, 8vw, 48px)", letterSpacing: "clamp(4px, 2vw, 12px)", margin: "20px 0", fontFamily: "monospace", color: "#FFC107" }}>{roomId}</div>
+                        <div style={{ background: "#000", padding: "20px", borderRadius: 12, fontSize: "clamp(20px, 6.5vw, 44px)", letterSpacing: "clamp(2px, 1.5vw, 10px)", maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", padding: "0 10px", boxSizing: "border-box", margin: "20px 0", fontFamily: "monospace", color: "#FFC107" }}>{roomId}</div>
+                        <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap", marginBottom: 20 }}>
+                            <button onClick={() => copySnakeCode(roomId)} className="btn" style={{ width: "auto", height: "auto", padding: "10px 20px", borderRadius: 10, background: "rgba(255,255,255,0.1)", border: "1px solid #444", fontSize: 14, fontWeight: "bold", color: "#fff", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 8, minHeight: 44 }}>
+                                <i className="fas fa-copy"></i> Copy Code
+                            </button>
+                            <button onClick={() => shareSnakeCode(roomId)} className="btn" style={{ width: "auto", height: "auto", padding: "10px 20px", borderRadius: 10, background: "#25D366", border: "none", fontSize: 14, fontWeight: "bold", color: "#fff", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 8, minHeight: 44 }}>
+                                <i className="fab fa-whatsapp"></i> Share via WhatsApp
+                            </button>
+                        </div>
                         <div style={{ width: "100%", maxWidth: 400, background: "rgba(0,0,0,0.5)", padding: 20, borderRadius: 12, textAlign: "left", marginBottom: 30 }}>
                             <div style={{ fontSize: 18, fontWeight: "bold", marginBottom: 15 }}>Players Joined ({state.players.length}/{state.maxPlayers}):</div>
                             {state.players.map((p, i) => (

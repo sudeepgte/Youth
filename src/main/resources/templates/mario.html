@@ -408,11 +408,15 @@
             }
         }
     </style>
-    <script th:src="@{/js/game-rewards.js}"></script>
+    <script defer th:src="@{/js/game-rewards.js}"></script>
 </head>
 
 <body>
-
+    <div style="position: absolute; top: 15px; left: 15px; z-index: 1000;">
+        <a th:href="@{/games}" style="text-decoration: none; padding: 10px 16px; background: rgba(255,255,255,0.15); color: #ffffff !important; border-radius: 8px; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 15px; border: 1px solid rgba(255,255,255,0.3); display: flex; align-items: center; gap: 8px; backdrop-filter: blur(4px);">
+            <i class="fas fa-sign-out-alt" style="color: #ffffff !important;"></i> Exit
+        </a>
+    </div>
     <div id="outer-frame">
         <div class="screw tl"></div>
         <div class="screw tr"></div>

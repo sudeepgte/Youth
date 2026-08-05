@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
@@ -73,6 +73,7 @@
             <a th:href="@{/wallet}" class="sidebar-link"><i class="fas fa-wallet"></i> Wallet</a>
             <a th:href="@{/user/my-bookings}" class="sidebar-link"><i class="fas fa-ticket-alt"></i> My Bookings</a>
             <a href="javascript:void(0)" class="sidebar-link" onclick="openCreateModal()"><i class="fas fa-plus-circle" style="color: var(--accent);"></i> Create Post</a>
+            <a th:href="@{/settings}" class="sidebar-link"><i class="fas fa-cog"></i> Settings</a>
             <a th:href="@{/logout}" class="sidebar-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </aside>
 
@@ -107,7 +108,7 @@
                 <select class="form-input" name="trackId" style="flex:1; min-width: 220px;">
                     <option value="">Select your music (optional)</option>
 
-                    <option th:each="t : ${approvedTracks}" th:value="${t.id}" th:text="${t.title + ' â€” ' + t.artistName}">Track</option>
+                    <option th:each="t : ${approvedTracks}" th:value="${t.id}" th:text="${t.title + ' — ' + t.artistName}">Track</option>
 
                
 
@@ -133,7 +134,7 @@
                 <select class="form-input" name="trackId" style="flex:1; min-width: 220px;">
                     <option value="">Select your music (optional)</option>
 
-                    <option th:each="t : ${approvedTracks}" th:value="${t.id}" th:text="${t.title + ' â€” ' + t.artistName}">Track</option>
+                    <option th:each="t : ${approvedTracks}" th:value="${t.id}" th:text="${t.title + ' — ' + t.artistName}">Track</option>
 
   
                 </select>

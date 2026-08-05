@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <script>if(localStorage.getItem('youthian_theme')==='dark') document.documentElement.classList.add('dark-theme');</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Zentrix</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* Voting Poll Styles for Dashboard */
+        .dashboard-vote-section {
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow-premium);
+        }
+
+        .dashboard-vote-grid {
+            display: flex;
+            gap: 15px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            scrollbar-width: none;
+        }
+
+        .dashboard-vote-grid::-webkit-scrollbar {
+            display: none;
+        }
+
+        .dashboard-vote-card {
+            min-width: 200px;
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 18px;
+            text-align: center;
+            flex-shrink: 0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .dashboard-vote-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .vote-card-icon {
+            font-size: 20px;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .btn-dashboard-vote {
+            width: 100%;
+            margin-top: 10px;
+            padding: 8px;
+            background: rgba(248, 68, 100, 0.1);
+            border: 1px solid rgba(248, 68, 100, 0.2);
+            color: var(--primary);
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-dashboard-vote:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Feed Filter UI */
+        .feed-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin: 10px 0 18px;
+        }
+
+        .feed-filter {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .filter-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.82);
+            border: 1px solid rgba(15, 23, 42, 0.12);
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 700;
+            transition: 0.2s;
+        }
+
+        .filter-btn:hover {
+            border-color: rgba(59, 130, 246, 0.55);
+            transform: translateY(-1px);
+        }
+
+        .filter-chip {
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: rgba(248, 68, 100, 0.12);
+            border: 1px solid rgba(248, 68, 100, 0.25);
+            color: var(--primary);
+            font-size: 12px;
+            font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filter-chip a {
+            color: rgba(255, 255, 255, 0.85);
+            text-decoration: none;
+            font-weight: 900;
+            opacity: 0.8;
+        }
+
+        .filter-chip a:hover {
+            opacity: 1;
+        }
+
+        .filter-menu {
+            position: absolute;
+            top: 44px;
+            left: 0;
+            min-width: 220px;
+            background: rgba(255, 255, 255, 0.85);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 10px;
+            box-shadow: var(--shadow-premium);
+            display: none;
+            z-index: 30;
+            backdrop-filter: blur(12px);
+        }
+
+        .filter-menu a {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 10px 14px;
+            border-radius: 10px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .filter-menu a:hover {
+            background: rgba(59, 130, 246, 0.08);
+            color: var(--primary);
+        }
+
+        .filter-menu a.active {
+            background: var(--gradient-1);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        /* Double-tap like animation */
+        .post-media-wrap {
+            position: relative;
+            margin-top: 10px;
+        }
+
+        .like-burst {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: opacity 0.12s ease, transform 0.12s ease;
+        }
+
+        .like-burst.show {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .like-burst i {
+            font-size: 90px;
+            color: rgba(59, 130, 246, 0.95);
+            text-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+        }
+
+        /* Instagram-style Reels Scroll Snapping */
+        body:has(.reels-container) .dashboard-container {
+            grid-template-columns: 1fr;
+            max-width: 600px;
+        }
+
+        @media (min-width: 769px) {
+            body:has(.reels-container) .sidebar {
+                display: none !important;
+            }
+        }
+        
+        .reels-container {
+            height: calc(100vh - var(--dashboard-nav-height) - 40px);
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+            scrollbar-width: none; /* Firefox */
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            padding-bottom: 50px;
+        }
+        .reels-container::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera */
+        }
+        .reel-card {
+            scroll-snap-align: start;
+            scroll-snap-stop: always;
+            min-height: calc(100vh - var(--dashboard-nav-height) - 50px);
+            max-height: calc(100vh - var(--dashboard-nav-height) - 50px);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            background: #000 !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 16px;
+            overflow: hidden;
+            position: relative;
+            width: 100%;
+            max-width: 420px;
+            margin: 0 auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+        .reel-card .post-header {
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%);
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 10;
+            padding: 15px;
+        }
+        .reel-card .post-header h4, 
+        .reel-card .post-header span {
+            color: #fff !important;
+        }
+        .reel-card .post-media-wrap {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #000;
+            height: 100%;
+        }
+        .reel-card .post-media-wrap video {
+            width: 100%;
+            height: 100%;
+            max-height: 100%;
+            object-fit: cover;
+            border-radius: 0;
+        }
+        .reel-card .post-actions {
+            position: absolute !important;
+            right: 12px !important;
+            bottom: 90px !important;
+            left: auto !important;
+            z-index: 25 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            gap: 16px !important;
+            background: none !important;
+            padding: 0 !important;
+            border: none !important;
+        }
+        .reel-card .post-actions .action-btn {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            justify-content: center !important;
+            color: #fff !important;
+            background: rgba(0, 0, 0, 0.5) !important;
+            border: none !important;
+            border-radius: 50% !important;
+            width: 48px !important;
+            height: 48px !important;
+            cursor: pointer !important;
+            transition: all 0.2s !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important;
+        }
+        .reel-card .post-actions .action-btn i {
+            font-size: 18px !important;
+        }
+        .reel-card .post-actions .action-btn span {
+            font-size: 11px !important;
+            margin-left: 0 !important;
+            margin-top: 3px !important;
+            font-weight: 700 !important;
+            color: #fff !important;
+        }
+        .reel-card .post-content {
+            position: absolute;
+            bottom: 30px;
+            left: 15px;
+            right: 80px;
+            z-index: 20;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            pointer-events: none;
+        }
+        .reel-card .post-content p {
+            color: #fff !important;
+            font-size: 15px;
+            font-weight: 600;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+            margin: 0;
+            line-height: 1.4;
+            word-break: break-word;
+        }
+        .reel-card .post-content .hashtags {
+            color: #f84464 !important;
+            font-size: 13px;
+            font-weight: 600;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+            word-break: break-word;
+        }
+        .reel-duration-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 4px 10px;
+            border-radius: 20px;
+            width: fit-content;
+            color: #fff;
+            font-size: 11px;
+            font-weight: 700;
+            margin-top: 4px;
+            text-shadow: none;
+            pointer-events: auto;
+        }
+        .reel-duration-badge i {
+            color: #f84464;
+        }
+        .reel-progress-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.25);
+            cursor: pointer;
+            z-index: 25;
+            transition: height 0.15s ease;
+        }
+        .reel-progress-container:hover {
+            height: 10px;
+        }
+        .reel-progress-bar {
+            height: 100%;
+            width: 0%;
+            background: #f84464;
+            transition: width 0.1s linear;
+        }
+        .reel-play-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.7);
+            font-size: 40px;
+            color: rgba(255, 255, 255, 0.9);
+            background: rgba(0, 0, 0, 0.6);
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 15;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .reel-play-overlay.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        /* Slide-up Comments Panel overlay for Reels */
+        .reel-card div[id^="comments-panel-"] {
+            position: absolute !important;
+            bottom: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            background: rgba(10, 10, 20, 0.98) !important;
+            backdrop-filter: blur(20px) !important;
+            border-top: 1px solid rgba(255, 255, 255, 0.15) !important;
+            border-top-left-radius: 16px !important;
+            border-top-right-radius: 16px !important;
+            z-index: 30 !important;
+            padding: 18px !important;
+            margin-top: 0 !important;
+            height: 320px !important;
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.6) !important;
+        }
+        .reel-card div[id^="comments-panel-"][style*="display: block"] {
+            display: flex !important;
+            flex-direction: column !important;
+        }
+        .reel-card div[id^="comments-list-"] {
+            flex: 1 !important;
+            max-height: none !important;
+            overflow-y: auto !important;
+            margin-bottom: 12px !important;
+        }
+        .reel-card .comments-panel-header {
+            display: flex !important;
+        }
+        .reel-card div[id^="comments-panel-"] input {
+            background: rgba(255,255,255,0.08) !important;
+            border: 1px solid rgba(255,255,255,0.15) !important;
+            color: #fff !important;
+        }
+        .reel-card div[id^="comments-panel-"] input::placeholder {
+            color: #bbb !important;
+        }
+
+        /* -- Mobile Responsive -- */
+        @media (max-width: 1024px) {
+            body.is-reels-page {
+                background: #000 !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            body.is-reels-page .dashboard-navbar, 
+            body.is-reels-page .sidebar, 
+            body.is-reels-page .mobile-menu-btn, 
+            body.is-reels-page .mobile-menu-overlay, 
+            body.is-reels-page .back-to-dash-btn {
+                display: none !important;
+            }
+            body.is-reels-page .dashboard-container {
+                padding: 0 !important;
+                margin: 0 !important;
+                padding-top: 0 !important;
+                max-width: 100% !important;
+            }
+            body.is-reels-page .social-feed {
+                padding: 0 !important;
+                margin: 0 !important;
+                max-width: 100% !important;
+            }
+            body.is-reels-page .reels-container {
+                padding: 0 !important;
+                margin: 0 !important;
+                height: 100vh !important;
+                height: 100dvh !important;
+            }
+            body.is-reels-page .post-card.reel-card {
+                margin: 0 !important;
+                border-radius: 0 !important;
+                border: none !important;
+                width: 100vw !important;
+                max-width: 100% !important;
+                min-height: 100vh !important;
+                min-height: 100dvh !important;
+                max-height: 100vh !important;
+                max-height: 100dvh !important;
+                box-shadow: none !important;
+            }
+            
+            body:has(.reels-container) .dashboard-container {
+                padding: 0 !important;
+            }
+            .feed-toolbar { flex-wrap: wrap; }
+            .dashboard-vote-section { padding: 16px; margin-bottom: 20px; }
+            .reels-container {
+                height: calc(100vh - var(--dashboard-nav-height)) !important;
+                height: calc(100dvh - var(--dashboard-nav-height)) !important;
+                gap: 0 !important;
+                padding-bottom: 0 !important;
+            }
+            .reel-card { 
+                max-width: 100%; 
+                border-radius: 0 !important; 
+                border: none !important; 
+                min-height: calc(100vh - var(--dashboard-nav-height)) !important;
+                min-height: calc(100dvh - var(--dashboard-nav-height)) !important;
+                max-height: calc(100vh - var(--dashboard-nav-height)) !important;
+                max-height: calc(100dvh - var(--dashboard-nav-height)) !important;
+            }
+        }
+        @media (max-width: 480px) {
+            .reels-container {
+                height: calc(100vh - var(--dashboard-nav-height)) !important;
+                height: calc(100dvh - var(--dashboard-nav-height)) !important;
+                gap: 0 !important;
+                padding-bottom: 0 !important;
+            }
+            .reel-card { 
+                min-height: calc(100vh - var(--dashboard-nav-height)) !important;
+                min-height: calc(100dvh - var(--dashboard-nav-height)) !important;
+                max-height: calc(100vh - var(--dashboard-nav-height)) !important;
+                max-height: calc(100dvh - var(--dashboard-nav-height)) !important;
+            }
+            .reel-card .post-content {
+                right: 60px !important;
+                left: 12px !important;
+                bottom: 20px !important;
+                gap: 4px !important;
+            }
+            .reel-card .post-actions {
+                right: 10px !important;
+                bottom: 80px !important;
+                gap: 12px !important;
+                z-index: 25 !important;
+            }
+            .reel-card .post-actions .action-btn {
+                width: 40px !important;
+                height: 40px !important;
+            }
+            .reel-card .post-actions .action-btn i {
+                font-size: 15px !important;
+            }
+            .reel-card .post-actions .action-btn span {
+                font-size: 9px !important;
+                margin-top: 2px !important;
+            }
+            .reel-card .post-content p {
+                font-size: 13px !important;
+            }
+            .reel-card .post-content .hashtags {
+                font-size: 11px !important;
+            }
+            .reel-duration-badge {
+                padding: 3px 8px !important;
+                font-size: 10px !important;
+            }
+        }
+    </style>
+    <script defer th:src="@{/js/tab-support.js}"></script>
+    <script defer th:src="@{/js/game-rewards.js}"></script>
+</head>
+
+<body th:class="${isReelsPage} ? 'is-reels-page' : ''">
+
+    <!-- Navbar -->
+    <!-- Mobile Sidebar Overlay -->
+    <div class="mobile-menu-overlay" onclick="document.querySelector('.sidebar').classList.remove('mobile-open'); this.classList.remove('active');"></div>
+
+    <nav class="dashboard-navbar">
+        <button class="mobile-menu-btn" onclick="const s=document.querySelector('.sidebar');if(s)s.classList.toggle('mobile-open'); const o=document.querySelector('.mobile-menu-overlay');if(o)o.classList.toggle('active');" style="display:none; background:none; border:none; color:var(--text-primary); font-size:20px; cursor:pointer; margin-right:15px; margin-left: 5px; padding: 0;">
+            <i class="fas fa-bars"></i>
+        </button>
+        <a class="dashboard-logo" th:href="@{/home}" style="display: inline-flex; flex-direction: column; align-items: center; text-decoration: none; line-height: 1.1; margin-right: 15px;">
+    <svg width="28" height="28" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <linearGradient id="yg" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#6b21a8" />
+                <stop offset="50%" stop-color="#2563eb" />
+                <stop offset="100%" stop-color="#0ea5e9" />
+            </linearGradient>
+        </defs>
+        <circle cx="50" cy="22" r="12" fill="url(#yg)" />
+        <path d="M 25 25 Q 40 50 45 65 L 45 90 Q 55 90 55 65 Q 60 50 80 25 Q 65 45 55 55 L 45 55 Q 35 45 25 25 Z" fill="url(#yg)" />
+        <path d="M 15 60 Q 50 90 90 40 Q 80 50 50 80 Q 25 70 15 60 Z" fill="url(#yg)" />
+        <polygon points="75,10 80,15 85,10 80,5" fill="#0ea5e9" />
+    </svg>
+    <span style="font-size: 11px; font-weight: 800; color: #1e3a8a; letter-spacing: 1px; margin-top: 2px;">YOUTHIAN</span>
+</a>
+
+        <div class="dashboard-spacer"></div>
+        <div class="dashboard-nav-links">
+            <!-- Zen Coin System -->
+            <a href="javascript:void(0)" onclick="GameRewards.showHistory()" class="coin-nav"
+                style="background: rgba(255, 215, 0, 0.1); border: 1px solid rgba(255, 215, 0, 0.2); border-radius: 20px; padding: 5px 12px; height: auto; display: flex; align-items: center; gap: 8px; text-decoration: none; color: #ffd700; font-weight: 800; font-size: 13px;">
+                <i class="fas fa-coins" style="font-size: 14px;"></i>
+                <span th:text="${user.coins}">0</span>
+            </a>
+            <a th:href="@{/shop}" title="Reward Shop"><i class="fas fa-shopping-bag"></i></a>
+
+            <a th:href="@{/dashboard}" class="active"><i class="fas fa-home"></i></a>
+            <a th:href="@{/messages}" style="position: relative;">
+                <i class="fas fa-comment-dots"></i>
+                <span th:if="${unreadMessageCount != null && unreadMessageCount > 0}" id="msg-badge"
+                    style="position: absolute; top: -5px; right: -5px; background: red; color: white; border-radius: 50%; padding: 2px 5px; font-size: 10px; font-weight: bold;"
+                    th:text="${unreadMessageCount}"></span>
+            </a>
+            <a href="#" onclick="openNotifications()" style="position: relative;">
+                <i class="fas fa-bell"></i>
+                <span th:with="totalNotifs=${(unreadNotifCount != null ? unreadNotifCount : 0) + (pendingCount != null ? pendingCount : 0)}"
+                      th:if="${totalNotifs > 0}" id="notif-badge"
+                    style="position: absolute; top: -5px; right: -5px; background: red; color: white; border-radius: 50%; padding: 2px 5px; font-size: 10px; font-weight: bold;"
+                    th:text="${totalNotifs}"></span>
+            </a>
+            <div class="profile-dropdown">
+                <a th:href="@{/profile}" style="position: relative;">
+                    <img th:src="${user != null and user.profilePhotoUrl != null and !user.profilePhotoUrl.isEmpty()} ? @{${user.profilePhotoUrl}} : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=1780&auto=format&fit=crop'"
+                        class="user-avatar" style="width: 32px; height: 32px; border: none;">
+                </a>
+
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+
+        <!-- Left Sidebar -->
+        <aside class="sidebar">
+            <a th:href="@{/dashboard}" class="sidebar-link" th:classappend="${isReelsPage} ? '' : ' active'"><i class="fas fa-home"></i> Home</a>
+            <a th:href="@{/explore}" class="sidebar-link"><i class="fas fa-compass"></i> Explore</a>
+            <a th:href="@{/events}" class="sidebar-link"><i class="fas fa-calendar-alt"></i> Events</a>
+            <a th:href="@{/battles}" class="sidebar-link"><i class="fas fa-fire"></i> Battle Arena</a>
+            <a th:href="@{/achievements}" class="sidebar-link"><i class="fas fa-trophy"></i> Achievements</a>
+            <a th:href="@{/messages}" class="sidebar-link"><i class="fas fa-comment-dots"></i> Chat</a>
+            <a th:href="@{/reels}" class="sidebar-link" th:classappend="${isReelsPage} ? ' active' : ''"><i class="fas fa-film"></i> Reels</a>
+            <a th:href="@{/profile}" class="sidebar-link"><i class="fas fa-user"></i> Profile</a>
+            <a th:href="@{/games}" class="sidebar-link"><i class="fas fa-gamepad"></i> Games</a>
+            <a th:href="@{/wallet}" class="sidebar-link"><i class="fas fa-wallet"></i> Wallet</a>
+            <a th:href="@{/user/my-bookings}" class="sidebar-link"><i class="fas fa-ticket-alt"></i> My Bookings</a>
+            <a href="javascript:void(0)" class="sidebar-link" onclick="openCreateModal()"><i class="fas fa-plus-circle" style="color: var(--accent);"></i> Create Post</a>
+            <a th:href="@{/logout}" class="sidebar-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </aside>
+

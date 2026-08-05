@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${user.username + ' â€¢ Wallet â€¢ Zentrix'}">Wallet</title>
+    <title th:text="${user.username + ' • Wallet • Zentrix'}">Wallet</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script th:src="@{/js/tab-support.js}"></script>
+    <script defer th:src="@{/js/tab-support.js}"></script>
 </head>
 <body>
     <!-- Navbar -->
@@ -65,6 +65,7 @@
             <a th:href="@{/wallet}" class="sidebar-link active"><i class="fas fa-wallet"></i> Wallet</a>
             <a th:href="@{/user/my-bookings}" class="sidebar-link"><i class="fas fa-ticket-alt"></i> My Bookings</a>
             <a href="javascript:void(0)" class="sidebar-link" onclick="openCreateModal()"><i class="fas fa-plus-circle" style="color: var(--accent);"></i> Create Post</a>
+            <a th:href="@{/settings}" class="sidebar-link"><i class="fas fa-cog"></i> Settings</a>
             <a th:href="@{/logout}" class="sidebar-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </aside>
 

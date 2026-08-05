@@ -7,6 +7,7 @@
     <title>ZENTRIX RACING | Zentrix</title>
     <link rel="shortcut icon" type="image/png" th:href="@{/images/carL.png}">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
         body{background:#0a0a0f;color:#fff;font-family:'Rajdhani',sans-serif;overflow:hidden;user-select:none}
@@ -66,13 +67,135 @@
         @keyframes countPulse{0%{transform:scale(2);opacity:0}50%{transform:scale(1);opacity:1}100%{transform:scale(.95);opacity:1}}
         .countdown-go{color:#00ff88;text-shadow:0 0 50px rgba(0,255,136,.7)}
 
-        @media(max-width:768px){
-            .mobile-controls{display:block}
-            .speedo-ring{width:90px;height:90px}
-            .speed-num{font-size:20px}
-            .hud-value{font-size:16px}
-            .hud-card{padding:6px 12px}
+
+        @media (max-width: 768px) {
+            .ingame-exit-btn {
+                top: 10px !important;
+                left: 10px !important;
+                padding: 6px 14px !important;
+                font-size: 11px !important;
+                border-radius: 6px !important;
+                letter-spacing: 1px !important;
+            }
+
+            .hud-top {
+                top: 50px !important;
+                left: 10px !important;
+                right: 10px !important;
+                gap: 6px !important;
+            }
+
+            .hud-card {
+                padding: 4px 8px !important;
+                flex: 1 !important;
+                text-align: center !important;
+                min-width: 0 !important;
+            }
+
+            .hud-label {
+                font-size: 8px !important;
+                letter-spacing: 1px !important;
+            }
+
+            .hud-value {
+                font-size: 14px !important;
+            }
+
+            .speedo-wrap {
+                bottom: 95px !important;
+                right: 12px !important;
+            }
+
+            .speedo-ring {
+                width: 76px !important;
+                height: 76px !important;
+            }
+
+            .speedo-ring svg {
+                width: 82px !important;
+                height: 82px !important;
+                top: -3px !important;
+                left: -3px !important;
+            }
+
+            .speed-num {
+                font-size: 18px !important;
+            }
+
+            .speed-unit {
+                font-size: 8px !important;
+                letter-spacing: 1px !important;
+            }
+
+            .nitro-wrap {
+                bottom: 100px !important;
+                left: 12px !important;
+            }
+
+            .nitro-outer {
+                width: 100px !important;
+                height: 6px !important;
+            }
+
+            .nitro-label {
+                font-size: 8px !important;
+                letter-spacing: 1px !important;
+                margin-bottom: 3px !important;
+            }
+
+            .mobile-controls {
+                display: block !important;
+                position: fixed !important;
+                bottom: 15px !important;
+                left: 12px !important;
+                right: 12px !important;
+                padding: 0 !important;
+                z-index: 150 !important;
+            }
+
+            .mobile-row {
+                display: flex !important;
+                justify-content: space-between !important;
+                align-items: center !important;
+                width: 100% !important;
+                max-width: 480px !important;
+                margin: 0 auto !important;
+            }
+
+            .mobile-btn {
+                width: 58px !important;
+                height: 58px !important;
+                font-size: 20px !important;
+                border-radius: 50% !important;
+                background: rgba(0, 242, 255, 0.15) !important;
+                border: 2px solid rgba(0, 242, 255, 0.4) !important;
+                box-shadow: 0 0 12px rgba(0, 242, 255, 0.25) !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+            }
+
+            .mobile-btn:active {
+                background: rgba(0, 242, 255, 0.35) !important;
+                transform: scale(0.95) !important;
+            }
+
+            .mobile-btn-nitro {
+                width: 64px !important;
+                height: 64px !important;
+                font-size: 11px !important;
+                font-weight: 900 !important;
+                background: rgba(255, 106, 0, 0.2) !important;
+                border-color: rgba(255, 106, 0, 0.5) !important;
+                color: #ff8800 !important;
+                box-shadow: 0 0 15px rgba(255, 106, 0, 0.3) !important;
+            }
+
+            .mobile-btn-nitro:active {
+                background: rgba(255, 106, 0, 0.4) !important;
+            }
         }
+
         /* In-game Exit Button */
         .ingame-exit-btn {
             position: fixed;
@@ -268,9 +391,9 @@
 
     <div class="mobile-controls" id="mobile-controls">
         <div class="mobile-row">
-            <button class="mobile-btn" id="mb-left">â—€</button>
-            <button class="mobile-btn mobile-btn-nitro" id="mb-nitro">Nâ‚‚O</button>
-            <button class="mobile-btn" id="mb-right">â–¶</button>
+            <button class="mobile-btn" id="mb-left"><i class="fas fa-caret-left"></i></button>
+            <button class="mobile-btn mobile-btn-nitro" id="mb-nitro">⚡ N2O</button>
+            <button class="mobile-btn" id="mb-right"><i class="fas fa-caret-right"></i></button>
         </div>
     </div>
 

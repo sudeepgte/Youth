@@ -435,7 +435,96 @@
                 bottom: 110px !important;
             }
         }
-    </style>
+    
+        /* ── Mobile Responsive Controls & HUD Fix ── */
+        @media (max-width: 768px) {
+            #ui-container {
+                padding: 12px 15px !important;
+            }
+
+            #top-hud .hud-card {
+                padding: 6px 12px !important;
+                border-radius: 16px !important;
+                gap: 8px !important;
+            }
+
+            #top-hud .score-value {
+                font-size: 1.4rem !important;
+            }
+
+            #top-hud .score-label {
+                font-size: 0.65rem !important;
+            }
+
+            #mobile-controls-container {
+                display: flex !important;
+                position: fixed !important;
+                bottom: 20px !important;
+                left: 0 !important;
+                right: 0 !important;
+                transform: none !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                padding: 0 20px !important;
+                justify-content: space-between !important;
+                align-items: flex-end !important;
+                box-sizing: border-box !important;
+                z-index: 50 !important;
+                pointer-events: none !important;
+            }
+
+            .mobile-control-btn {
+                pointer-events: auto !important;
+                width: 58px !important;
+                height: 58px !important;
+                font-size: 1.4rem !important;
+                border-radius: 50% !important;
+                background: rgba(0, 0, 0, 0.65) !important;
+                backdrop-filter: blur(12px) !important;
+                -webkit-backdrop-filter: blur(12px) !important;
+                border: 2px solid rgba(255, 255, 255, 0.3) !important;
+                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                touch-action: manipulation !important;
+                -webkit-tap-highlight-color: transparent !important;
+            }
+
+            #btn-left {
+                border-color: var(--neon-blue) !important;
+                box-shadow: 0 0 15px rgba(0, 210, 255, 0.4) !important;
+            }
+
+            #btn-right {
+                border-color: var(--neon-blue) !important;
+                box-shadow: 0 0 15px rgba(0, 210, 255, 0.4) !important;
+            }
+
+            #btn-jump {
+                width: 66px !important;
+                height: 66px !important;
+                font-size: 1.7rem !important;
+                border-color: var(--neon-pink) !important;
+                box-shadow: 0 0 18px rgba(255, 0, 127, 0.5) !important;
+            }
+
+            #powerup-ui {
+                bottom: 100px !important;
+            }
+
+            .glass-menu {
+                padding: 30px 20px !important;
+                width: 90% !important;
+                border-radius: 28px !important;
+            }
+
+            .game-title {
+                font-size: 2.5rem !important;
+            }
+        }
+
+</style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
@@ -462,6 +551,10 @@
     <div id="ui-container">
         <div id="top-hud">
             <div style="display: flex; flex-direction: column; gap: 10px;">
+                <a th:href="@{/games}" class="hud-card neon-purple" style="text-decoration: none; cursor: pointer; pointer-events: auto; justify-content: center; padding: 10px 16px;">
+                    <i class="fas fa-sign-out-alt" style="color: #fff; font-size: 1.2rem;"></i>
+                    <span class="score-label" style="color: #fff; font-size: 0.9rem; letter-spacing: 1px;">EXIT</span>
+                </a>
                 <div class="hud-card neon-gold">
                     <i class="fas fa-coins" style="color: var(--accent); font-size: 1.5rem;"></i>
                     <span class="score-value" id="coin-val" style="color: var(--accent);">0</span>
@@ -472,10 +565,18 @@
                 </div>
             </div>
             
-            <div class="hud-card neon-blue">
-                <div class="score-display">
-                    <span class="score-label">TOP SCORE</span>
-                    <span class="score-value" id="score-val">000000</span>
+            <div style="display: flex; flex-direction: column; gap: 10px; align-items: flex-end;">
+                <div class="hud-card neon-blue" style="border-color: #facc15; box-shadow: 0 0 15px rgba(250, 204, 21, 0.3); padding: 8px 16px;">
+                    <div class="score-display">
+                        <span class="score-label" style="color: #facc15;">BEST SCORE</span>
+                        <span class="score-value" id="best-score-val" style="color: #facc15; font-size: 1.8rem;">000000</span>
+                    </div>
+                </div>
+                <div class="hud-card neon-blue">
+                    <div class="score-display">
+                        <span class="score-label">SCORE</span>
+                        <span class="score-value" id="score-val">000000</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -485,7 +586,7 @@
             <div class="p-bar-track">
                 <div id="powerup-fill" class="p-bar-fill"></div>
             </div>
-    </div>
+        </div>
 
     <!-- Mobile Controls Interface -->
     <div id="mobile-controls-container">
@@ -549,6 +650,7 @@
         let isJumping = false, isSliding = false, isFlying = false;
         let jumpVelocity = 0, slideTimer = 0;
         let totalScore = 0, coinCount = 0, collectedBoxes = 0;
+        let bestScore = localStorage.getItem('runnerBestScore') || 0;
         let speed = 1.15, baseSpeed = 1.15;
         let gameActive = false, frameCount = 0;
         let inspectorChase = 0; // 0: none, >0: timer
@@ -715,6 +817,7 @@
             document.getElementById('restart-btn').onclick = startGame;
             document.getElementById('box-opener').onclick = openMysteryBox;
             document.getElementById('claim-btn').onclick = claimReward;
+            document.getElementById('best-score-val').textContent = String(bestScore).padStart(6, '0');
 
             // --- Mobile Controls Initialization ---
             let leftInterval = null;
@@ -1212,6 +1315,11 @@
             const worldMove = speed * 160 * delta;
             totalScore += Math.floor(speed * delta * 800); 
             document.getElementById('score-val').textContent = String(totalScore).padStart(6, '0');
+            if (totalScore > bestScore) {
+                bestScore = totalScore;
+                localStorage.setItem('runnerBestScore', bestScore);
+                document.getElementById('best-score-val').textContent = String(bestScore).padStart(6, '0');
+            }
             document.getElementById('coin-val').textContent = coinCount;
 
             const leanTarget = (targetX - player.position.x) * 0.12;
