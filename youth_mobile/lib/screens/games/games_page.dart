@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/auth_provider.dart';
 import '../../services/app_api.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/app_drawer.dart';
+import 'game_webview_page.dart';
 
+/// Games lobby matching web `games.html`: multiplayer host/join + solo play.
+/// Boards still run in WebView (same HTML/JS as website).
 class GamesPage extends StatefulWidget {
   const GamesPage({super.key});
 
@@ -14,203 +19,651 @@ class GamesPage extends StatefulWidget {
 }
 
 class _GamesPageState extends State<GamesPage> {
-  static const _games = [
-    _GameInfo('ludo', 'Ludo', Icons.casino, Colors.orange),
-    _GameInfo('chess', 'Chess', Icons.grid_4x4, Colors.brown),
-    _GameInfo('uno', 'UNO', Icons.style, Colors.red),
-    _GameInfo('snake', 'Snake', Icons.games, Colors.green),
-    _GameInfo('rps', 'Rock Paper Scissors', Icons.back_hand, Colors.purple),
+  final _joinCodeCtrl = TextEditingController();
+  _MpGame? _joinTarget;
+
+  static const _multiplayer = [
+    _MpGame(
+      title: 'Chess Grandmaster',
+      blurb: 'Strategic 1v1 chess with live moves and chat.',
+      path: '/play-chess',
+      apiKey: 'chess',
+      icon: Icons.grid_on,
+      color: Color(0xFF8B5E3C),
+      playerCounts: [2],
+      playersLabel: '2 players',
+    ),
+    _MpGame(
+      title: 'Ludo King',
+      blurb: 'Classic board race — host a table and invite friends.',
+      path: '/play-ludo',
+      apiKey: 'ludo',
+      icon: Icons.casino,
+      color: Color(0xFFF59E0B),
+      playerCounts: [2, 4],
+      playersLabel: '2 or 4 players',
+    ),
+    _MpGame(
+      title: 'Uno Realistic',
+      blurb: 'Fast card battles with UNO calls and catch.',
+      path: '/play-uno',
+      apiKey: 'uno',
+      icon: Icons.style,
+      color: Color(0xFFEF4444),
+      playerCounts: [2, 3, 4],
+      playersLabel: '2–4 players',
+    ),
+    _MpGame(
+      title: 'Snake & Ladder',
+      blurb: 'Climb ladders, dodge snakes — up to 4 players.',
+      path: '/games/snake-and-ladder',
+      apiKey: 'snake',
+      icon: Icons.timeline,
+      color: Color(0xFF22C55E),
+      playerCounts: [2, 3, 4],
+      playersLabel: '2–4 players',
+    ),
+    _MpGame(
+      title: 'Rock Paper Scissors',
+      blurb: 'Best-of rounds — quick 1v1 challenge.',
+      path: '/games/rock-paper-scissors',
+      apiKey: 'rps',
+      icon: Icons.back_hand,
+      color: Color(0xFFA855F7),
+      playerCounts: [2],
+      playersLabel: '2 players',
+    ),
   ];
 
-  bool _busy = false;
+  static const _solo = [
+    _SoloGame(
+      title: 'Super Mario',
+      blurb: 'Side-scrolling run',
+      path: '/play-mario',
+      icon: Icons.directions_run,
+      color: Color(0xFFE11D48),
+    ),
+    _SoloGame(
+      title: 'Memory Match',
+      blurb: 'Flip and match cards',
+      path: '/play-memory',
+      icon: Icons.psychology,
+      color: Color(0xFF0EA5E9),
+    ),
+    _SoloGame(
+      title: 'Bubble Shooter',
+      blurb: 'Arcade bubble pop',
+      path: '/play-bubble-shooter',
+      icon: Icons.bubble_chart,
+      color: Color(0xFF06B6D4),
+    ),
+    _SoloGame(
+      title: 'Candy Crush',
+      blurb: 'Match-3 puzzle',
+      path: '/play-candy-crush',
+      icon: Icons.cake,
+      color: Color(0xFFEC4899),
+    ),
+    _SoloGame(
+      title: 'Zentrix Runner',
+      blurb: 'Endless runner',
+      path: '/play-runner',
+      icon: Icons.speed,
+      color: Color(0xFF14B8A6),
+    ),
+    _SoloGame(
+      title: 'Zentrix Racing',
+      blurb: 'Drive and score',
+      path: '/play-car-game',
+      icon: Icons.directions_car,
+      color: Color(0xFF6366F1),
+    ),
+  ];
 
-  Future<void> _createRoom(_GameInfo game) async {
-    final nameCtrl = TextEditingController(text: context.read<AuthProvider>().user?.username ?? '');
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text('Create ${game.label} Room'),
-        content: TextField(
-          controller: nameCtrl,
-          decoration: AppTheme.dashboardInput('Player name'),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-          TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Create')),
-        ],
-      ),
-    );
-    final playerName = nameCtrl.text.trim();
-    nameCtrl.dispose();
-    if (confirmed != true) return;
-
-    setState(() => _busy = true);
-    try {
-      final res = await AppApi.createGameRoom(game.apiName, playerName: playerName.isEmpty ? null : playerName);
-      if (!mounted) return;
-      _showRoomResult(game.label, res);
-    } catch (e) {
-      if (mounted) AppTheme.showError(context, e);
-    } finally {
-      if (mounted) setState(() => _busy = false);
-    }
+  @override
+  void dispose() {
+    _joinCodeCtrl.dispose();
+    super.dispose();
   }
 
-  Future<void> _joinRoom(_GameInfo game) async {
-    final roomCtrl = TextEditingController();
-    final nameCtrl = TextEditingController(text: context.read<AuthProvider>().user?.username ?? '');
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text('Join ${game.label} Room'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(controller: roomCtrl, decoration: AppTheme.dashboardInput('Room ID')),
-            const SizedBox(height: 12),
-            TextField(controller: nameCtrl, decoration: AppTheme.dashboardInput('Player name')),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-          TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Join')),
-        ],
-      ),
-    );
-    final roomId = roomCtrl.text.trim();
-    final playerName = nameCtrl.text.trim();
-    roomCtrl.dispose();
-    nameCtrl.dispose();
-    if (confirmed != true || roomId.isEmpty) return;
-
-    setState(() => _busy = true);
-    try {
-      final res = await AppApi.joinGameRoom(
-        game.apiName,
-        roomId: roomId,
-        playerName: playerName.isEmpty ? null : playerName,
-      );
-      if (!mounted) return;
-      _showRoomResult(game.label, res);
-    } catch (e) {
-      if (mounted) AppTheme.showError(context, e);
-    } finally {
-      if (mounted) setState(() => _busy = false);
-    }
+  String get _playerName {
+    final u = context.read<AuthProvider>().user;
+    final name = u?.username.trim();
+    if (name != null && name.isNotEmpty) return name;
+    return 'Guest_${DateTime.now().millisecondsSinceEpoch % 10000}';
   }
 
-  void _showRoomResult(String gameName, Map<String, dynamic> res) {
-    final roomId = res['roomId']?.toString() ??
-        res['roomCode']?.toString() ??
-        res['code']?.toString() ??
-        res['id']?.toString() ??
-        '—';
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text('$gameName Room'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Room ID: $roomId', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 18)),
-            if (res['message'] != null) ...[
-              const SizedBox(height: 8),
-              Text(res['message'].toString()),
-            ],
-          ],
+  void _openWeb(String title, String path, {Map<String, String> query = const {}, String? gameKey, String? roomId}) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => GameWebViewPage(
+          title: title,
+          path: path,
+          query: query,
+          gameKey: gameKey,
+          roomId: roomId,
         ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('OK')),
-        ],
       ),
     );
+  }
+
+  Future<void> _openLobby(_MpGame game, {bool skipToHost = false}) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => _GameLobbySheet(
+        game: game,
+        playerName: _playerName,
+        skipToHost: skipToHost,
+        onStart: (roomId) {
+          Navigator.pop(ctx);
+          _openWeb(game.title, game.path, query: {'room': roomId}, gameKey: game.apiKey, roomId: roomId);
+        },
+        onJoin: (roomId) async {
+          Navigator.pop(ctx);
+          try {
+            await AppApi.joinGameRoom(game.apiKey, roomId: roomId, playerName: _playerName);
+          } catch (_) {
+            // Board URL still works if join API is optional
+          }
+          if (!mounted) return;
+          _openWeb(game.title, game.path, query: {'room': roomId}, gameKey: game.apiKey, roomId: roomId);
+        },
+      ),
+    );
+  }
+
+  void _joinFromStrip() {
+    final code = _joinCodeCtrl.text.trim().toUpperCase();
+    if (code.length < 4) {
+      AppTheme.showError(context, 'Enter a valid room code');
+      return;
+    }
+    final game = _joinTarget ?? _multiplayer.firstWhere((g) => g.apiKey == 'chess');
+    _openWeb(game.title, game.path, query: {'room': code});
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.dashboardBg,
-      appBar: AppBar(
-        title: Text('Games', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
-        elevation: 0,
+    return DashboardScaffold(
+      active: AppDrawerItem.games,
+      title: 'Esports & Games',
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+        children: [
+          Text(
+            'Host a room, share the code, or jump into solo arcade — same boards as the website.',
+            style: GoogleFonts.inter(color: AppTheme.textMuted, height: 1.4),
+          ),
+          const SizedBox(height: 16),
+          _roomCodeStrip(),
+          const SizedBox(height: 20),
+          _sectionTitle('Multiplayer'),
+          const SizedBox(height: 10),
+          ..._multiplayer.map(_mpCard),
+          const SizedBox(height: 20),
+          _sectionTitle('Solo Arcade'),
+          const SizedBox(height: 10),
+          ..._solo.map(_soloCard),
+        ],
       ),
-      body: _busy
-          ? const Center(child: CircularProgressIndicator())
-          : GridView.builder(
-              padding: const EdgeInsets.all(16),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                childAspectRatio: 0.95,
-              ),
-              itemCount: _games.length,
-              itemBuilder: (context, index) {
-                final game = _games[index];
-                return Card(
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(16),
-                    onTap: () => _showGameActions(game),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          CircleAvatar(
-                            radius: 28,
-                            backgroundColor: game.color.withValues(alpha: 0.15),
-                            child: Icon(game.icon, color: game.color, size: 28),
-                          ),
-                          const SizedBox(height: 12),
-                          Text(game.label, style: GoogleFonts.outfit(fontWeight: FontWeight.bold), textAlign: TextAlign.center),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
     );
   }
 
-  void _showGameActions(_GameInfo game) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.add_circle, color: Colors.blueAccent),
-              title: const Text('Create Room'),
-              onTap: () {
-                Navigator.pop(ctx);
-                _createRoom(game);
-              },
+  Widget _sectionTitle(String text) {
+    return Text(
+      text.toUpperCase(),
+      style: GoogleFonts.inter(
+        fontSize: 12,
+        fontWeight: FontWeight.w800,
+        letterSpacing: 0.8,
+        color: AppTheme.textMuted,
+      ),
+    );
+  }
+
+  Widget _roomCodeStrip() {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: AppTheme.cardDecoration(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Have a Room Code?', style: GoogleFonts.outfit(fontWeight: FontWeight.w800, fontSize: 16)),
+          const SizedBox(height: 4),
+          Text(
+            'Join a friend’s match with their 6-character code.',
+            style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textMuted),
+          ),
+          const SizedBox(height: 10),
+          DropdownButtonFormField<_MpGame>(
+            initialValue: _joinTarget ?? _multiplayer.firstWhere((g) => g.apiKey == 'chess'),
+            decoration: AppTheme.dashboardInput('Game'),
+            items: _multiplayer
+                .map((g) => DropdownMenuItem(value: g, child: Text(g.title)))
+                .toList(),
+            onChanged: (v) => setState(() => _joinTarget = v),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _joinCodeCtrl,
+                  textCapitalization: TextCapitalization.characters,
+                  maxLength: 6,
+                  decoration: AppTheme.dashboardInput('Room code').copyWith(counterText: ''),
+                ),
+              ),
+              const SizedBox(width: 10),
+              ElevatedButton(
+                onPressed: _joinFromStrip,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                ),
+                child: Text('Join Match', style: GoogleFonts.outfit(fontWeight: FontWeight.w700)),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _mpCard(_MpGame game) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Container(
+        decoration: AppTheme.cardDecoration(),
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: game.color.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Icon(game.icon, color: game.color),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(game.title, style: GoogleFonts.outfit(fontWeight: FontWeight.w800, fontSize: 17)),
+                        const SizedBox(height: 2),
+                        Text(game.blurb, style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textMuted, height: 1.35)),
+                        const SizedBox(height: 4),
+                        Text(
+                          game.playersLabel,
+                          style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.w700, color: AppTheme.primary),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () => _openLobby(game),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFFBBF24),
+                        foregroundColor: const Color(0xFF1F2937),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      child: Text('Play Now', style: GoogleFonts.outfit(fontWeight: FontWeight.w800)),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => _openLobby(game, skipToHost: true),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppTheme.primary,
+                        side: const BorderSide(color: AppTheme.primary),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      child: Text('Invite', style: GoogleFonts.outfit(fontWeight: FontWeight.w800)),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _soloCard(_SoloGame game) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Material(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          onTap: () => _openWeb(game.title, game.path),
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: game.color.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Icon(game.icon, color: game.color),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(game.title, style: GoogleFonts.outfit(fontWeight: FontWeight.w800, fontSize: 16)),
+                      Text(game.blurb, style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textMuted)),
+                    ],
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () => _openWeb(game.title, game.path),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFBBF24),
+                    foregroundColor: const Color(0xFF1F2937),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  ),
+                  child: Text('Play', style: GoogleFonts.outfit(fontWeight: FontWeight.w800)),
+                ),
+              ],
             ),
-            ListTile(
-              leading: const Icon(Icons.login, color: Colors.green),
-              title: const Text('Join Room'),
-              onTap: () {
-                Navigator.pop(ctx);
-                _joinRoom(game);
-              },
-            ),
-          ],
+          ),
         ),
       ),
     );
   }
 }
 
-class _GameInfo {
-  const _GameInfo(this.apiName, this.label, this.icon, this.color);
-  final String apiName;
-  final String label;
+class _MpGame {
+  const _MpGame({
+    required this.title,
+    required this.blurb,
+    required this.path,
+    required this.apiKey,
+    required this.icon,
+    required this.color,
+    required this.playerCounts,
+    required this.playersLabel,
+  });
+
+  final String title;
+  final String blurb;
+  final String path;
+  final String apiKey;
   final IconData icon;
   final Color color;
+  final List<int> playerCounts;
+  final String playersLabel;
+}
+
+class _SoloGame {
+  const _SoloGame({
+    required this.title,
+    required this.blurb,
+    required this.path,
+    required this.icon,
+    required this.color,
+  });
+
+  final String title;
+  final String blurb;
+  final String path;
+  final IconData icon;
+  final Color color;
+}
+
+class _GameLobbySheet extends StatefulWidget {
+  const _GameLobbySheet({
+    required this.game,
+    required this.playerName,
+    required this.onStart,
+    required this.onJoin,
+    this.skipToHost = false,
+  });
+
+  final _MpGame game;
+  final String playerName;
+  final bool skipToHost;
+  final ValueChanged<String> onStart;
+  final ValueChanged<String> onJoin;
+
+  @override
+  State<_GameLobbySheet> createState() => _GameLobbySheetState();
+}
+
+class _GameLobbySheetState extends State<_GameLobbySheet> {
+  late String _step; // select | host | created | join
+  late int _maxPlayers;
+  final _codeCtrl = TextEditingController();
+  String? _createdCode;
+  bool _busy = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _maxPlayers = widget.game.playerCounts.first;
+    _step = widget.skipToHost ? 'host' : 'select';
+  }
+
+  @override
+  void dispose() {
+    _codeCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _create() async {
+    setState(() => _busy = true);
+    try {
+      final res = await AppApi.createGameRoom(
+        widget.game.apiKey,
+        playerName: widget.playerName,
+        maxPlayers: _maxPlayers,
+      );
+      final code = (res['roomId'] ?? res['room'] ?? '').toString().toUpperCase();
+      if (code.isEmpty) throw Exception('No room code returned');
+      if (!mounted) return;
+      setState(() {
+        _createdCode = code;
+        _step = 'created';
+      });
+    } catch (e) {
+      if (mounted) AppTheme.showError(context, e);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bottom = MediaQuery.of(context).viewInsets.bottom;
+    return Padding(
+      padding: EdgeInsets.only(bottom: bottom),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(color: Colors.black26, borderRadius: BorderRadius.circular(4)),
+                ),
+              ),
+              const SizedBox(height: 14),
+              Text(widget.game.title, style: GoogleFonts.outfit(fontWeight: FontWeight.w800, fontSize: 20)),
+              const SizedBox(height: 4),
+              Text(
+                'Playing as ${widget.playerName}',
+                style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textMuted),
+              ),
+              const SizedBox(height: 16),
+              if (_step == 'select') ..._selectStep(),
+              if (_step == 'host') ..._hostStep(),
+              if (_step == 'created') ..._createdStep(),
+              if (_step == 'join') ..._joinStep(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  List<Widget> _selectStep() => [
+        ElevatedButton.icon(
+          onPressed: () => setState(() => _step = 'host'),
+          icon: const Icon(Icons.add_home_rounded),
+          label: Text('Host Room', style: GoogleFonts.outfit(fontWeight: FontWeight.w700)),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppTheme.primary,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 14),
+          ),
+        ),
+        const SizedBox(height: 10),
+        OutlinedButton.icon(
+          onPressed: () => setState(() => _step = 'join'),
+          icon: const Icon(Icons.login_rounded),
+          label: Text('Join with Code', style: GoogleFonts.outfit(fontWeight: FontWeight.w700)),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: AppTheme.primary,
+            padding: const EdgeInsets.symmetric(vertical: 14),
+          ),
+        ),
+        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close')),
+      ];
+
+  List<Widget> _hostStep() => [
+        Text('Players', style: GoogleFonts.outfit(fontWeight: FontWeight.w700)),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          children: widget.game.playerCounts.map((n) {
+            final selected = _maxPlayers == n;
+            return ChoiceChip(
+              label: Text('$n'),
+              selected: selected,
+              onSelected: (_) => setState(() => _maxPlayers = n),
+              selectedColor: AppTheme.primary.withValues(alpha: 0.2),
+              labelStyle: GoogleFonts.outfit(
+                fontWeight: FontWeight.w700,
+                color: selected ? AppTheme.primary : AppTheme.textSecondary,
+              ),
+            );
+          }).toList(),
+        ),
+        const SizedBox(height: 16),
+        ElevatedButton(
+          onPressed: _busy ? null : _create,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppTheme.primary,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 14),
+          ),
+          child: _busy
+              ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+              : Text('Create Room', style: GoogleFonts.outfit(fontWeight: FontWeight.w700)),
+        ),
+        TextButton(
+          onPressed: widget.skipToHost ? () => Navigator.pop(context) : () => setState(() => _step = 'select'),
+          child: const Text('Back'),
+        ),
+      ];
+
+  List<Widget> _createdStep() => [
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF0F9FF),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: const Color(0xFFBFDBFE)),
+          ),
+          child: Column(
+            children: [
+              Text('Room code', style: GoogleFonts.inter(color: AppTheme.textMuted, fontSize: 12)),
+              const SizedBox(height: 6),
+              Text(
+                _createdCode ?? '',
+                style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 32, letterSpacing: 4, color: AppTheme.primary),
+              ),
+              TextButton.icon(
+                onPressed: () async {
+                  await Clipboard.setData(ClipboardData(text: _createdCode ?? ''));
+                  if (mounted) AppTheme.showSuccess(context, 'Code copied');
+                },
+                icon: const Icon(Icons.copy_rounded, size: 16),
+                label: const Text('Copy code'),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        ElevatedButton(
+          onPressed: () => widget.onStart(_createdCode!),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFFFBBF24),
+            foregroundColor: const Color(0xFF1F2937),
+            padding: const EdgeInsets.symmetric(vertical: 14),
+          ),
+          child: Text('Start Game', style: GoogleFonts.outfit(fontWeight: FontWeight.w800)),
+        ),
+      ];
+
+  List<Widget> _joinStep() => [
+        TextField(
+          controller: _codeCtrl,
+          textCapitalization: TextCapitalization.characters,
+          maxLength: 6,
+          decoration: AppTheme.dashboardInput('Room code'),
+        ),
+        const SizedBox(height: 8),
+        ElevatedButton(
+          onPressed: () {
+            final code = _codeCtrl.text.trim().toUpperCase();
+            if (code.length < 4) {
+              AppTheme.showError(context, 'Enter a valid room code');
+              return;
+            }
+            widget.onJoin(code);
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppTheme.primary,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 14),
+          ),
+          child: Text('Join & Play', style: GoogleFonts.outfit(fontWeight: FontWeight.w700)),
+        ),
+        TextButton(onPressed: () => setState(() => _step = 'select'), child: const Text('Back')),
+      ];
 }

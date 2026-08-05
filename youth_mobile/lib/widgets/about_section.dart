@@ -47,7 +47,7 @@ class AboutSection extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'Zentrix is a modern, feature-rich platform designed to bring people together through communication, entertainment, and interactive experiences.',
+            'Youthian is a modern, feature-rich platform designed to bring people together through communication, entertainment, and interactive experiences.',
             style: GoogleFonts.inter(
               color: Colors.white70,
               fontSize: 15,
@@ -87,7 +87,7 @@ class AboutSection extends StatelessWidget {
                 ),
               ),
               child: Text(
-                'Join Zentrix Now',
+                'Join Youthian Now',
                 style: GoogleFonts.inter(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,

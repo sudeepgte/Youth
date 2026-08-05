@@ -120,7 +120,21 @@ public class ChatService {
         ChatMessage saved = chatMessageRepository.save(message);
         System.out.println("[DEBUG] ChatService.sendMessage: Message saved with ID: " + saved.getId());
 
-        conv.setLastMessage(content != null && !content.trim().isEmpty() ? content : "Media shared");
+        String preview;
+        if (content != null && !content.isBlank()) {
+            preview = content.trim();
+            if (preview.length() > 200) {
+                // Avoid storing full GIF/media URLs in the inbox preview column
+                if (preview.startsWith("http")) {
+                    preview = mediaUrl != null && !mediaUrl.isBlank() ? "GIF" : "Media shared";
+                } else {
+                    preview = preview.substring(0, 200) + "…";
+                }
+            }
+        } else {
+            preview = "Media shared";
+        }
+        conv.setLastMessage(preview);
         conv.setLastMessageTime(LocalDateTime.now());
         conversationRepository.save(conv);
 

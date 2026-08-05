@@ -65,6 +65,35 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
             if (attributes.get("user") != null) return true; // already resolved via session
             if (!(request instanceof ServletServerHttpRequest servletRequest)) return true;
 
+            String bearer = servletRequest.getServletRequest().getHeader("Authorization");
+            if (bearer != null && bearer.startsWith("Bearer ")) {
+                try {
+                    String token = bearer.substring(7);
+                    String username = jwtUtil.extractUsername(token);
+                    if (username != null && jwtUtil.validateToken(token, username)) {
+                        User user = userRepository.findByUsername(username);
+                        if (user != null) {
+                            attributes.put("user", user);
+                            return true;
+                        }
+                    }
+                } catch (Exception ignored) {}
+            }
+
+            String queryToken = servletRequest.getServletRequest().getParameter("auth");
+            if (queryToken != null && !queryToken.isBlank()) {
+                try {
+                    String username = jwtUtil.extractUsername(queryToken);
+                    if (username != null && jwtUtil.validateToken(queryToken, username)) {
+                        User user = userRepository.findByUsername(username);
+                        if (user != null) {
+                            attributes.put("user", user);
+                            return true;
+                        }
+                    }
+                } catch (Exception ignored) {}
+            }
+
             Cookie[] cookies = servletRequest.getServletRequest().getCookies();
             if (cookies == null) return true;
 

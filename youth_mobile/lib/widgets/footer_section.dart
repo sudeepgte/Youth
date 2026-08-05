@@ -14,7 +14,7 @@ class FooterSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Zentrix',
+            'Youthian',
             style: GoogleFonts.outfit(
               fontSize: 28,
               fontWeight: FontWeight.w900,
@@ -52,7 +52,7 @@ class FooterSection extends StatelessWidget {
               const FaIcon(FontAwesomeIcons.envelope, color: Colors.blueAccent, size: 14),
               const SizedBox(width: 12),
               Text(
-                'support@zentrix.com',
+                'support@youthian.com',
                 style: GoogleFonts.inter(
                   fontSize: 14,
                   color: const Color(0xFF475569),
@@ -139,7 +139,7 @@ class FooterSection extends StatelessWidget {
           const SizedBox(height: 60),
           Center(
             child: Text(
-              '© 2026 Zentrix. All rights reserved.',
+              '© 2026 Youthian. All rights reserved.',
               style: GoogleFonts.inter(
                 fontSize: 12,
                 fontWeight: FontWeight.w700,

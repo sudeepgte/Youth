@@ -29,6 +29,7 @@ public class ChatMessage {
     @Column(columnDefinition = "TEXT")
     private String content;
 
+    @Column(length = 2000)
     private String mediaUrl;
 
     @Enumerated(EnumType.STRING)

@@ -31,28 +31,37 @@ public class UserExploreApiController {
         List<User> users;
 
         if (hasName && hasCollege) {
-            // Both filters — must match both
             users = userRepository.findByUsernameAndCollege(name.trim(), college.trim());
         } else if (hasName) {
             users = userRepository.findByUsernameContainingIgnoreCase(name.trim());
         } else if (hasCollege) {
             users = userRepository.findByCollegeNameContainingIgnoreCase(college.trim());
         } else {
-            // No filter → return all
             users = userRepository.findAll();
         }
         users.removeIf(u -> "BANNED".equals(u.getStatus()) || "SUSPENDED".equals(u.getStatus()));
 
-        // Map to safe DTO (no password / email exposed)
+        // Boosted profiles first, then premium, then others
+        users.sort((a, b) -> {
+            int cmp = Boolean.compare(b.isProfileBoosted(), a.isProfileBoosted());
+            if (cmp != 0) return cmp;
+            return Boolean.compare(b.isPremium(), a.isPremium());
+        });
+
         List<Map<String, Object>> result = new ArrayList<>();
         for (User u : users) {
             Map<String, Object> dto = new LinkedHashMap<>();
             dto.put("id",          u.getId());
             dto.put("username",    u.getUsername());
             dto.put("collegeName", u.getCollegeName());
+            dto.put("bio",         u.getBio());
             dto.put("level",       u.getLevel() != null ? u.getLevel() : "Novice");
             dto.put("followers",   u.getFollowers() != null ? u.getFollowers().size() : 0);
+            dto.put("followersCount", u.getFollowers() != null ? u.getFollowers().size() : 0);
             dto.put("profilePhotoUrl", u.getProfilePhotoUrl());
+            dto.put("isPremium", u.isPremium());
+            dto.put("isBoosted", u.isProfileBoosted());
+            dto.put("profileBoostUntil", u.getProfileBoostUntil() != null ? u.getProfileBoostUntil().toString() : null);
             result.add(dto);
         }
         return result;
@@ -84,20 +93,22 @@ public class UserExploreApiController {
         response.put("username", targetUser.getUsername());
         response.put("profilePhotoUrl", targetUser.getProfilePhotoUrl());
         response.put("collegeName", targetUser.getCollegeName());
+        response.put("bio", targetUser.getBio());
+        response.put("aboutMe", targetUser.getAboutMe());
         response.put("level", targetUser.getLevel() != null ? targetUser.getLevel() : "Novice");
         response.put("followersCount", targetUser.getFollowers().size());
         response.put("followingCount", targetUser.getFollowing().size());
+        response.put("isFollowing", isFollowing);
+        response.put("isOwnProfile", isOwnProfile);
         response.put("isPrivateAndNotFollowing", isPrivateAndNotFollowing);
+        response.put("isPremium", targetUser.isPremium());
+        response.put("isBoosted", targetUser.isProfileBoosted());
 
         if (!isPrivateAndNotFollowing) {
             long postsCount = postRepository.findByUserAndPostTypeNotOrderByCreatedAtDesc(targetUser, "STORY").size();
             long reelsCount = postRepository.findByPostTypeOrderByCreatedAtDesc("REEL").stream()
                     .filter(p -> p.getUser().getId().equals(targetUser.getId()))
                     .count();
-            // Or a more optimal query:
-            // long postsCount = postRepository.countByUserAndPostTypeNot(targetUser, "STORY");
-            // long reelsCount = postRepository.countByUserAndPostType(targetUser, "REEL");
-            
             response.put("postsCount", postsCount);
             response.put("reelsCount", reelsCount);
         }

@@ -63,6 +63,7 @@ class AuthProvider extends ChangeNotifier {
     required String password,
     String? gender,
     String? dob,
+    String? collegeName,
   }) async {
     loading = true;
     error = null;
@@ -74,6 +75,7 @@ class AuthProvider extends ChangeNotifier {
         'password': password,
         if (gender != null) 'gender': gender,
         if (dob != null) 'dob': dob,
+        if (collegeName != null && collegeName.trim().isNotEmpty) 'collegeName': collegeName.trim(),
       });
       loading = false;
       notifyListeners();

@@ -4,11 +4,15 @@ import com.example.demo.config.ActiveLoginRegistry;
 import com.example.demo.config.JwtUtil;
 import com.example.demo.config.TokenBlacklist;
 import com.example.demo.model.*;
+import com.example.demo.music.MusicService;
 import com.example.demo.music.Track;
+import com.example.demo.music.TrackLikeRepository;
 import com.example.demo.music.TrackRepository;
 import com.example.demo.music.TrackStatus;
 import com.example.demo.music.room.MusicRoom;
 import com.example.demo.music.room.MusicRoomRepository;
+import com.example.demo.music.room.MusicRoomVote;
+import com.example.demo.music.room.MusicRoomVoteRepository;
 import com.example.demo.repository.*;
 import com.example.demo.service.FeedAlgorithmService;
 import com.example.demo.service.RewardService;
@@ -41,14 +45,22 @@ public class MobileApiController {
     @Autowired private PostRepository postRepository;
     @Autowired private EventRepository eventRepository;
     @Autowired private EventRegistrationRepository eventRegistrationRepository;
+    @Autowired private EventSeatRepository eventSeatRepository;
     @Autowired private BattleRepository battleRepository;
+    @Autowired private BattleParticipantRepository battleParticipantRepository;
+    @Autowired private BattleSubmissionRepository battleSubmissionRepository;
+    @Autowired private BattleVoteRepository battleVoteRepository;
     @Autowired private NotificationRepository notificationRepository;
     @Autowired private WalletTransactionRepository walletTransactionRepository;
     @Autowired private TrackRepository trackRepository;
+    @Autowired private TrackLikeRepository trackLikeRepository;
     @Autowired private MusicRoomRepository musicRoomRepository;
+    @Autowired private MusicRoomVoteRepository musicRoomVoteRepository;
+    @Autowired private MusicService musicService;
     @Autowired private FollowRequestRepository followRequestRepository;
     @Autowired private PostCollaborationRepository postCollaborationRepository;
     @Autowired private UserRewardRepository userRewardRepository;
+    @Autowired private VoteRepository voteRepository;
     @Autowired private SecretRewardService secretRewardService;
     @Autowired private JwtUtil jwtUtil;
     @Autowired private TokenBlacklist tokenBlacklist;
@@ -164,19 +176,36 @@ public class MobileApiController {
         m.put("status", reward.getStatus());
         m.put("issueDate", reward.getIssueDate() != null ? reward.getIssueDate().toString() : null);
         m.put("expiryDate", reward.getExpiryDate() != null ? reward.getExpiryDate().toString() : null);
+        m.put("redeemUrl", "/rewards/redeem/" + reward.getRewardCode());
         if (reward.getEvent() != null) {
             m.put("eventId", reward.getEvent().getId());
             m.put("eventTitle", reward.getEvent().getTitle());
         }
         if (reward.getSecretReward() != null) {
-            m.put("partnerName", reward.getSecretReward().getBusinessName());
-            m.put("offerTitle", reward.getSecretReward().getRewardName());
-            m.put("offerDescription", reward.getSecretReward().getDescription());
+            SecretRewardPartner p = reward.getSecretReward();
+            m.put("partnerName", p.getBusinessName());
+            m.put("offerTitle", p.getRewardName());
+            m.put("offerDescription", p.getDescription());
+            m.put("category", p.getCategory());
+            m.put("terms", p.getTerms());
+            m.put("redeemStallNumber", p.getRedeemStallNumber());
+            m.put("storeName", p.getStoreName());
+            m.put("storeAddress", p.getStoreAddress());
+            m.put("storeContact", p.getStoreContact());
+            m.put("couponCode", p.getCouponCode());
+            m.put("deliveryMethod", p.getDeliveryMethod());
+            m.put("deliveryType", p.getDeliveryType());
+            m.put("estimatedDelivery", p.getEstimatedDelivery());
+            m.put("sponsorLogoUrl", p.getSponsorLogoUrl());
         }
         return m;
     }
 
     private Map<String, Object> eventDto(Event e) {
+        return eventDto(e, null, false);
+    }
+
+    private Map<String, Object> eventDto(Event e, User viewer, boolean includeDetail) {
         Map<String, Object> m = new LinkedHashMap<>();
         m.put("id", e.getId());
         m.put("title", e.getTitle());
@@ -200,10 +229,59 @@ public class MobileApiController {
         m.put("vipPrice", e.getVipPrice());
         m.put("regularPrice", e.getRegularPrice());
         m.put("enableSecretRewards", e.isEnableSecretRewards());
+        m.put("totalRows", e.getTotalRows());
+        m.put("seatsPerRow", e.getSeatsPerRow());
+        m.put("hasSeats", e.getTotalRows() != null && e.getTotalRows() > 0);
+
+        long registered = eventRegistrationRepository.countByEvent(e);
+        m.put("registeredCount", registered);
+        m.put("spotsLeft", e.getMaxParticipants() != null ? Math.max(0, e.getMaxParticipants() - registered) : null);
+
+        if (viewer != null) {
+            boolean isRegistered = eventRegistrationRepository.findByEventAndUser(e, viewer).stream()
+                    .anyMatch(r -> !"CANCELLED".equalsIgnoreCase(r.getRegistrationStatus()));
+            m.put("isRegistered", isRegistered);
+            if (isRegistered) {
+                eventRegistrationRepository.findByEventAndUser(e, viewer).stream()
+                        .filter(r -> !"CANCELLED".equalsIgnoreCase(r.getRegistrationStatus()))
+                        .findFirst()
+                        .ifPresent(r -> {
+                            m.put("myTicketId", r.getTicketId());
+                            m.put("myRegistrationId", r.getId());
+                        });
+            }
+            m.put("hasFreeEntry", viewer.isHasFreeEntry());
+            m.put("hasDiscount", viewer.isHasDiscount());
+            m.put("walletBalance", viewer.getWalletBalance() != null ? viewer.getWalletBalance() : 0.0);
+        }
+
+        if (includeDetail) {
+            List<EventSeat> seats = eventSeatRepository.findByEvent(e);
+            List<Map<String, Object>> seatList = new ArrayList<>();
+            int available = 0;
+            for (EventSeat s : seats) {
+                Map<String, Object> sm = new LinkedHashMap<>();
+                sm.put("id", s.getId());
+                sm.put("rowLabel", s.getRowLabel());
+                sm.put("seatNumber", s.getSeatNumber());
+                sm.put("seatType", s.getSeatType());
+                sm.put("price", s.getPrice());
+                sm.put("status", s.getStatus());
+                sm.put("label", s.getSeatIdentifier());
+                seatList.add(sm);
+                if ("AVAILABLE".equalsIgnoreCase(s.getStatus())) available++;
+            }
+            m.put("seats", seatList);
+            m.put("availableSeats", available);
+        }
         return m;
     }
 
     private Map<String, Object> battleDto(Battle b) {
+        return battleDto(b, null, false);
+    }
+
+    private Map<String, Object> battleDto(Battle b, User viewer, boolean includeDetail) {
         Map<String, Object> m = new LinkedHashMap<>();
         m.put("id", b.getId());
         m.put("title", b.getTitle());
@@ -212,20 +290,146 @@ public class MobileApiController {
         m.put("status", b.getStatus());
         m.put("maxParticipants", b.getMaxParticipants());
         m.put("durationHours", b.getDurationHours());
+        m.put("durationMinutes", b.getDurationMinutes());
         m.put("mode", b.getMode());
         m.put("venue", b.getVenue());
         m.put("eventDate", b.getEventDate());
         m.put("eventTime", b.getEventTime());
+        m.put("entryFee", b.getEntryFee() != null ? b.getEntryFee() : 0.0);
+        m.put("prize1", b.getPrize1() != null ? b.getPrize1() : 0.0);
+        m.put("prize2", b.getPrize2() != null ? b.getPrize2() : 0.0);
+        m.put("prize3", b.getPrize3() != null ? b.getPrize3() : 0.0);
+        m.put("winnerXp", b.getWinnerXp() != null ? b.getWinnerXp() : 0);
+        m.put("judgeWeight", b.getJudgeWeight() != null ? b.getJudgeWeight() : 70.0);
+        m.put("audienceWeight", b.getAudienceWeight() != null ? b.getAudienceWeight() : 30.0);
         m.put("createdAt", b.getCreatedAt() != null ? b.getCreatedAt().toString() : null);
         m.put("startedAt", b.getStartedAt() != null ? b.getStartedAt().toString() : null);
         m.put("endsAt", b.getEndsAt() != null ? b.getEndsAt().toString() : null);
+        m.put("votingEndsAt", b.getVotingEndsAt() != null ? b.getVotingEndsAt().toString() : null);
         m.put("participantCount", b.getParticipants() != null ? b.getParticipants().size() : 0);
+        m.put("isLive", b.getDurationMinutes() != null && b.getDurationMinutes() > 0);
+
+        if (b.getParticipants() != null) {
+            List<Map<String, Object>> parts = new ArrayList<>();
+            for (BattleParticipant p : b.getParticipants()) {
+                if (p.getUser() == null) continue;
+                Map<String, Object> pm = new LinkedHashMap<>();
+                pm.put("id", p.getId());
+                pm.put("userId", p.getUser().getId());
+                pm.put("username", p.getUser().getUsername());
+                String photo = p.getUser().getProfilePhotoUrl() != null
+                        ? p.getUser().getProfilePhotoUrl()
+                        : p.getUser().getProfilePicture();
+                pm.put("photoUrl", photo);
+                pm.put("seatNumber", p.getSeatNumber());
+                pm.put("participantNumber", p.getParticipantNumber());
+                pm.put("checkedIn", p.getCheckedIn());
+                if (includeDetail) {
+                    pm.put("qrPassCode", p.getQrPassCode());
+                }
+                boolean isHost = b.getCreator() != null && b.getCreator().getId().equals(p.getUser().getId());
+                pm.put("isHost", isHost);
+                parts.add(pm);
+            }
+            m.put("participants", parts);
+        }
+
         if (b.getCreator() != null) {
             m.put("creatorUsername", b.getCreator().getUsername());
             m.put("creatorId", b.getCreator().getId());
+            String cPhoto = b.getCreator().getProfilePhotoUrl() != null
+                    ? b.getCreator().getProfilePhotoUrl()
+                    : b.getCreator().getProfilePicture();
+            m.put("creatorPhotoUrl", cPhoto);
         }
+
         if (b.getWinner() != null) {
             m.put("winnerUsername", b.getWinner().getUsername());
+            m.put("winnerId", b.getWinner().getId());
+        }
+        if (b.getWinner2() != null) {
+            m.put("winner2Username", b.getWinner2().getUsername());
+            m.put("winner2Id", b.getWinner2().getId());
+        }
+        if (b.getWinner3() != null) {
+            m.put("winner3Username", b.getWinner3().getUsername());
+            m.put("winner3Id", b.getWinner3().getId());
+        }
+
+        if (viewer != null) {
+            boolean isCreator = b.getCreator() != null && b.getCreator().getId().equals(viewer.getId());
+            boolean isParticipant = battleParticipantRepository.existsByBattleAndUser(b, viewer);
+            boolean hasVoted = battleVoteRepository.existsByBattleAndVoter(b, viewer);
+            boolean hasSubmitted = battleSubmissionRepository.existsByBattleAndUser(b, viewer);
+            m.put("isCreator", isCreator);
+            m.put("isParticipant", isParticipant);
+            m.put("hasVoted", hasVoted);
+            m.put("hasSubmitted", hasSubmitted);
+            if (b.getParticipants() != null) {
+                for (BattleParticipant p : b.getParticipants()) {
+                    if (p.getUser() != null && p.getUser().getId().equals(viewer.getId())) {
+                        m.put("myParticipantId", p.getId());
+                        m.put("mySeatNumber", p.getSeatNumber());
+                        m.put("myParticipantNumber", p.getParticipantNumber());
+                        m.put("myCheckedIn", p.getCheckedIn());
+                        m.put("myQrPassCode", p.getQrPassCode());
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (includeDetail) {
+            List<BattleSubmission> subs = battleSubmissionRepository.findByBattleOrderByVoteCountDesc(b);
+            List<Map<String, Object>> subList = new ArrayList<>();
+            for (BattleSubmission s : subs) {
+                Map<String, Object> sm = new LinkedHashMap<>();
+                sm.put("id", s.getId());
+                sm.put("userId", s.getUser() != null ? s.getUser().getId() : null);
+                sm.put("username", s.getUser() != null ? s.getUser().getUsername() : null);
+                sm.put("submissionUrl", s.getSubmissionUrl());
+                sm.put("secondaryUrl", s.getSecondaryUrl());
+                sm.put("description", s.getDescription());
+                sm.put("voteCount", s.getVoteCount());
+                sm.put("judgeTotalScore", s.getJudgeTotalScore());
+                sm.put("submittedAt", s.getSubmittedAt() != null ? s.getSubmittedAt().toString() : null);
+                subList.add(sm);
+            }
+            m.put("submissions", subList);
+
+            List<Map<String, Object>> leaderboard = new ArrayList<>();
+            if ("OFFLINE".equals(b.getMode())) {
+                final double jw = b.getJudgeWeight() != null ? b.getJudgeWeight() : 70.0;
+                final double aw = b.getAudienceWeight() != null ? b.getAudienceWeight() : 30.0;
+                List<BattleSubmission> ranked = new ArrayList<>(subs);
+                ranked.sort((s1, s2) -> {
+                    double score1 = (s1.getJudgeTotalScore() * jw / 100.0) + (s1.getVoteCount() * aw / 100.0);
+                    double score2 = (s2.getJudgeTotalScore() * jw / 100.0) + (s2.getVoteCount() * aw / 100.0);
+                    return Double.compare(score2, score1);
+                });
+                int rank = 1;
+                for (BattleSubmission s : ranked) {
+                    Map<String, Object> row = new LinkedHashMap<>();
+                    row.put("rank", rank++);
+                    row.put("username", s.getUser() != null ? s.getUser().getUsername() : null);
+                    row.put("userId", s.getUser() != null ? s.getUser().getId() : null);
+                    row.put("voteCount", s.getVoteCount());
+                    row.put("judgeTotalScore", s.getJudgeTotalScore());
+                    row.put("weightedScore", (s.getJudgeTotalScore() * jw / 100.0) + (s.getVoteCount() * aw / 100.0));
+                    leaderboard.add(row);
+                }
+            } else {
+                int rank = 1;
+                for (BattleSubmission s : subs) {
+                    Map<String, Object> row = new LinkedHashMap<>();
+                    row.put("rank", rank++);
+                    row.put("username", s.getUser() != null ? s.getUser().getUsername() : null);
+                    row.put("userId", s.getUser() != null ? s.getUser().getId() : null);
+                    row.put("voteCount", s.getVoteCount());
+                    leaderboard.add(row);
+                }
+            }
+            m.put("leaderboard", leaderboard);
         }
         return m;
     }
@@ -271,6 +475,7 @@ public class MobileApiController {
         String password = body.get("password");
         String gender = body.get("gender");
         String dobStr = body.get("dob");
+        String collegeName = body.get("collegeName");
         if (username == null || email == null || password == null) {
             return ResponseEntity.badRequest().body(Map.of("error", "Username, email and password required"));
         }
@@ -293,6 +498,9 @@ public class MobileApiController {
         user.setEmail(email);
         user.setPassword(password);
         user.setGender(gender);
+        if (collegeName != null && !collegeName.isBlank()) {
+            user.setCollegeName(collegeName.trim());
+        }
         if (dobStr != null && !dobStr.isBlank()) {
             try {
                 LocalDate dob = LocalDate.parse(dobStr);
@@ -364,10 +572,17 @@ public class MobileApiController {
     public ResponseEntity<?> feed(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String category,
             HttpSession session) {
         User user = currentUser(session);
         if (user == null) return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
         List<Post> feed = feedAlgorithmService.getPersonalizedFeed(user.getId(), page, size);
+        if (category != null && !category.isBlank() && !"All".equalsIgnoreCase(category)) {
+            String cat = category.trim();
+            feed = feed.stream()
+                    .filter(p -> p.getCategory() != null && cat.equalsIgnoreCase(p.getCategory()))
+                    .collect(Collectors.toList());
+        }
         return ResponseEntity.ok(feed.stream().map(this::postDto).collect(Collectors.toList()));
     }
 
@@ -379,6 +594,9 @@ public class MobileApiController {
             @RequestParam(required = false) String hashtags,
             @RequestParam(required = false, defaultValue = "POST") String postType,
             @RequestParam(required = false) String category,
+            @RequestParam(required = false) String collaborators,
+            @RequestParam(required = false) String bgColor,
+            @RequestParam(required = false) String textColor,
             HttpSession session) {
         User user = currentUser(session);
         if (user == null) return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
@@ -406,8 +624,39 @@ public class MobileApiController {
             }
         }
 
+        if ("STORY".equalsIgnoreCase(postType) && (mediaUrl == null || mediaUrl.isBlank())) {
+            String prefix = "";
+            if (bgColor != null && !bgColor.isBlank()) prefix += "[BG:" + bgColor + "]";
+            if (textColor != null && !textColor.isBlank()) prefix += "[TXT:" + textColor + "]";
+            if (!prefix.isEmpty()) content = prefix + content;
+        }
+
         Post post = new Post(content, user, mediaUrl, mediaType, hashtags, postType, category);
         feedAlgorithmService.savePost(post);
+
+        // Collaborator tags (comma-separated usernames) + @mentions in content
+        Set<User> collaboratorSet = new LinkedHashSet<>();
+        if (content != null) {
+            java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("@(\\w+)").matcher(content);
+            while (matcher.find()) {
+                User u = userRepository.findByUsername(matcher.group(1));
+                if (u != null) collaboratorSet.add(u);
+            }
+        }
+        if (collaborators != null && !collaborators.isBlank()) {
+            for (String uname : collaborators.split("[,\\s]+")) {
+                if (uname == null || uname.isBlank()) continue;
+                String clean = uname.trim().replace("@", "");
+                User u = userRepository.findByUsername(clean);
+                if (u != null) collaboratorSet.add(u);
+            }
+        }
+        for (User collabUser : collaboratorSet) {
+            if (collabUser.getId().equals(user.getId())) continue;
+            PostCollaboration collaboration = new PostCollaboration(post, collabUser, CollaborationStatus.PENDING);
+            postCollaborationRepository.save(collaboration);
+        }
+
         return ResponseEntity.ok(postDto(post));
     }
 
@@ -449,6 +698,18 @@ public class MobileApiController {
         if (body.containsKey("gender")) user.setGender((String) body.get("gender"));
         if (body.containsKey("privateAccount")) user.setPrivateAccount(Boolean.TRUE.equals(body.get("privateAccount")));
         if (body.containsKey("profilePhotoUrl")) user.setProfilePhotoUrl((String) body.get("profilePhotoUrl"));
+        if (body.containsKey("dob")) {
+            Object dobVal = body.get("dob");
+            if (dobVal == null || dobVal.toString().isBlank()) {
+                user.setDob(null);
+            } else {
+                try {
+                    user.setDob(LocalDate.parse(dobVal.toString().trim()));
+                } catch (Exception ignored) {
+                    return ResponseEntity.badRequest().body(Map.of("error", "Invalid date of birth (use YYYY-MM-DD)"));
+                }
+            }
+        }
         userRepository.save(user);
         return ResponseEntity.ok(userDto(user));
     }
@@ -609,7 +870,7 @@ public class MobileApiController {
         List<Map<String, Object>> voting = all.stream()
                 .filter(e -> "VOTING".equals(e.getStatus()))
                 .filter(e -> e.getVotingEndDate() == null || e.getVotingEndDate().isAfter(LocalDateTime.now()))
-                .map(this::eventDto).collect(Collectors.toList());
+                .map(e -> eventDto(e, user, false)).collect(Collectors.toList());
 
         LocalDateTime eightDaysAgo = LocalDateTime.now().minusDays(8);
         List<Map<String, Object>> regular = all.stream()
@@ -618,21 +879,59 @@ public class MobileApiController {
                     if ("VOTING".equals(s) || "REJECTED".equals(s) || e.isDeleted()) return false;
                     return e.getDateTime() == null || !e.getDateTime().isBefore(eightDaysAgo);
                 })
-                .map(this::eventDto).collect(Collectors.toList());
+                .map(e -> eventDto(e, user, false)).collect(Collectors.toList());
 
         List<Map<String, Object>> trending = eventRepository.findAll().stream()
                 .filter(e -> "UPCOMING".equals(e.getStatus()) || e.getStatus() == null)
-                .limit(3).map(this::eventDto).collect(Collectors.toList());
+                .limit(3).map(e -> eventDto(e, user, false)).collect(Collectors.toList());
 
         return ResponseEntity.ok(Map.of("events", regular, "votingPolls", voting, "trending", trending));
     }
 
     @GetMapping("/events/{id}")
+    @Transactional(readOnly = true)
     public ResponseEntity<?> eventDetail(@PathVariable Long id, HttpSession session) {
-        if (currentUser(session) == null) return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        User user = currentUser(session);
+        if (user == null) return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
         Event e = eventRepository.findById(id).orElse(null);
         if (e == null) return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(eventDto(e));
+        return ResponseEntity.ok(eventDto(e, user, true));
+    }
+
+    @Transactional
+    @PostMapping("/events/{id}/join-online")
+    public ResponseEntity<?> joinOnlineEvent(@PathVariable Long id, HttpSession session) {
+        User user = currentUser(session);
+        if (user == null) return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        Event event = eventRepository.findById(id).orElse(null);
+        if (event == null) return ResponseEntity.notFound().build();
+
+        List<EventRegistration> regs = eventRegistrationRepository.findByEventAndUser(event, user);
+        EventRegistration reg = regs.isEmpty() ? null : regs.get(0);
+        if (reg == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Register for this event first"));
+        }
+        if (!reg.isAttendanceMarked()) {
+            reg.setAttendanceMarked(true);
+            reg.setAttendedAt(LocalDateTime.now());
+            eventRegistrationRepository.save(reg);
+            try {
+                secretRewardService.assignReward(reg);
+            } catch (Exception ignored) {}
+            try {
+                rewardService.awardAttendance(user);
+            } catch (Exception ignored) {}
+        }
+
+        String link = event.getMeetingLink();
+        Map<String, Object> resp = new LinkedHashMap<>();
+        resp.put("ok", true);
+        resp.put("meetingLink", link);
+        resp.put("attendanceMarked", true);
+        if (link == null || link.isBlank()) {
+            resp.put("message", "Joined — no meeting link configured for this event");
+        }
+        return ResponseEntity.ok(resp);
     }
 
     @GetMapping("/ticket/{ticketId}")
@@ -645,25 +944,120 @@ public class MobileApiController {
         }
         Map<String, Object> m = new LinkedHashMap<>();
         m.put("id", reg.getId());
+        m.put("registrationId", reg.getId());
         m.put("ticketId", reg.getTicketId());
         m.put("status", reg.getRegistrationStatus());
+        m.put("paymentStatus", reg.getPaymentStatus());
+        m.put("selectedTier", reg.getSelectedTier());
         m.put("registrationDate", reg.getRegistrationDate() != null ? reg.getRegistrationDate().toString() : null);
-        if (reg.getEvent() != null) m.put("event", eventDto(reg.getEvent()));
+        m.put("fullName", reg.getFullName());
+        m.put("email", reg.getEmail());
+        m.put("phone", reg.getPhone());
+        m.put("college", reg.getCollege());
+        m.put("yearOfStudy", reg.getYearOfStudy());
+        m.put("quantity", reg.getQuantity());
+        m.put("enableSecretRewards", reg.getEvent() != null && reg.getEvent().isEnableSecretRewards());
+        m.put("printableUrl", "/events/ticket/" + reg.getTicketId());
+        if (reg.getEvent() != null) {
+            m.put("event", eventDto(reg.getEvent(), user, false));
+            List<EventSeat> seats = eventSeatRepository.findByEventAndBookedByUser(reg.getEvent(), user);
+            List<String> labels = seats.stream().map(EventSeat::getSeatIdentifier).collect(Collectors.toList());
+            m.put("seats", labels);
+        }
         return ResponseEntity.ok(m);
     }
 
     @PostMapping("/events/{id}/register")
     @Transactional
-    public ResponseEntity<?> registerEvent(@PathVariable Long id, HttpSession session) {
+    public ResponseEntity<?> registerEvent(@PathVariable Long id,
+                                           @RequestBody(required = false) Map<String, Object> body,
+                                           HttpSession session) {
         User user = currentUser(session);
         if (user == null) return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        user = userRepository.findById(user.getId()).orElse(user);
         Event event = eventRepository.findById(id).orElse(null);
         if (event == null) return ResponseEntity.notFound().build();
 
-        boolean already = eventRegistrationRepository.findByUser(user).stream()
-                .anyMatch(r -> r.getEvent() != null && r.getEvent().getId().equals(id));
+        boolean already = eventRegistrationRepository.findByEventAndUser(event, user).stream()
+                .anyMatch(r -> !"CANCELLED".equalsIgnoreCase(r.getRegistrationStatus()));
         if (already) {
             return ResponseEntity.badRequest().body(Map.of("error", "Already registered"));
+        }
+
+        if ("COMPLETED".equalsIgnoreCase(event.getStatus()) || "CANCELLED".equalsIgnoreCase(event.getStatus())) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Event is not open for registration"));
+        }
+
+        Map<String, Object> fields = body != null ? body : Map.of();
+        String fullName = fields.get("fullName") != null ? fields.get("fullName").toString() : user.getUsername();
+        String email = fields.get("email") != null ? fields.get("email").toString() : user.getEmail();
+        String phone = fields.get("phone") != null ? fields.get("phone").toString() : null;
+        String college = fields.get("college") != null ? fields.get("college").toString() : user.getCollegeName();
+        String yearOfStudy = fields.get("yearOfStudy") != null ? fields.get("yearOfStudy").toString() : null;
+        String selectedTier = fields.get("selectedTier") != null ? fields.get("selectedTier").toString() : "REGULAR";
+        Integer quantity = 1;
+        if (fields.get("quantity") != null) {
+            try { quantity = Integer.parseInt(fields.get("quantity").toString()); } catch (Exception ignored) {}
+        }
+        if (quantity == null || quantity < 1) quantity = 1;
+        if (quantity > 10) quantity = 10;
+
+        long registered = eventRegistrationRepository.countByEvent(event);
+        if (event.getMaxParticipants() != null && registered + quantity > event.getMaxParticipants()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Not enough spots left"));
+        }
+
+        // Seat booking (optional)
+        List<Long> seatIds = new ArrayList<>();
+        if (fields.get("selectedSeatIds") instanceof List<?> rawSeats) {
+            for (Object o : rawSeats) {
+                try { seatIds.add(Long.valueOf(o.toString())); } catch (Exception ignored) {}
+            }
+        }
+        List<EventSeat> bookedSeats = new ArrayList<>();
+        if (!seatIds.isEmpty()) {
+            quantity = seatIds.size();
+            for (Long seatId : seatIds) {
+                EventSeat seat = eventSeatRepository.findById(seatId).orElse(null);
+                if (seat == null || seat.getEvent() == null || !seat.getEvent().getId().equals(event.getId())) {
+                    return ResponseEntity.badRequest().body(Map.of("error", "Invalid seat"));
+                }
+                if (!"AVAILABLE".equalsIgnoreCase(seat.getStatus())) {
+                    return ResponseEntity.badRequest().body(Map.of("error", "Seat " + seat.getSeatIdentifier() + " unavailable"));
+                }
+                bookedSeats.add(seat);
+                if (seat.getSeatType() != null) selectedTier = seat.getSeatType();
+            }
+        }
+
+        double unitPrice = 0.0;
+        if ("VIP".equalsIgnoreCase(selectedTier) && event.getVipPrice() != null) {
+            unitPrice = event.getVipPrice();
+        } else if (event.getRegularPrice() != null) {
+            unitPrice = event.getRegularPrice();
+        } else if (event.getPrice() != null) {
+            try { unitPrice = Double.parseDouble(event.getPrice().replaceAll("[^0-9.]", "")); } catch (Exception ignored) {}
+        }
+        if (!bookedSeats.isEmpty()) {
+            unitPrice = bookedSeats.stream().mapToDouble(s -> s.getPrice() != null ? s.getPrice() : 0.0).sum() / bookedSeats.size();
+        }
+
+        boolean free = user.isHasFreeEntry()
+                || "FREE".equalsIgnoreCase(event.getEntryFeeType())
+                || unitPrice <= 0;
+        double total = free ? 0.0 : unitPrice * quantity;
+        if (!free && user.isHasDiscount()) {
+            total = total * 0.5;
+        }
+
+        if (!free && total > 0) {
+            double bal = user.getWalletBalance() != null ? user.getWalletBalance() : 0.0;
+            if (bal < total) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Insufficient wallet balance. Need ₹" + String.format("%.0f", total)));
+            }
+            user.setWalletBalance(bal - total);
+            userRepository.save(user);
+            walletTransactionRepository.save(new WalletTransaction(user, total, "EVENT", "Event booking: " + event.getTitle()));
         }
 
         EventRegistration reg = new EventRegistration();
@@ -672,14 +1066,48 @@ public class MobileApiController {
         reg.setRegistrationStatus("REGISTERED");
         reg.setRegistrationDate(LocalDateTime.now());
         reg.setTicketId("TIX-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
-        reg.setFullName(user.getUsername());
-        reg.setEmail(user.getEmail());
+        reg.setFullName(fullName);
+        reg.setEmail(email);
+        reg.setPhone(phone);
+        reg.setCollege(college);
+        reg.setYearOfStudy(yearOfStudy);
+        reg.setQuantity(quantity);
+        reg.setSelectedTier(selectedTier);
+        reg.setPaymentStatus(free || total <= 0 ? "FREE" : "PAID");
         eventRegistrationRepository.save(reg);
+
+        for (EventSeat seat : bookedSeats) {
+            seat.setStatus("BOOKED");
+            seat.setBookedByUser(user);
+            eventSeatRepository.save(seat);
+        }
+
         return ResponseEntity.ok(Map.of(
-                "message", "Registered successfully",
+                "message", free || total <= 0 ? "Registered successfully" : "Paid & registered successfully",
                 "registrationId", reg.getId(),
-                "ticketId", reg.getTicketId()
+                "ticketId", reg.getTicketId(),
+                "paymentStatus", reg.getPaymentStatus(),
+                "amountPaid", total
         ));
+    }
+
+    @PostMapping("/events/{id}/poll-vote")
+    @Transactional
+    public ResponseEntity<?> pollVote(@PathVariable Long id, HttpSession session) {
+        User user = currentUser(session);
+        if (user == null) return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        Event event = eventRepository.findById(id).orElse(null);
+        if (event == null) return ResponseEntity.notFound().build();
+        if (!"VOTING".equals(event.getStatus())) {
+            return ResponseEntity.badRequest().body(Map.of("error", "This event is not in voting mode"));
+        }
+        if (voteRepository.existsByUserIdAndPollId(user.getId(), id)) {
+            return ResponseEntity.badRequest().body(Map.of("error", "You already voted"));
+        }
+        voteRepository.save(new Vote(user.getId(), id));
+        event.setPollVotes((event.getPollVotes() != null ? event.getPollVotes() : 0) + 1);
+        eventRepository.save(event);
+        return ResponseEntity.ok(Map.of("message", "Vote submitted", "pollVotes", event.getPollVotes()));
     }
 
     @GetMapping("/bookings")
@@ -692,8 +1120,11 @@ public class MobileApiController {
                     m.put("id", r.getId());
                     m.put("status", r.getRegistrationStatus());
                     m.put("ticketId", r.getTicketId());
+                    m.put("paymentStatus", r.getPaymentStatus());
+                    m.put("selectedTier", r.getSelectedTier());
+                    m.put("quantity", r.getQuantity());
                     m.put("registrationDate", r.getRegistrationDate() != null ? r.getRegistrationDate().toString() : null);
-                    if (r.getEvent() != null) m.put("event", eventDto(r.getEvent()));
+                    if (r.getEvent() != null) m.put("event", eventDto(r.getEvent(), user, false));
                     return m;
                 }).collect(Collectors.toList());
         return ResponseEntity.ok(list);
@@ -710,6 +1141,13 @@ public class MobileApiController {
         }
         reg.setRegistrationStatus("CANCELLED");
         eventRegistrationRepository.save(reg);
+        if (reg.getEvent() != null) {
+            for (EventSeat seat : eventSeatRepository.findByEventAndBookedByUser(reg.getEvent(), user)) {
+                seat.setStatus("AVAILABLE");
+                seat.setBookedByUser(null);
+                eventSeatRepository.save(seat);
+            }
+        }
         return ResponseEntity.ok(Map.of("message", "Booking cancelled"));
     }
 
@@ -718,23 +1156,26 @@ public class MobileApiController {
     @GetMapping("/battles")
     @Transactional(readOnly = true)
     public ResponseEntity<?> battles(HttpSession session) {
-        if (currentUser(session) == null) return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        User user = currentUser(session);
+        if (user == null) return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
         List<Battle> all = battleRepository.findAllByOrderByCreatedAtDesc();
         List<Map<String, Object>> active = all.stream()
                 .filter(b -> "WAITING".equals(b.getStatus()) || "ACTIVE".equals(b.getStatus()) || "VOTING".equals(b.getStatus()))
-                .map(this::battleDto).collect(Collectors.toList());
+                .map(b -> battleDto(b, user, false)).collect(Collectors.toList());
         List<Map<String, Object>> completed = all.stream()
-                .filter(b -> "COMPLETED".equals(b.getStatus()))
-                .limit(10).map(this::battleDto).collect(Collectors.toList());
+                .filter(b -> "COMPLETED".equals(b.getStatus()) || "TIE".equals(b.getStatus()))
+                .limit(20).map(b -> battleDto(b, user, false)).collect(Collectors.toList());
         return ResponseEntity.ok(Map.of("active", active, "completed", completed));
     }
 
     @GetMapping("/battles/{id}")
+    @Transactional(readOnly = true)
     public ResponseEntity<?> battleDetail(@PathVariable Long id, HttpSession session) {
-        if (currentUser(session) == null) return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        User user = currentUser(session);
+        if (user == null) return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
         Battle b = battleRepository.findById(id).orElse(null);
         if (b == null) return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(battleDto(b));
+        return ResponseEntity.ok(battleDto(b, user, true));
     }
 
     // ── Wallet / Shop ─────────────────────────────────────────────────────
@@ -904,7 +1345,8 @@ public class MobileApiController {
 
     @GetMapping("/music/tracks")
     public ResponseEntity<?> tracks(HttpSession session) {
-        if (currentUser(session) == null) return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        User user = currentUser(session);
+        if (user == null) return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
         List<Map<String, Object>> list = trackRepository.findByStatusOrderByCreatedAtDesc(TrackStatus.APPROVED)
                 .stream().map(t -> {
                     Map<String, Object> m = new LinkedHashMap<>();
@@ -913,9 +1355,50 @@ public class MobileApiController {
                     m.put("artist", t.getArtistName());
                     m.put("durationSeconds", t.getDurationSeconds());
                     m.put("streamUrl", "/music/stream/" + t.getId());
+                    m.put("likeCount", musicService.likeCount(t));
+                    m.put("liked", trackLikeRepository.existsByTrackAndUser(t, user));
                     return m;
                 }).collect(Collectors.toList());
         return ResponseEntity.ok(list);
+    }
+
+    @GetMapping("/music/leaderboard")
+    @Transactional(readOnly = true)
+    public ResponseEntity<?> musicLeaderboard(HttpSession session) {
+        User user = currentUser(session);
+        if (user == null) return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+
+        Map<Long, Long> votesByUser = new HashMap<>();
+        for (MusicRoomVote v : musicRoomVoteRepository.findAll()) {
+            if (v.getVoter() == null || v.getVoter().getId() == null) continue;
+            votesByUser.merge(v.getVoter().getId(), 1L, Long::sum);
+        }
+        Map<Long, Long> roomsByHost = new HashMap<>();
+        for (MusicRoom r : musicRoomRepository.findAll()) {
+            if (r.getHost() == null || r.getHost().getId() == null) continue;
+            roomsByHost.merge(r.getHost().getId(), 1L, Long::sum);
+        }
+
+        Map<String, Object> out = new LinkedHashMap<>();
+        out.put("topVoters", topMusicUsers(votesByUser, 10));
+        out.put("topHosts", topMusicUsers(roomsByHost, 10));
+        return ResponseEntity.ok(out);
+    }
+
+    private List<Map<String, Object>> topMusicUsers(Map<Long, Long> counts, int limit) {
+        List<Map.Entry<Long, Long>> sorted = new ArrayList<>(counts.entrySet());
+        sorted.sort((a, b) -> Long.compare(b.getValue(), a.getValue()));
+        if (sorted.size() > limit) sorted = sorted.subList(0, limit);
+        List<Map<String, Object>> rows = new ArrayList<>();
+        for (Map.Entry<Long, Long> e : sorted) {
+            User u = userRepository.findById(e.getKey()).orElse(null);
+            if (u == null) continue;
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("username", u.getUsername());
+            row.put("count", e.getValue());
+            rows.add(row);
+        }
+        return rows;
     }
 
     @GetMapping("/music/rooms")
@@ -995,13 +1478,27 @@ public class MobileApiController {
         return ResponseEntity.ok(Map.of("message", "Reward revealed"));
     }
 
+    @GetMapping("/rewards/code/{rewardCode}")
+    @Transactional(readOnly = true)
+    public ResponseEntity<?> rewardByCode(@PathVariable String rewardCode, HttpSession session) {
+        User user = currentUser(session);
+        if (user == null) return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        UserReward reward = userRewardRepository.findByRewardCode(rewardCode).orElse(null);
+        if (reward == null) return ResponseEntity.badRequest().body(Map.of("error", "Invalid reward code"));
+        Map<String, Object> dto = rewardDto(reward);
+        boolean owner = reward.getUser() != null && reward.getUser().getId().equals(user.getId());
+        dto.put("isOwner", owner);
+        return ResponseEntity.ok(dto);
+    }
+
     @PostMapping("/rewards/redeem/{rewardCode}")
     @Transactional
     public ResponseEntity<?> redeemReward(@PathVariable String rewardCode, HttpSession session) {
         User user = currentUser(session);
         if (user == null) return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        // Partner/staff scan flow: any logged-in user with the code can confirm redeem (matches web).
         UserReward reward = userRewardRepository.findByRewardCode(rewardCode).orElse(null);
-        if (reward == null || reward.getUser() == null || !reward.getUser().getId().equals(user.getId())) {
+        if (reward == null) {
             return ResponseEntity.badRequest().body(Map.of("error", "Invalid reward code"));
         }
         if (!"AVAILABLE".equals(reward.getStatus())) {
@@ -1009,7 +1506,7 @@ public class MobileApiController {
         }
         reward.setStatus("REDEEMED");
         userRewardRepository.save(reward);
-        return ResponseEntity.ok(Map.of("message", "Reward redeemed"));
+        return ResponseEntity.ok(Map.of("message", "Reward redeemed", "reward", rewardDto(reward)));
     }
 
     @PostMapping("/coupon/redeem")
@@ -1046,11 +1543,30 @@ public class MobileApiController {
                 "description", "Reach 500 XP"));
         badges.add(Map.of("id", "premium", "title", "Elite", "unlocked", user.isPremium(),
                 "description", "Unlock premium badge"));
-        return ResponseEntity.ok(Map.of(
-                "xp", xp,
-                "level", user.getLevel() != null ? user.getLevel() : "Novice",
-                "coins", coins,
-                "badges", badges
-        ));
+
+        List<Map<String, Object>> leaderboard = userRepository.findAll().stream()
+                .sorted((a, b) -> Integer.compare(
+                        b.getXp() != null ? b.getXp() : 0,
+                        a.getXp() != null ? a.getXp() : 0))
+                .limit(10)
+                .map(u -> {
+                    Map<String, Object> row = new LinkedHashMap<>();
+                    row.put("username", u.getUsername());
+                    row.put("xp", u.getXp() != null ? u.getXp() : 0);
+                    row.put("level", u.getLevel() != null ? u.getLevel() : "Novice");
+                    row.put("profilePhotoUrl", u.getProfilePhotoUrl());
+                    return row;
+                })
+                .collect(Collectors.toList());
+
+        Map<String, Object> resp = new LinkedHashMap<>();
+        resp.put("xp", xp);
+        resp.put("level", user.getLevel() != null ? user.getLevel() : "Novice");
+        resp.put("coins", coins);
+        resp.put("badges", badges);
+        resp.put("leaderboard", leaderboard);
+        resp.put("attendanceProgress", 0);
+        resp.put("attendanceGoal", 3);
+        return ResponseEntity.ok(resp);
     }
 }

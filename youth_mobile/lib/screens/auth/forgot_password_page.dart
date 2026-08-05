@@ -52,12 +52,15 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   Widget build(BuildContext context) {
     final loading = context.watch<AuthProvider>().loading;
 
-    return Scaffold(
+    return Theme(
+      data: AppTheme.authTheme(),
+      child: Scaffold(
       backgroundColor: AppTheme.authBg,
       appBar: AppBar(
         title: Text('Reset Password', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.transparent,
         elevation: 0,
+        foregroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -118,6 +121,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
           ],
         ),
       ),
+    ),
     );
   }
 }

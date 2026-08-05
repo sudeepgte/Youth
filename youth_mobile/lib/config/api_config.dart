@@ -20,4 +20,14 @@ class ApiConfig {
     if (path.startsWith('http')) return path;
     return '$baseUrl$path';
   }
+
+  static String get wsBaseUrl {
+    if (baseUrl.startsWith('https://')) {
+      return 'wss://${baseUrl.substring('https://'.length)}';
+    }
+    if (baseUrl.startsWith('http://')) {
+      return 'ws://${baseUrl.substring('http://'.length)}';
+    }
+    return baseUrl;
+  }
 }

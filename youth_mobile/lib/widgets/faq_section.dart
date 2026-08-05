@@ -76,7 +76,7 @@ class _FaqSectionState extends State<FaqSection> {
           ),
           const SizedBox(height: 12),
           Text(
-            'Quick answers to common questions about the Zentrix platform.',
+            'Quick answers to common questions about the Youthian platform.',
             style: GoogleFonts.inter(
               color: Colors.white70,
               fontSize: 14,
@@ -85,13 +85,13 @@ class _FaqSectionState extends State<FaqSection> {
           const SizedBox(height: 24),
           _buildFaqItem(
             index: 0,
-            question: 'What is Zentrix?',
-            answer: 'Zentrix is a comprehensive community platform for students and creators. It offers real-time chat, event management, social features like reels and posts, and a variety of online games to keep the community engaged.',
+            question: 'What is Youthian?',
+            answer: 'Youthian is a comprehensive community platform for students and creators. It offers real-time chat, event management, social features like reels and posts, and a variety of online games to keep the community engaged.',
           ),
           _buildFaqItem(
             index: 1,
-            question: 'How do I earn Zentrix Coins?',
-            answer: 'You can earn Zentrix Coins by daily login, participating in events, voting on polls, and engaging with the community. These coins can be spent in the Reward Shop to unlock exclusive features and badges.',
+            question: 'How do I earn Youthian Coins?',
+            answer: 'You can earn Youthian Coins by daily login, participating in events, voting on polls, and engaging with the community. These coins can be spent in the Reward Shop to unlock exclusive features and badges.',
           ),
           _buildFaqItem(
             index: 2,

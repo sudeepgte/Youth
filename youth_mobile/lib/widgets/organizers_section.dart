@@ -54,7 +54,7 @@ class OrganizersSection extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'Are you a campus leader or event creator? Zentrix provides the tools you need to reach thousands of students and manage events seamlessly.',
+              'Are you a campus leader or event creator? Youthian provides the tools you need to reach thousands of students and manage events seamlessly.',
               style: GoogleFonts.inter(
                 color: Colors.white70,
                 fontSize: 15,
