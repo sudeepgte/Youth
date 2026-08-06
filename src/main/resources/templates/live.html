@@ -262,6 +262,7 @@
     const currentUser = /*[[${currentUser.username}]]*/ 'user';
     const isBroadcaster = /*[[${isBroadcaster}]]*/ false;
     const roomId = /*[[${roomId}]]*/ 'room123';
+    const livePostId = /*[[${livePostId}]]*/ null;
     
     let stompClient = null;
     let localStream = null;
@@ -491,7 +492,13 @@
 
     function endStream() {
         if(confirm("End live stream?")) {
-            window.location.href = '/';
+            if (isBroadcaster && livePostId) {
+                fetch('/live/end?postId=' + livePostId, { method: 'POST' })
+                    .then(() => window.location.href = '/')
+                    .catch(() => window.location.href = '/');
+            } else {
+                window.location.href = '/';
+            }
         }
     }
 </script>

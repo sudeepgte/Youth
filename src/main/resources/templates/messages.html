@@ -1948,6 +1948,7 @@
                 </div>
 
                 <!-- Call Modals -->
+                <!-- Call Modals -->
                 <!-- Incoming Call -->
                 <div id="incomingCallModal" style="display:none; position:absolute; top:70px; left:50%; transform:translateX(-50%); width:300px; background:var(--glass-bg); backdrop-filter:blur(10px); border:1px solid var(--glass-border); border-radius:12px; padding:20px; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.5); z-index:900;">
                     <div id="incomingCallAvatar" style="width:60px; height:60px; border-radius:50%; background:var(--accent); color:white; display:flex; align-items:center; justify-content:center; font-size:24px; margin:0 auto 15px;">U</div>
@@ -4398,8 +4399,8 @@
                 stompClient.send("/app/chat.call", {}, JSON.stringify({
                     type: 'ring',
                     callType: type,
-                    senderId: sessionUserId,
-                    senderName: sessionUsername,
+                    senderId: currentUser.id,
+                    senderName: currentUser.username,
                     recipientId: activeRecipientId
                 }));
                 document.getElementById('callStatusOverlay').innerText = "Calling...";
@@ -4411,13 +4412,13 @@
 
         function handleCallSignaling(msg) {
             // Ignore our own signals if they loop back
-            if (msg.senderId == sessionUserId) return;
+            if (msg.senderId == currentUser.id) return;
 
             if (msg.type === 'ring') {
                 if (callActive) {
                     // Already in a call, reject it
                     stompClient.send("/app/chat.call", {}, JSON.stringify({
-                        type: 'reject', senderId: sessionUserId, recipientId: msg.senderId
+                        type: 'reject', senderId: currentUser.id, recipientId: msg.senderId
                     }));
                     return;
                 }
@@ -4443,6 +4444,9 @@
             else if (msg.type === 'end') {
                 cleanupCall();
             }
+            else if (msg.type === 'hold_on') {
+                document.getElementById('callStatusOverlay').innerText = "User is redirecting to answer...";
+            }
         }
 
         async function acceptCall() {
@@ -4458,7 +4462,7 @@
                 // Answer the ring, which signals caller to create an offer
                 stompClient.send("/app/chat.call", {}, JSON.stringify({
                     type: 'accepted',
-                    senderId: sessionUserId,
+                    senderId: currentUser.id,
                     recipientId: incomingCallData.senderId
                 }));
             } catch (err) {
@@ -4472,7 +4476,7 @@
             if (incomingCallData) {
                 stompClient.send("/app/chat.call", {}, JSON.stringify({
                     type: 'reject',
-                    senderId: sessionUserId,
+                    senderId: currentUser.id,
                     recipientId: incomingCallData.senderId
                 }));
                 incomingCallData = null;
@@ -4489,7 +4493,7 @@
             stompClient.send("/app/chat.call", {}, JSON.stringify({
                 type: 'answer',
                 answer: answer,
-                senderId: sessionUserId,
+                senderId: currentUser.id,
                 recipientId: msg.senderId
             }));
             document.getElementById('callStatusOverlay').style.display = 'none';
@@ -4519,7 +4523,7 @@
                     stompClient.send("/app/chat.call", {}, JSON.stringify({
                         type: 'offer',
                         offer: peerConnection.localDescription,
-                        senderId: sessionUserId,
+                        senderId: currentUser.id,
                         recipientId: msg.senderId
                     }));
                 });
@@ -4542,7 +4546,7 @@
                     stompClient.send("/app/chat.call", {}, JSON.stringify({
                         type: 'candidate',
                         candidate: event.candidate,
-                        senderId: sessionUserId,
+                        senderId: currentUser.id,
                         recipientId: targetId
                     }));
                 }
@@ -4560,7 +4564,7 @@
             const targetId = incomingCallData ? incomingCallData.senderId : activeRecipientId;
             stompClient.send("/app/chat.call", {}, JSON.stringify({
                 type: 'end',
-                senderId: sessionUserId,
+                senderId: currentUser.id,
                 recipientId: targetId
             }));
             cleanupCall();
@@ -4612,6 +4616,28 @@
                 }
             }
         }
+
+        // On page load, check if we were redirected here to answer a call
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const acceptCallFrom = urlParams.get('acceptCallFrom');
+            if (acceptCallFrom) {
+                // Simulate an incoming call so the user can click Accept locally
+                incomingCallData = {
+                    type: 'ring',
+                    senderId: acceptCallFrom,
+                    callType: 'video' // Default to video if not passed, or could pass via URL
+                };
+                // Find user in conversations to get name (or use placeholder)
+                document.getElementById('incomingCallName').innerText = "Incoming Call";
+                document.getElementById('incomingCallType').innerText = 'Please click Accept to answer the redirected call.';
+                document.getElementById('incomingCallAvatar').innerText = "C";
+                document.getElementById('incomingCallModal').style.display = 'block';
+                
+                // Clear URL to prevent refresh loops
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        });
     </script>
 
     <div th:replace="~{fragments/modals :: createPostModal}"></div>

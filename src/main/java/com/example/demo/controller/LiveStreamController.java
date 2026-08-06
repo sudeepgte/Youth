@@ -1,5 +1,7 @@
 package com.example.demo.controller;
 
+import com.example.demo.model.Post;
+import com.example.demo.repository.PostRepository;
 import com.example.demo.model.User;
 import com.example.demo.repository.UserRepository;
 import jakarta.servlet.http.HttpSession;
@@ -7,13 +9,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 public class LiveStreamController {
 
     @Autowired
     private UserRepository userRepository;
+    
+    @Autowired
+    private PostRepository postRepository;
 
     private User getUserFromSession(HttpSession session) {
         Object sessionUser = session.getAttribute("user");
@@ -54,6 +61,16 @@ public class LiveStreamController {
         if (streamRoomId == null || streamRoomId.isEmpty()) {
             if (start) {
                 streamRoomId = user.getUsername() + "_" + System.currentTimeMillis();
+                
+                // Broadcast Live Status to feed
+                Post livePost = new Post();
+                livePost.setUser(user);
+                livePost.setContent("I'm live now! Join my broadcast: " + title);
+                livePost.setPostType("GOLIVE");
+                livePost.setMediaUrl("/live?roomId=" + streamRoomId);
+                postRepository.save(livePost);
+                
+                model.addAttribute("livePostId", livePost.getId());
             } else {
                 return "redirect:/"; // Should not happen directly
             }
@@ -64,5 +81,19 @@ public class LiveStreamController {
         model.addAttribute("isBroadcaster", start);
         model.addAttribute("roomId", streamRoomId);
         return "live";
+    }
+    
+    @PostMapping("/live/end")
+    @ResponseBody
+    public String endLiveStream(@RequestParam("postId") Long postId, HttpSession session) {
+        User user = getUserFromSession(session);
+        if (user != null && postId != null) {
+            Post post = postRepository.findById(postId).orElse(null);
+            if (post != null && post.getUser().getId().equals(user.getId())) {
+                postRepository.delete(post);
+                return "success";
+            }
+        }
+        return "error";
     }
 }
