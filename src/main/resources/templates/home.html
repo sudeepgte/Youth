@@ -7,7 +7,7 @@
 
 <body>
 
-    <script defer th:src="@{/js/tab-support.js}"></script>
+    <script th:src="@{/js/tab-support.js}"></script>
 
     <div th:replace="~{fragments/template :: navbar('home')}"></div>
 
@@ -279,7 +279,7 @@
     <!-- Hero Section -->
     <section class="hero-lottie-section">
         <!-- Background Video -->
-        <video autoplay loop muted playsinline class="hero-bg-video" poster="https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=1200&auto=format&fit=crop">
+        <video autoplay loop muted playsinline class="hero-bg-video">
             <source src="https://v1.pinimg.com/videos/iht/expMp4/26/fc/31/26fc318f8f7f56ae9a721cb1e58dd988_720w.mp4" type="video/mp4">
         </video>
         <!-- Dark overlay to keep macOS dock extremely legible and premium -->
@@ -502,7 +502,7 @@
         <div class="category-tiles">
             <a th:href="@{/events}" class="category-card cat-pink">
                 <div class="category-icon">
-                    <img src="https://images.unsplash.com/photo-1511379938547-c1f69419868d?q=80&w=400&auto=format&fit=crop"
+                    <img src="https://images.unsplash.com/photo-1511379938547-c1f69419868d?q=80&w=800&auto=format&fit=crop"
                         alt="Music category">
                 </div>
                 <div class="category-info">
@@ -513,7 +513,7 @@
             </a>
             <a th:href="@{/events}" class="category-card cat-blue">
                 <div class="category-icon">
-                    <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=400&auto=format&fit=crop"
+                    <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=800&auto=format&fit=crop"
                         alt="Tech category">
                 </div>
                 <div class="category-info">
@@ -524,7 +524,7 @@
             </a>
             <a th:href="@{/events}" class="category-card cat-yellow">
                 <div class="category-icon">
-                    <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=600&auto=format&fit=crop"
+                    <img src="https://images.openai.com/static-rsc-4/7vJOijI2a89kUbkkKGPE1civqgvqnF-D_w13F4AHwlfKmMTxi-A_i4ejlU66hYVhgT1juw-DIWDZ3X3xgaBx-iGqApFRFkBKauFlli5PpyHYPDuAJjbH2xIPkzbFki3iYukgMsVDBSE5RXf9I1SzoD39VDXjb20YPoYhQ4B0Fp_joULvx53arGpUO164Ft6e?purpose=fullsize"
                         alt="Comedy category">
                 </div>
                 <div class="category-info">
@@ -535,7 +535,7 @@
             </a>
             <a th:href="@{/events}" class="category-card cat-purple">
                 <div class="category-icon">
-                    <img src="https://images.unsplash.com/photo-1521412644187-c49fa049e84d?q=80&w=400&auto=format&fit=crop"
+                    <img src="https://images.unsplash.com/photo-1521412644187-c49fa049e84d?q=80&w=800&auto=format&fit=crop"
                         alt="Sports category">
                 </div>
                 <div class="category-info">
@@ -546,7 +546,7 @@
             </a>
             <a th:href="@{/events}" class="category-card" style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2);">
                 <div class="category-icon">
-                    <img src="https://images.unsplash.com/photo-1517457373958-b7bdd4587205?q=80&w=400&auto=format&fit=crop"
+                    <img src="https://images.unsplash.com/photo-1517457373958-b7bdd4587205?q=80&w=800&auto=format&fit=crop"
                         alt="Others category" style="border-radius: 20px;">
                 </div>
                 <div class="category-info">
@@ -558,7 +558,86 @@
         </div>
     </section>
 
-    
+    <!-- Testimonials + CTA -->
+    <section class="container section-muted" style="border-radius: 18px;">
+        <div class="section-header">
+            <h2 style="font-size: 32px; font-weight: 900;">What Students <span style="background: var(--gradient-1); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Say</span></h2>
+            <a th:href="@{/register}" class="see-all">Join Now &rsaquo;</a>
+        </div>
+
+        <!-- Success toast -->
+        <div th:if="${param.thoughtShared}" id="thoughtToast"
+             style="background: #DCFCE7; border: 1px solid #86EFAC; color: #15803D; padding: 14px 20px; border-radius: 14px; margin-bottom: 18px; font-weight: 700; display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-check-circle"></i> Your thought was shared and is now live on this page!
+        </div>
+
+        <!-- Inline Share Form (logged-in students only) -->
+        <div th:if="${session.user != null and session.user != 'admin'}"
+             style="background: #FFFFFF; border: 1.5px solid rgba(59,130,246,0.15); border-radius: 20px; padding: 22px; margin-bottom: 22px; box-shadow: 0 8px 24px rgba(0,0,0,0.04);">
+            <form th:action="@{/home/thought}" method="POST">
+                <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 14px;">
+                    <div style="width: 42px; height: 42px; background: linear-gradient(135deg, #3B82F6, #22D3EE); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <i class="fas fa-quote-left" style="color: #fff; font-size: 16px;"></i>
+                    </div>
+                    <div>
+                        <div style="font-weight: 800; font-size: 15px; color: #0F172A;">Share Your Thought</div>
+                        <div style="font-size: 12px; color: #64748B;">Your testimonial will appear here for all visitors to see</div>
+                    </div>
+                </div>
+                <textarea name="content" required rows="3"
+                    placeholder="Share your experience with Zentrix &mdash; what do you love most? What have you achieved here?..."
+                    style="width: 100%; border: 1.5px solid rgba(59,130,246,0.2); border-radius: 14px; padding: 14px 16px; font-size: 14px; color: #0F172A; background: #F8FAFC; outline: none; resize: vertical; font-family: inherit; box-sizing: border-box; line-height: 1.6;"></textarea>
+                <div class="form-actions-row" style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; flex-wrap: wrap;">
+                    <select name="category"
+                        style="padding: 9px 14px; border-radius: 10px; border: 1.5px solid rgba(59,130,246,0.18); background: #F8FAFC; color: #334155; font-size: 13px; font-weight: 600; outline: none;">
+                        <option value="Community">💬 Community</option>
+                        <option value="Events">🎉 Events</option>
+                        <option value="Gaming">🎮 Gaming</option>
+                        <option value="Music">🎵 Music</option>
+                        <option value="Achievements">🏆 Achievements</option>
+                        <option value="General">✨ General</option>
+                    </select>
+                    <button type="submit"
+                        style="background: linear-gradient(135deg, #3B82F6, #22D3EE); color: #fff; border: none; border-radius: 12px; padding: 10px 24px; font-weight: 800; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-paper-plane"></i> Post to Home Page
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 18px;">
+            <th:block th:each="thought : ${thoughts}" th:if="${thoughtStat.index < 3}">
+                <div class="surface reveal" style="padding: 22px;">
+                    <div class="pill pill-pink"><i class="fa-solid fa-quote-left"></i> <span
+                            th:text="${thought.category != null ? thought.category : 'Community'}">Category</span></div>
+                    <p style="margin-top: 12px; color: var(--text-secondary);" th:text="'&quot;' + ${thought.content} + '&quot;'">
+                        &quot;Thoughts content&quot;</p>
+                    <div style="margin-top: 14px; font-weight: 800;"
+                        th:text="${thought.user != null ? thought.user.username : 'Anonymous'}">Aanya</div>
+                </div>
+            </th:block>
+            <!-- Fallback -->
+            <th:block th:if="${#lists.isEmpty(thoughts)}">
+                <div class="surface" style="padding: 22px;">
+                    <div class="pill pill-pink"><i class="fa-solid fa-quote-left"></i> Community</div>
+                    <p style="margin-top: 12px; color: var(--text-secondary);">&quot;I met my project teammates here and now
+                        we attend events together.&quot;</p>
+                    <div style="margin-top: 14px; font-weight: 800;">Aanya</div>
+                </div>
+            </th:block>
+        </div>
+        <div class="surface"
+            style="margin-top: 18px; padding: 22px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+            <div>
+                <h3 style="font-size: 22px;">Ready to start?</h3>
+                <p style="color: var(--text-secondary);">Create an account and personalize your feed.</p>
+            </div>
+            <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                <a th:href="@{/register}" class="btn btn-primary"><i class="fa-solid fa-user-plus"></i> Create account</a>
+                <a th:href="@{/login}" class="btn btn-outline"><i class="fa-solid fa-right-to-bracket"></i> Sign in</a>
+            </div>
+        </div>
+    </section>
 
     <!-- About Us Section -->
     <section class="container" id="about" style="padding-top: 80px; padding-bottom: 80px;">
@@ -603,7 +682,7 @@
                     <a href="#contact" class="btn btn-primary" style="padding: 14px 30px; border-radius: 14px; font-weight: 800;">Contact for Partnership</a>
                 </div>
                 <div style="border-radius: 24px; overflow: hidden; box-shadow: var(--shadow-premium);">
-                    <img src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=400&auto=format&fit=crop" 
+                    <img src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=800&auto=format&fit=crop" 
                          alt="Event Organizers" style="width: 100%; height: 350px; object-fit: cover;">
                 </div>
             </div>
@@ -1022,8 +1101,11 @@
                 heatLayer = null;
             }
             
-            // Clear existing markers
-            markers.forEach(function(m) { m.setMap(null); });
+            // Clear existing markers and their circles
+            markers.forEach(function(m) { 
+                m.setMap(null); 
+                if (m.circle) m.circle.setMap(null);
+            });
             markers = [];
 
             var emptyMsg = document.getElementById('heatmapEmptyMsg');
@@ -1053,33 +1135,10 @@
                 emptyMsg.style.display = 'none';
             }
 
-            // Add heat layer
+            // Add heat layer fallback (using the circles we create per marker instead of the deprecated HeatmapLayer)
             var heatmapData = data.heatPoints.map(function(p) {
                 return { location: new google.maps.LatLng(p[0], p[1]), weight: p[2] };
             });
-
-            heatLayer = new google.maps.visualization.HeatmapLayer({
-                data: heatmapData,
-                radius: 35,
-                maxIntensity: Math.max.apply(null, data.heatPoints.map(function(p) { return p[2]; })) || 1,
-                gradient: [
-                    'rgba(0, 255, 255, 0)',
-                    'rgba(0, 255, 255, 1)',
-                    'rgba(0, 191, 255, 1)',
-                    'rgba(0, 127, 255, 1)',
-                    'rgba(0, 63, 255, 1)',
-                    'rgba(0, 0, 255, 1)',
-                    'rgba(0, 0, 223, 1)',
-                    'rgba(0, 0, 191, 1)',
-                    'rgba(0, 0, 159, 1)',
-                    'rgba(0, 0, 127, 1)',
-                    'rgba(63, 0, 91, 1)',
-                    'rgba(127, 0, 63, 1)',
-                    'rgba(191, 0, 31, 1)',
-                    'rgba(255, 0, 0, 1)'
-                ]
-            });
-            heatLayer.setMap(heatmapMap);
 
             // Add markers
             var bounds = new google.maps.LatLngBounds();
@@ -1091,7 +1150,6 @@
                     position: pos,
                     map: heatmapMap,
                     title: m.location,
-                    icon: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png',
                     label: {
                         text: String(m.total),
                         color: 'white',
@@ -1111,6 +1169,21 @@
                 });
 
                 markers.push(marker);
+
+                // Add a highly visible circle around the marker so it's impossible to miss
+                var circle = new google.maps.Circle({
+                    strokeColor: '#FF0000',
+                    strokeOpacity: 0.8,
+                    strokeWeight: 2,
+                    fillColor: '#FF0000',
+                    fillOpacity: 0.35,
+                    map: heatmapMap,
+                    center: pos,
+                    radius: 2000 // 2km radius
+                });
+                
+                // Clear circle when marker is cleared
+                marker.circle = circle;
             });
 
             // Fit bounds if markers exist and not a background refresh
@@ -1124,13 +1197,19 @@
                     heatmapMap.fitBounds(bounds);
                 }
             }
-            } catch (e) {
-                var emptyMsg = document.getElementById('heatmapEmptyMsg');
-                if (emptyMsg) {
-                    emptyMsg.style.display = 'block';
-                    emptyMsg.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="color:red;margin-right:8px;"></i> Map Error: ' + e.message;
-                }
-                console.error("Map Error: ", e);
+            } catch (err) {
+                console.error("updateMap error: ", err);
+                var errorMsg = document.createElement('div');
+                errorMsg.style.position = 'absolute';
+                errorMsg.style.top = '10%';
+                errorMsg.style.left = '50%';
+                errorMsg.style.transform = 'translate(-50%, 0)';
+                errorMsg.style.background = 'rgba(255, 0, 0, 0.9)';
+                errorMsg.style.color = 'white';
+                errorMsg.style.padding = '20px';
+                errorMsg.style.zIndex = '9999';
+                errorMsg.innerHTML = "<strong>JS Error:</strong> " + err.message + "<br><pre style='font-size:10px; max-height:200px; overflow:auto;'>" + err.stack + "</pre>";
+                document.getElementById('heatmapMapContainer').parentElement.appendChild(errorMsg);
             }
         }
 
