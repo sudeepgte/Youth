@@ -20,9 +20,22 @@ public class LiveStreamWebSocketController {
         messagingTemplate.convertAndSend("/topic/live/" + roomId + "/chat", (Object) message);
     }
 
+    @Autowired
+    private com.example.demo.repository.PostRepository postRepository;
+
     // Handle WebRTC Signaling (offer, answer, candidate)
     @MessageMapping("/live/{roomId}/signal")
     public void handleSignaling(@DestinationVariable String roomId, @Payload Map<String, Object> signalData) {
+        String type = (String) signalData.get("type");
+        if ("stream_ended".equals(type)) {
+            java.util.List<com.example.demo.model.Post> livePosts = postRepository.findByPostTypeOrderByCreatedAtDesc("LIVE");
+            for (com.example.demo.model.Post p : livePosts) {
+                if (p.getMediaUrl() != null && p.getMediaUrl().contains(roomId)) {
+                    postRepository.delete(p);
+                }
+            }
+        }
+
         String targetUser = (String) signalData.get("target");
         if (targetUser != null && !targetUser.isEmpty()) {
             messagingTemplate.convertAndSend("/queue/live/" + roomId + "/" + targetUser, (Object) signalData);

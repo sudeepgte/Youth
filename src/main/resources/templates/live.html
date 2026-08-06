@@ -200,14 +200,17 @@
         @media (max-width: 768px) {
             body {
                 flex-direction: column;
+                height: 100dvh;
             }
             .stream-container {
-                height: 45vh;
-                flex: none;
+                flex: 1;
+                min-height: 40dvh;
+                max-height: 50dvh;
             }
             .chat-sidebar {
                 width: 100%;
-                height: 55vh;
+                flex: 1;
+                height: auto;
                 border-left: none;
                 border-top: 1px solid var(--glass-border);
             }
@@ -329,7 +332,15 @@
     
     function updateViewerCount() {
         if (isBroadcaster) {
-            document.getElementById('viewerCount').innerText = Object.keys(peerConnections).length;
+            const count = Object.keys(peerConnections).length;
+            document.getElementById('viewerCount').innerText = count;
+            
+            if (stompClient && stompClient.connected) {
+                stompClient.send('/app/live/' + roomId + '/signal', {}, JSON.stringify({
+                    type: 'viewer_count',
+                    count: count
+                }));
+            }
         }
     }
     
@@ -393,6 +404,11 @@
         if (data.type === 'stream_ended') {
             alert("The host has ended the live stream.");
             window.location.href = '/';
+            return;
+        }
+        
+        if (data.type === 'viewer_count' && !isBroadcaster) {
+            document.getElementById('viewerCount').innerText = data.count;
             return;
         }
         

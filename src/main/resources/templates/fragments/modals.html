@@ -235,8 +235,11 @@
                         
                         <!-- Live Camera Container -->
                         <div id="liveCameraContainer" style="display:none; flex-direction:column; align-items:center; margin-top:10px; background:#000; border-radius:12px; overflow:hidden; position:relative;">
+                            <button type="button" onclick="switchLiveCamera()" style="position:absolute; top:10px; right:10px; padding:8px; border-radius:50%; border:none; background:rgba(0,0,0,0.6); color:#fff; cursor:pointer; width:36px; height:36px; display:flex; align-items:center; justify-content:center; z-index:10;" title="Switch Camera">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
                             <video id="liveCameraVideo" autoplay playsinline style="width:100%; max-height:300px; object-fit:cover;"></video>
-                            <div style="padding:10px; display:flex; gap:10px; justify-content:center; width:100%; background:rgba(0,0,0,0.8);">
+                            <div style="padding:10px; display:flex; gap:10px; flex-wrap:wrap; justify-content:center; width:100%; background:rgba(0,0,0,0.8);">
                                 <button type="button" id="btnCapturePhoto" onclick="takePhoto()" style="padding:8px 16px; border-radius:8px; border:none; background:var(--accent); color:#fff; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:6px;">
                                     <i class="fas fa-camera"></i> Photo
                                 </button>
@@ -427,10 +430,14 @@
         let mediaStream = null;
         let mediaRecorder = null;
         let recordedChunks = [];
+        let currentFacingMode = 'user';
 
         async function openLiveCamera() {
             try {
-                mediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                if (mediaStream) {
+                    mediaStream.getTracks().forEach(track => track.stop());
+                }
+                mediaStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: currentFacingMode }, audio: true });
                 const videoEl = document.getElementById('liveCameraVideo');
                 videoEl.srcObject = mediaStream;
                 document.getElementById('mediaDropZone').style.display = 'none';
@@ -445,6 +452,11 @@
                 console.error("Error accessing camera: ", err);
                 alert("Could not access camera. Please ensure you have granted permissions.");
             }
+        }
+
+        function switchLiveCamera() {
+            currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+            openLiveCamera();
         }
 
         function closeCamera() {
@@ -586,6 +598,10 @@
                 document.getElementById('mediaDropZone').style.display = 'none';
                 document.getElementById('goLiveOptions').style.display = 'block';
                 
+                // Hide camera if it was open
+                document.getElementById('liveCameraContainer').style.display = 'none';
+                closeCamera();
+                
                 const cg = document.getElementById('collabGroup'); if(cg) cg.style.display = 'none';
                 const hg = document.getElementById('hashtagGroup'); if(hg) hg.style.display = 'none';
                 const sbtn = document.getElementById('submitPostBtn'); if(sbtn) sbtn.style.display = 'block';
@@ -595,6 +611,10 @@
                 document.getElementById('cameraTypeDropdown').style.display = 'none';
                 document.getElementById('mediaDropZone').style.display = 'block';
                 document.getElementById('goLiveOptions').style.display = 'none';
+                
+                // Hide camera if it was open
+                document.getElementById('liveCameraContainer').style.display = 'none';
+                closeCamera();
                 
                 // Show other groups
                 const cg = document.getElementById('collabGroup'); if(cg) cg.style.display = 'block';

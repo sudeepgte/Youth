@@ -794,13 +794,14 @@
         /* â”€â”€â”€ Responsive â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
         @media (max-width: 768px) {
             .battles-grid { grid-template-columns: 1fr; }
-            .category-grid { grid-template-columns: repeat(3, 1fr); }
+            .category-grid { grid-template-columns: repeat(2, 1fr); }
             .arena-hero { padding: 24px 20px; }
             .arena-hero h1 { font-size: 22px; }
             .battle-detail { padding: 20px; }
             .arena-modal { padding: 20px; width: 95%; max-height: 90vh; }
             /* Force inline grids in modal to stack */
-            .arena-modal form > div[style*="grid-template-columns"] { grid-template-columns: 1fr !important; }
+            .arena-modal form div[style*="grid-template-columns"], 
+            #prizesGrid { grid-template-columns: 1fr !important; }
         }
     </style>
 </head>
@@ -1691,9 +1692,9 @@
         </aside>
     </div>
 
-    <!-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+    <!-- ──────────────────────────────────────── -->
     <!-- CREATE BATTLE MODAL -->
-    <!-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+    <!-- ──────────────────────────────────────── -->
     <div class="arena-modal-overlay" id="createBattleModal">
         <div class="arena-modal">
             <button class="arena-modal-close" onclick="closeCreateBattle()">&times;</button>
@@ -1707,7 +1708,7 @@
             <!-- Step 1: Title & Category -->
             <div id="create-step-1">
 
-                <h2>âš”ï¸ Create Battle</h2>
+                <h2>⚔️ Create Battle</h2>
 
                 <p class="subtitle">Set up a creative challenge for your friends</p>
                 <form id="createBattleForm" th:action="@{/battles/create}" method="POST">
@@ -1748,8 +1749,8 @@
                         <div class="arena-field">
                             <label>Battle Mode</label>
                             <select id="modeSelect" name="mode" onchange="toggleBattleMode(this.value)" style="padding:12px; font-size:14px; font-weight:700;">
-                                <option value="ONLINE" selected>ðŸŒ Online (Default Web Submission)</option>
-                                <option value="OFFLINE">ðŸ¢ Offline (Venue &amp; Seat Check-in)</option>
+                                <option value="ONLINE" selected>🌐 Online (Default Web Submission)</option>
+                                <option value="OFFLINE">🏢 Offline (Venue &amp; Seat Check-in)</option>
                             </select>
                         </div>
 
