@@ -535,6 +535,12 @@ public class MainController {
         List<MusicRoom> ongoingBattles = musicRoomRepository.findTop5ByActiveTrueAndPhaseNotOrderByCreatedAtDesc("ENDED");
         model.addAttribute("ongoingMusicBattles", ongoingBattles);
 
+        // Trending Events
+        List<Event> trendingEvents = eventRepository.findAllByOrderByCreatedAtDesc().stream()
+                .limit(3)
+                .collect(Collectors.toList());
+        model.addAttribute("trendingEvents", trendingEvents);
+
         return "dashboard";
     }
 

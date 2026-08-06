@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import java.util.HashMap;
+import java.util.Map;
 
 @Controller
 public class LiveStreamController {
@@ -21,6 +24,9 @@ public class LiveStreamController {
     
     @Autowired
     private PostRepository postRepository;
+
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
     private User getUserFromSession(HttpSession session) {
         Object sessionUser = session.getAttribute("user");
@@ -69,6 +75,24 @@ public class LiveStreamController {
                 livePost.setPostType("GOLIVE");
                 livePost.setMediaUrl("/live?roomId=" + streamRoomId);
                 postRepository.save(livePost);
+                
+                // Broadcast to all followers via WebSocket
+                if (user.getFollowers() != null && !user.getFollowers().isEmpty()) {
+                    Map<String, Object> payload = new HashMap<>();
+                    payload.put("type", "live");
+                    payload.put("senderId", user.getId());
+                    payload.put("senderName", user.getUsername());
+                    payload.put("roomId", streamRoomId);
+                    payload.put("title", title);
+                    
+                    for (User follower : user.getFollowers()) {
+                        messagingTemplate.convertAndSendToUser(
+                            follower.getId().toString(),
+                            "/queue/call",
+                            (Object) payload
+                        );
+                    }
+                }
                 
                 model.addAttribute("livePostId", livePost.getId());
             } else {
