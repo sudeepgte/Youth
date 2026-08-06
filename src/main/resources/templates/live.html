@@ -267,7 +267,37 @@
     let stompClient = null;
     let localStream = null;
     let peerConnections = {}; 
-    const configuration = { 'iceServers': [{'urls': 'stun:stun.l.google.com:19302'}] };
+    let iceCandidateQueues = {};
+    const configuration = {
+        'iceServers': [
+            { 'urls': 'stun:stun.l.google.com:19302' },
+            { 'urls': 'stun:stun1.l.google.com:19302' },
+            { 'urls': 'stun:stun2.l.google.com:19302' },
+            { 'urls': 'stun:stun3.l.google.com:19302' },
+            { 'urls': 'stun:stun4.l.google.com:19302' },
+            {
+                'urls': 'turn:openrelay.metered.ca:80',
+                'username': 'openrelayproject',
+                'credential': 'openrelayproject'
+            },
+            {
+                'urls': 'turn:openrelay.metered.ca:443',
+                'username': 'openrelayproject',
+                'credential': 'openrelayproject'
+            },
+            {
+                'urls': 'turn:openrelay.metered.ca:443?transport=tcp',
+                'username': 'openrelayproject',
+                'credential': 'openrelayproject'
+            }
+        ]
+    };
+    
+    function updateViewerCount() {
+        if (isBroadcaster) {
+            document.getElementById('viewerCount').innerText = Object.keys(peerConnections).length;
+        }
+    }
     
     // Connect to WebSockets
     const socket = new SockJS('/ws');
@@ -331,18 +361,30 @@
             const offer = await pc.createOffer();
             await pc.setLocalDescription(offer);
             sendSignal({ type: 'offer', offer: offer, target: data.sender });
+            updateViewerCount();
         } else if (data.type === 'offer') {
             const pc = createPeerConnection(data.sender);
             await pc.setRemoteDescription(new RTCSessionDescription(data.offer));
             const answer = await pc.createAnswer();
             await pc.setLocalDescription(answer);
             sendSignal({ type: 'answer', answer: answer, target: data.sender });
+            processIceQueue(data.sender, pc);
         } else if (data.type === 'answer') {
             const pc = peerConnections[data.sender];
-            if (pc) await pc.setRemoteDescription(new RTCSessionDescription(data.answer));
+            if (pc) {
+                await pc.setRemoteDescription(new RTCSessionDescription(data.answer));
+                processIceQueue(data.sender, pc);
+            }
         } else if (data.type === 'candidate') {
             const pc = peerConnections[data.sender];
-            if (pc) await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
+            if (pc && pc.remoteDescription) {
+                try {
+                    await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
+                } catch(e) {}
+            } else {
+                if (!iceCandidateQueues[data.sender]) iceCandidateQueues[data.sender] = [];
+                iceCandidateQueues[data.sender].push(data.candidate);
+            }
         } else if (data.type === 'join_accepted') {
             // Broadcaster accepted join request, so Viewer needs to share camera
             document.getElementById('reqJoinBtn').style.display = 'none';
@@ -387,6 +429,17 @@
         };
         
         return pc;
+    }
+
+    async function processIceQueue(peerId, pc) {
+        if (iceCandidateQueues[peerId]) {
+            while (iceCandidateQueues[peerId].length) {
+                const candidate = iceCandidateQueues[peerId].shift();
+                try {
+                    await pc.addIceCandidate(new RTCIceCandidate(candidate));
+                } catch(e) {}
+            }
+        }
     }
 
     function sendSignal(payload) {
