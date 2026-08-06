@@ -113,6 +113,11 @@
                                 <i class="fas fa-circle-notch" style="font-size:18px;"></i>
                                 Story
                             </button>
+                            <button type="button" class="type-btn" data-type="CAMERA" onclick="selectPostType(this)"
+                                style="flex:1; padding:10px 6px; border-radius:10px; border:2px solid var(--glass-border); background:transparent; color:var(--text-secondary); font-weight:600; font-size:13px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; transition:all 0.2s;">
+                                <i class="fas fa-camera" style="font-size:18px;"></i>
+                                Camera
+                            </button>
                         </div>
                         <p id="typeHint"
                             style="font-size:11px; color:var(--text-secondary); margin:4px 0 0; min-height:14px;">
@@ -186,7 +191,7 @@
                         </label>
                         <div id="mediaDropZone"
                             style="border:2px dashed var(--glass-border); border-radius:12px; padding:20px; text-align:center; cursor:pointer; transition:border-color 0.2s; position:relative;"
-                            onclick="document.getElementById('mediaFile').click()"
+                            onclick="handleMediaDropZoneClick()"
                             ondragover="event.preventDefault(); this.style.borderColor='var(--accent)';"
                             ondragleave="this.style.borderColor='var(--glass-border)';" ondrop="handleFileDrop(event)">
                             <i class="fas fa-cloud-upload-alt"
@@ -196,6 +201,22 @@
                                 onchange="previewMedia(this)">
                         </div>
                         <div id="mediaPreview" style="display:none; margin-top:10px;"></div>
+                        
+                        <!-- Live Camera Container -->
+                        <div id="liveCameraContainer" style="display:none; flex-direction:column; align-items:center; margin-top:10px; background:#000; border-radius:12px; overflow:hidden; position:relative;">
+                            <video id="liveCameraVideo" autoplay playsinline style="width:100%; max-height:300px; object-fit:cover;"></video>
+                            <div style="padding:10px; display:flex; gap:10px; justify-content:center; width:100%; background:rgba(0,0,0,0.8);">
+                                <button type="button" id="btnCapturePhoto" onclick="takePhoto()" style="padding:8px 16px; border-radius:8px; border:none; background:var(--accent); color:#fff; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:6px;">
+                                    <i class="fas fa-camera"></i> Photo
+                                </button>
+                                <button type="button" id="btnRecordVideo" onclick="toggleRecording()" style="padding:8px 16px; border-radius:8px; border:none; background:#ef4444; color:#fff; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:6px;">
+                                    <i class="fas fa-video"></i> Record
+                                </button>
+                                <button type="button" onclick="closeCamera()" style="padding:8px 16px; border-radius:8px; border:none; background:#334155; color:#fff; font-weight:600; cursor:pointer;">
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Tag Collaborators -->
@@ -327,8 +348,8 @@
             if (!inp.files || !inp.files[0]) { wrap.style.display = 'none'; return; }
             const f = inp.files[0];
             
-            if (f.type.startsWith('video') && f.size > 50 * 1024 * 1024) {
-                alert('Video file is too large! Maximum allowed is 50MB.');
+            if (f.type.startsWith('video') && f.size > 2000 * 1024 * 1024) {
+                alert('Video file is too large! Maximum allowed is 2000MB.');
                 inp.value = '';
                 return;
             }
@@ -363,11 +384,122 @@
             }
         }
 
+        function handleMediaDropZoneClick() {
+            const postType = document.getElementById('postTypeInput').value;
+            if (postType === 'CAMERA') {
+                openLiveCamera();
+            } else {
+                document.getElementById('mediaFile').click();
+            }
+        }
+
+        let mediaStream = null;
+        let mediaRecorder = null;
+        let recordedChunks = [];
+
+        async function openLiveCamera() {
+            try {
+                mediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                const videoEl = document.getElementById('liveCameraVideo');
+                videoEl.srcObject = mediaStream;
+                document.getElementById('mediaDropZone').style.display = 'none';
+                document.getElementById('mediaPreview').style.display = 'none';
+                document.getElementById('liveCameraContainer').style.display = 'flex';
+                
+                // Reset recording state
+                const recordBtn = document.getElementById('btnRecordVideo');
+                recordBtn.innerHTML = '<i class="fas fa-video"></i> Record';
+                recordBtn.style.background = '#ef4444';
+            } catch (err) {
+                console.error("Error accessing camera: ", err);
+                alert("Could not access camera. Please ensure you have granted permissions.");
+            }
+        }
+
+        function closeCamera() {
+            if (mediaStream) {
+                mediaStream.getTracks().forEach(track => track.stop());
+                mediaStream = null;
+            }
+            if (mediaRecorder && mediaRecorder.state !== "inactive") {
+                mediaRecorder.stop();
+            }
+            document.getElementById('liveCameraContainer').style.display = 'none';
+            document.getElementById('mediaDropZone').style.display = 'block';
+        }
+
+        function takePhoto() {
+            if (!mediaStream) return;
+            const videoEl = document.getElementById('liveCameraVideo');
+            const canvas = document.createElement('canvas');
+            canvas.width = videoEl.videoWidth;
+            canvas.height = videoEl.videoHeight;
+            canvas.getContext('2d').drawImage(videoEl, 0, 0);
+            
+            canvas.toBlob(blob => {
+                const file = new File([blob], "camera_photo.jpg", { type: "image/jpeg" });
+                const dt = new DataTransfer();
+                dt.items.add(file);
+                const fileInput = document.getElementById('mediaFile');
+                fileInput.files = dt.files;
+                closeCamera();
+                previewMedia(fileInput);
+            }, "image/jpeg", 0.95);
+        }
+
+        function toggleRecording() {
+            if (!mediaStream) return;
+            const recordBtn = document.getElementById('btnRecordVideo');
+            
+            if (mediaRecorder && mediaRecorder.state === "recording") {
+                mediaRecorder.stop();
+                recordBtn.innerHTML = '<i class="fas fa-video"></i> Record';
+                recordBtn.style.background = '#ef4444';
+            } else {
+                recordedChunks = [];
+                // Check supported types
+                let options = { mimeType: 'video/webm;codecs=vp9,opus' };
+                if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+                    options = { mimeType: 'video/webm;codecs=vp8,opus' };
+                    if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+                        options = { mimeType: 'video/webm' };
+                        if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+                            options = { mimeType: '' };
+                        }
+                    }
+                }
+                
+                mediaRecorder = new MediaRecorder(mediaStream, options);
+                mediaRecorder.ondataavailable = event => {
+                    if (event.data && event.data.size > 0) {
+                        recordedChunks.push(event.data);
+                    }
+                };
+                mediaRecorder.onstop = () => {
+                    const blob = new Blob(recordedChunks, { type: mediaRecorder.mimeType || 'video/webm' });
+                    // Determine file extension
+                    const ext = (mediaRecorder.mimeType && mediaRecorder.mimeType.includes('mp4')) ? 'mp4' : 'webm';
+                    const file = new File([blob], `camera_video.${ext}`, { type: blob.type });
+                    const dt = new DataTransfer();
+                    dt.items.add(file);
+                    const fileInput = document.getElementById('mediaFile');
+                    fileInput.files = dt.files;
+                    closeCamera();
+                    previewMedia(fileInput);
+                };
+                
+                mediaRecorder.start();
+                recordBtn.innerHTML = '<i class="fas fa-stop"></i> Stop';
+                recordBtn.style.background = '#000';
+            }
+        }
+
         /* ===== Post Type Selector ===== */
         const typeConfig = {
             POST: { accept: 'image/*', hint: 'Share a photo with your followers', label: 'Share Post', zone: 'Click or drag to upload a photo' },
             REEL: { accept: 'video/*', hint: 'Upload a short video reel 🎬', label: 'Share Reel', zone: 'Click or drag to upload a video' },
-            STORY: { accept: 'image/*,video/*', hint: 'Your story disappears in 24 hours ⏳', label: 'Share Story', zone: 'Click or drag to upload a photo or video' }
+            STORY: { accept: 'image/*,video/*', hint: 'Your story disappears in 24 hours ⏳', label: 'Share Story', zone: 'Click or drag to upload a photo or video' },
+            CAMERA: { accept: 'image/*,video/*', hint: 'Take a photo or video directly 📸', label: 'Upload Capture', zone: 'Click to open camera' }
         };
 
         function selectPostType(btn) {
@@ -387,6 +519,11 @@
             const cfg = typeConfig[type];
             document.getElementById('typeHint').textContent = cfg.hint;
             document.getElementById('mediaFile').accept = cfg.accept;
+            if (type === 'CAMERA') {
+                document.getElementById('mediaFile').setAttribute('capture', 'environment');
+            } else {
+                document.getElementById('mediaFile').removeAttribute('capture');
+            }
             document.getElementById('dropZoneLabel').textContent = cfg.zone;
             document.getElementById('submitBtnLabel').textContent = cfg.label;
 
