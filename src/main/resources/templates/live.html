@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Stream - Zentrix</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- WebSocket Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.0/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent: #3b82f6;
+            --danger: #ef4444;
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-primary);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .stream-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            background: #000;
+        }
+        .video-container {
+            flex: 1;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .local-video {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 150px;
+            height: 200px;
+            border-radius: 12px;
+            border: 2px solid var(--glass-border);
+            object-fit: cover;
+            z-index: 10;
+        }
+        .header {
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            padding: 20px;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+            z-index: 20;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .live-badge {
+            background: var(--danger);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 14px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
+        .chat-sidebar {
+            width: 350px;
+            background: var(--card-bg);
+            border-left: 1px solid var(--glass-border);
+            display: flex;
+            flex-direction: column;
+            z-index: 30;
+        }
+        .chat-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--glass-border);
+            font-weight: 600;
+        }
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .chat-msg {
+            background: rgba(255,255,255,0.05);
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 14px;
+            word-wrap: break-word;
+        }
+        .chat-msg .author {
+            font-weight: bold;
+            color: var(--accent);
+            margin-bottom: 4px;
+            display: block;
+        }
+        .chat-input-area {
+            padding: 20px;
+            border-top: 1px solid var(--glass-border);
+            display: flex;
+            gap: 10px;
+        }
+        .chat-input {
+            flex: 1;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 10px 16px;
+            color: white;
+            outline: none;
+        }
+        .btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn:hover {
+            opacity: 0.9;
+        }
+        .action-bar {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 20;
+        }
+        .action-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            backdrop-filter: blur(5px);
+            border: 1px solid var(--glass-border);
+        }
+        .action-btn.end {
+            background: var(--danger);
+        }
+        /* Requests Modal */
+        .requests-overlay {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 100;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+        .requests-modal {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            width: 300px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .req-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+    </style>
+</head>
+<body>
+
+<div class="stream-container">
+    <div class="header">
+        <div>
+            <span class="live-badge">LIVE</span>
+            <span style="margin-left:10px; font-weight:600;" th:text="${title}">Live Stream</span>
+        </div>
+        <div style="display:flex; gap:10px;">
+            <span style="background:rgba(0,0,0,0.5); padding:6px 12px; border-radius:20px; font-size:14px;">
+                <i class="fas fa-eye"></i> <span id="viewerCount">0</span>
+            </span>
+            <button th:if="${isBroadcaster}" class="btn" onclick="openRequestsModal()" style="padding:6px 12px; font-size:13px;">
+                <i class="fas fa-users"></i> Requests
+            </button>
+            <button th:if="${!isBroadcaster}" class="btn" onclick="requestToJoin()" id="reqJoinBtn" style="padding:6px 12px; font-size:13px; background:#10b981;">
+                <i class="fas fa-hand-paper"></i> Request Join
+            </button>
+        </div>
+    </div>
+    
+    <div class="video-container">
+        <!-- Main Video (Broadcaster) -->
+        <video id="mainVideo" autoplay playsinline></video>
+        <!-- Secondary Video (Co-host / Broadcaster local preview if co-hosting) -->
+        <video id="localVideo" class="local-video" autoplay playsinline muted style="display:none;"></video>
+    </div>
+
+    <div class="action-bar" th:if="${isBroadcaster}">
+        <button class="action-btn" onclick="toggleMute()"><i class="fas fa-microphone" id="micIcon"></i></button>
+        <button class="action-btn" onclick="toggleVideo()"><i class="fas fa-video" id="videoIcon"></i></button>
+        <button class="action-btn end" onclick="endStream()"><i class="fas fa-phone-slash"></i></button>
+    </div>
+    
+    <!-- For viewers, just a leave button -->
+    <div class="action-bar" th:if="${!isBroadcaster}">
+        <button class="action-btn end" onclick="window.location.href='/'"><i class="fas fa-sign-out-alt"></i></button>
+    </div>
+
+    <div class="requests-overlay" id="requestsOverlay" onclick="if(event.target===this)closeRequestsModal()">
+        <div class="requests-modal">
+            <h3 style="margin-top:0; border-bottom:1px solid var(--glass-border); padding-bottom:10px;">Join Requests</h3>
+            <div id="requestsList">
+                <p style="color:var(--text-secondary); text-align:center; font-size:14px;">No requests yet.</p>
+            </div>
+            <button class="btn" style="width:100%; margin-top:15px; justify-content:center; background:rgba(255,255,255,0.1);" onclick="closeRequestsModal()">Close</button>
+        </div>
+    </div>
+</div>
+
+<div class="chat-sidebar">
+    <div class="chat-header">
+        Live Chat
+    </div>
+    <div class="chat-messages" id="chatBox"></div>
+    <div class="chat-input-area">
+        <input type="text" class="chat-input" id="chatInput" placeholder="Say something..." onkeypress="if(event.key==='Enter') sendChat()">
+        <button class="btn" onclick="sendChat()" style="border-radius:50%; width:40px; height:40px; padding:0; justify-content:center;"><i class="fas fa-paper-plane"></i></button>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    const currentUser = /*[[${currentUser.username}]]*/ 'user';
+    const isBroadcaster = /*[[${isBroadcaster}]]*/ false;
+    const roomId = /*[[${roomId}]]*/ 'room123';
+    
+    let stompClient = null;
+    let localStream = null;
+    let peerConnections = {}; 
+    const configuration = { 'iceServers': [{'urls': 'stun:stun.l.google.com:19302'}] };
+    
+    // Connect to WebSockets
+    const socket = new SockJS('/ws');
+    stompClient = Stomp.over(socket);
+    stompClient.debug = null;
+    stompClient.connect({}, function(frame) {
+        // Subscribe to chat
+        stompClient.subscribe('/topic/live/' + roomId + '/chat', function(message) {
+            const data = JSON.parse(message.body);
+            appendChat(data.author, data.text);
+        });
+        
+        // Subscribe to Join Requests
+        if (isBroadcaster) {
+            stompClient.subscribe('/topic/live/' + roomId + '/join-requests', function(message) {
+                const data = JSON.parse(message.body);
+                handleJoinRequest(data.author);
+            });
+        }
+        
+        // Subscribe to Signaling (Offer/Answer/Candidate)
+        stompClient.subscribe('/topic/live/' + roomId + '/signal', function(message) {
+            handleSignaling(JSON.parse(message.body));
+        });
+        
+        // Private Signaling for this user (for Join request accepted)
+        stompClient.subscribe('/queue/live/' + roomId + '/' + currentUser, function(message) {
+            handleSignaling(JSON.parse(message.body));
+        });
+
+        if (isBroadcaster) {
+            startBroadcasting();
+        } else {
+            // Viewers just announce they arrived to trigger broadcaster to send offer
+            setTimeout(() => {
+                stompClient.send('/app/live/' + roomId + '/signal', {}, JSON.stringify({
+                    type: 'viewer_joined',
+                    sender: currentUser
+                }));
+            }, 1000);
+        }
+    });
+
+    async function startBroadcasting() {
+        try {
+            localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            document.getElementById('mainVideo').srcObject = localStream;
+        } catch (e) {
+            alert('Could not access camera/mic: ' + e);
+        }
+    }
+
+    // Signaling Handling (Very simplified WebRTC mesh for viewers)
+    // Note: For a real app, an SFU (like mediasoup/LiveKit) is required.
+    // This is a basic 1-to-N peer connection setup purely for localhost/demo.
+    async function handleSignaling(data) {
+        if (data.sender === currentUser) return;
+        
+        if (isBroadcaster && data.type === 'viewer_joined') {
+            const pc = createPeerConnection(data.sender);
+            const offer = await pc.createOffer();
+            await pc.setLocalDescription(offer);
+            sendSignal({ type: 'offer', offer: offer, target: data.sender });
+        } else if (data.type === 'offer') {
+            const pc = createPeerConnection(data.sender);
+            await pc.setRemoteDescription(new RTCSessionDescription(data.offer));
+            const answer = await pc.createAnswer();
+            await pc.setLocalDescription(answer);
+            sendSignal({ type: 'answer', answer: answer, target: data.sender });
+        } else if (data.type === 'answer') {
+            const pc = peerConnections[data.sender];
+            if (pc) await pc.setRemoteDescription(new RTCSessionDescription(data.answer));
+        } else if (data.type === 'candidate') {
+            const pc = peerConnections[data.sender];
+            if (pc) await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
+        } else if (data.type === 'join_accepted') {
+            // Broadcaster accepted join request, so Viewer needs to share camera
+            document.getElementById('reqJoinBtn').style.display = 'none';
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                document.getElementById('localVideo').srcObject = localStream;
+                document.getElementById('localVideo').style.display = 'block';
+                // Renegotiate or just add tracks
+                const pc = peerConnections[data.sender]; // broadcaster PC
+                localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+                const offer = await pc.createOffer();
+                await pc.setLocalDescription(offer);
+                sendSignal({ type: 'offer', offer: offer, target: data.sender });
+            } catch(e) {}
+        }
+    }
+
+    function createPeerConnection(peerId) {
+        const pc = new RTCPeerConnection(configuration);
+        peerConnections[peerId] = pc;
+        
+        if (localStream) {
+            localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+        }
+        
+        pc.onicecandidate = e => {
+            if (e.candidate) {
+                sendSignal({ type: 'candidate', candidate: e.candidate, target: peerId });
+            }
+        };
+        
+        pc.ontrack = e => {
+            if (isBroadcaster) {
+                // If broadcaster receives track, it's from a co-host
+                const localV = document.getElementById('localVideo');
+                localV.style.display = 'block';
+                localV.srcObject = e.streams[0];
+            } else {
+                // Viewer receiving broadcaster stream
+                document.getElementById('mainVideo').srcObject = e.streams[0];
+            }
+        };
+        
+        return pc;
+    }
+
+    function sendSignal(payload) {
+        payload.sender = currentUser;
+        stompClient.send('/app/live/' + roomId + '/signal', {}, JSON.stringify(payload));
+    }
+
+    // Chat
+    function sendChat() {
+        const input = document.getElementById('chatInput');
+        const text = input.value.trim();
+        if (text) {
+            stompClient.send('/app/live/' + roomId + '/chat', {}, JSON.stringify({ author: currentUser, text: text }));
+            input.value = '';
+        }
+    }
+
+    function appendChat(author, text) {
+        const box = document.getElementById('chatBox');
+        const msg = document.createElement('div');
+        msg.className = 'chat-msg';
+        msg.innerHTML = `<span class="author">@${author}</span>${text}`;
+        box.appendChild(msg);
+        box.scrollTop = box.scrollHeight;
+    }
+
+    // Join Requests
+    let joinRequests = [];
+    
+    function requestToJoin() {
+        stompClient.send('/app/live/' + roomId + '/request-join', {}, JSON.stringify({ author: currentUser }));
+        const btn = document.getElementById('reqJoinBtn');
+        btn.innerHTML = '<i class="fas fa-check"></i> Requested';
+        btn.style.background = 'var(--text-secondary)';
+        btn.disabled = true;
+    }
+    
+    function handleJoinRequest(author) {
+        if (!joinRequests.includes(author)) {
+            joinRequests.push(author);
+            renderRequests();
+            // Show badge on button
+            const btn = document.querySelector('.header .btn i.fa-users');
+            btn.style.color = 'var(--danger)';
+        }
+    }
+    
+    function renderRequests() {
+        const list = document.getElementById('requestsList');
+        if (joinRequests.length === 0) {
+            list.innerHTML = '<p style="color:var(--text-secondary); text-align:center; font-size:14px;">No requests yet.</p>';
+            return;
+        }
+        list.innerHTML = '';
+        joinRequests.forEach(req => {
+            const div = document.createElement('div');
+            div.className = 'req-item';
+            div.innerHTML = `
+                <span>@${req}</span>
+                <button class="btn" style="padding:4px 10px; font-size:12px;" onclick="acceptRequest('${req}')">Accept</button>
+            `;
+            list.appendChild(div);
+        });
+    }
+
+    function acceptRequest(user) {
+        // Remove from list
+        joinRequests = joinRequests.filter(u => u !== user);
+        renderRequests();
+        // Send accept signal directly to user
+        sendSignal({ type: 'join_accepted', target: user });
+    }
+
+    function openRequestsModal() {
+        document.getElementById('requestsOverlay').style.display = 'flex';
+        document.querySelector('.header .btn i.fa-users').style.color = 'inherit';
+    }
+    function closeRequestsModal() {
+        document.getElementById('requestsOverlay').style.display = 'none';
+    }
+
+    // Media Controls
+    let audioEnabled = true;
+    let videoEnabled = true;
+    
+    function toggleMute() {
+        if (!localStream) return;
+        audioEnabled = !audioEnabled;
+        localStream.getAudioTracks()[0].enabled = audioEnabled;
+        const icon = document.getElementById('micIcon');
+        icon.className = audioEnabled ? 'fas fa-microphone' : 'fas fa-microphone-slash';
+        icon.parentElement.style.background = audioEnabled ? 'rgba(0,0,0,0.6)' : 'var(--danger)';
+    }
+
+    function toggleVideo() {
+        if (!localStream) return;
+        videoEnabled = !videoEnabled;
+        localStream.getVideoTracks()[0].enabled = videoEnabled;
+        const icon = document.getElementById('videoIcon');
+        icon.className = videoEnabled ? 'fas fa-video' : 'fas fa-video-slash';
+        icon.parentElement.style.background = videoEnabled ? 'rgba(0,0,0,0.6)' : 'var(--danger)';
+    }
+
+    function endStream() {
+        if(confirm("End live stream?")) {
+            window.location.href = '/';
+        }
+    }
+</script>
+</body>
+</html>

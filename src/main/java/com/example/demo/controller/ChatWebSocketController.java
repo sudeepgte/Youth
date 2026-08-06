@@ -173,4 +173,14 @@ public class ChatWebSocketController {
             messagingTemplate.convertAndSendToUser(p.getId().toString(), "/queue/theme", payload);
         }
     }
+
+    // WebRTC Signaling for 1-on-1 Voice/Video Calls
+    @MessageMapping("/chat.call")
+    public void handleCallSignaling(@Payload Map<String, Object> payload) {
+        if (payload.get("recipientId") == null) return;
+        String recipientId = payload.get("recipientId").toString();
+        
+        // Relay the signaling message directly to the target recipient
+        messagingTemplate.convertAndSendToUser(recipientId, "/queue/call", (Object) payload);
+    }
 }

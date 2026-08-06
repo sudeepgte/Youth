@@ -96,27 +96,32 @@
                         <label style="font-size:12px; color:var(--text-secondary); margin-bottom:8px; display:block;">
                             <i class="fas fa-layer-group"></i> &nbsp;Select Type
                         </label>
-                        <div id="typeSelector" style="display:flex; gap:8px; margin-bottom:4px;">
+                        <div id="typeSelector" style="display:flex; gap:8px; margin-bottom:4px; overflow-x: auto; padding-bottom: 5px;">
                             <button type="button" class="type-btn active" data-type="POST"
                                 onclick="selectPostType(this)"
-                                style="flex:1; padding:10px 6px; border-radius:10px; border:2px solid var(--accent); background:rgba(248,68,100,0.15); color:var(--accent); font-weight:600; font-size:13px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; transition:all 0.2s;">
+                                style="flex: 0 0 auto; padding:10px 12px; border-radius:10px; border:2px solid var(--accent); background:rgba(248,68,100,0.15); color:var(--accent); font-weight:600; font-size:13px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; transition:all 0.2s;">
                                 <i class="fas fa-image" style="font-size:18px;"></i>
                                 Post
                             </button>
                             <button type="button" class="type-btn" data-type="REEL" onclick="selectPostType(this)"
-                                style="flex:1; padding:10px 6px; border-radius:10px; border:2px solid var(--glass-border); background:transparent; color:var(--text-secondary); font-weight:600; font-size:13px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; transition:all 0.2s;">
+                                style="flex: 0 0 auto; padding:10px 12px; border-radius:10px; border:2px solid var(--glass-border); background:transparent; color:var(--text-secondary); font-weight:600; font-size:13px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; transition:all 0.2s;">
                                 <i class="fas fa-film" style="font-size:18px;"></i>
                                 Reel
                             </button>
                             <button type="button" class="type-btn" data-type="STORY" onclick="selectPostType(this)"
-                                style="flex:1; padding:10px 6px; border-radius:10px; border:2px solid var(--glass-border); background:transparent; color:var(--text-secondary); font-weight:600; font-size:13px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; transition:all 0.2s;">
+                                style="flex: 0 0 auto; padding:10px 12px; border-radius:10px; border:2px solid var(--glass-border); background:transparent; color:var(--text-secondary); font-weight:600; font-size:13px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; transition:all 0.2s;">
                                 <i class="fas fa-circle-notch" style="font-size:18px;"></i>
                                 Story
                             </button>
                             <button type="button" class="type-btn" data-type="CAMERA" onclick="selectPostType(this)"
-                                style="flex:1; padding:10px 6px; border-radius:10px; border:2px solid var(--glass-border); background:transparent; color:var(--text-secondary); font-weight:600; font-size:13px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; transition:all 0.2s;">
+                                style="flex: 0 0 auto; padding:10px 12px; border-radius:10px; border:2px solid var(--glass-border); background:transparent; color:var(--text-secondary); font-weight:600; font-size:13px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; transition:all 0.2s;">
                                 <i class="fas fa-camera" style="font-size:18px;"></i>
                                 Camera
+                            </button>
+                            <button type="button" class="type-btn" data-type="GOLIVE" onclick="selectPostType(this)"
+                                style="flex: 0 0 auto; padding:10px 12px; border-radius:10px; border:2px solid var(--glass-border); background:transparent; color:var(--text-secondary); font-weight:600; font-size:13px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; transition:all 0.2s;">
+                                <i class="fas fa-broadcast-tower" style="font-size:18px; color: #ef4444;"></i>
+                                Go Live
                             </button>
                         </div>
                         <p id="typeHint"
@@ -189,6 +194,32 @@
                         <label style="font-size:12px; color:var(--text-secondary); margin-bottom:6px; display:block;">
                             <i class="fas fa-paperclip"></i> &nbsp;Media
                         </label>
+                        <!-- Camera Options Dropdown (Hidden initially) -->
+                        <div id="cameraTypeDropdown" style="display:none; margin-bottom: 12px; border-radius: 12px; overflow: hidden; border: 1px solid var(--glass-border); background: var(--card-bg);">
+                            <div style="padding: 12px; background: rgba(255,255,255,0.05); font-size: 13px; color: var(--text-secondary); text-align: center; font-weight: 600;">
+                                Select Camera Mode
+                            </div>
+                            <div style="display: flex; flex-direction: column;">
+                                <button type="button" onclick="selectCameraSubMode('POST')" style="padding: 15px; border: none; border-bottom: 1px solid var(--glass-border); background: transparent; color: var(--text-primary); text-align: left; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: background 0.2s;">
+                                    <i class="fas fa-image" style="color: var(--accent); width: 20px; text-align: center;"></i> Photo Post
+                                </button>
+                                <button type="button" onclick="selectCameraSubMode('REEL')" style="padding: 15px; border: none; border-bottom: 1px solid var(--glass-border); background: transparent; color: var(--text-primary); text-align: left; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: background 0.2s;">
+                                    <i class="fas fa-film" style="color: var(--accent); width: 20px; text-align: center;"></i> Reel Video
+                                </button>
+                                <button type="button" onclick="selectCameraSubMode('STORY')" style="padding: 15px; border: none; background: transparent; color: var(--text-primary); text-align: left; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: background 0.2s;">
+                                    <i class="fas fa-circle-notch" style="color: var(--accent); width: 20px; text-align: center;"></i> Story
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Live Options (Hidden initially) -->
+                        <div id="goLiveOptions" style="display:none; margin-bottom: 12px;">
+                            <label style="font-size:12px; color:var(--text-secondary); margin-bottom:6px; display:block;">
+                                <i class="fas fa-heading"></i> &nbsp;Live Stream Title
+                            </label>
+                            <input type="text" id="liveTitle" class="form-input" placeholder="What are you doing today?">
+                        </div>
+
                         <div id="mediaDropZone"
                             style="border:2px dashed var(--glass-border); border-radius:12px; padding:20px; text-align:center; cursor:pointer; transition:border-color 0.2s; position:relative;"
                             onclick="handleMediaDropZoneClick()"
@@ -220,7 +251,7 @@
                     </div>
 
                     <!-- Tag Collaborators -->
-                    <div class="form-group" style="position:relative;">
+                    <div class="form-group" id="collabGroup" style="position:relative;">
                         <label style="font-size:12px; color:var(--text-secondary); margin-bottom:6px; display:block;">
                             <i class="fas fa-user-tag"></i> &nbsp;Tag Collaborators
                         </label>
@@ -231,14 +262,14 @@
                     </div>
 
                     <!-- Hashtags -->
-                    <div class="form-group">
+                    <div class="form-group" id="hashtagGroup">
                         <label style="font-size:12px; color:var(--text-secondary); margin-bottom:6px; display:block;">
                             <i class="fas fa-hashtag"></i> &nbsp;Hashtags
                         </label>
                         <input type="text" name="hashtags" class="form-input" placeholder="#zentrix #creative">
                     </div>
 
-                    <button type="submit" class="cta-btn" style="width:100%; margin-top:4px;">
+                    <button type="submit" class="cta-btn" id="submitPostBtn" style="width:100%; margin-top:4px;">
                         <i class="fas fa-paper-plane"></i> &nbsp;<span id="submitBtnLabel">Share Post</span>
                     </button>
                 </form>
@@ -425,7 +456,12 @@
                 mediaRecorder.stop();
             }
             document.getElementById('liveCameraContainer').style.display = 'none';
-            document.getElementById('mediaDropZone').style.display = 'block';
+            
+            const activeBtn = document.querySelector('#typeSelector .type-btn.active');
+            const currentType = activeBtn ? activeBtn.dataset.type : '';
+            if (currentType !== 'CAMERA' && currentType !== 'GOLIVE') {
+                document.getElementById('mediaDropZone').style.display = 'block';
+            }
         }
 
         function takePhoto() {
@@ -499,19 +535,35 @@
             POST: { accept: 'image/*', hint: 'Share a photo with your followers', label: 'Share Post', zone: 'Click or drag to upload a photo' },
             REEL: { accept: 'video/*', hint: 'Upload a short video reel 🎬', label: 'Share Reel', zone: 'Click or drag to upload a video' },
             STORY: { accept: 'image/*,video/*', hint: 'Your story disappears in 24 hours ⏳', label: 'Share Story', zone: 'Click or drag to upload a photo or video' },
-            CAMERA: { accept: 'image/*,video/*', hint: 'Take a photo or video directly 📸', label: 'Upload Capture', zone: 'Click to open camera' }
+            CAMERA: { accept: 'image/*,video/*', hint: 'Select what you want to capture 📸', label: 'Continue', zone: 'Click to open camera' },
+            GOLIVE: { accept: '', hint: 'Broadcast live to your followers 📡', label: 'Start Live Now', zone: '' }
         };
+
+        let cameraSubMode = 'POST';
+
+        function selectCameraSubMode(mode) {
+            cameraSubMode = mode;
+            // Update hidden input to reflect actual post type once captured
+            document.getElementById('postTypeInput').value = mode;
+            document.getElementById('cameraTypeDropdown').style.display = 'none';
+            openLiveCamera();
+        }
 
         function selectPostType(btn) {
             const type = btn.dataset.type;
-            document.getElementById('postTypeInput').value = type;
+            
+            if (type !== 'CAMERA') {
+                document.getElementById('postTypeInput').value = type;
+            }
 
             document.querySelectorAll('.type-btn').forEach(b => {
+                b.classList.remove('active');
                 b.style.border = '2px solid var(--glass-border)';
                 b.style.background = 'transparent';
                 b.style.color = 'var(--text-secondary)';
             });
 
+            btn.classList.add('active');
             btn.style.border = '2px solid var(--accent)';
             btn.style.background = 'rgba(248,68,100,0.15)';
             btn.style.color = 'var(--accent)';
@@ -521,14 +573,44 @@
             document.getElementById('mediaFile').accept = cfg.accept;
             if (type === 'CAMERA') {
                 document.getElementById('mediaFile').setAttribute('capture', 'environment');
+                document.getElementById('cameraTypeDropdown').style.display = 'block';
+                document.getElementById('mediaDropZone').style.display = 'none';
+                document.getElementById('goLiveOptions').style.display = 'none';
+                
+                // Hide other groups temporarily
+                const cg = document.getElementById('collabGroup'); if(cg) cg.style.display = 'none';
+                const hg = document.getElementById('hashtagGroup'); if(hg) hg.style.display = 'none';
+                const sbtn = document.getElementById('submitPostBtn'); if(sbtn) sbtn.style.display = 'none';
+            } else if (type === 'GOLIVE') {
+                document.getElementById('cameraTypeDropdown').style.display = 'none';
+                document.getElementById('mediaDropZone').style.display = 'none';
+                document.getElementById('goLiveOptions').style.display = 'block';
+                
+                const cg = document.getElementById('collabGroup'); if(cg) cg.style.display = 'none';
+                const hg = document.getElementById('hashtagGroup'); if(hg) hg.style.display = 'none';
+                const sbtn = document.getElementById('submitPostBtn'); if(sbtn) sbtn.style.display = 'block';
+                document.getElementById('submitBtnLabel').textContent = cfg.label;
             } else {
                 document.getElementById('mediaFile').removeAttribute('capture');
+                document.getElementById('cameraTypeDropdown').style.display = 'none';
+                document.getElementById('mediaDropZone').style.display = 'block';
+                document.getElementById('goLiveOptions').style.display = 'none';
+                
+                // Show other groups
+                const cg = document.getElementById('collabGroup'); if(cg) cg.style.display = 'block';
+                const hg = document.getElementById('hashtagGroup'); if(hg) hg.style.display = 'block';
+                const sbtn = document.getElementById('submitPostBtn'); if(sbtn) sbtn.style.display = 'block';
+                document.getElementById('submitBtnLabel').textContent = cfg.label;
+                document.getElementById('dropZoneLabel').textContent = cfg.zone;
             }
-            document.getElementById('dropZoneLabel').textContent = cfg.zone;
-            document.getElementById('submitBtnLabel').textContent = cfg.label;
 
             const prev = document.getElementById('mediaPreview');
             prev.innerHTML = ''; prev.style.display = 'none';
+            
+            // If switching away from camera, close it
+            if (type !== 'CAMERA') {
+                closeCamera();
+            }
 
             // Show color selector only for STORY
             const colorSelector = document.getElementById('storyColorSelector');
@@ -597,6 +679,17 @@
             const createPostForm = document.getElementById('createPostForm');
             if (createPostForm) {
                 createPostForm.onsubmit = function(e) {
+                    const postType = document.getElementById('postTypeInput').value;
+                    const activeBtn = document.querySelector('#typeSelector .type-btn.active');
+                    const originalType = activeBtn ? activeBtn.dataset.type : '';
+                    
+                    if (originalType === 'GOLIVE') {
+                        e.preventDefault();
+                        const title = document.getElementById('liveTitle').value.trim() || 'My Live Stream';
+                        window.location.href = '/live?title=' + encodeURIComponent(title) + '&start=true';
+                        return false;
+                    }
+                    
                     const content = document.getElementById('postContent').value.trim();
                     const mediaFiles = document.getElementById('mediaFile').files.length;
                     if (!content && mediaFiles === 0) {
@@ -608,6 +701,22 @@
                 };
             }
         }
+
+        // When a photo/video is taken in camera mode, re-show submit buttons
+        const originalPreviewMedia = previewMedia;
+        previewMedia = function(inp) {
+            originalPreviewMedia(inp);
+            
+            const activeBtn = document.querySelector('#typeSelector .type-btn.active');
+            const originalType = activeBtn ? activeBtn.dataset.type : '';
+            
+            if (originalType === 'CAMERA' && inp.files.length > 0) {
+                const cg = document.getElementById('collabGroup'); if(cg) cg.style.display = 'block';
+                const hg = document.getElementById('hashtagGroup'); if(hg) hg.style.display = 'block';
+                const sbtn = document.getElementById('submitPostBtn'); if(sbtn) sbtn.style.display = 'block';
+                document.getElementById('submitBtnLabel').textContent = typeConfig[cameraSubMode].label;
+            }
+        };
 
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', initModalListeners);
