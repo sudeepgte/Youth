@@ -40,8 +40,19 @@ public class HeatmapApiController {
         LocalDateTime startOfMonth = today.with(java.time.temporal.TemporalAdjusters.firstDayOfMonth()).atStartOfDay();
         LocalDateTime endOfMonth = today.with(java.time.temporal.TemporalAdjusters.lastDayOfMonth()).atTime(LocalTime.MAX);
 
+        // Auto-correct any bad geocoding for JP Nagar to Bangalore coordinates
+        for (Event e : allEvents) {
+            if (e.getVenue() != null && e.getVenue().toLowerCase().contains("banglore") 
+                && e.getLatitude() != null && e.getLatitude() > 22.0) {
+                e.setLatitude(12.9081);
+                e.setLongitude(77.5937);
+                eventRepository.save(e);
+            }
+        }
+        
         // Compute statistics from ALL geocoded events
-        long liveCount = allEvents.stream().filter(e -> "ONGOING".equals(e.getStatus())).count();
+        LocalDateTime now = LocalDateTime.now();
+        long liveCount = allEvents.stream().filter(e -> "ONGOING".equals(e.getStatus()) || (e.getDateTime() != null && e.getDateTime().toLocalDate().equals(now.toLocalDate()) && !e.getDateTime().isAfter(now))).count();
         long todayCount = allEvents.stream().filter(e -> e.getDateTime() != null && !e.getDateTime().isBefore(startOfToday) && !e.getDateTime().isAfter(endOfToday)).count();
         long tomorrowCount = allEvents.stream().filter(e -> e.getDateTime() != null && !e.getDateTime().isBefore(startOfTomorrow) && !e.getDateTime().isAfter(endOfTomorrow)).count();
         long weekCount = allEvents.stream().filter(e -> e.getDateTime() != null && !e.getDateTime().isBefore(startOfWeek) && !e.getDateTime().isAfter(endOfWeek)).count();
@@ -51,7 +62,7 @@ public class HeatmapApiController {
         List<Event> filtered;
         switch (filter.toLowerCase()) {
             case "live":
-                filtered = allEvents.stream().filter(e -> "ONGOING".equals(e.getStatus())).collect(Collectors.toList());
+                filtered = allEvents.stream().filter(e -> "ONGOING".equals(e.getStatus()) || (e.getDateTime() != null && e.getDateTime().toLocalDate().equals(now.toLocalDate()) && !e.getDateTime().isAfter(now))).collect(Collectors.toList());
                 break;
             case "today":
                 filtered = allEvents.stream().filter(e -> e.getDateTime() != null && !e.getDateTime().isBefore(startOfToday) && !e.getDateTime().isAfter(endOfToday)).collect(Collectors.toList());
@@ -79,7 +90,7 @@ public class HeatmapApiController {
             List<Event> eventsAtLoc = entry.getValue();
             Event sample = eventsAtLoc.get(0);
 
-            long locLive = eventsAtLoc.stream().filter(e -> "ONGOING".equals(e.getStatus())).count();
+            long locLive = eventsAtLoc.stream().filter(e -> "ONGOING".equals(e.getStatus()) || (e.getDateTime() != null && e.getDateTime().toLocalDate().equals(now.toLocalDate()) && !e.getDateTime().isAfter(now))).count();
             long locToday = eventsAtLoc.stream().filter(e -> e.getDateTime() != null && !e.getDateTime().isBefore(startOfToday) && !e.getDateTime().isAfter(endOfToday)).count();
             long locTomorrow = eventsAtLoc.stream().filter(e -> e.getDateTime() != null && !e.getDateTime().isBefore(startOfTomorrow) && !e.getDateTime().isAfter(endOfTomorrow)).count();
             long locWeek = eventsAtLoc.stream().filter(e -> e.getDateTime() != null && !e.getDateTime().isBefore(startOfToday) && !e.getDateTime().isAfter(endOfWeek)).count();

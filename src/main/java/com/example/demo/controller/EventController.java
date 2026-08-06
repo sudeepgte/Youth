@@ -867,8 +867,16 @@ public class EventController {
         event.setEventMode(eventMode);
         event.setMeetingLink(meetingLink);
         event.setFinalVotingEnabled(finalVotingEnabled);
-        event.setLatitude(latitude);
-        event.setLongitude(longitude);
+        if (latitude == null || longitude == null) {
+            // Fallback for demo if admin forgot to click "Locate"
+            if (venue != null && venue.toLowerCase().contains("banglore")) {
+                event.setLatitude(12.9716);
+                event.setLongitude(77.5946);
+            }
+        } else {
+            event.setLatitude(latitude);
+            event.setLongitude(longitude);
+        }
 
         // Secret Rewards Binding
         event.setEnableSecretRewards(formEvent.isEnableSecretRewards());
@@ -1159,8 +1167,16 @@ public class EventController {
         event.setStatus(status);
         event.setMeetingLink(meetingLink);
         event.setFinalVotingEnabled(finalVotingEnabled);
-        event.setLatitude(latitude);
-        event.setLongitude(longitude);
+        if (latitude == null || longitude == null) {
+            // Fallback for demo if admin forgot to click "Locate"
+            if (venue != null && venue.toLowerCase().contains("banglore")) {
+                event.setLatitude(12.9716);
+                event.setLongitude(77.5946);
+            }
+        } else {
+            event.setLatitude(latitude);
+            event.setLongitude(longitude);
+        }
 
         if ("Free".equals(entryFeeType)) {
             event.setPrice("Free");
