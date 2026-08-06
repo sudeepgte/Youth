@@ -7,6 +7,7 @@ class AppUser {
   final String? skills;
   final String? collegeName;
   final String? gender;
+  final String? dob;
   final String? profilePhotoUrl;
   final bool privateAccount;
   final int xp;
@@ -31,6 +32,7 @@ class AppUser {
     this.skills,
     this.collegeName,
     this.gender,
+    this.dob,
     this.profilePhotoUrl,
     this.privateAccount = false,
     this.xp = 0,
@@ -56,6 +58,7 @@ class AppUser {
         skills: j['skills'] as String?,
         collegeName: j['collegeName'] as String?,
         gender: j['gender'] as String?,
+        dob: j['dob']?.toString(),
         profilePhotoUrl: j['profilePhotoUrl'] as String?,
         privateAccount: j['privateAccount'] == true,
         xp: (j['xp'] as num?)?.toInt() ?? 0,
@@ -85,6 +88,7 @@ class AppUser {
         skills: skills,
         collegeName: collegeName,
         gender: gender,
+        dob: dob,
         profilePhotoUrl: profilePhotoUrl,
         privateAccount: privateAccount,
         xp: xp,

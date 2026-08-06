@@ -66,5 +66,11 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Youthian uses your location to show nearby events on the heat map.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Youthian needs camera access for live battle video.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Youthian needs microphone access for live battle audio.</string>
 </dict>
 </plist>

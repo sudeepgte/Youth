@@ -40,12 +40,15 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     final loading = context.watch<AuthProvider>().loading;
 
-    return Scaffold(
+    return Theme(
+      data: AppTheme.authTheme(),
+      child: Scaffold(
       backgroundColor: AppTheme.authBg,
       appBar: AppBar(
         title: Text('Login', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.transparent,
         elevation: 0,
+        foregroundColor: Colors.white,
       ),
       body: Padding(
         padding: const EdgeInsets.all(24),
@@ -123,6 +126,7 @@ class _LoginPageState extends State<LoginPage> {
           ],
         ),
       ),
+    ),
     );
   }
 }

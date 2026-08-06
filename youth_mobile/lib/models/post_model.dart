@@ -31,6 +31,8 @@ class PostModel {
   final int likeCount;
   final int commentCount;
   final bool commentsDisabled;
+  final bool liked;
+  final bool saved;
   final PostAuthor? user;
 
   PostModel({
@@ -45,6 +47,8 @@ class PostModel {
     this.likeCount = 0,
     this.commentCount = 0,
     this.commentsDisabled = false,
+    this.liked = false,
+    this.saved = false,
     this.user,
   });
 
@@ -60,8 +64,35 @@ class PostModel {
         likeCount: (j['likeCount'] as num?)?.toInt() ?? 0,
         commentCount: (j['commentCount'] as num?)?.toInt() ?? 0,
         commentsDisabled: j['commentsDisabled'] == true,
-        user: j['user'] is Map<String, dynamic>
-            ? PostAuthor.fromJson(j['user'] as Map<String, dynamic>)
+        liked: j['liked'] == true,
+        saved: j['saved'] == true,
+        user: j['user'] is Map
+            ? PostAuthor.fromJson(Map<String, dynamic>.from(j['user'] as Map))
             : null,
+      );
+
+  PostModel copyWith({
+    int? likeCount,
+    int? commentCount,
+    bool? liked,
+    bool? saved,
+    String? content,
+    String? hashtags,
+  }) =>
+      PostModel(
+        id: id,
+        content: content ?? this.content,
+        mediaUrl: mediaUrl,
+        mediaType: mediaType,
+        hashtags: hashtags ?? this.hashtags,
+        postType: postType,
+        category: category,
+        createdAt: createdAt,
+        likeCount: likeCount ?? this.likeCount,
+        commentCount: commentCount ?? this.commentCount,
+        commentsDisabled: commentsDisabled,
+        liked: liked ?? this.liked,
+        saved: saved ?? this.saved,
+        user: user,
       );
 }

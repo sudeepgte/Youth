@@ -76,7 +76,7 @@ public class ChatRestController {
     private jakarta.servlet.http.HttpServletRequest httpServletRequest;
 
     @PostMapping("/send-direct")
-    public ResponseEntity<ChatMessage> sendDirectMessage(@RequestBody Map<String, Object> payload, HttpSession session) {
+    public ResponseEntity<?> sendDirectMessage(@RequestBody Map<String, Object> payload, HttpSession session) {
         User currentUser = null;
         Object authUser = httpServletRequest.getAttribute("authenticatedUser");
         if (authUser instanceof User) {
@@ -86,22 +86,45 @@ public class ChatRestController {
         }
 
         if (currentUser == null) {
-            return ResponseEntity.status(401).build();
+            return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
         }
 
         try {
-            Long recipientId = Long.valueOf(payload.get("recipientId").toString());
-            String content = payload.get("content").toString();
+            Object recipientRaw = payload.get("recipientId");
+            if (recipientRaw == null) {
+                recipientRaw = payload.get("receiverId");
+            }
+            if (recipientRaw == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "recipientId is required"));
+            }
+            Long recipientId = Long.valueOf(recipientRaw.toString());
+            String content = payload.get("content") != null ? payload.get("content").toString() : "";
+            String mediaUrl = payload.get("mediaUrl") != null ? payload.get("mediaUrl").toString() : null;
+            if (mediaUrl != null && mediaUrl.isBlank()) {
+                mediaUrl = null;
+            }
+            if ((content == null || content.isBlank()) && mediaUrl == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Message content or media is required"));
+            }
+            if (content != null && content.isBlank()) {
+                content = "";
+            }
 
-            ChatMessage message = chatService.sendMessage(currentUser, recipientId, content, null, null, false, false);
+            ChatMessage message = chatService.sendMessage(currentUser, recipientId, content, mediaUrl, null, false, false);
 
-            // Notify recipient and sender via WebSocket
-            messagingTemplate.convertAndSendToUser(recipientId.toString(), "/queue/messages", message);
-            messagingTemplate.convertAndSendToUser(currentUser.getId().toString(), "/queue/messages", message);
+            // Notify recipient and sender via WebSocket (ignore WS serialize failures)
+            try {
+                messagingTemplate.convertAndSendToUser(recipientId.toString(), "/queue/messages", message);
+                messagingTemplate.convertAndSendToUser(currentUser.getId().toString(), "/queue/messages", message);
+            } catch (Exception wsEx) {
+                System.err.println("[WARN] WS notify failed after send-direct: " + wsEx.getMessage());
+            }
 
             return ResponseEntity.ok(message);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
+            e.printStackTrace();
+            String msg = e.getMessage() != null ? e.getMessage() : "Failed to send message";
+            return ResponseEntity.badRequest().body(Map.of("error", msg));
         }
     }
 
@@ -375,11 +398,17 @@ public class ChatRestController {
 
     @RequestMapping(value = "/upload", method = RequestMethod.POST)
     public ResponseEntity<Map<String, String>> uploadMedia(@RequestParam("file") MultipartFile file) {
-        if (file.isEmpty()) {
-            return ResponseEntity.badRequest().build();
+        if (file == null || file.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Empty file"));
         }
         try {
-            String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
+            String original = file.getOriginalFilename() != null ? file.getOriginalFilename() : "chat-media.jpg";
+            // Keep filename filesystem-safe and reasonably short
+            String safeOriginal = original.replaceAll("[^a-zA-Z0-9._-]", "_");
+            if (safeOriginal.length() > 80) {
+                safeOriginal = safeOriginal.substring(safeOriginal.length() - 80);
+            }
+            String fileName = UUID.randomUUID().toString() + "_" + safeOriginal;
             String uploadDir = "src/main/resources/static/uploads/";
             Path uploadPath = Paths.get(uploadDir);
             if (!Files.exists(uploadPath)) {
@@ -402,7 +431,7 @@ public class ChatRestController {
         } catch (IOException e) {
             e.printStackTrace();
             System.err.println("[ERROR] Upload failed: " + e.getMessage());
-            return ResponseEntity.internalServerError().build();
+            return ResponseEntity.internalServerError().body(Map.of("error", "Upload failed: " + e.getMessage()));
         }
     }
 

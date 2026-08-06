@@ -24,6 +24,7 @@ public class Conversation {
     @ManyToOne
     private User creator;
 
+    @Column(length = 500)
     private String lastMessage;
     private LocalDateTime lastMessageTime;
 

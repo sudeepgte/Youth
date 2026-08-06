@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/app_api.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/app_drawer.dart';
 
 class AchievementsPage extends StatefulWidget {
   const AchievementsPage({super.key});
@@ -17,13 +18,22 @@ class _AchievementsPageState extends State<AchievementsPage> {
   int _xp = 0;
   String _level = 'Novice';
   List<Map<String, dynamic>> _badges = [];
+  List<Map<String, dynamic>> _leaderboard = [];
+  final _couponCtrl = TextEditingController();
   bool _loading = true;
+  bool _redeeming = false;
   String? _error;
 
   @override
   void initState() {
     super.initState();
     _load();
+  }
+
+  @override
+  void dispose() {
+    _couponCtrl.dispose();
+    super.dispose();
   }
 
   Future<void> _load() async {
@@ -37,7 +47,13 @@ class _AchievementsPageState extends State<AchievementsPage> {
       setState(() {
         _xp = (data['xp'] as num?)?.toInt() ?? context.read<AuthProvider>().user?.xp ?? 0;
         _level = data['level']?.toString() ?? context.read<AuthProvider>().user?.level ?? 'Novice';
-        _badges = (data['badges'] as List? ?? data['achievements'] as List? ?? []).cast<Map<String, dynamic>>();
+        final rawBadges = data['badges'] as List? ?? data['achievements'] as List? ?? [];
+        _badges = rawBadges.map((e) {
+          if (e is Map) return Map<String, dynamic>.from(e);
+          return <String, dynamic>{'title': e.toString(), 'unlocked': true};
+        }).toList();
+        final lb = data['leaderboard'] as List? ?? [];
+        _leaderboard = lb.map((e) => Map<String, dynamic>.from(e as Map)).toList();
         _loading = false;
       });
     } catch (e) {
@@ -49,16 +65,30 @@ class _AchievementsPageState extends State<AchievementsPage> {
     }
   }
 
+  Future<void> _redeem() async {
+    final code = _couponCtrl.text.trim();
+    if (code.isEmpty) return;
+    setState(() => _redeeming = true);
+    try {
+      final res = await AppApi.redeemCoupon(code);
+      if (!mounted) return;
+      await context.read<AuthProvider>().refreshMe();
+      if (!mounted) return;
+      AppTheme.showSuccess(context, res['message']?.toString() ?? 'Coupon redeemed');
+      _couponCtrl.clear();
+      await _load();
+    } catch (e) {
+      if (mounted) AppTheme.showError(context, e);
+    } finally {
+      if (mounted) setState(() => _redeeming = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.dashboardBg,
-      appBar: AppBar(
-        title: Text('Achievements', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
-        elevation: 0,
-      ),
+    return DashboardScaffold(
+      active: AppDrawerItem.achievements,
+      title: 'Achievements',
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
@@ -86,6 +116,45 @@ class _AchievementsPageState extends State<AchievementsPage> {
                               Text('Level $_level', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 24)),
                               const SizedBox(height: 4),
                               Text('$_xp XP', style: GoogleFonts.inter(color: Colors.grey.shade700, fontSize: 16)),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Redeem coupon', style: GoogleFonts.outfit(fontWeight: FontWeight.w800, fontSize: 16)),
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: TextField(
+                                      controller: _couponCtrl,
+                                      decoration: AppTheme.dashboardInput('Enter code'),
+                                      textCapitalization: TextCapitalization.characters,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  ElevatedButton(
+                                    onPressed: _redeeming ? null : _redeem,
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: AppTheme.primary,
+                                      foregroundColor: Colors.white,
+                                    ),
+                                    child: _redeeming
+                                        ? const SizedBox(
+                                            width: 18,
+                                            height: 18,
+                                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                          )
+                                        : const Text('Redeem'),
+                                  ),
+                                ],
+                              ),
                             ],
                           ),
                         ),
@@ -144,6 +213,32 @@ class _AchievementsPageState extends State<AchievementsPage> {
                             );
                           },
                         ),
+                      if (_leaderboard.isNotEmpty) ...[
+                        const SizedBox(height: 24),
+                        Text('XP leaderboard', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 18)),
+                        const SizedBox(height: 8),
+                        ..._leaderboard.asMap().entries.map((e) {
+                          final i = e.key;
+                          final row = e.value;
+                          return Card(
+                            child: ListTile(
+                              leading: CircleAvatar(
+                                backgroundColor: AppTheme.primary.withValues(alpha: 0.12),
+                                child: Text('${i + 1}', style: GoogleFonts.outfit(fontWeight: FontWeight.w800, color: AppTheme.primary)),
+                              ),
+                              title: Text(
+                                row['username']?.toString() ?? 'User',
+                                style: GoogleFonts.outfit(fontWeight: FontWeight.w700),
+                              ),
+                              subtitle: Text(row['level']?.toString() ?? ''),
+                              trailing: Text(
+                                '${row['xp'] ?? 0} XP',
+                                style: GoogleFonts.outfit(fontWeight: FontWeight.w800),
+                              ),
+                            ),
+                          );
+                        }),
+                      ],
                     ],
                   ),
                 ),

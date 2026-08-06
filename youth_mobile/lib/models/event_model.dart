@@ -11,10 +11,21 @@ class EventModel {
   final String? status;
   final String? entryFeeType;
   final String? eventMode;
+  final String? meetingLink;
   final int? pollVotes;
   final double? regularPrice;
   final double? vipPrice;
   final bool enableSecretRewards;
+  final int? maxParticipants;
+  final int? registeredCount;
+  final int? spotsLeft;
+  final bool isRegistered;
+  final String? myTicketId;
+  final bool hasSeats;
+  final bool hasFreeEntry;
+  final bool hasDiscount;
+  final double? walletBalance;
+  final List<Map<String, dynamic>> seats;
 
   EventModel({
     required this.id,
@@ -29,11 +40,45 @@ class EventModel {
     this.status,
     this.entryFeeType,
     this.eventMode,
+    this.meetingLink,
     this.pollVotes,
     this.regularPrice,
     this.vipPrice,
     this.enableSecretRewards = false,
+    this.maxParticipants,
+    this.registeredCount,
+    this.spotsLeft,
+    this.isRegistered = false,
+    this.myTicketId,
+    this.hasSeats = false,
+    this.hasFreeEntry = false,
+    this.hasDiscount = false,
+    this.walletBalance,
+    this.seats = const [],
   });
+
+  bool get isPaid {
+    if (hasFreeEntry) return false;
+    if ((entryFeeType ?? '').toUpperCase() == 'FREE') return false;
+    final p = effectiveUnitPrice('REGULAR');
+    return p > 0;
+  }
+
+  double effectiveUnitPrice(String tier) {
+    if (tier.toUpperCase() == 'VIP' && vipPrice != null) return vipPrice!;
+    if (regularPrice != null) return regularPrice!;
+    if (price != null) {
+      final cleaned = price!.replaceAll(RegExp(r'[^0-9.]'), '');
+      return double.tryParse(cleaned) ?? 0;
+    }
+    return 0;
+  }
+
+  String priceLabel({String tier = 'REGULAR'}) {
+    final p = effectiveUnitPrice(tier);
+    if (p <= 0 || (entryFeeType ?? '').toUpperCase() == 'FREE') return 'Free';
+    return '₹${p.toStringAsFixed(0)}';
+  }
 
   factory EventModel.fromJson(Map<String, dynamic> j) => EventModel(
         id: (j['id'] as num).toInt(),
@@ -48,10 +93,24 @@ class EventModel {
         status: j['status'] as String?,
         entryFeeType: j['entryFeeType'] as String?,
         eventMode: j['eventMode'] as String?,
+        meetingLink: j['meetingLink'] as String?,
         pollVotes: (j['pollVotes'] as num?)?.toInt(),
         regularPrice: (j['regularPrice'] as num?)?.toDouble(),
         vipPrice: (j['vipPrice'] as num?)?.toDouble(),
         enableSecretRewards: j['enableSecretRewards'] == true,
+        maxParticipants: (j['maxParticipants'] as num?)?.toInt(),
+        registeredCount: (j['registeredCount'] as num?)?.toInt(),
+        spotsLeft: (j['spotsLeft'] as num?)?.toInt(),
+        isRegistered: j['isRegistered'] == true,
+        myTicketId: j['myTicketId']?.toString(),
+        hasSeats: j['hasSeats'] == true,
+        hasFreeEntry: j['hasFreeEntry'] == true,
+        hasDiscount: j['hasDiscount'] == true,
+        walletBalance: (j['walletBalance'] as num?)?.toDouble(),
+        seats: (j['seats'] as List? ?? [])
+            .whereType<Map>()
+            .map((e) => Map<String, dynamic>.from(e))
+            .toList(),
       );
 }
 
@@ -75,8 +134,8 @@ class BookingModel {
         status: j['status'] as String?,
         ticketId: j['ticketId'] as String?,
         registrationDate: j['registrationDate'] as String?,
-        event: j['event'] is Map<String, dynamic>
-            ? EventModel.fromJson(j['event'] as Map<String, dynamic>)
+        event: j['event'] is Map
+            ? EventModel.fromJson(Map<String, dynamic>.from(j['event'] as Map))
             : null,
       );
 }

@@ -23,7 +23,7 @@ class FeaturesSection extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            'Everything you need to thrive in the Zentrix community.',
+            'Everything you need to thrive in the Youthian community.',
             style: GoogleFonts.inter(
               color: Colors.white70,
               fontSize: 14,

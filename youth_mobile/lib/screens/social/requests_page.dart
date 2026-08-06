@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../services/app_api.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/app_drawer.dart';
 
 class RequestsPage extends StatefulWidget {
   const RequestsPage({super.key});
@@ -152,11 +153,25 @@ class _RequestsPageState extends State<RequestsPage>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.dashboardBg,
+      drawer: const AppDrawer(active: AppDrawerItem.requests),
       appBar: AppBar(
         title: Text('Requests', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black87,
         elevation: 0,
+        leading: Builder(
+          builder: (ctx) => IconButton(
+            icon: const Icon(Icons.menu, color: AppTheme.textPrimary),
+            onPressed: () => Scaffold.of(ctx).openDrawer(),
+          ),
+        ),
+        actions: [
+          IconButton(
+            tooltip: 'Back',
+            icon: const Icon(Icons.arrow_back_rounded),
+            onPressed: () => Navigator.maybePop(context),
+          ),
+        ],
         bottom: TabBar(
           controller: _tabs,
           tabs: const [

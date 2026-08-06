@@ -17,6 +17,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
   final _dobCtrl = TextEditingController();
+  final _collegeCtrl = TextEditingController();
   String? _gender;
 
   @override
@@ -25,6 +26,7 @@ class _RegisterPageState extends State<RegisterPage> {
     _emailCtrl.dispose();
     _passwordCtrl.dispose();
     _dobCtrl.dispose();
+    _collegeCtrl.dispose();
     super.dispose();
   }
 
@@ -36,6 +38,7 @@ class _RegisterPageState extends State<RegisterPage> {
       password: _passwordCtrl.text,
       gender: _gender,
       dob: _dobCtrl.text.trim().isEmpty ? null : _dobCtrl.text.trim(),
+      collegeName: _collegeCtrl.text.trim().isEmpty ? null : _collegeCtrl.text.trim(),
     );
     if (!mounted) return;
     if (ok) {
@@ -49,19 +52,22 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget build(BuildContext context) {
     final loading = context.watch<AuthProvider>().loading;
 
-    return Scaffold(
+    return Theme(
+      data: AppTheme.authTheme(),
+      child: Scaffold(
       backgroundColor: AppTheme.authBg,
       appBar: AppBar(
         title: Text('Register', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.transparent,
         elevation: 0,
+        foregroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
           children: [
             Text(
-              'Join Zentrix',
+              'Join Youthian',
               style: GoogleFonts.outfit(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
@@ -107,6 +113,12 @@ class _RegisterPageState extends State<RegisterPage> {
               style: const TextStyle(color: Colors.white),
               decoration: AppTheme.authInput('Date of birth (YYYY-MM-DD)'),
             ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _collegeCtrl,
+              style: const TextStyle(color: Colors.white),
+              decoration: AppTheme.authInput('College name'),
+            ),
             const SizedBox(height: 32),
             SizedBox(
               width: double.infinity,
@@ -136,6 +148,7 @@ class _RegisterPageState extends State<RegisterPage> {
           ],
         ),
       ),
+    ),
     );
   }
 }

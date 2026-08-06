@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/app_api.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/app_drawer.dart';
 
 class WalletPage extends StatefulWidget {
   const WalletPage({super.key});
@@ -96,14 +97,9 @@ class _WalletPageState extends State<WalletPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.dashboardBg,
-      appBar: AppBar(
-        title: Text('Wallet', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
-        elevation: 0,
-      ),
+    return DashboardScaffold(
+      active: AppDrawerItem.wallet,
+      title: 'Wallet',
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
