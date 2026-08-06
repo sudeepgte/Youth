@@ -1634,21 +1634,29 @@
 
                 <!-- College list when data exists -->
                 <div th:if="${battleColleges != null and !battleColleges.isEmpty()}" style="display:flex; flex-direction:column; gap:10px;">
-                    <div th:each="entry : ${battleColleges}" style="display:flex; align-items:center; gap:10px; padding:8px 12px; background:rgba(139,92,246,0.04); border:1px solid rgba(139,92,246,0.1); border-radius:12px; transition:all 0.2s;">
-                        <!-- College icon -->
-                        <div style="width:34px; height:34px; border-radius:10px; background:linear-gradient(135deg,#8B5CF6,#6366F1); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-                            <i class="fas fa-university" style="color:#fff; font-size:14px;"></i>
-                        </div>
-                        <!-- College name + count -->
-                        <div style="flex:1; min-width:0;">
-                            <div style="font-size:12px; font-weight:800; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" th:text="${entry.key}">College Name</div>
-                            <div style="font-size:10px; color:var(--text-muted); font-weight:700;">
-                                <span th:text="${entry.value}">0</span> 
-                                <span th:text="${entry.value == 1} ? 'student' : 'students'">students</span>
+                    <div th:each="entry : ${battleColleges}" style="background:rgba(139,92,246,0.04); border:1px solid rgba(139,92,246,0.1); border-radius:12px; transition:all 0.2s; overflow:hidden; cursor:pointer;" onclick="this.querySelector('.student-list').style.display = this.querySelector('.student-list').style.display === 'none' ? 'block' : 'none'">
+                        <div style="display:flex; align-items:center; gap:10px; padding:8px 12px;">
+                            <!-- College icon -->
+                            <div style="width:34px; height:34px; border-radius:10px; background:linear-gradient(135deg,#8B5CF6,#6366F1); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                                <i class="fas fa-university" style="color:#fff; font-size:14px;"></i>
                             </div>
+                            <!-- College name + count -->
+                            <div style="flex:1; min-width:0;">
+                                <div style="font-size:12px; font-weight:800; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" th:text="${entry.key}">College Name</div>
+                                <div style="font-size:10px; color:var(--text-muted); font-weight:700;">
+                                    <span th:text="${entry.value.size()}">0</span> 
+                                    <span th:text="${entry.value.size() == 1} ? 'student' : 'students'">students</span>
+                                </div>
+                            </div>
+                            <!-- Count badge -->
+                            <div style="background:linear-gradient(135deg,#8B5CF6,#6366F1); color:#fff; font-size:11px; font-weight:900; padding:3px 10px; border-radius:20px; flex-shrink:0;" th:text="${entry.value.size()}">0</div>
                         </div>
-                        <!-- Count badge -->
-                        <div style="background:linear-gradient(135deg,#8B5CF6,#6366F1); color:#fff; font-size:11px; font-weight:900; padding:3px 10px; border-radius:20px; flex-shrink:0;" th:text="${entry.value}">0</div>
+                        <div class="student-list" style="display:none; padding: 0 12px 12px 12px;">
+                            <hr style="border:none; border-top:1px solid rgba(255,255,255,0.05); margin:0 0 8px 0;">
+                            <ul style="margin:0; padding-left:20px; font-size:11px; color:var(--text-muted); font-weight:600;">
+                                <li th:each="student : ${entry.value}" th:text="${student}">Student</li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
 

@@ -69,20 +69,21 @@ public class BattleController {
         model.addAttribute("completedBattles", completedBattles);
 
         // Aggregate colleges participating in active battles
-        Map<String, Long> collegeCountMap = new LinkedHashMap<>();
+        Map<String, java.util.Set<String>> collegeCountMap = new LinkedHashMap<>();
         for (Battle b : activeBattles) {
             if (b.getParticipants() != null) {
                 for (BattleParticipant p : b.getParticipants()) {
                     String college = p.getUser() != null ? p.getUser().getCollegeName() : null;
+                    String studentName = p.getUser() != null ? p.getUser().getUsername() : "Unknown";
                     if (college != null && !college.isBlank()) {
-                        collegeCountMap.merge(college, 1L, Long::sum);
+                        collegeCountMap.computeIfAbsent(college, k -> new java.util.HashSet<>()).add(studentName);
                     }
                 }
             }
         }
         // Sort by count descending
-        List<Map.Entry<String, Long>> sortedColleges = collegeCountMap.entrySet().stream()
-                .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
+        List<Map.Entry<String, java.util.Set<String>>> sortedColleges = collegeCountMap.entrySet().stream()
+                .sorted((e1, e2) -> Integer.compare(e2.getValue().size(), e1.getValue().size()))
                 .collect(Collectors.toList());
         model.addAttribute("battleColleges", sortedColleges);
 
@@ -130,15 +131,16 @@ public class BattleController {
         model.addAttribute("participantCount", participants.size());
 
         // Aggregate colleges for this battle's participants
-        Map<String, Long> battleCollegeMap = new LinkedHashMap<>();
+        Map<String, java.util.Set<String>> battleCollegeMap = new LinkedHashMap<>();
         for (BattleParticipant p : participants) {
             String college = p.getUser() != null ? p.getUser().getCollegeName() : null;
+            String studentName = p.getUser() != null ? p.getUser().getUsername() : "Unknown";
             if (college != null && !college.isBlank()) {
-                battleCollegeMap.merge(college, 1L, Long::sum);
+                battleCollegeMap.computeIfAbsent(college, k -> new java.util.HashSet<>()).add(studentName);
             }
         }
-        List<Map.Entry<String, Long>> sortedColleges = battleCollegeMap.entrySet().stream()
-                .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
+        List<Map.Entry<String, java.util.Set<String>>> sortedColleges = battleCollegeMap.entrySet().stream()
+                .sorted((e1, e2) -> Integer.compare(e2.getValue().size(), e1.getValue().size()))
                 .collect(Collectors.toList());
         model.addAttribute("battleColleges", sortedColleges);
 
