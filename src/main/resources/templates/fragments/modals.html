@@ -768,6 +768,12 @@
                         document.getElementById('globalIncomingCallType').innerText = data.callType === 'video' ? 'Incoming Video Call...' : 'Incoming Voice Call...';
                         document.getElementById('globalIncomingCallAvatar').innerText = data.senderName.charAt(0).toUpperCase();
                         document.getElementById('globalIncomingCallModal').style.display = 'block';
+                    } else if (data.type === 'live') {
+                        globalIncomingCallData = data;
+                        document.getElementById('globalIncomingCallName').innerText = "@" + data.senderName + " is Live Now!";
+                        document.getElementById('globalIncomingCallType').innerText = "Join my broadcast: " + data.title;
+                        document.getElementById('globalIncomingCallAvatar').innerHTML = '<i class="fas fa-broadcast-tower"></i>';
+                        document.getElementById('globalIncomingCallModal').style.display = 'block';
                     } else if (data.type === 'reject' || data.type === 'end') {
                         document.getElementById('globalIncomingCallModal').style.display = 'none';
                         globalIncomingCallData = null;
@@ -778,26 +784,35 @@
 
         function globalRejectCall() {
             if (globalIncomingCallData && globalStompClient) {
-                globalStompClient.send("/app/chat.call", {}, JSON.stringify({
-                    type: 'reject',
-                    senderId: gSessionUser,
-                    recipientId: globalIncomingCallData.senderId
-                }));
+                if (globalIncomingCallData.type === 'ring') {
+                    globalStompClient.send("/app/chat.call", {}, JSON.stringify({
+                        type: 'reject',
+                        senderId: gSessionUser,
+                        recipientId: globalIncomingCallData.senderId
+                    }));
+                }
             }
             document.getElementById('globalIncomingCallModal').style.display = 'none';
             globalIncomingCallData = null;
         }
 
         function globalAcceptCall() {
-            if (globalIncomingCallData && globalStompClient) {
-                // Send hold_on signal so caller knows we are redirecting
-                globalStompClient.send("/app/chat.call", {}, JSON.stringify({
-                    type: 'hold_on',
-                    senderId: gSessionUser,
-                    recipientId: globalIncomingCallData.senderId
-                }));
-                // Redirect to messages page with query parameter
-                window.location.href = '/messages?acceptCallFrom=' + globalIncomingCallData.senderId;
+            if (globalIncomingCallData) {
+                if (globalIncomingCallData.type === 'ring') {
+                    if (globalStompClient) {
+                        // Send hold_on signal so caller knows we are redirecting
+                        globalStompClient.send("/app/chat.call", {}, JSON.stringify({
+                            type: 'hold_on',
+                            senderId: gSessionUser,
+                            recipientId: globalIncomingCallData.senderId
+                        }));
+                    }
+                    // Redirect to messages page with query parameter
+                    window.location.href = '/messages?acceptCallFrom=' + globalIncomingCallData.senderId;
+                } else if (globalIncomingCallData.type === 'live') {
+                    // Redirect to the live room
+                    window.location.href = '/live?roomId=' + globalIncomingCallData.roomId;
+                }
             }
         }
     </script>
