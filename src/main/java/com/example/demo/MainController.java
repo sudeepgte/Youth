@@ -309,12 +309,10 @@ public class MainController {
         model.addAttribute("user", getUserFromSession(session));
         return "organizers";
     }
-
+    
     @GetMapping("/games")
-    public String games(Model model, HttpSession session, HttpServletRequest request) {
-        validateSessionOnPublicPage(session, request);
-        model.addAttribute("user", getUserFromSession(session));
-        return "games";
+    public String gamesRedirect() {
+        return "redirect:/home";
     }
 
     @GetMapping("/games/rock-paper-scissors")
