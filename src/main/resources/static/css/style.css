@@ -1670,6 +1670,7 @@ input[type="file"].form-input::file-selector-button:hover {
     overflow-x: hidden;
     padding-top: 15px;
     padding-bottom: 20px;
+    border-right: 1px solid var(--glass-border);
 }
 .sidebar::-webkit-scrollbar {
     width: 6px;
@@ -1802,6 +1803,7 @@ input[type="file"].form-input::file-selector-button:hover {
 .widgets {
     position: sticky;
     top: 90px;
+    border-left: 1px solid var(--glass-border);
 }
 
 .widget-card {

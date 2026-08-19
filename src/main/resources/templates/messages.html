@@ -1839,7 +1839,7 @@
             <a th:href="@{/messages}" class="sidebar-link active"><i class="fas fa-comment-dots"></i> Chat</a>
             <a th:href="@{/reels}" class="sidebar-link"><i class="fas fa-film"></i> Reels</a>
             <a th:href="@{/profile}" class="sidebar-link"><i class="fas fa-user"></i> Profile</a>
-            <a th:href="@{/games}" class="sidebar-link"><i class="fas fa-gamepad"></i> Games</a>
+            
             <a th:href="@{/wallet}" class="sidebar-link"><i class="fas fa-wallet"></i> Wallet</a>
             <a th:href="@{/user/my-bookings}" class="sidebar-link"><i class="fas fa-ticket-alt"></i> My Bookings</a>
             <a href="javascript:void(0)" class="sidebar-link" onclick="openCreateModal()"><i class="fas fa-plus-circle" style="color: var(--accent);"></i> Create Post</a>
@@ -2608,6 +2608,7 @@
                 stompClient.subscribe('/user/queue/seen', function (msg) {
                     const data = JSON.parse(msg.body);
                     if (activeConversationId === data.conversationId) {
+                        if (data.userId && String(data.userId) === String(currentUser.id)) return;
                         const seenIndicator = document.getElementById('seenIndicator');
                         seenIndicator.innerText = 'Seen \u00B7 ' + formatTime(data.seenAt);
                         seenIndicator.style.display = 'block';
@@ -2631,7 +2632,9 @@
                     const conv = JSON.parse(msg.body);
                     console.log('[DEBUG] Received conversation update:', conv);
                     const idx = conversationsData.findIndex(c => String(c.id) === String(conv.id));
+                    let oldStatus = null;
                     if (idx !== -1) {
+                        oldStatus = conversationsData[idx].status;
                         conversationsData[idx] = conv;
                     } else {
                         console.log('[DEBUG] Adding new conversation to list:', conv.id);
@@ -2641,7 +2644,9 @@
 
                     if (String(activeConversationId) === String(conv.id)) {
                         // Refresh current view if it's the active one (e.g. accepted status change)
-                        selectConversation(conv, getConvPartner(conv));
+                        if (oldStatus !== null && oldStatus !== conv.status) {
+                            selectConversation(conv, getConvPartner(conv));
+                        }
                     }
                 });
 
@@ -3438,9 +3443,11 @@
 
             if (activeConversationId && String(msg.conversation.id) === String(activeConversationId)) {
                 appendMessageToUI(msg);
-                markAsSeen();
+                if (msg.sender && String(msg.sender.id) !== String(currentUser.id)) {
+                    markAsSeen();
+                }
             }
-            loadConversations();
+            // loadConversations(); // Removed to prevent full refresh when a message is sent/received
         }
 
         function onUserStatusChanged(data) {

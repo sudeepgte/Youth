@@ -80,7 +80,7 @@
                     <div class="nav-links">
                         <a th:href="@{/home}" th:classappend="${active} == 'home' ? ' active' : ''">Home</a>
                         <a th:href="@{/featured-events}">Events</a>
-                        <a th:href="@{/games}" th:classappend="${active} == 'games' ? ' active' : ''">Games</a>
+
 						<a th:href="@{/about-us}"
 						   th:classappend="${active} == 'about' ? ' active' : ''">
 						    About Us
@@ -116,7 +116,7 @@
                         <div class="nav-links">
                             <a th:href="@{/home}" onclick="toggleMobileNav()">Home</a>
                             <a th:href="@{/featured-events}" onclick="toggleMobileNav()">Events</a>
-                            <a th:href="@{/games}" onclick="toggleMobileNav()">Games</a>
+
                             <a th:href="@{/about-us}" onclick="toggleMobileNav()">About Us</a>
                 <a th:href="@{/careers}" style="margin-bottom: 10px; font-size: 14px; color: var(--text-secondary);">Careers</a>
                             <a th:href="@{/home} + '#contact'" onclick="toggleMobileNav()">Contact</a>
@@ -305,7 +305,7 @@
                 <a th:href="@{/careers}" style="margin-bottom: 10px; font-size: 14px; color: var(--text-secondary);">Careers</a>
                 <a th:href="@{/featured-events}" style="margin-bottom: 10px; font-size: 14px; color: var(--text-secondary);">Events</a>
                 <a th:href="@{/home} + '#organizers'" style="margin-bottom: 10px; font-size: 14px; color: var(--text-secondary);">Organizers</a>
-                <a th:href="@{/games}" style="margin-bottom: 10px; font-size: 14px; color: var(--text-secondary);">Games Arena</a>
+
             </div>
 
             <!-- Column 3: Help & Support -->

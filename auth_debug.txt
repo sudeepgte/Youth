@@ -2909,8 +2909,7 @@ token is NULL!
 redirecting to /login?error=timeout
 AuthInterceptor Debug Log
 token is NULL!
-redirecting to /login?error=timeout
-<<<<<<< HEAD
+
 AuthInterceptor Debug Log
 token is NULL!
 redirecting to /login?error=timeout
@@ -2919,8 +2918,24 @@ token is NULL!
 redirecting to /login?error=timeout
 
 AuthInterceptor Debug Log
+
 token found = eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc4NjA3Nzg2MywiZXhwIjoxNzg2MTEzODYzfQ.NerBQIX3YhYj54GTIcDrGAn1zOJ9HAqnYaijrrq1NYRvyF7velxm06UY6K4oBdaGC7x4CefpVEmtpUXeW4h8tA
 Exception caught: JWT expired at 2026-08-07T14:44:23Z. Current time: 2026-08-10T04:25:03Z, a difference of 222040866 milliseconds.  Allowed clock skew: 0 milliseconds.
+
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+
 redirecting to /login?error=timeout
 AuthInterceptor Debug Log
 token is NULL!
