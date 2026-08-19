@@ -508,22 +508,93 @@
             transition: all 0.2s;
         }
 
-        .status-option.upcoming input:checked+.status-label {
-            border-color: #3b82f6;
-            background: rgba(59, 130, 246, 0.1);
-            color: #3b82f6;
+        /* ── Status Option Pills & Grid ── */
+        .status-grid {
+            display: grid !important;
+            grid-template-columns: repeat(4, 1fr) !important;
+            gap: 12px !important;
+            margin-bottom: 24px !important;
         }
 
-        .status-option.ongoing input:checked+.status-label {
-            border-color: #f59e0b;
-            background: rgba(245, 158, 11, 0.1);
-            color: #f59e0b;
+        .status-option {
+            position: relative !important;
+            cursor: pointer !important;
+            user-select: none !important;
         }
 
-        .status-option.completed input:checked+.status-label {
-            border-color: #10b981;
-            background: rgba(16, 185, 129, 0.1);
-            color: #10b981;
+        .status-option input {
+            position: absolute !important;
+            opacity: 0 !important;
+            width: 0 !important;
+            height: 0 !important;
+        }
+
+        .status-label {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 8px !important;
+            padding: 14px 16px !important;
+            border: 1.5px solid var(--glass-border, rgba(255, 255, 255, 0.15)) !important;
+            border-radius: 12px !important;
+            cursor: pointer !important;
+            font-weight: 700 !important;
+            font-size: 14px !important;
+            color: var(--text-primary, #ffffff) !important;
+            background: rgba(255, 255, 255, 0.08) !important;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+        }
+
+        .status-label:hover {
+            border-color: #3b82f6 !important;
+            transform: translateY(-2px) !important;
+        }
+
+        .status-option.upcoming input:checked + .status-label {
+            border-color: #3b82f6 !important;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(37, 99, 235, 0.4)) !important;
+            color: #60a5fa !important;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.35) !important;
+        }
+
+        .status-option.voting input:checked + .status-label {
+            border-color: #f84464 !important;
+            background: linear-gradient(135deg, rgba(248, 68, 100, 0.3), rgba(225, 29, 72, 0.4)) !important;
+            color: #ff758f !important;
+            box-shadow: 0 4px 15px rgba(248, 68, 100, 0.35) !important;
+        }
+
+        .status-option.ongoing input:checked + .status-label {
+            border-color: #f59e0b !important;
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.3), rgba(217, 119, 6, 0.4)) !important;
+            color: #fbbf24 !important;
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.35) !important;
+        }
+
+        .status-option.completed input:checked + .status-label {
+            border-color: #10b981 !important;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(5, 150, 105, 0.4)) !important;
+            color: #34d399 !important;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35) !important;
+        }
+
+        @media (max-width: 768px) {
+            .status-grid {
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 10px !important;
+            }
+            .status-label {
+                padding: 12px 10px !important;
+                font-size: 13px !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .status-grid {
+                grid-template-columns: 1fr !important;
+                gap: 8px !important;
+            }
         }
 
         .status-label:hover {
@@ -650,11 +721,11 @@
             border-color: var(--glass-border) !important;
         }
 
-        label, .section-label, .cat-name, .fee-text, .upload-zone p, .status-label, .btn-back, .page-header p, .btn-cancel, .tier-item {
+        label, .section-label, .cat-name, .fee-text, .upload-zone p, .btn-back, .page-header p, .btn-cancel, .tier-item {
             color: var(--text-secondary) !important;
         }
         
-        .cat-label, .fee-label, .status-label, .upload-zone, .form-card, .tier-item {
+        .cat-label, .fee-label, .upload-zone, .form-card, .tier-item {
             background: rgba(255, 255, 255, 0.6) !important;
             border-color: var(--glass-border) !important;
         }
@@ -1977,13 +2048,8 @@
                             </div>
                             <div id="paidAmountField">
                                 <input type="number" name="price" id="priceInput"
-
-                                    th:value="${event.price != null and !event.price.startsWith('F') ? event.price.replace('₹','') : ''}"
+                                    th:value="${event.price != null and !event.price.startsWith('F') ? #strings.replace(#strings.replace(event.price, '₹', ''), '\u20B9', '') : ''}"
                                     placeholder="Enter amount in ₹" min="1" onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();">
-
-                                    th:value="${event.price != null and !event.price.startsWith('F') ? event.price.replace('\\u20B9','') : ''}"
-                                    placeholder="Enter amount in &#8377;" min="1" onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();">
-
                             </div>
                         </div>
 
@@ -2070,11 +2136,10 @@
                                 <i class="fas fa-hourglass-start"></i> Upcoming
                             </div>
                         </label>
-                        <label class="status-option" style="border-radius: 12px; overflow: hidden;">
+                        <label class="status-option voting">
                             <input type="radio" name="status" value="VOTING" th:checked="${event.status == 'VOTING'}"
                                 onclick="togglePollSection(true)">
-                            <div class="status-label"
-                                style="border-color: #f84464; color: #f84464; background: rgba(248, 68, 100, 0.05);">
+                            <div class="status-label">
                                 <i class="fas fa-vote-yea"></i> Open for Voting
                             </div>
                         </label>
@@ -2131,23 +2196,20 @@
                     </div>
 
                     <!-- Finalist / Top 3 Voting Phase -->
-                    <div
-                        style="margin-top: 25px; background: rgba(16, 185, 129, 0.05); border: 1px dashed rgba(16, 185, 129, 0.3); border-radius: 14px; padding: 20px;">
-                        <h4
-                            style="font-size: 14px; color: #047857; margin-bottom: 10px; display:flex; align-items:center; gap:8px;">
+                    <div style="margin-top: 25px; background: rgba(16, 185, 129, 0.08); border: 1px dashed rgba(16, 185, 129, 0.4); border-radius: 14px; padding: 20px;">
+                        <h4 style="font-size: 15px; color: #34d399 !important; font-weight: 800; margin-bottom: 12px; display:flex; align-items:center; gap:8px;">
                             <i class="fas fa-trophy"></i> Finalist Top 3 / Final Voting Phase
                         </h4>
-                        <div style="display: flex; align-items: flex-start; gap: 10px;">
+                        <div style="display: flex; align-items: flex-start; gap: 12px;">
                             <input type="checkbox" name="finalVotingEnabled" id="finalVotingEnabled" value="true"
                                 th:checked="${event.finalVotingEnabled}"
-                                style="margin-top: 4px; accent-color: #34d399; width: 16px; height: 16px; cursor: pointer;">
-                            <label for="finalVotingEnabled" style="cursor: pointer;">
-                                <div
-                                    style="font-size: 13px; color: #0f172a; font-weight: 600; margin-bottom: 3px;">
+                                style="margin-top: 3px; accent-color: #34d399; width: 18px; height: 18px; cursor: pointer;">
+                            <label for="finalVotingEnabled" style="cursor: pointer; user-select: none;">
+                                <div style="font-size: 14px; color: var(--text-primary, #ffffff) !important; font-weight: 700; margin-bottom: 4px;">
                                     Enable Finalist Voting (Top 3)</div>
-                                <div style="font-size: 11px; color: #334155;">If enabled, you can select
+                                <div style="font-size: 12px; color: var(--text-secondary, #94a3b8) !important; line-height: 1.5;">If enabled, you can select
                                     Top 3 participants later and users can vote for the final winner based on 50% Judge
-                                    & 50% Public score.</div>
+                                    &amp; 50% Public score.</div>
                             </label>
                         </div>
                     </div>
