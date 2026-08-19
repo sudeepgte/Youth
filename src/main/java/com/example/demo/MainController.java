@@ -535,8 +535,22 @@ public class MainController {
         List<MusicRoom> ongoingBattles = musicRoomRepository.findTop5ByActiveTrueAndPhaseNotOrderByCreatedAtDesc("ENDED");
         model.addAttribute("ongoingMusicBattles", ongoingBattles);
 
-        // Trending Events
+        // Auto-resolve expired events
+        LocalDateTime now = LocalDateTime.now();
+        List<Event> expiredEvents = eventRepository.findAll().stream()
+                .filter(e -> ("UPCOMING".equals(e.getStatus()) || "ONGOING".equals(e.getStatus()) || e.getStatus() == null))
+                .filter(e -> e.getDateTime() != null && e.getDateTime().isBefore(now))
+                .collect(Collectors.toList());
+        for (Event e : expiredEvents) {
+            e.setStatus("COMPLETED");
+            eventRepository.save(e);
+        }
+
+        // Trending Events - Only upcoming active events
         List<Event> trendingEvents = eventRepository.findAllByOrderByCreatedAtDesc().stream()
+                .filter(e -> !e.isDeleted())
+                .filter(e -> e.getStatus() == null || (!"COMPLETED".equalsIgnoreCase(e.getStatus()) && !"CANCELLED".equalsIgnoreCase(e.getStatus()) && !"REJECTED".equalsIgnoreCase(e.getStatus())))
+                .filter(e -> e.getDateTime() == null || !e.getDateTime().isBefore(now))
                 .limit(3)
                 .collect(Collectors.toList());
         model.addAttribute("trendingEvents", trendingEvents);

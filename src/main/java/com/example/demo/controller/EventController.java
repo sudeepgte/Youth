@@ -189,10 +189,14 @@ public class EventController {
                 })
                 .collect(Collectors.toList());
 
+        resolveExpiredEvents();
+
         // Trending = first 3 UPCOMING regular events (always from full list, unaffected by search)
+        LocalDateTime now = LocalDateTime.now();
         List<Event> trending = eventRepository.findAll().stream()
-                .filter(e -> "UPCOMING".equals(e.getStatus()) || e.getStatus() == null)
-                .filter(e -> { String s = e.getStatus(); return s == null || (!"VOTING".equals(s) && !"REJECTED".equals(s)); })
+                .filter(e -> !e.isDeleted())
+                .filter(e -> e.getStatus() == null || (!"COMPLETED".equalsIgnoreCase(e.getStatus()) && !"CANCELLED".equalsIgnoreCase(e.getStatus()) && !"REJECTED".equalsIgnoreCase(e.getStatus()) && !"VOTING".equalsIgnoreCase(e.getStatus())))
+                .filter(e -> e.getDateTime() == null || !e.getDateTime().isBefore(now))
                 .limit(3).collect(Collectors.toList());
 
         model.addAttribute("events", regularEvents);

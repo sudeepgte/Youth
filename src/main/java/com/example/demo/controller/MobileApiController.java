@@ -881,8 +881,11 @@ public class MobileApiController {
                 })
                 .map(e -> eventDto(e, user, false)).collect(Collectors.toList());
 
+        LocalDateTime now = LocalDateTime.now();
         List<Map<String, Object>> trending = eventRepository.findAll().stream()
-                .filter(e -> "UPCOMING".equals(e.getStatus()) || e.getStatus() == null)
+                .filter(e -> !e.isDeleted())
+                .filter(e -> e.getStatus() == null || (!"COMPLETED".equalsIgnoreCase(e.getStatus()) && !"CANCELLED".equalsIgnoreCase(e.getStatus()) && !"REJECTED".equalsIgnoreCase(e.getStatus()) && !"VOTING".equalsIgnoreCase(e.getStatus())))
+                .filter(e -> e.getDateTime() == null || !e.getDateTime().isBefore(now))
                 .limit(3).map(e -> eventDto(e, user, false)).collect(Collectors.toList());
 
         return ResponseEntity.ok(Map.of("events", regular, "votingPolls", voting, "trending", trending));

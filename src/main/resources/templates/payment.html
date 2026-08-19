@@ -78,13 +78,59 @@
         .battle-summary .title {
             font-weight: 700;
             font-size: 18px;
-            margin-bottom: 12px;
+            margin-bottom: 14px;
+            color: var(--text-primary);
+        }
+
+        .venue-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 12px 14px;
+            margin: 12px 0 16px;
+        }
+
+        .venue-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: #64748b;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .venue-label i {
+            color: #ef4444;
+        }
+
+        .venue-address {
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--text-primary);
+            line-height: 1.5;
+            word-break: break-word;
+        }
+
+        .qty-badge {
+            background: rgba(59, 130, 246, 0.08);
+            color: #2563eb;
+            font-weight: 700;
+            font-size: 13px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            display: inline-flex;
+            align-items: center;
         }
 
         .summary-row {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 8px;
+            align-items: center;
+            margin-bottom: 10px;
             color: var(--text-secondary);
             font-size: 14px;
         }
@@ -174,7 +220,7 @@
             
             <div class="summary-row">
                 <span>Entry Fee</span>
-                <span th:text="'\\u20B9' + ${battle.entryFee}">₹50.00</span>
+                <span th:text="'₹' + ${battle.entryFee}">₹50.00</span>
             </div>
         </div>
 
@@ -205,28 +251,29 @@
         <div class="battle-summary">
             <div class="title" th:text="${event.title}">Event Title</div>
             
-            <div class="summary-row">
-                <span>Venue</span>
-                <span th:text="${event.venue}" style="font-weight:600;">Venue</span>
+            <div class="venue-card">
+                <div class="venue-label"><i class="fas fa-map-marker-alt"></i> Venue Location</div>
+                <div class="venue-address" th:text="${event.venue != null and !event.venue.isEmpty() ? event.venue : 'Location to be announced'}">Venue Address</div>
             </div>
+
             <div class="summary-row">
-                <span>Quantity</span>
-                <span th:text="${quantity}">1</span>
+                <span><i class="fas fa-ticket-alt" style="color: var(--primary-color); margin-right: 6px;"></i> Quantity</span>
+                <span class="qty-badge" th:text="${quantity != null ? quantity : 1} + ' Ticket' + (${quantity != null and quantity > 1} ? 's' : '')">1 Ticket</span>
             </div>
             
             <div class="summary-row" th:if="${isDiscounted}">
                 <span>Discount Applied</span>
-                <span style="color: var(--success-color); font-weight:600;">Yes (50%)</span>
+                <span style="color: var(--success-color); font-weight:700;">Yes (50% Off)</span>
             </div>
 
             <div class="summary-row" th:if="${isDiscounted}">
                 <span>Base Price</span>
-                <span th:text="${basePrice}" style="text-decoration: line-through;">₹500.00</span>
+                <span th:text="${basePrice}" style="text-decoration: line-through; color: var(--text-secondary);">₹500.00</span>
             </div>
             
             <div class="summary-row">
                 <span>Total Payment</span>
-                <span th:text="${finalPrice}" style="font-weight:600; color: var(--primary-color);">₹500.00</span>
+                <span th:text="${finalPrice}" style="font-weight:800; color: var(--primary-color);">₹500.00</span>
             </div>
         </div>
 

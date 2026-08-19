@@ -224,7 +224,7 @@
                                 <div class="booking-info-item">
                                     <div class="info-label">Amount Paid / Status</div>
                                     <div class="info-value">
-                                        <span th:text="${booking.totalPrice > 0 ? '\\u20B9' + booking.totalPrice : 'Free'}">&#8377;500</span> 
+                                        <span th:text="${booking.totalPrice > 0 ? '₹' + booking.totalPrice : 'Free'}">&#8377;500</span> 
                                         <small th:if="${booking.paymentStatus != null}" th:text="'(' + ${booking.paymentStatus} + ')'" style="color: var(--text-secondary);"></small>
                                     </div>
                                 </div>

@@ -547,7 +547,7 @@
                 </div>
                 <div class="ticket-field">
                     <label>Amount Paid</label>
-                    <div class="val" th:text="${registration.totalPrice != null and registration.totalPrice > 0 ? '\\u20B9' + #numbers.formatDecimal(registration.totalPrice, 1, 0) : (event.price == null or event.price == 'Free' or event.price == '0' ? 'Free' : '₹0')}">Free</div>
+                    <div class="val" th:text="${registration.totalPrice != null and registration.totalPrice > 0 ? '₹' + #numbers.formatDecimal(registration.totalPrice, 1, 0) : (event.price == null or event.price == 'Free' or event.price == '0' ? 'Free' : '₹0')}">Free</div>
                 </div>
                 
                 <!-- Secret Reward Section -->
