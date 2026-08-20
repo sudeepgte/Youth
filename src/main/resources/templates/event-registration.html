@@ -90,18 +90,21 @@
         }
 
         .header-image-box {
-            width: 240px;
-            height: 150px;
+            width: 260px;
+            aspect-ratio: 16 / 9;
             border-radius: 14px;
             overflow: hidden;
             flex-shrink: 0;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            background: #f8fafc;
         }
 
         .header-image-box img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            object-position: center;
+            display: block;
         }
 
         .header-details-box {
@@ -996,7 +999,7 @@
                 <h1 class="event-main-title" th:text="${event.title}">Event Title</h1>
 
                 <div class="event-meta-row">
-                    <span><i class="fas fa-map-marker-alt"></i> <span th:text="${event.venue != null ? event.venue : 'TBA'}">Venue Location</span></span>
+                    <span><i class="fas fa-map-marker-alt"></i> <span class="venue-address-display" th:attr="data-full-address=${event.venue}" th:text="${event.venue != null ? event.venue : 'TBA'}">Venue Location</span></span>
                     <span><i class="fas fa-calendar-alt"></i> <span th:text="${event.dateTime != null ? #temporals.format(event.dateTime, 'EEE, MMM dd yyyy') : 'TBA'}">Date</span></span>
                     <span><i class="far fa-clock"></i> <span th:text="${event.dateTime != null ? #temporals.format(event.dateTime, 'hh:mm a') : 'TBA'}">Time</span></span>
                 </div>
@@ -1033,8 +1036,8 @@
                 <div class="info-card-icon pink"><i class="fas fa-map-marker-alt"></i></div>
                 <div class="info-card-body">
                     <span class="info-card-label">VENUE</span>
-                    <span class="info-card-value" th:text="${event.venue != null ? event.venue : 'TBA'}">Dollars Colony, Bengaluru</span>
-                    <a href="#aboutSection" class="info-card-sublink">View full address &rarr;</a>
+                    <span class="info-card-value venue-address-display" style="line-height: 1.35;" th:attr="data-full-address=${event.venue}" th:text="${event.venue != null ? event.venue : 'TBA'}">Dollars Colony, Bengaluru</span>
+                    <a href="javascript:void(0)" class="info-card-sublink" onclick="openFullAddressModal(event)">View full address &rarr;</a>
                 </div>
             </div>
 
@@ -1043,7 +1046,7 @@
                 <div class="info-card-icon green"><i class="fas fa-users"></i></div>
                 <div class="info-card-body">
                     <span class="info-card-label">CAPACITY</span>
-                    <span class="info-card-value" th:text="${event.maxParticipants != null ? event.maxParticipants + ' max' : 'Open'}">6 max</span>
+                    <span class="info-card-value" th:text="${event.maxParticipants != null ? event.maxParticipants + ' max' : (totalCapacity != null and totalCapacity > 0 ? totalCapacity + ' max' : 'Open')}">22 max</span>
                 </div>
             </div>
 
@@ -1087,31 +1090,257 @@
                     </p>
                 </div>
 
-                <!-- House Party Details -->
-                <div th:if="${housePartyDetails != null}" class="section-card" style="border-color:#fbcfe8; background:#fff1f2;">
-                    <h3 class="card-title" style="color:#be185d;"><i class="fas fa-home"></i> House Party Details</h3>
-                    <p><strong>Theme:</strong> <span th:text="${housePartyDetails.theme}">Theme</span> | <strong>Dress Code:</strong> <span th:text="${housePartyDetails.dressCode}">Dress Code</span></p>
-                </div>
+                <!-- Bike Riding Details -->
+                <div th:if="${bikeRidingDetails != null}" class="section-card" style="border-color: #fef08a; background: #fffbeb; border-radius: 16px; padding: 24px; margin-bottom: 24px;">
+                    <div class="card-section-header" style="margin-bottom: 18px;">
+                        <h3 class="card-title" style="color: #a16207; display: flex; align-items: center; gap: 10px; font-size: 18px;">
+                            <i class="fas fa-motorcycle" style="font-size: 20px;"></i> Bike Riding Specifications
+                        </h3>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px;">
+                        <div th:if="${bikeRidingDetails.rideType != null and !#strings.isEmpty(bikeRidingDetails.rideType)}" style="background: #ffffff; padding: 12px 16px; border-radius: 12px; border: 1px solid #fef08a;">
+                            <span style="font-size: 11px; color: #854d0e; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 4px;">Ride Type</span>
+                            <strong style="font-size: 14px; color: #1e293b;" th:text="${bikeRidingDetails.rideType}">Group Ride</strong>
+                        </div>
 
-                <!-- Adventure Details -->
-                <div th:if="${adventureDetails != null}" class="section-card" style="border-color:#bae6fd; background:#f0f9ff;">
-                    <h3 class="card-title" style="color:#0369a1;"><i class="fas fa-mountain"></i> Adventure Details</h3>
-                    <p><strong>Type:</strong> <span th:text="${adventureDetails.adventureType}">Type</span> | <strong>Difficulty:</strong> <span th:text="${adventureDetails.difficultyLevel}">Difficulty</span></p>
+                        <div th:if="${bikeRidingDetails.totalDistance != null and bikeRidingDetails.totalDistance > 0}" style="background: #ffffff; padding: 12px 16px; border-radius: 12px; border: 1px solid #fef08a;">
+                            <span style="font-size: 11px; color: #854d0e; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 4px;">Total Distance</span>
+                            <strong style="font-size: 14px; color: #1e293b;" th:text="${bikeRidingDetails.totalDistance + ' km'}">500 km</strong>
+                        </div>
+
+                        <div th:if="${bikeRidingDetails.bikeTypeAllowed != null and !#strings.isEmpty(bikeRidingDetails.bikeTypeAllowed)}" style="background: #ffffff; padding: 12px 16px; border-radius: 12px; border: 1px solid #fef08a;">
+                            <span style="font-size: 11px; color: #854d0e; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 4px;">Bikes Allowed</span>
+                            <strong style="font-size: 14px; color: #1e293b;" th:text="${bikeRidingDetails.bikeTypeAllowed}">Cruisers, Adventure</strong>
+                        </div>
+
+                        <div th:if="${bikeRidingDetails.minEngineCapacity != null and !#strings.isEmpty(bikeRidingDetails.minEngineCapacity)}" style="background: #ffffff; padding: 12px 16px; border-radius: 12px; border: 1px solid #fef08a;">
+                            <span style="font-size: 11px; color: #854d0e; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 4px;">Min Engine Capacity</span>
+                            <strong style="font-size: 14px; color: #1e293b;" th:text="${bikeRidingDetails.minEngineCapacity}">150 cc</strong>
+                        </div>
+
+                        <div th:if="${bikeRidingDetails.ridingExperience != null and !#strings.isEmpty(bikeRidingDetails.ridingExperience)}" style="background: #ffffff; padding: 12px 16px; border-radius: 12px; border: 1px solid #fef08a;">
+                            <span style="font-size: 11px; color: #854d0e; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 4px;">Experience Level</span>
+                            <strong style="font-size: 14px; color: #1e293b;" th:text="${bikeRidingDetails.ridingExperience}">Intermediate</strong>
+                        </div>
+
+                        <div th:if="${bikeRidingDetails.startPoint != null and !#strings.isEmpty(bikeRidingDetails.startPoint)}" style="background: #ffffff; padding: 12px 16px; border-radius: 12px; border: 1px solid #fef08a;">
+                            <span style="font-size: 11px; color: #854d0e; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 4px;">Start Point</span>
+                            <strong style="font-size: 14px; color: #1e293b;" th:text="${bikeRidingDetails.startPoint}">Silk Board, Bengaluru</strong>
+                        </div>
+
+                        <div th:if="${bikeRidingDetails.destination != null and !#strings.isEmpty(bikeRidingDetails.destination)}" style="background: #ffffff; padding: 12px 16px; border-radius: 12px; border: 1px solid #fef08a;">
+                            <span style="font-size: 11px; color: #854d0e; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 4px;">Destination</span>
+                            <strong style="font-size: 14px; color: #1e293b;" th:text="${bikeRidingDetails.destination}">Nandi Hills</strong>
+                        </div>
+
+                        <div th:if="${bikeRidingDetails.estimatedDuration != null and !#strings.isEmpty(bikeRidingDetails.estimatedDuration)}" style="background: #ffffff; padding: 12px 16px; border-radius: 12px; border: 1px solid #fef08a;">
+                            <span style="font-size: 11px; color: #854d0e; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 4px;">Duration</span>
+                            <strong style="font-size: 14px; color: #1e293b;" th:text="${bikeRidingDetails.estimatedDuration}">6 Hours</strong>
+                        </div>
+
+                        <div th:if="${bikeRidingDetails.reportingTime != null and !#strings.isEmpty(bikeRidingDetails.reportingTime)}" style="background: #ffffff; padding: 12px 16px; border-radius: 12px; border: 1px solid #fef08a;">
+                            <span style="font-size: 11px; color: #854d0e; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 4px;">Reporting Time</span>
+                            <strong style="font-size: 14px; color: #1e293b;" th:text="${bikeRidingDetails.reportingTime}">05:30 AM</strong>
+                        </div>
+
+                        <div th:if="${bikeRidingDetails.rideDifficulty != null and !#strings.isEmpty(bikeRidingDetails.rideDifficulty)}" style="background: #ffffff; padding: 12px 16px; border-radius: 12px; border: 1px solid #fef08a;">
+                            <span style="font-size: 11px; color: #854d0e; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 4px;">Difficulty</span>
+                            <strong style="font-size: 14px; color: #1e293b;" th:text="${bikeRidingDetails.rideDifficulty}">Moderate</strong>
+                        </div>
+
+                        <div th:if="${bikeRidingDetails.roadType != null and !#strings.isEmpty(bikeRidingDetails.roadType)}" style="background: #ffffff; padding: 12px 16px; border-radius: 12px; border: 1px solid #fef08a;">
+                            <span style="font-size: 11px; color: #854d0e; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 4px;">Terrain / Road Type</span>
+                            <strong style="font-size: 14px; color: #1e293b;" th:text="${bikeRidingDetails.roadType}">Highway & Ghats</strong>
+                        </div>
+
+                        <div th:if="${bikeRidingDetails.fuelPolicy != null and !#strings.isEmpty(bikeRidingDetails.fuelPolicy)}" style="background: #ffffff; padding: 12px 16px; border-radius: 12px; border: 1px solid #fef08a;">
+                            <span style="font-size: 11px; color: #854d0e; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 4px;">Fuel Policy</span>
+                            <strong style="font-size: 14px; color: #1e293b;" th:text="${bikeRidingDetails.fuelPolicy}">Self-funded</strong>
+                        </div>
+                    </div>
+
+                    <div th:if="${bikeRidingDetails.safetyGearMandatory != null and !#strings.isEmpty(bikeRidingDetails.safetyGearMandatory)}" style="margin-top: 14px; background: #ffffff; padding: 12px 16px; border-radius: 12px; border: 1px solid #fef08a;">
+                        <span style="font-size: 11px; color: #854d0e; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 4px;"><i class="fas fa-shield-alt"></i> Mandatory Safety Gear</span>
+                        <p style="font-size: 13px; color: #334155; margin: 0;" th:text="${bikeRidingDetails.safetyGearMandatory}">Full face helmet, riding jacket, gloves, and knee guards.</p>
+                    </div>
+
+                    <div th:if="${bikeRidingDetails.supportAvailable != null and !#strings.isEmpty(bikeRidingDetails.supportAvailable)}" style="margin-top: 10px; background: #ffffff; padding: 12px 16px; border-radius: 12px; border: 1px solid #fef08a;">
+                        <span style="font-size: 11px; color: #854d0e; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 4px;"><i class="fas fa-ambulance"></i> Backup & Support</span>
+                        <p style="font-size: 13px; color: #334155; margin: 0;" th:text="${bikeRidingDetails.supportAvailable}">Backup vehicle, first aid kit, mechanic support on route.</p>
+                    </div>
+
+                    <div th:if="${bikeRidingDetails.rideInclusions != null and !#strings.isEmpty(bikeRidingDetails.rideInclusions)}" style="margin-top: 10px; background: #ffffff; padding: 12px 16px; border-radius: 12px; border: 1px solid #fef08a;">
+                        <span style="font-size: 11px; color: #854d0e; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 4px;"><i class="fas fa-check-circle"></i> Ride Inclusions</span>
+                        <p style="font-size: 13px; color: #334155; margin: 0;" th:text="${bikeRidingDetails.rideInclusions}">Breakfast, snacks, hydration packs included.</p>
+                    </div>
                 </div>
 
                 <!-- Trekking Details -->
-                <div th:if="${trekkingDetails != null}" class="section-card" style="border-color:#bbf7d0; background:#f0fdf4;">
-                    <h3 class="card-title" style="color:#15803d;"><i class="fas fa-hiking"></i> Trekking Details</h3>
-                    <p><strong>Type:</strong> <span th:text="${trekkingDetails.trekType}">Type</span> | <strong>Distance:</strong> <span th:text="${trekkingDetails.trekDistance + ' km'}">Distance</span></p>
+                <div th:if="${trekkingDetails != null}" class="section-card" style="border-color: #bbf7d0; background: #f0fdf4; border-radius: 16px; padding: 24px; margin-bottom: 24px;">
+                    <div class="card-section-header" style="margin-bottom: 18px;">
+                        <h3 class="card-title" style="color: #15803d; display: flex; align-items: center; gap: 10px; font-size: 18px;">
+                            <i class="fas fa-hiking" style="font-size: 20px;"></i> Trekking Specifications
+                        </h3>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px;">
+                        <div th:if="${trekkingDetails.trekType != null and !#strings.isEmpty(trekkingDetails.trekType)}" style="background: #ffffff; padding: 12px 16px; border-radius: 12px; border: 1px solid #bbf7d0;">
+                            <span style="font-size: 11px; color: #166534; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 4px;">Trek Type</span>
+                            <strong style="font-size: 14px; color: #1e293b;" th:text="${trekkingDetails.trekType}">Day Trek</strong>
+                        </div>
+
+                        <div th:if="${trekkingDetails.trekDifficulty != null and !#strings.isEmpty(trekkingDetails.trekDifficulty)}" style="background: #ffffff; padding: 12px 16px; border-radius: 12px; border: 1px solid #bbf7d0;">
+                            <span style="font-size: 11px; color: #166534; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 4px;">Difficulty</span>
+                            <strong style="font-size: 14px; color: #1e293b;" th:text="${trekkingDetails.trekDifficulty}">Moderate</strong>
+                        </div>
+
+                        <div th:if="${trekkingDetails.trekDistance != null and trekkingDetails.trekDistance > 0}" style="background: #ffffff; padding: 12px 16px; border-radius: 12px; border: 1px solid #bbf7d0;">
+                            <span style="font-size: 11px; color: #166534; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 4px;">Distance</span>
+                            <strong style="font-size: 14px; color: #1e293b;" th:text="${trekkingDetails.trekDistance + ' km'}">12 km</strong>
+                        </div>
+
+                        <div th:if="${trekkingDetails.estimatedDuration != null and !#strings.isEmpty(trekkingDetails.estimatedDuration)}" style="background: #ffffff; padding: 12px 16px; border-radius: 12px; border: 1px solid #bbf7d0;">
+                            <span style="font-size: 11px; color: #166534; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 4px;">Duration</span>
+                            <strong style="font-size: 14px; color: #1e293b;" th:text="${trekkingDetails.estimatedDuration}">5 Hours</strong>
+                        </div>
+
+                        <div th:if="${trekkingDetails.maxElevation != null and !#strings.isEmpty(trekkingDetails.maxElevation)}" style="background: #ffffff; padding: 12px 16px; border-radius: 12px; border: 1px solid #bbf7d0;">
+                            <span style="font-size: 11px; color: #166534; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 4px;">Max Elevation</span>
+                            <strong style="font-size: 14px; color: #1e293b;" th:text="${trekkingDetails.maxElevation}">1,800 ft</strong>
+                        </div>
+
+                        <div th:if="${trekkingDetails.trailType != null and !#strings.isEmpty(trekkingDetails.trailType)}" style="background: #ffffff; padding: 12px 16px; border-radius: 12px; border: 1px solid #bbf7d0;">
+                            <span style="font-size: 11px; color: #166534; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 4px;">Trail Type</span>
+                            <strong style="font-size: 14px; color: #1e293b;" th:text="${trekkingDetails.trailType}">Rocky / Forest</strong>
+                        </div>
+
+                        <div th:if="${trekkingDetails.fitnessLevel != null and !#strings.isEmpty(trekkingDetails.fitnessLevel)}" style="background: #ffffff; padding: 12px 16px; border-radius: 12px; border: 1px solid #bbf7d0;">
+                            <span style="font-size: 11px; color: #166534; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 4px;">Fitness Level</span>
+                            <strong style="font-size: 14px; color: #1e293b;" th:text="${trekkingDetails.fitnessLevel}">Basic Fitness</strong>
+                        </div>
+
+                        <div th:if="${trekkingDetails.reportingPoint != null and !#strings.isEmpty(trekkingDetails.reportingPoint)}" style="background: #ffffff; padding: 12px 16px; border-radius: 12px; border: 1px solid #bbf7d0;">
+                            <span style="font-size: 11px; color: #166534; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 4px;">Reporting Point</span>
+                            <strong style="font-size: 14px; color: #1e293b;" th:text="${trekkingDetails.reportingPoint}">Base Camp</strong>
+                        </div>
+                    </div>
+
+                    <div th:if="${trekkingDetails.trekInclusions != null and !#strings.isEmpty(trekkingDetails.trekInclusions)}" style="margin-top: 14px; background: #ffffff; padding: 12px 16px; border-radius: 12px; border: 1px solid #bbf7d0;">
+                        <span style="font-size: 11px; color: #166534; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 4px;"><i class="fas fa-check-circle"></i> Inclusions</span>
+                        <p style="font-size: 13px; color: #334155; margin: 0;" th:text="${trekkingDetails.trekInclusions}">Guide, permits, packed lunch.</p>
+                    </div>
+
+                    <div th:if="${trekkingDetails.participantsMustCarry != null and !#strings.isEmpty(trekkingDetails.participantsMustCarry)}" style="margin-top: 10px; background: #ffffff; padding: 12px 16px; border-radius: 12px; border: 1px solid #bbf7d0;">
+                        <span style="font-size: 11px; color: #166534; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 4px;"><i class="fas fa-briefcase"></i> What To Carry</span>
+                        <p style="font-size: 13px; color: #334155; margin: 0;" th:text="${trekkingDetails.participantsMustCarry}">Water bottle, trekking shoes, rain poncho, ID proof.</p>
+                    </div>
                 </div>
 
-                <!-- Bike Riding Details -->
-                <div th:if="${bikeRidingDetails != null}" class="section-card" style="border-color:#fef08a; background:#fefce8;">
-                    <h3 class="card-title" style="color:#a16207;"><i class="fas fa-motorcycle"></i> Bike Riding Details</h3>
-                    <p><strong>Ride Type:</strong> <span th:text="${bikeRidingDetails.rideType}">Type</span> | <strong>Distance:</strong> <span th:text="${bikeRidingDetails.totalDistance + ' km'}">Distance</span></p>
+                <!-- Adventure Details -->
+                <div th:if="${adventureDetails != null}" class="section-card" style="border-color: #bae6fd; background: #f0f9ff; border-radius: 16px; padding: 24px; margin-bottom: 24px;">
+                    <div class="card-section-header" style="margin-bottom: 18px;">
+                        <h3 class="card-title" style="color: #0369a1; display: flex; align-items: center; gap: 10px; font-size: 18px;">
+                            <i class="fas fa-mountain" style="font-size: 20px;"></i> Adventure Specifications
+                        </h3>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px;">
+                        <div th:if="${adventureDetails.adventureType != null and !#strings.isEmpty(adventureDetails.adventureType)}" style="background: #ffffff; padding: 12px 16px; border-radius: 12px; border: 1px solid #bae6fd;">
+                            <span style="font-size: 11px; color: #075985; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 4px;">Adventure Type</span>
+                            <strong style="font-size: 14px; color: #1e293b;" th:text="${adventureDetails.adventureType}">Rafting / Zip Line</strong>
+                        </div>
+
+                        <div th:if="${adventureDetails.difficultyLevel != null and !#strings.isEmpty(adventureDetails.difficultyLevel)}" style="background: #ffffff; padding: 12px 16px; border-radius: 12px; border: 1px solid #bae6fd;">
+                            <span style="font-size: 11px; color: #075985; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 4px;">Difficulty Level</span>
+                            <strong style="font-size: 14px; color: #1e293b;" th:text="${adventureDetails.difficultyLevel}">Moderate</strong>
+                        </div>
+
+                        <div th:if="${adventureDetails.adventureDuration != null and !#strings.isEmpty(adventureDetails.adventureDuration)}" style="background: #ffffff; padding: 12px 16px; border-radius: 12px; border: 1px solid #bae6fd;">
+                            <span style="font-size: 11px; color: #075985; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 4px;">Duration</span>
+                            <strong style="font-size: 14px; color: #1e293b;" th:text="${adventureDetails.adventureDuration}">3 Hours</strong>
+                        </div>
+
+                        <div th:if="${adventureDetails.fitnessLevelRequired != null and !#strings.isEmpty(adventureDetails.fitnessLevelRequired)}" style="background: #ffffff; padding: 12px 16px; border-radius: 12px; border: 1px solid #bae6fd;">
+                            <span style="font-size: 11px; color: #075985; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 4px;">Fitness Required</span>
+                            <strong style="font-size: 14px; color: #1e293b;" th:text="${adventureDetails.fitnessLevelRequired}">Moderate</strong>
+                        </div>
+                    </div>
+
+                    <div th:if="${adventureDetails.safetyEquipment != null and !#strings.isEmpty(adventureDetails.safetyEquipment)}" style="margin-top: 14px; background: #ffffff; padding: 12px 16px; border-radius: 12px; border: 1px solid #bae6fd;">
+                        <span style="font-size: 11px; color: #075985; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 4px;"><i class="fas fa-shield-alt"></i> Safety Gear Provided</span>
+                        <p style="font-size: 13px; color: #334155; margin: 0;" th:text="${adventureDetails.safetyEquipment}">Helmets, harness, life jackets, safety ropes.</p>
+                    </div>
+
+                    <div th:if="${adventureDetails.thingsToBring != null and !#strings.isEmpty(adventureDetails.thingsToBring)}" style="margin-top: 10px; background: #ffffff; padding: 12px 16px; border-radius: 12px; border: 1px solid #bae6fd;">
+                        <span style="font-size: 11px; color: #075985; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 4px;"><i class="fas fa-luggage-cart"></i> Things To Bring</span>
+                        <p style="font-size: 13px; color: #334155; margin: 0;" th:text="${adventureDetails.thingsToBring}">Sports shoes, extra clothes, sunscreen, water bottle.</p>
+                    </div>
                 </div>
 
-                <!-- 4. SECRET REWARD TEASER CARD -->
+                <!-- House Party Details -->
+                <div th:if="${housePartyDetails != null}" class="section-card" style="border-color: #fbcfe8; background: #fff1f2; border-radius: 16px; padding: 24px; margin-bottom: 24px;">
+                    <div class="card-section-header" style="margin-bottom: 18px;">
+                        <h3 class="card-title" style="color: #be185d; display: flex; align-items: center; gap: 10px; font-size: 18px;">
+                            <i class="fas fa-home" style="font-size: 20px;"></i> House Party Specifications
+                        </h3>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px;">
+                        <div th:if="${housePartyDetails.theme != null and !#strings.isEmpty(housePartyDetails.theme)}" style="background: #ffffff; padding: 12px 16px; border-radius: 12px; border: 1px solid #fbcfe8;">
+                            <span style="font-size: 11px; color: #9d174d; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 4px;">Theme</span>
+                            <strong style="font-size: 14px; color: #1e293b;" th:text="${housePartyDetails.theme}">Retro Vibe</strong>
+                        </div>
+
+                        <div th:if="${housePartyDetails.partyType != null and !#strings.isEmpty(housePartyDetails.partyType)}" style="background: #ffffff; padding: 12px 16px; border-radius: 12px; border: 1px solid #fbcfe8;">
+                            <span style="font-size: 11px; color: #9d174d; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 4px;">Party Type</span>
+                            <strong style="font-size: 14px; color: #1e293b;" th:text="${housePartyDetails.partyType}">House Party</strong>
+                        </div>
+
+                        <div th:if="${housePartyDetails.dressCode != null and !#strings.isEmpty(housePartyDetails.dressCode)}" style="background: #ffffff; padding: 12px 16px; border-radius: 12px; border: 1px solid #fbcfe8;">
+                            <span style="font-size: 11px; color: #9d174d; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 4px;">Dress Code</span>
+                            <strong style="font-size: 14px; color: #1e293b;" th:text="${housePartyDetails.dressCode}">Smart Casuals</strong>
+                        </div>
+
+                        <div th:if="${housePartyDetails.ageGroup != null and !#strings.isEmpty(housePartyDetails.ageGroup)}" style="background: #ffffff; padding: 12px 16px; border-radius: 12px; border: 1px solid #fbcfe8;">
+                            <span style="font-size: 11px; color: #9d174d; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 4px;">Age Group</span>
+                            <strong style="font-size: 14px; color: #1e293b;" th:text="${housePartyDetails.ageGroup}">18+ Only</strong>
+                        </div>
+                    </div>
+
+                    <div th:if="${housePartyDetails.activities != null and !#strings.isEmpty(housePartyDetails.activities)}" style="margin-top: 14px; background: #ffffff; padding: 12px 16px; border-radius: 12px; border: 1px solid #fbcfe8;">
+                        <span style="font-size: 11px; color: #9d174d; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 4px;"><i class="fas fa-cocktail"></i> Planned Activities</span>
+                        <p style="font-size: 13px; color: #334155; margin: 0;" th:text="${housePartyDetails.activities}">Board games, DJ music, BBQ, cocktail mixing.</p>
+                    </div>
+                </div>
+
+                <!-- Category Specifications (Gaming, Talent, Tech, Sports, Cultural, Music, Art) -->
+                <div th:if="${bikeRidingDetails == null and trekkingDetails == null and adventureDetails == null and housePartyDetails == null}" class="section-card" style="border-color: #cbd5e1; background: #f8fafc; border-radius: 16px; padding: 24px; margin-bottom: 24px;">
+                    <div class="card-section-header" style="margin-bottom: 18px;">
+                        <h3 class="card-title" style="color: #334155; display: flex; align-items: center; gap: 10px; font-size: 18px;">
+                            <i class="fas fa-info-circle" style="color: #2563eb; font-size: 20px;"></i> Event Specifications
+                        </h3>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px;">
+                        <div style="background: #ffffff; padding: 12px 16px; border-radius: 12px; border: 1px solid #e2e8f0;">
+                            <span style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 4px;">Category</span>
+                            <strong style="font-size: 14px; color: #1e293b;" th:text="${event.category != null ? event.category : 'General'}">Event Category</strong>
+                        </div>
+
+                        <div style="background: #ffffff; padding: 12px 16px; border-radius: 12px; border: 1px solid #e2e8f0;">
+                            <span style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 4px;">Event Format</span>
+                            <strong style="font-size: 14px; color: #1e293b;" th:text="${event.eventMode != null ? event.eventMode : 'Offline'}">Offline</strong>
+                        </div>
+
+                        <div th:if="${event.entryFeeType != null}" style="background: #ffffff; padding: 12px 16px; border-radius: 12px; border: 1px solid #e2e8f0;">
+                            <span style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 4px;">Entry Type</span>
+                            <strong style="font-size: 14px; color: #1e293b;" th:text="${event.entryFeeType}">Paid / Free</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. SECRET REWARD TEASER / REVEAL CARD -->
                 <div th:if="${event.enableSecretRewards}" class="secret-reward-card">
                     <div class="reward-gift-icon">
                         🎁
@@ -1119,10 +1348,13 @@
                     <div class="reward-info-body">
                         <div class="reward-badge-tag"><i class="fas fa-gift"></i> SECRET REWARD</div>
                         <div class="reward-main-text">Something special is waiting for you at this event!</div>
-                        <div class="reward-sub-text">Book your seat and discover your surprise!</div>
+                        <div class="reward-sub-text" th:text="${isRegistered ? 'You are registered! Click below to view and reveal your secret reward.' : 'Book your seat and discover your surprise!'}">Book your seat and discover your surprise!</div>
                     </div>
                     <div>
-                        <span class="btn-reveal-lock"><i class="fas fa-lock"></i> Reveal After Booking</span>
+                        <a th:if="${isRegistered and !#lists.isEmpty(userRegs)}" th:href="@{'/events/ticket/' + ${userRegs[0].ticketId}}" class="btn-reveal-lock" style="background: linear-gradient(135deg, #ffd700, #f59e0b); color: #000; font-weight: 800; text-decoration: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                            <i class="fas fa-gift"></i> Reveal Reward &rarr;
+                        </a>
+                        <span th:unless="${isRegistered and !#lists.isEmpty(userRegs)}" class="btn-reveal-lock"><i class="fas fa-lock"></i> Reveal After Booking</span>
                     </div>
                 </div>
 
@@ -1221,12 +1453,20 @@
             <!-- RIGHT COLUMN: SELECTION SIDEBAR -->
             <div>
                 <div class="selection-sidebar-card">
-                    <div class="sidebar-header-title">
+                    <!-- 1. SEAT-BASED EVENT HEADER (totalRows > 0) -->
+                    <div th:if="${event.totalRows != null and event.totalRows > 0}" class="sidebar-header-title">
                         <i class="fas fa-ticket-alt"></i>
                         <h3>Your Selection</h3>
                     </div>
 
-                    <div class="sidebar-info-group">
+                    <!-- 2. NON-SEAT EVENT HEADER (totalRows == 0 or null) -->
+                    <div th:unless="${event.totalRows != null and event.totalRows > 0}" class="sidebar-header-title">
+                        <i class="fas" th:classappend="${event.category == 'Bike Riding' ? 'fa-motorcycle' : (event.category == 'Trekking' ? 'fa-hiking' : (event.category == 'Adventure' ? 'fa-mountain' : (event.category == 'House Parties' or event.category == 'House Party' ? 'fa-home' : (event.category == 'Sports' ? 'fa-running' : 'fa-user-check'))))}" style="color:var(--primary-blue);"></i>
+                        <h3>Your Participation</h3>
+                    </div>
+
+                    <!-- 3. SEAT-BASED INFO GROUP -->
+                    <div th:if="${event.totalRows != null and event.totalRows > 0}" class="sidebar-info-group">
                         <div class="sidebar-info-row">
                             <span class="sidebar-label">Seat</span>
                             <span class="sidebar-val" id="sidebarSeatVal">None</span>
@@ -1237,15 +1477,40 @@
                         </div>
                         <div class="sidebar-info-row">
                             <span class="sidebar-label">Price</span>
-                            <span class="sidebar-val" id="sidebarPriceVal">Free</span>
+                            <span class="sidebar-val" id="sidebarPriceVal"
+                                  th:text="${(event.price != null and event.price != 'Free' and event.price != '0') ? #strings.replace(event.price, '$', '₹') : 'Free'}">Free</span>
+                        </div>
+                    </div>
+
+                    <!-- 4. NON-SEAT PARTICIPATION INFO GROUP -->
+                    <div th:unless="${event.totalRows != null and event.totalRows > 0}" class="sidebar-info-group">
+                        <div class="sidebar-info-row">
+                            <span class="sidebar-label">Event Type</span>
+                            <span class="sidebar-val" th:text="${event.category != null ? event.category : 'General Event'}">Bike Riding</span>
+                        </div>
+                        <div class="sidebar-info-row">
+                            <span class="sidebar-label">Participant</span>
+                            <span class="sidebar-val" 
+                                  th:text="${event.category == 'Bike Riding' ? '1 Rider' : (event.category == 'Trekking' ? '1 Trekker' : (event.category == 'House Parties' or event.category == 'House Party' ? '1 Guest' : '1 Person'))}">1 Person</span>
+                        </div>
+                        <div class="sidebar-info-row">
+                            <span class="sidebar-label">Entry Fee</span>
+                            <span class="sidebar-val" 
+                                  th:classappend="${(event.entryFeeType == 'Paid' or (event.price != null and event.price != 'Free' and event.price != '0'))} ? '' : 'price-free'"
+                                  th:text="${(event.price != null and event.price != 'Free' and event.price != '0') ? #strings.replace(event.price, '$', '₹') : 'Free'}">Free</span>
+                        </div>
+                        <div th:if="${event.maxParticipants != null and event.maxParticipants > 0}" class="sidebar-info-row">
+                            <span class="sidebar-label">Available Slots</span>
+                            <span class="sidebar-val" th:text="${spotsLeft != null and spotsLeft >= 0 ? spotsLeft + ' Left' : event.maxParticipants + ' Max'}">20 Left</span>
                         </div>
                     </div>
 
                     <div class="sidebar-divider-line"></div>
 
                     <div class="sidebar-total-block">
-                        <div class="total-block-label">Total Amount</div>
-                        <div class="total-block-amount" id="sidebarTotalVal">₹0</div>
+                        <div class="total-block-label">TOTAL AMOUNT</div>
+                        <div class="total-block-amount" id="sidebarTotalVal" 
+                             th:text="${(event.price != null and event.price != 'Free' and event.price != '0') ? #strings.replace(event.price, '$', '₹') : '₹0'}">₹0</div>
                     </div>
 
                     <!-- Secret Reward Reminder inside Sidebar -->
@@ -1253,7 +1518,8 @@
                         <i class="fas fa-gift"></i>
                         <div>
                             <strong>Secret Reward</strong>
-                            <p>A surprise awaits you! Revealed after booking.</p>
+                            <p th:if="${isRegistered and !#lists.isEmpty(userRegs)}"><a th:href="@{'/events/ticket/' + ${userRegs[0].ticketId}}" style="color: #2563eb; font-weight: 700; text-decoration: underline;">Click to Reveal Reward &rarr;</a></p>
+                            <p th:unless="${isRegistered and !#lists.isEmpty(userRegs)}">A surprise awaits you! Revealed after booking.</p>
                         </div>
                     </div>
 
@@ -1275,18 +1541,25 @@
                         </a>
                     </div>
 
-                    <!-- Continue Button -->
-                    <button th:if="${!isAdmin and not isCompleted and event.status != 'CANCELLED'}" 
-                            type="button" class="btn-continue-action" id="sidebarContinueBtn" onclick="handleSidebarContinue()">
-                        Continue <i class="fas fa-arrow-right"></i>
-                    </button>
+                    <!-- Continue / Book Now Button -->
+                    <th:block th:if="${!isAdmin and not isCompleted and event.status != 'CANCELLED'}">
+                        <button type="button" class="btn-continue-action" id="sidebarContinueBtn" onclick="handleSidebarContinue()">
+                            Book Now <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </th:block>
 
                     <div th:if="${isCompleted or event.status == 'CANCELLED'}" style="text-align: center; padding: 10px; color: var(--text-muted); font-size: 13px; font-weight: 700;">
                         Bookings Closed
                     </div>
 
-                    <div class="sidebar-hold-note">
+                    <!-- Hold Note (Seat events only) -->
+                    <div th:if="${event.totalRows != null and event.totalRows > 0}" class="sidebar-hold-note">
                         <i class="fas fa-lock"></i> Your seats will be held for 10 minutes
+                    </div>
+
+                    <!-- Instant Confirmation Note (Non-seat events) -->
+                    <div th:unless="${event.totalRows != null and event.totalRows > 0}" class="sidebar-hold-note" style="color:var(--text-secondary);">
+                        <i class="fas fa-check-circle" style="color:var(--primary-blue);"></i> Instant confirmation upon registration
                     </div>
                 </div>
             </div><!-- /right column -->
@@ -1422,6 +1695,9 @@
         }
 
         function updateSelectionSidebar() {
+            const totalRows = parseInt('[[${event.totalRows != null ? event.totalRows : 0}]]') || 0;
+            if (totalRows <= 0) return;
+
             const seatVal = document.getElementById('sidebarSeatVal');
             const catVal = document.getElementById('sidebarCategoryVal');
             const priceVal = document.getElementById('sidebarPriceVal');
@@ -1584,7 +1860,124 @@
             }
         }
 
-        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeRegModal(); });
+        function formatShortAddress(rawAddress) {
+            if (!rawAddress || typeof rawAddress !== 'string' || !rawAddress.trim() || rawAddress.trim() === 'TBA') {
+                return rawAddress || 'Location unavailable';
+            }
+
+            let parts = rawAddress.split(',').map(p => p.trim()).filter(p => p.length > 0);
+            if (parts.length === 0) return 'Location unavailable';
+            if (parts.length <= 2) return parts.join(', ');
+
+            const adminNoiseRegex = /(municipal corporation|city corporation|urban|rural|district|county|subdistrict|division|metro)/i;
+            const postcodeRegex = /^\d{4,8}(-\d{4})?$/;
+            const countryStateRegex = /^(india|united states|usa|uk|united kingdom|canada|australia|karnataka|maharashtra|delhi|tamil nadu|telangana|kerala|gujarat|rajasthan|uttar pradesh|west bengal)$/i;
+
+            let cleanParts = parts.filter(p => {
+                if (postcodeRegex.test(p)) return false;
+                if (countryStateRegex.test(p)) return false;
+                if (adminNoiseRegex.test(p)) return false;
+                return true;
+            });
+
+            if (cleanParts.length === 0) {
+                cleanParts = parts.filter(p => !postcodeRegex.test(p) && !countryStateRegex.test(p));
+            }
+            if (cleanParts.length === 0) cleanParts = parts;
+
+            let deduplicated = [];
+            let seenWords = new Set();
+            cleanParts.forEach(p => {
+                let tokens = p.toLowerCase().replace(/[^a-z0-9]/g, ' ').split(/\s+/).filter(t => t.length > 2);
+                let isDup = false;
+                if (tokens.some(t => ['south', 'north', 'east', 'west', 'urban', 'rural'].includes(t))) {
+                    let coreToken = tokens.find(t => !['south', 'north', 'east', 'west', 'urban', 'rural'].includes(t));
+                    if (coreToken && seenWords.has(coreToken)) {
+                        isDup = true;
+                    }
+                }
+                if (!isDup) {
+                    deduplicated.push(p);
+                    tokens.forEach(t => seenWords.add(t));
+                }
+            });
+
+            if (deduplicated.length === 0) deduplicated = cleanParts;
+            if (deduplicated.length <= 3) return deduplicated.join(', ');
+
+            const roadRegex = /(road|rd\b|street|st\b|avenue|ave\b|lane|ln\b|drive|dr\b|boulevard|blvd\b|way|marg|cross|main|phase|sector|block|hwy|highway)/i;
+            
+            let road = deduplicated.find(p => roadRegex.test(p)) || deduplicated[0];
+            let remaining = deduplicated.filter(p => p !== road);
+            let locality = remaining.length > 0 ? remaining[0] : null;
+            let city = remaining.length > 1 ? remaining[remaining.length - 1] : (remaining.length === 1 ? remaining[0] : null);
+
+            let selected = [];
+            if (road) selected.push(road);
+            if (locality && locality !== road && locality !== city) selected.push(locality);
+            if (city && city !== road && city !== locality) selected.push(city);
+
+            if (selected.length === 0) return deduplicated.slice(0, 3).join(', ');
+            return selected.join(', ');
+        }
+
+        function openFullAddressModal(e) {
+            if (e) e.preventDefault();
+            const venueEl = document.querySelector('.venue-address-display');
+            const fullText = (venueEl ? venueEl.getAttribute('data-full-address') : null) || 'Full location unavailable.';
+            const textContainer = document.getElementById('fullAddressText');
+            if (textContainer) textContainer.innerText = fullText;
+            const modal = document.getElementById('fullAddressModalOverlay');
+            if (modal) modal.style.display = 'flex';
+        }
+
+        function closeFullAddressModal() {
+            const modal = document.getElementById('fullAddressModalOverlay');
+            if (modal) modal.style.display = 'none';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.venue-address-display').forEach(el => {
+                const raw = el.getAttribute('data-full-address') || el.innerText;
+                if (raw && raw !== 'TBA') {
+                    el.innerText = formatShortAddress(raw);
+                }
+            });
+        });
+
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') {
+                closeRegModal();
+                closeFullAddressModal();
+            }
+        });
     </script>
+
+    <!-- Full Address Modal Overlay -->
+    <div id="fullAddressModalOverlay" class="modal-overlay" style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(15,23,42,0.65); backdrop-filter:blur(6px); align-items:center; justify-content:center; padding:16px;" onclick="if(event.target===this) closeFullAddressModal()">
+        <div style="background:#ffffff; border-radius:20px; max-width:480px; width:100%; padding:28px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); border:1px solid #e2e8f0; position:relative; animation:modalSlideUp 0.25s ease-out;">
+            <button type="button" onclick="closeFullAddressModal()" style="position:absolute; top:20px; right:20px; background:#f1f5f9; border:none; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#64748b; font-size:14px; transition:all 0.2s;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'"><i class="fas fa-times"></i></button>
+            
+            <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+                <div style="width:42px; height:42px; border-radius:12px; background:#fdf2f8; color:#db2777; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">
+                    <i class="fas fa-map-marker-alt"></i>
+                </div>
+                <div>
+                    <h3 style="margin:0; font-size:18px; font-weight:800; color:#0f172a;">Full Event Address</h3>
+                    <p style="margin:2px 0 0 0; font-size:12px; color:#64748b; font-weight:600;">Complete reverse-geocoded location</p>
+                </div>
+            </div>
+
+            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:16px; margin-bottom:20px;">
+                <p id="fullAddressText" style="margin:0; font-size:14px; color:#1e293b; font-weight:600; line-height:1.6; word-break:break-word;">
+                    <!-- Full address text injected dynamically -->
+                </p>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end;">
+                <button type="button" onclick="closeFullAddressModal()" style="background:#2563eb; color:#ffffff; border:none; padding:10px 22px; border-radius:10px; font-weight:700; font-size:13.5px; cursor:pointer; transition:background 0.2s;">Got It</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

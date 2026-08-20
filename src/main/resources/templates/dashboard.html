@@ -2332,7 +2332,7 @@
                     })
                 });
                 if (res.ok) {
-                    showToast("Reaction sent! â¤ï¸");
+                    showToast("Reaction sent! " + (emoji || ''));
                 }
             } catch (e) {
                 console.error("Failed to send reaction", e);

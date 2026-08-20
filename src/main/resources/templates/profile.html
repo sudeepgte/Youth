@@ -1773,7 +1773,7 @@
                     })
                 });
                 if (res.ok) {
-                    toast("Reaction sent! ❤️");
+                    toast("Reaction sent! " + (emoji || ''));
                 }
             } catch (e) {
                 console.error("Failed to send reaction", e);
