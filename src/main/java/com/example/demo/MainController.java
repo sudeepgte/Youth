@@ -178,8 +178,6 @@ public class MainController {
     @Autowired
     private MusicRoomRepository musicRoomRepository;
 
-    @Autowired
-    private com.example.demo.repository.GameRepository gameRepository;
 
     @Autowired
     private ContactMessageRepository contactMessageRepository;
@@ -202,8 +200,7 @@ public class MainController {
         model.addAttribute("user", getUserFromSession(session));
         // Fetch real student thoughts
         model.addAttribute("thoughts", postRepository.findByPostTypeOrderByCreatedAtDesc("THOUGHT"));
-        // Fetch all games
-        model.addAttribute("games", gameRepository.findAll());
+
         // Fetch all public events (UPCOMING, ONGOING, VOTING)
         model.addAttribute("events", eventRepository.findByStatusInOrderByCreatedAtDesc(
                 java.util.List.of("UPCOMING", "ONGOING", "VOTING")));
@@ -310,76 +307,6 @@ public class MainController {
         return "organizers";
     }
     
-    @GetMapping("/games")
-    public String gamesRedirect() {
-        return "redirect:/home";
-    }
-
-    @GetMapping("/games/rock-paper-scissors")
-    public String rockPaperScissors(Model model, HttpSession session) {
-        User user = getUserFromSession(session);
-        model.addAttribute("user", user);
-        return "rock-paper-scissors";
-    }
-
-    @GetMapping("/games/snake-and-ladder")
-    public String snakeAndLadder(Model model, HttpSession session) {
-        model.addAttribute("user", getUserFromSession(session));
-        return "snake-and-ladder";
-    }
-
-    @GetMapping("/play-chess")
-    public String playChess(Model model, HttpSession session) {
-        model.addAttribute("user", getUserFromSession(session));
-        return "chess-game";
-    }
-
-    @GetMapping("/play-uno")
-    public String playUno(Model model, HttpSession session) {
-        User user = getUserFromSession(session);
-        model.addAttribute("user", user);
-        return "uno";
-    }
-
-    @GetMapping("/play-ludo")
-    public String playLudo(Model model, HttpSession session) {
-        User user = getUserFromSession(session);
-        model.addAttribute("user", user);
-        return "ludo";
-    }
-
-    @GetMapping("/play-mario")
-    public String playMario() {
-        return "mario";
-    }
-
-    @GetMapping("/play-bubble-shooter")
-    public String playBubbleShooter() {
-        return "bubble-shooter";
-    }
-
-    @GetMapping("/play-candy-crush")
-    public String playCandyCrush() {
-        return "candy-crush";
-    }
-
-    @GetMapping("/play-memory")
-    public String playMemory() {
-        return "memory-game";
-    }
-
-    @GetMapping("/play-runner")
-    @Transactional
-    public String playRunner(Model model, HttpSession session, HttpServletRequest request) {
-        validateSessionOnPublicPage(session, request);
-        model.addAttribute("user", getUserFromSession(session));
-        return "runner";
-    }
-
-    @GetMapping("/play-car-game")
-    public String playCarGame() {
-        return "car-game";
-    }
 
     @GetMapping("/settings")
     public String settings(HttpSession session) {
