@@ -59,6 +59,11 @@ public class Battle {
     private String eventDate;
     private String eventTime;
     private Double entryFee = 0.0;
+    private Double prizePool = 0.0;
+    private String difficulty = "Beginner"; // Beginner, Intermediate, Advanced, Expert
+    private String battleType = "CHALLENGE"; // QUICK, CHALLENGE
+    private Boolean judgeScoringEnabled = true;
+    private Boolean audienceVotingEnabled = true;
     private Double prize1 = 0.0;
     private Double prize2 = 0.0;
     private Double prize3 = 0.0;
@@ -227,4 +232,15 @@ public class Battle {
 
     public Boolean getIsLive() { return isLive; }
     public void setIsLive(Boolean isLive) { this.isLive = isLive; }
+    public Double getPrizePool() { return prizePool; }
+    public void setPrizePool(Double prizePool) { this.prizePool = prizePool; }
+    public String getDifficulty() { return difficulty; }
+    public void setDifficulty(String difficulty) { this.difficulty = difficulty; }
+    public String getBattleType() { return battleType; }
+    public void setBattleType(String battleType) { this.battleType = battleType; }
+    public Boolean getJudgeScoringEnabled() { return judgeScoringEnabled; }
+    public void setJudgeScoringEnabled(Boolean judgeScoringEnabled) { this.judgeScoringEnabled = judgeScoringEnabled; }
+    public Boolean getAudienceVotingEnabled() { return audienceVotingEnabled; }
+    public void setAudienceVotingEnabled(Boolean audienceVotingEnabled) { this.audienceVotingEnabled = audienceVotingEnabled; }
 }
+

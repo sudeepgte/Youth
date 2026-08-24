@@ -804,6 +804,8 @@
             #prizesGrid { grid-template-columns: 1fr !important; }
         }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
 </head>
 <body class="battle-arena-page">
     <!-- Navbar -->
@@ -1093,7 +1095,7 @@
                             <div style="display:flex; align-items:center; gap:8px;">
                                 <img th:src="${p.user.profilePhotoUrl != null and !p.user.profilePhotoUrl.isEmpty()} ? ${p.user.profilePhotoUrl} : 'https://ui-avatars.com/api/?name=' + ${p.user.username} + '&background=F84464&color=fff&size=60'" alt="" style="width:30px; height:30px; border-radius:50%;">
                                 <span th:text="${p.user.username}" style="font-weight:800; color:var(--text-primary);">User</span>
-                                <span th:if="${p.user.id == battle.creator.id}" style="font-size:9px; background:rgba(255,215,0,0.15); color:#FFD700; padding:2px 6px; border-radius:6px; font-weight:800;">HOST</span>
+                                <span th:if="${battle.creator != null and p.user.id == battle.creator.id}" style="font-size:9px; background:rgba(255,215,0,0.15); color:#FFD700; padding:2px 6px; border-radius:6px; font-weight:800;">HOST</span>
                                 <span th:if="${battle.mode == 'OFFLINE' and p.participantNumber != null}" style="font-size:10px; background:#E2E8F0; padding:2px 6px; border-radius:6px; font-weight:700; color:var(--text-secondary);" th:text="${p.participantNumber}">#01</span>
                                 <span th:if="${battle.mode == 'OFFLINE' and p.seatNumber != null}" style="font-size:10px; background:#E2E8F0; padding:2px 6px; border-radius:6px; font-weight:700; color:var(--text-secondary);" th:text="${'Seat ' + p.seatNumber}">Seat A1</span>
                             </div>
@@ -1484,6 +1486,9 @@
                         <button class="btn-arena btn-arena-secondary" onclick="openJoinBattle()">
                             <i class="fas fa-door-open"></i> Join via Code
                         </button>
+                        <button class="btn-arena" onclick="openQuickBattle()" style="background:linear-gradient(135deg,#F59E0B,#EF4444); color:#fff; border:none;">
+                            <i class="fas fa-bolt"></i> Quick Battle
+                        </button>
                     </div>
                 </div>
 
@@ -1570,13 +1575,13 @@
                             <div class="battle-card-meta">
                                 <span th:if="${b.mode == 'OFFLINE'}"><i class="fas fa-calendar-alt"></i> <span th:text="${b.eventDate}">Date</span></span>
                                 <span th:if="${b.mode != 'OFFLINE'}"><i class="fas fa-clock"></i> <span th:if="${b.durationMinutes != null}" th:text="${b.durationMinutes} + 'm'"></span><span th:if="${b.durationMinutes == null}" th:text="${b.durationHours} + 'h'"></span></span>
-                                <span><i class="fas fa-users"></i> <span th:text="${b.participants.size()}">0</span>/<span th:text="${b.maxParticipants}">10</span></span>
+                                <span><i class="fas fa-users"></i> <span th:text="${b.participants != null ? b.participants.size() : 0}">0</span>/<span th:text="${b.maxParticipants}">10</span></span>
                                 <span><i class="fas fa-trophy"></i> <span th:text="${b.winnerXp}">500</span> XP</span>
                             </div>
                             <div class="battle-card-footer">
                                 <div class="battle-creator">
-                                    <img th:src="${b.creator.profilePhotoUrl != null and !b.creator.profilePhotoUrl.isEmpty()} ? ${b.creator.profilePhotoUrl} : 'https://ui-avatars.com/api/?name=' + ${b.creator.username} + '&background=F84464&color=fff&size=50'" alt="">
-                                    <span th:text="${b.creator.username}">Creator</span>
+                                    <img th:src="${b.creator != null and b.creator.profilePhotoUrl != null and !b.creator.profilePhotoUrl.isEmpty()} ? ${b.creator.profilePhotoUrl} : 'https://ui-avatars.com/api/?name=' + (${b.creator != null} ? ${b.creator.username} : 'System') + '&background=F84464&color=fff&size=50'" alt="">
+                                    <span th:text="${b.creator != null ? b.creator.username : 'System'}">Creator</span>
                                 </div>
                                 <span class="room-code-tag" th:text="${b.roomCode}">ABC123</span>
                             </div>
@@ -1600,12 +1605,12 @@
                                     <i class="fas fa-crown" style="color:#FFD700;"></i> <span th:text="${b.winner.username}">Winner</span>
                                     <span th:if="${b.prize1 != null}" style="color:#10B981; font-weight:700; margin-left:4px;">(<i class="fas fa-rupee-sign" style="font-size:10px;"></i><span th:text="${b.prize1}">0</span>)</span>
                                 </span>
-                                <span><i class="fas fa-users"></i> <span th:text="${b.participants.size()}">0</span> participants</span>
+                                <span><i class="fas fa-users"></i> <span th:text="${b.participants != null ? b.participants.size() : 0}">0</span> participants</span>
                             </div>
                             <div class="battle-card-footer">
                                 <div class="battle-creator">
-                                    <img th:src="${b.creator.profilePhotoUrl != null and !b.creator.profilePhotoUrl.isEmpty()} ? ${b.creator.profilePhotoUrl} : 'https://ui-avatars.com/api/?name=' + ${b.creator.username} + '&background=F84464&color=fff&size=50'" alt="">
-                                    <span th:text="${b.creator.username}">Creator</span>
+                                    <img th:src="${b.creator != null and b.creator.profilePhotoUrl != null and !b.creator.profilePhotoUrl.isEmpty()} ? ${b.creator.profilePhotoUrl} : 'https://ui-avatars.com/api/?name=' + (${b.creator != null} ? ${b.creator.username} : 'System') + '&background=F84464&color=fff&size=50'" alt="">
+                                    <span th:text="${b.creator != null ? b.creator.username : 'System'}">Creator</span>
                                 </div>
                                 <span class="room-code-tag" th:text="${b.roomCode}">ABC123</span>
                             </div>
@@ -1900,6 +1905,85 @@
         </div>
     </div>
 
+    <!-- Quick Battle Modal -->
+    <div class="arena-modal-overlay" id="quickBattleModal">
+        <div class="arena-modal" style="max-width:440px;">
+            <button class="arena-modal-close" onclick="closeQuickBattle()">&times;</button>
+
+            <!-- Step 1: Settings -->
+            <div id="qb-settings">
+                <h2><i class="fas fa-bolt" style="color:#F59E0B;"></i> Quick Battle</h2>
+                <p class="subtitle">Get matched with an opponent instantly</p>
+
+                <div class="arena-field">
+                    <label>Category</label>
+                    <select id="qbCategory" style="padding:12px; font-size:14px; font-weight:700; width:100%; border-radius:12px; border:1px solid var(--arena-border);">
+                        <option value="Coding">Coding</option>
+                        <option value="Music">Music</option>
+                        <option value="Dance">Dance</option>
+                        <option value="Photography">Photography</option>
+                        <option value="Singing">Singing</option>
+                        <option value="Video Editing">Video Editing</option>
+                        <option value="Drawing">Drawing</option>
+                        <option value="Meme">Meme</option>
+                        <option value="AI Prompt">AI Prompt</option>
+                        <option value="Art">Art</option>
+                        <option value="Writing">Writing</option>
+                    </select>
+                </div>
+
+                <div class="arena-field">
+                    <label>Skill Level</label>
+                    <select id="qbSkill" style="padding:12px; font-size:14px; font-weight:700; width:100%; border-radius:12px; border:1px solid var(--arena-border);">
+                        <option value="Beginner">Beginner</option>
+                        <option value="Intermediate" selected>Intermediate</option>
+                        <option value="Advanced">Advanced</option>
+                    </select>
+                </div>
+
+                <div class="arena-field">
+                    <label>Duration</label>
+                    <select id="qbDuration" style="padding:12px; font-size:14px; font-weight:700; width:100%; border-radius:12px; border:1px solid var(--arena-border);">
+                        <option value="3" selected>3 Minutes</option>
+                        <option value="5">5 Minutes</option>
+                        <option value="10">10 Minutes</option>
+                    </select>
+                </div>
+
+                <button class="btn-arena btn-arena-primary" onclick="startMatchmaking()" style="width:100%; justify-content:center; margin-top:10px; background:linear-gradient(135deg,#F59E0B,#EF4444); border:none;">
+                    <i class="fas fa-search"></i> Find Opponent
+                </button>
+            </div>
+
+            <!-- Step 2: Searching -->
+            <div id="qb-searching" style="display:none; text-align:center; padding:30px 0;">
+                <div style="font-size:48px; margin-bottom:20px; animation: pulse-live 1.5s infinite;"><i class="fas fa-crosshairs" style="color:#F59E0B;"></i></div>
+                <h3 style="font-weight:900; margin-bottom:8px;">Searching for opponent...</h3>
+                <p style="color:var(--text-muted); font-size:13px;" id="qbSearchTime">0s elapsed</p>
+                <div style="margin-top:20px;">
+                    <button class="btn-arena btn-arena-secondary" onclick="cancelMatchmaking()" style="width:100%; justify-content:center;">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 3: Match Found -->
+            <div id="qb-matched" style="display:none; text-align:center; padding:20px 0;">
+                <div style="font-size:36px; margin-bottom:15px;"><i class="fas fa-handshake" style="color:#10B981;"></i></div>
+                <h3 style="font-weight:900; margin-bottom:5px; color:#10B981;">Opponent Found!</h3>
+                <div style="display:flex; align-items:center; justify-content:center; gap:15px; margin:20px 0; padding:15px; background:rgba(16,185,129,0.05); border-radius:16px; border:1px solid rgba(16,185,129,0.15);">
+                    <img id="qbOpponentPhoto" src="" style="width:50px; height:50px; border-radius:50%; border:2px solid #10B981; object-fit:cover;">
+                    <div style="text-align:left;">
+                        <div id="qbOpponentName" style="font-weight:900; font-size:16px;"></div>
+                        <div id="qbOpponentRating" style="font-size:12px; color:var(--text-muted);"></div>
+                    </div>
+                </div>
+                <a id="qbBattleLink" href="#" class="btn-arena btn-arena-green" style="width:100%; justify-content:center; text-decoration:none; display:inline-flex;">
+                    <i class="fas fa-fire"></i> Enter Battle
+                </a>
+            </div>
+        </div>
+    </div>
 
     <!-- ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ -->
     <!-- CONFETTI (for winner page) -->
@@ -1947,6 +2031,79 @@
         function closeCreateBattle() { document.getElementById('createBattleModal').classList.remove('show'); goToStep1(); }
         function openJoinBattle() { document.getElementById('joinBattleModal').classList.add('show'); }
         function closeJoinBattle() { document.getElementById('joinBattleModal').classList.remove('show'); }
+        function openQuickBattle() {
+            document.getElementById('quickBattleModal').classList.add('show');
+            document.getElementById('qb-settings').style.display = 'block';
+            document.getElementById('qb-searching').style.display = 'none';
+            document.getElementById('qb-matched').style.display = 'none';
+        }
+        function closeQuickBattle() {
+            document.getElementById('quickBattleModal').classList.remove('show');
+            cancelMatchmaking();
+        }
+
+        // Quick Battle Matchmaking
+        var qbStompClient = null;
+        var qbSearchTimer = null;
+        var qbSearchSeconds = 0;
+
+        function startMatchmaking() {
+            var category = document.getElementById('qbCategory').value;
+            var skill = document.getElementById('qbSkill').value;
+            var duration = document.getElementById('qbDuration').value;
+
+            document.getElementById('qb-settings').style.display = 'none';
+            document.getElementById('qb-searching').style.display = 'block';
+            document.getElementById('qb-matched').style.display = 'none';
+
+            qbSearchSeconds = 0;
+            document.getElementById('qbSearchTime').textContent = '0s elapsed';
+            qbSearchTimer = setInterval(function() {
+                qbSearchSeconds++;
+                document.getElementById('qbSearchTime').textContent = qbSearchSeconds + 's elapsed';
+            }, 1000);
+
+            // Connect via SockJS + STOMP
+            var socket = new SockJS('/ws');
+            qbStompClient = Stomp.over(socket);
+            qbStompClient.debug = null; // suppress logs
+            qbStompClient.connect({}, function(frame) {
+                // Subscribe for match results
+                qbStompClient.subscribe('/user/queue/matchmaking', function(message) {
+                    var data = JSON.parse(message.body);
+                    if (data.type === 'MATCH_FOUND') {
+                        clearInterval(qbSearchTimer);
+                        document.getElementById('qb-searching').style.display = 'none';
+                        document.getElementById('qb-matched').style.display = 'block';
+
+                        var opp = data.opponent;
+                        document.getElementById('qbOpponentName').textContent = opp.username;
+                        document.getElementById('qbOpponentRating').textContent = 'Rating: ' + (opp.rating || 1000);
+                        document.getElementById('qbOpponentPhoto').src = opp.photo || ('https://ui-avatars.com/api/?name=' + opp.username + '&background=F84464&color=fff&size=60');
+                        document.getElementById('qbBattleLink').href = '/battles/' + data.battleId;
+                    }
+                });
+
+                // Send join queue message
+                qbStompClient.send('/app/matchmaking/join', {}, JSON.stringify({
+                    category: category,
+                    skill: skill,
+                    duration: duration
+                }));
+            });
+        }
+
+        function cancelMatchmaking() {
+            if (qbSearchTimer) { clearInterval(qbSearchTimer); qbSearchTimer = null; }
+            if (qbStompClient && qbStompClient.connected) {
+                qbStompClient.send('/app/matchmaking/leave', {}, '{}');
+                qbStompClient.disconnect();
+                qbStompClient = null;
+            }
+            document.getElementById('qb-settings').style.display = 'block';
+            document.getElementById('qb-searching').style.display = 'none';
+            document.getElementById('qb-matched').style.display = 'none';
+        }
 
         // Close on overlay click
         document.querySelectorAll('.arena-modal-overlay').forEach(overlay => {
