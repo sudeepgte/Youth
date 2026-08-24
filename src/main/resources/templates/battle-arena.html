@@ -1353,7 +1353,7 @@
                 </div>
 
                 <!-- â”€â”€â”€ LEADERBOARD â”€â”€â”€ -->
-                <div th:if="${!submissions.isEmpty() and (battle.status == 'VOTING' or battle.status == 'COMPLETED' or battle.status == 'TIE')}" class="leaderboard-section">
+                <div th:if="${submissions != null and !submissions.isEmpty() and battle != null and (battle.status == 'VOTING' or battle.status == 'COMPLETED' or battle.status == 'TIE')}" class="leaderboard-section">
                     <h3><i class="fas fa-chart-bar"></i> Live Leaderboard</h3>
                     <div th:each="sub,iter : ${submissions}" class="leaderboard-row" style="display:flex; justify-content:space-between; align-items:center; padding:10px 16px; margin-bottom:8px; background:#fff; border:1px solid var(--arena-border); border-radius:12px;">
                         <div style="display:flex; align-items:center; gap:12px;">
@@ -1628,6 +1628,25 @@
 
         <!-- Right Sidebar -->
         <aside class="widgets">
+            <!-- Global Leaderboard (visible on /battles) -->
+            <div th:if="${battle == null}" class="widget-card" id="global-leaderboard-widget">
+                <div class="widget-header" style="justify-content: space-between;">
+                    <h3><i class="fas fa-trophy" style="color: #FFD700; margin-right: 6px;"></i> Leaderboard</h3>
+                    <select id="leaderboardCategoryFilter" onchange="loadGlobalLeaderboard()" style="padding: 4px; font-size: 11px; border-radius: 6px; border: 1px solid var(--arena-border); background: var(--bg-primary);">
+                        <option value="global">All Categories</option>
+                        <option value="Coding">Coding</option>
+                        <option value="Music">Music</option>
+                        <option value="Dance">Dance</option>
+                        <option value="Photography">Photography</option>
+                        <option value="Singing">Singing</option>
+                        <option value="Video">Video</option>
+                    </select>
+                </div>
+                <div id="global-leaderboard-list" style="display:flex; flex-direction:column; gap:8px;">
+                    <div style="text-align:center; padding:20px; color:var(--text-muted);"><i class="fas fa-spinner fa-spin"></i> Loading...</div>
+                </div>
+            </div>
+
             <div class="widget-card">
                 <div class="widget-header">
                     <!-- Title changes based on context -->
@@ -2260,6 +2279,49 @@
         });
 
         // â”€â”€â”€ Live Countdown Timer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                function loadGlobalLeaderboard() {
+            const cat = document.getElementById('leaderboardCategoryFilter').value;
+            fetch('/api/leaderboards?time=alltime&category=' + cat)
+                .then(res => {
+                    if (!res.ok) throw new Error('Network response was not ok');
+                    return res.json();
+                })
+                .then(data => {
+                    const list = document.getElementById('global-leaderboard-list');
+                    if(!list) return;
+                    list.innerHTML = '';
+                    if (!data || data.length === 0) {
+                        list.innerHTML = '<div style="text-align:center; font-size:12px; color:var(--text-muted); padding:10px;">No rankings yet</div>';
+                        return;
+                    }
+                    data.slice(0, 10).forEach(u => {
+                        let rankClass = u.rank === 1 ? 'rank-1' : (u.rank === 2 ? 'rank-2' : (u.rank === 3 ? 'rank-3' : 'rank-default'));
+                        list.innerHTML += `
+                        <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:rgba(255,255,255,0.6); border:1px solid rgba(15,23,42,0.05); border-radius:10px;">
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <div class="leaderboard-rank ${rankClass}">${u.rank}</div>
+                                <div style="display:flex; align-items:center; gap:6px;">
+                                    <img src="${u.avatar}" style="width:28px; height:28px; border-radius:50%; border:1px solid var(--arena-border); object-fit:cover;">
+                                    <span style="font-weight:800; font-size:13px; color:var(--text-primary);">${u.username}</span>
+                                </div>
+                            </div>
+                            <div style="text-align:right;">
+                                <div style="font-weight:900; font-size:13px; color:var(--arena-primary);"><i class="fas fa-bolt" style="color:#F59E0B; font-size:10px;"></i> ${u.rating}</div>
+                            </div>
+                        </div>`;
+                    });
+                }).catch(err => {
+                    console.error(err);
+                    const list = document.getElementById('global-leaderboard-list');
+                    if(list) list.innerHTML = '<div style="text-align:center; font-size:12px; color:#EF4444; padding:10px;">Failed to load</div>';
+                });
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+            if (document.getElementById('global-leaderboard-widget')) {
+                loadGlobalLeaderboard();
+            }
+        });
+
         function initCountdown() {
             const container = document.getElementById('countdownContainer');
             const timerEl = document.getElementById('countdownTimer');

@@ -17,6 +17,9 @@ public class WalletService {
     @Autowired
     private WalletTransactionRepository transactionRepository;
 
+    @Autowired
+    private AuditLogService auditLogService;
+
     @Transactional
     public synchronized boolean processTransaction(User user, Double amount, String currency, String type, String description, String referenceId) {
         user = userRepository.findById(user.getId()).orElseThrow();
@@ -55,6 +58,8 @@ public class WalletService {
         tx.setDescription(description);
         tx.setReferenceId(referenceId);
         transactionRepository.save(tx);
+        
+        auditLogService.log("WALLET_TX", user.getId(), type + " of " + amount + " " + currency + ". Reason: " + description);
 
         return true;
     }

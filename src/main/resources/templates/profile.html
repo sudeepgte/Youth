@@ -741,6 +741,33 @@
                 </div>
             </div>
 
+            <!-- Battle Stats Box -->
+            <div class="talent-score-card" style="margin-bottom:20px;">
+                <h4>
+                    <i class="fas fa-trophy" style="color:#22D3EE;"></i> Battle Rating (ELO)
+                    <span style="float:right; font-size: 1.2em; color: #22D3EE; margin-left: auto;" th:text="${user.battleRating != null ? user.battleRating : 1500}">1500</span>
+                </h4>
+                <div class="ts-grid">
+                    <div class="ts-item" th:with="total=${(user.battleWins != null ? user.battleWins : 0) + (user.battleLosses != null ? user.battleLosses : 0) + (user.battleDraws != null ? user.battleDraws : 0)}">
+                        <span class="ts-v" th:text="${total}">0</span>
+                        <span class="ts-l">Total Battles</span>
+                    </div>
+                    <div class="ts-item"><span class="ts-v" th:text="${user.battleWins != null ? user.battleWins : 0}">0</span><span class="ts-l">Wins</span></div>
+                    <div class="ts-item"><span class="ts-v" th:text="${user.battleLosses != null ? user.battleLosses : 0}">0</span><span class="ts-l">Losses</span></div>
+                    <div class="ts-item" style="padding: 8px;">
+                        <div style="font-size: 16px; font-weight: 700; color: #fff; text-align: center;"
+                             th:with="total=${(user.battleWins != null ? user.battleWins : 0) + (user.battleLosses != null ? user.battleLosses : 0) + (user.battleDraws != null ? user.battleDraws : 0)}">
+                            <span th:text="${total > 0 ? #numbers.formatDecimal((user.battleWins != null ? user.battleWins : 0) * 100.0 / total, 1, 1) + '%' : '0.0%'}">0.0%</span>
+                        </div>
+                        <span class="ts-l" style="display:block; text-align:center;">Win Rate</span>
+                    </div>
+                    <div class="ts-item"><span class="ts-v" th:text="${user.winStreak != null ? user.winStreak : 0}">0</span><span class="ts-l">Streak</span></div>
+                    <div class="ts-item"><span class="ts-v" th:text="${user.bestWinStreak != null ? user.bestWinStreak : 0}">0</span><span class="ts-l">Best Streak</span></div>
+                    <div class="ts-item"><span class="ts-v" th:text="${user.xp != null ? #numbers.formatInteger(user.xp, 0, 'COMMA') : 0}">0</span><span class="ts-l">XP</span></div>
+                    <div class="ts-item"><span class="ts-v" th:text="${user.battleDraws != null ? user.battleDraws : 0}">0</span><span class="ts-l">Draws</span></div>
+                </div>
+            </div>
+
             <!-- Talent Score Box -->
             <div class="talent-score-card">
                 <h4>
@@ -807,6 +834,7 @@
         <button class="tab-btn" onclick="switchTab('following',this)"><i class="fas fa-user-friends"></i> Following</button>
         <button class="tab-btn" th:if="${isOwnProfile}" onclick="switchTab('saved',this)"><i class="fas fa-bookmark"></i> Saved</button>
         <button class="tab-btn" th:if="${isOwnProfile}" onclick="switchTab('rewards',this)"><i class="fas fa-gift"></i> My Rewards</button>
+        <button class="tab-btn" th:if="${isOwnProfile}" onclick="switchTab('battles',this)"><i class="fas fa-history"></i> Battle History</button>
         <button class="tab-btn" th:if="${isOwnProfile}" onclick="switchTab('settings',this)"><i class="fas fa-cog"></i> Settings</button>
     </div>
 
@@ -928,6 +956,144 @@
     </div>
 
     <!-- Settings -->
+    <!-- Battle History Tab -->
+    <div class="tab-panel" id="tab-battles" th:if="${isOwnProfile}">
+        <div style="background: var(--card-bg); border: 1px solid var(--glass-border); border-radius: 16px; padding: 20px; box-shadow: var(--shadow-premium); margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+                <h3 style="margin: 0; color: var(--text-primary); font-size: 18px;"><i class="fas fa-history" style="color: var(--accent); margin-right: 8px;"></i> My Battles</h3>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <select class="form-input" style="padding: 6px 12px; font-size: 13px; border-radius: 8px; width: auto;" onchange="filterBattles()">
+                        <option value="all">All Results</option>
+                        <option value="win">Wins</option>
+                        <option value="loss">Losses</option>
+                        <option value="draw">Draws</option>
+                    </select>
+                    <select class="form-input" style="padding: 6px 12px; font-size: 13px; border-radius: 8px; width: auto;" onchange="filterBattles()">
+                        <option value="all">All Categories</option>
+                        <option value="coding">Coding</option>
+                        <option value="music">Music</option>
+                        <option value="dance">Dance</option>
+                    </select>
+                    <input type="date" class="form-input" style="padding: 6px 12px; font-size: 13px; border-radius: 8px; width: auto;" onchange="filterBattles()">
+                </div>
+            </div>
+
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                    <thead>
+                        <tr style="border-bottom: 1px solid var(--glass-border); color: var(--text-secondary); font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">
+                            <th style="padding: 12px; font-weight: 600;">Date</th>
+                            <th style="padding: 12px; font-weight: 600;">Opponent</th>
+                            <th style="padding: 12px; font-weight: 600;">Category</th>
+                            <th style="padding: 12px; font-weight: 600;">Result</th>
+                            <th style="padding: 12px; font-weight: 600;">Score</th>
+                            <th style="padding: 12px; font-weight: 600;">Rating Change</th>
+                            <th style="padding: 12px; font-weight: 600;">XP</th>
+                            <th style="padding: 12px; font-weight: 600;">Coins</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Dynamic Battle Records -->
+                        <tr th:each="record : ${battleHistory}" style="border-bottom: 1px solid rgba(255,255,255,0.05); transition: 0.2s;" class="battle-row" 
+                            th:attr="data-result=${#strings.toLowerCase(record.result)}, data-category=${#strings.toLowerCase(record.category)}">
+                            
+                            <td style="padding: 14px 12px; font-size: 14px; color: var(--text-secondary);" 
+                                th:text="${record.date != null ? #temporals.format(record.date, 'MMM dd, yyyy') : 'Unknown'}">Oct 24, 2023</td>
+                            
+                            <td style="padding: 14px 12px; font-size: 14px; font-weight: 500; color: var(--text-primary);">
+                                <div th:if="${record.opponent != null}" style="display: flex; align-items: center; gap: 8px;">
+                                    <img th:src="${record.opponent.profilePhotoUrl != null and !record.opponent.profilePhotoUrl.isEmpty()} ? @{${record.opponent.profilePhotoUrl}} : ${'https://ui-avatars.com/api/?name=' + record.opponent.username + '&background=random'}" 
+                                         style="width: 24px; height: 24px; border-radius: 50%;">
+                                    <span th:text="${record.opponent.username}">Opponent</span>
+                                </div>
+                                <div th:if="${record.opponent == null}" style="display: flex; align-items: center; gap: 8px;">
+                                    <i class="fas fa-users" style="color: var(--text-secondary);"></i>
+                                    <span style="color: var(--text-secondary);">Multiple/None</span>
+                                </div>
+                            </td>
+                            
+                            <td style="padding: 14px 12px; font-size: 14px; color: var(--text-primary);" th:text="${record.category}">Coding</td>
+                            
+                            <td style="padding: 14px 12px;">
+                                <span th:if="${record.result == 'WIN'}" style="background: rgba(74, 222, 128, 0.15); color: #4ade80; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600;">WIN</span>
+                                <span th:if="${record.result == 'LOSS'}" style="background: rgba(239, 68, 68, 0.15); color: #ef4444; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600;">LOSS</span>
+                                <span th:if="${record.result == 'DRAW'}" style="background: rgba(156, 163, 175, 0.15); color: #9ca3af; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600;">DRAW</span>
+                            </td>
+                            
+                            <td style="padding: 14px 12px; font-size: 14px; font-weight: 700; color: var(--text-primary);" th:text="${record.score}">95 - 82</td>
+                            
+                            <td style="padding: 14px 12px; font-size: 14px; font-weight: 600;" 
+                                th:styleappend="${record.ratingChange > 0 ? 'color: #4ade80;' : (record.ratingChange < 0 ? 'color: #ef4444;' : 'color: #9ca3af;')}">
+                                <span th:text="${record.ratingChange > 0 ? '+' + record.ratingChange : record.ratingChange}">+24</span>
+                                <i th:if="${record.ratingChange > 0}" class="fas fa-arrow-up" style="font-size: 10px;"></i>
+                                <i th:if="${record.ratingChange < 0}" class="fas fa-arrow-down" style="font-size: 10px;"></i>
+                                <i th:if="${record.ratingChange == 0}" class="fas fa-minus" style="font-size: 10px;"></i>
+                            </td>
+                            
+                            <td style="padding: 14px 12px; font-size: 14px; font-weight: 600; color: var(--accent2);" th:text="'+' + ${record.xp}">+500</td>
+                            
+                            <td style="padding: 14px 12px; font-size: 14px; font-weight: 600;" 
+                                th:styleappend="${record.coins > 0 ? 'color: #fbbf24;' : 'color: var(--text-secondary);'}">
+                                <i th:if="${record.coins > 0}" class="fas fa-coins" style="margin-right: 4px;"></i>
+                                <span th:text="${record.coins > 0 ? record.coins : '-'}">50</span>
+                            </td>
+                        </tr>
+                        
+                        <tr th:if="${#lists.isEmpty(battleHistory)}">
+                            <td colspan="8" style="text-align: center; padding: 40px 20px; color: var(--text-secondary);">
+                                <i class="fas fa-ghost" style="font-size: 32px; margin-bottom: 12px; opacity: 0.5;"></i>
+                                <p>No completed battles found.</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div id="no-battles-msg" style="display: none; text-align: center; padding: 40px 20px; color: var(--text-secondary);">
+                    <i class="fas fa-ghost" style="font-size: 32px; margin-bottom: 12px; opacity: 0.5;"></i>
+                    <p>No battles match your filters.</p>
+                </div>
+            </div>
+        </div>
+        
+        <script>
+            function filterBattles() {
+                // simple frontend filtering mock
+                const selects = document.querySelectorAll('#tab-battles select');
+                const dateInput = document.querySelector('#tab-battles input[type="date"]');
+                const resultFilter = selects[0].value;
+                const categoryFilter = selects[1].value;
+                const dateFilter = dateInput.value;
+                
+                let visibleCount = 0;
+                document.querySelectorAll('.battle-row').forEach(row => {
+                    const matchResult = resultFilter === 'all' || row.dataset.result === resultFilter;
+                    const matchCategory = categoryFilter === 'all' || row.dataset.category === categoryFilter;
+                    
+                    let matchDate = true;
+                    if (dateFilter) {
+                        // The mocked date format in HTML is "Oct 24, 2023"
+                        const rowDateStr = row.querySelector('td').innerText;
+                        const rowDate = new Date(rowDateStr);
+                        const filterDateObj = new Date(dateFilter);
+                        
+                        // Compare year, month, date
+                        if (rowDate.toDateString() !== filterDateObj.toDateString()) {
+                            matchDate = false;
+                        }
+                    }
+                    
+                    if (matchResult && matchCategory && matchDate) {
+                        row.style.display = '';
+                        visibleCount++;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+                
+                document.getElementById('no-battles-msg').style.display = visibleCount === 0 ? 'block' : 'none';
+            }
+        </script>
+    </div>
+
     <div class="tab-panel" id="tab-settings" th:if="${isOwnProfile}">
         <div style="max-width:500px; margin:0 auto; display:flex; flex-direction:column; gap:20px;">
             <div class="feature-card">

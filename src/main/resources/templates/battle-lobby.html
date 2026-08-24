@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Battle Lobby | Zentrix</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0a0a1a;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* Animated background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: radial-gradient(ellipse at 30% 50%, rgba(99,102,241,0.08) 0%, transparent 50%),
+                        radial-gradient(ellipse at 70% 50%, rgba(236,72,153,0.08) 0%, transparent 50%);
+            animation: bgShift 8s ease-in-out infinite alternate;
+            z-index: 0;
+        }
+        @keyframes bgShift { to { transform: translate(5%, 3%); } }
+
+        .lobby-container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 900px;
+            padding: 30px 20px;
+        }
+
+        /* Header */
+        .lobby-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .lobby-header h1 {
+            font-size: 28px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #22D3EE, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 6px;
+        }
+        .lobby-header .lobby-meta {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            font-size: 13px;
+            color: rgba(255,255,255,0.5);
+        }
+        .lobby-header .lobby-meta i { margin-right: 4px; }
+
+        /* Players Area */
+        .lobby-players {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        /* Player Card */
+        .lobby-player {
+            flex: 1;
+            max-width: 320px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 24px;
+            padding: 30px 20px;
+            text-align: center;
+            position: relative;
+            transition: all 0.4s;
+        }
+        .lobby-player.ready {
+            border-color: rgba(16,185,129,0.4);
+            background: rgba(16,185,129,0.05);
+            box-shadow: 0 0 30px rgba(16,185,129,0.1);
+        }
+        .lobby-player .ready-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            font-size: 11px;
+            font-weight: 800;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.06);
+            color: rgba(255,255,255,0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .lobby-player.ready .ready-badge {
+            background: rgba(16,185,129,0.15);
+            color: #10B981;
+        }
+
+        .lobby-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid rgba(255,255,255,0.1);
+            margin-bottom: 14px;
+        }
+        .lobby-player.ready .lobby-avatar {
+            border-color: #10B981;
+        }
+
+        .lobby-name {
+            font-size: 20px;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+
+        .lobby-rating {
+            font-size: 22px;
+            font-weight: 900;
+            color: #fbbf24;
+            margin-bottom: 12px;
+        }
+        .lobby-rating i { font-size: 16px; margin-right: 4px; }
+
+        .lobby-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .lobby-stat {
+            background: rgba(255,255,255,0.04);
+            border-radius: 12px;
+            padding: 8px 4px;
+        }
+        .lobby-stat .val {
+            font-size: 18px;
+            font-weight: 800;
+            display: block;
+        }
+        .lobby-stat .lbl {
+            font-size: 10px;
+            color: rgba(255,255,255,0.4);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Device status indicators */
+        .lobby-devices {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        .lobby-device {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            padding: 5px 10px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.04);
+            color: rgba(255,255,255,0.4);
+        }
+        .lobby-device.active {
+            background: rgba(16,185,129,0.1);
+            color: #10B981;
+        }
+        .lobby-device.inactive {
+            background: rgba(239,68,68,0.1);
+            color: #EF4444;
+        }
+
+        /* VS Badge */
+        .lobby-vs {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6366F1, #ec4899);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 900;
+            flex-shrink: 0;
+            box-shadow: 0 0 30px rgba(99,102,241,0.3);
+            animation: vsPulse 2s infinite;
+        }
+        @keyframes vsPulse {
+            0%,100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
+
+        /* Ready Button */
+        .lobby-actions {
+            text-align: center;
+            margin-top: 10px;
+        }
+        .btn-ready {
+            padding: 16px 60px;
+            font-size: 18px;
+            font-weight: 900;
+            border: none;
+            border-radius: 16px;
+            cursor: pointer;
+            background: linear-gradient(135deg, #10B981, #059669);
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 20px rgba(16,185,129,0.3);
+        }
+        .btn-ready:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(16,185,129,0.4); }
+        .btn-ready:disabled {
+            background: rgba(255,255,255,0.08);
+            color: rgba(255,255,255,0.3);
+            cursor: default;
+            box-shadow: none;
+            transform: none;
+        }
+        .btn-ready.is-ready {
+            background: rgba(16,185,129,0.15);
+            color: #10B981;
+            cursor: default;
+        }
+
+        /* Countdown Overlay */
+        .countdown-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            flex-direction: column;
+        }
+        .countdown-overlay.show { display: flex; }
+        .countdown-number {
+            font-size: 120px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #22D3EE, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: countPop 0.6s ease-out;
+        }
+        .countdown-text {
+            font-size: 16px;
+            color: rgba(255,255,255,0.5);
+            margin-top: 10px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+        @keyframes countPop {
+            0% { transform: scale(2); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Waiting text */
+        .waiting-text {
+            text-align: center;
+            color: rgba(255,255,255,0.4);
+            font-size: 14px;
+            margin-top: 15px;
+            display: none;
+        }
+        .waiting-text i { margin-right: 6px; }
+
+        @media (max-width: 700px) {
+            .lobby-players { flex-direction: column; gap: 15px; }
+            .lobby-vs { width: 50px; height: 50px; font-size: 18px; }
+            .lobby-player { max-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="lobby-container">
+
+    <!-- Header -->
+    <div class="lobby-header">
+        <h1 th:text="${battle.title}">Quick Battle</h1>
+        <div class="lobby-meta">
+            <span><i class="fas fa-tag"></i> <span th:text="${battle.category}">Music</span></span>
+            <span><i class="fas fa-clock"></i> <span th:text="${battle.durationMinutes}">3</span>m Duration</span>
+            <span><i class="fas fa-signal"></i> <span th:text="${battle.difficulty}">Intermediate</span></span>
+        </div>
+    </div>
+
+    <!-- Players -->
+    <div class="lobby-players">
+
+        <!-- Player A -->
+        <div class="lobby-player" th:if="${#lists.size(participants) > 0}"
+             th:id="'player-card-' + ${participants[0].user.id}">
+            <div class="ready-badge" th:id="'ready-badge-' + ${participants[0].user.id}">Waiting</div>
+            <img class="lobby-avatar"
+                 th:src="${participants[0].user.profilePhotoUrl != null and !participants[0].user.profilePhotoUrl.isEmpty()} ? ${participants[0].user.profilePhotoUrl} : 'https://ui-avatars.com/api/?name=' + ${participants[0].user.username} + '&background=22D3EE&color=0f0f23&size=200'"
+                 alt="">
+            <div class="lobby-name" th:text="${participants[0].user.username}">Player A</div>
+            <div class="lobby-rating">
+                <i class="fas fa-trophy"></i>
+                <span th:text="${participants[0].user.battleRating != null ? participants[0].user.battleRating : 1500}">1500</span>
+            </div>
+            <div class="lobby-stats">
+                <div class="lobby-stat">
+                    <span class="val" th:text="${participants[0].user.battleWins != null ? participants[0].user.battleWins : 0}">0</span>
+                    <span class="lbl">Wins</span>
+                </div>
+                <div class="lobby-stat">
+                    <span class="val" th:text="${participants[0].user.battleLosses != null ? participants[0].user.battleLosses : 0}">0</span>
+                    <span class="lbl">Losses</span>
+                </div>
+                <div class="lobby-stat">
+                    <span class="val"
+                          th:with="w=${participants[0].user.battleWins != null ? participants[0].user.battleWins : 0}, total=${(participants[0].user.battleWins != null ? participants[0].user.battleWins : 0) + (participants[0].user.battleLosses != null ? participants[0].user.battleLosses : 0)}"
+                          th:text="${total > 0 ? #numbers.formatDecimal(w * 100.0 / total, 1, 1) + '%' : '0%'}">0%</span>
+                    <span class="lbl">Win Rate</span>
+                </div>
+            </div>
+            <div class="lobby-devices">
+                <div class="lobby-device" th:id="'conn-' + ${participants[0].user.id}"><i class="fas fa-wifi"></i> <span>Connecting</span></div>
+                <div class="lobby-device" th:id="'cam-' + ${participants[0].user.id}"><i class="fas fa-video"></i> <span>Camera</span></div>
+                <div class="lobby-device" th:id="'mic-' + ${participants[0].user.id}"><i class="fas fa-microphone"></i> <span>Mic</span></div>
+            </div>
+        </div>
+
+        <!-- VS Badge -->
+        <div class="lobby-vs">VS</div>
+
+        <!-- Player B -->
+        <div class="lobby-player" th:if="${#lists.size(participants) > 1}"
+             th:id="'player-card-' + ${participants[1].user.id}">
+            <div class="ready-badge" th:id="'ready-badge-' + ${participants[1].user.id}">Waiting</div>
+            <img class="lobby-avatar"
+                 th:src="${participants[1].user.profilePhotoUrl != null and !participants[1].user.profilePhotoUrl.isEmpty()} ? ${participants[1].user.profilePhotoUrl} : 'https://ui-avatars.com/api/?name=' + ${participants[1].user.username} + '&background=ec4899&color=0f0f23&size=200'"
+                 alt="">
+            <div class="lobby-name" th:text="${participants[1].user.username}">Player B</div>
+            <div class="lobby-rating">
+                <i class="fas fa-trophy"></i>
+                <span th:text="${participants[1].user.battleRating != null ? participants[1].user.battleRating : 1500}">1500</span>
+            </div>
+            <div class="lobby-stats">
+                <div class="lobby-stat">
+                    <span class="val" th:text="${participants[1].user.battleWins != null ? participants[1].user.battleWins : 0}">0</span>
+                    <span class="lbl">Wins</span>
+                </div>
+                <div class="lobby-stat">
+                    <span class="val" th:text="${participants[1].user.battleLosses != null ? participants[1].user.battleLosses : 0}">0</span>
+                    <span class="lbl">Losses</span>
+                </div>
+                <div class="lobby-stat">
+                    <span class="val"
+                          th:with="w=${participants[1].user.battleWins != null ? participants[1].user.battleWins : 0}, total=${(participants[1].user.battleWins != null ? participants[1].user.battleWins : 0) + (participants[1].user.battleLosses != null ? participants[1].user.battleLosses : 0)}"
+                          th:text="${total > 0 ? #numbers.formatDecimal(w * 100.0 / total, 1, 1) + '%' : '0%'}">0%</span>
+                    <span class="lbl">Win Rate</span>
+                </div>
+            </div>
+            <div class="lobby-devices">
+                <div class="lobby-device" th:id="'conn-' + ${participants[1].user.id}"><i class="fas fa-wifi"></i> <span>Connecting</span></div>
+                <div class="lobby-device" th:id="'cam-' + ${participants[1].user.id}"><i class="fas fa-video"></i> <span>Camera</span></div>
+                <div class="lobby-device" th:id="'mic-' + ${participants[1].user.id}"><i class="fas fa-microphone"></i> <span>Mic</span></div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Ready Button -->
+    <div class="lobby-actions">
+        <button class="btn-ready" id="readyBtn" onclick="setReady()">
+            <i class="fas fa-check-circle"></i> READY
+        </button>
+        <div class="waiting-text" id="waitingText">
+            <i class="fas fa-spinner fa-spin"></i> Waiting for opponent to ready up...
+        </div>
+    </div>
+</div>
+
+<!-- Countdown Overlay -->
+<div class="countdown-overlay" id="countdownOverlay">
+    <div class="countdown-number" id="countdownNum">3</div>
+    <div class="countdown-text">Get Ready</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+<script th:inline="javascript">
+    var battleId = /*[[${battle.id}]]*/ 0;
+    var userId = /*[[${user.id}]]*/ 0;
+    var participantIds = /*[[${participants.![user.id]}]]*/ [];
+    var isReady = false;
+    var stompClient = null;
+
+    // Connect WebSocket
+    (function connect() {
+        var socket = new SockJS('/ws');
+        stompClient = Stomp.over(socket);
+        stompClient.debug = null;
+        stompClient.connect({}, function() {
+            // Mark connection active for this user
+            updateDeviceStatus(userId, 'conn', true);
+
+            // Subscribe to lobby events
+            stompClient.subscribe('/topic/battle/' + battleId, function(message) {
+                var data = JSON.parse(message.body);
+                
+                if (data.type === 'PLAYER_READY') {
+                    markPlayerReady(data.userId);
+                }
+                else if (data.type === 'COUNTDOWN') {
+                    showCountdown(data.seconds);
+                }
+                else if (data.type === 'BATTLE_START') {
+                    // Redirect to live battle
+                    window.location.href = '/battles/' + battleId + '/live';
+                }
+            });
+
+            // Request camera/mic permissions to show status
+            checkMediaDevices();
+        });
+    })();
+
+    function checkMediaDevices() {
+        navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+            .then(function(stream) {
+                updateDeviceStatus(userId, 'cam', true);
+                updateDeviceStatus(userId, 'mic', true);
+                // Stop tracks immediately — we just needed to check permissions
+                stream.getTracks().forEach(function(t) { t.stop(); });
+            })
+            .catch(function(err) {
+                // Try video only
+                navigator.mediaDevices.getUserMedia({ video: true })
+                    .then(function(s) {
+                        updateDeviceStatus(userId, 'cam', true);
+                        updateDeviceStatus(userId, 'mic', false);
+                        s.getTracks().forEach(function(t) { t.stop(); });
+                    })
+                    .catch(function() { updateDeviceStatus(userId, 'cam', false); });
+                // Try audio only
+                navigator.mediaDevices.getUserMedia({ audio: true })
+                    .then(function(s) {
+                        updateDeviceStatus(userId, 'mic', true);
+                        s.getTracks().forEach(function(t) { t.stop(); });
+                    })
+                    .catch(function() { updateDeviceStatus(userId, 'mic', false); });
+            });
+    }
+
+    function updateDeviceStatus(uid, type, active) {
+        var el = document.getElementById(type + '-' + uid);
+        if (!el) return;
+        el.className = 'lobby-device ' + (active ? 'active' : 'inactive');
+        var labels = { conn: active ? 'Connected' : 'Offline', cam: active ? 'Ready' : 'No Access', mic: active ? 'Ready' : 'No Access' };
+        el.querySelector('span').textContent = labels[type];
+    }
+
+    function setReady() {
+        if (isReady) return;
+        isReady = true;
+        
+        var btn = document.getElementById('readyBtn');
+        btn.classList.add('is-ready');
+        btn.innerHTML = '<i class="fas fa-check-circle"></i> READY!';
+        btn.disabled = true;
+        document.getElementById('waitingText').style.display = 'block';
+
+        // Mark self as ready visually
+        markPlayerReady(userId);
+
+        // Send ready to server
+        if (stompClient && stompClient.connected) {
+            stompClient.send('/app/lobby/ready', {}, JSON.stringify({ battleId: battleId }));
+        }
+    }
+
+    function markPlayerReady(uid) {
+        var card = document.getElementById('player-card-' + uid);
+        var badge = document.getElementById('ready-badge-' + uid);
+        if (card) card.classList.add('ready');
+        if (badge) { badge.textContent = 'READY'; }
+
+        // If both are ready, hide waiting text
+        var allReady = true;
+        participantIds.forEach(function(pid) {
+            var c = document.getElementById('player-card-' + pid);
+            if (!c || !c.classList.contains('ready')) allReady = false;
+        });
+        if (allReady) {
+            document.getElementById('waitingText').style.display = 'none';
+        }
+    }
+
+    function showCountdown(seconds) {
+        var overlay = document.getElementById('countdownOverlay');
+        var num = document.getElementById('countdownNum');
+        overlay.classList.add('show');
+
+        if (seconds > 0) {
+            num.textContent = seconds;
+            num.style.animation = 'none';
+            num.offsetHeight; // trigger reflow
+            num.style.animation = 'countPop 0.6s ease-out';
+        }
+        if (seconds <= 0) {
+            num.textContent = 'GO!';
+            num.style.animation = 'none';
+            num.offsetHeight;
+            num.style.animation = 'countPop 0.6s ease-out';
+        }
+    }
+</script>
+
+</body>
+</html>

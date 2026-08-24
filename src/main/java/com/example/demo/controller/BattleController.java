@@ -8,6 +8,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.transaction.annotation.Transactional;
+import com.example.demo.service.MatchmakingService;
+import com.example.demo.service.NotificationService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -30,6 +32,14 @@ public class BattleController {
     @Autowired private BattleLikeRepository battleLikeRepository;
     @Autowired private BattleGiftRepository battleGiftRepository;
     @Autowired private BattleTimerService battleTimerService;
+    @Autowired
+    private MatchmakingService matchmakingService;
+
+    @Autowired
+    private NotificationService notificationService;
+    
+    @Autowired
+    private com.example.demo.service.AuditLogService auditLogService;
 
     private User getUserFromSession(HttpSession session) {
         Object authUser = httpServletRequest.getAttribute("authenticatedUser");
@@ -334,6 +344,14 @@ public class BattleController {
             bp.setCheckedIn(false);
         }
         participantRepository.save(bp);
+        
+        // Notify creator if someone else joined
+        if (!battle.getCreator().getId().equals(user.getId())) {
+            notificationService.sendNotification(battle.getCreator().getId(), "Opponent Joined", user.getUsername() + " joined your battle!", "fas fa-user-plus", "/battles/" + battle.getId());
+        }
+        
+        auditLogService.log("BATTLE_JOIN", user.getId(), "User " + user.getId() + " joined battle " + battle.getId());
+        
         return "redirect:/battles/" + battle.getId();
     }
 
@@ -670,6 +688,36 @@ public class BattleController {
         battleRepository.save(battle);
         
         return "battle-live";
+    }
+
+    @GetMapping("/{id}/lobby")
+    public String battleLobby(@PathVariable Long id, HttpSession session, Model model) {
+        User user = getUserFromSession(session);
+        if (user == null) return "redirect:/login";
+        user = userRepository.findById(user.getId()).orElse(user);
+        
+        Battle battle = battleRepository.findById(id).orElse(null);
+        if (battle == null) return "redirect:/battles";
+        
+        // If battle is already active, skip lobby
+        if ("ACTIVE".equals(battle.getStatus())) return "redirect:/battles/" + id + "/live";
+        if ("COMPLETED".equals(battle.getStatus())) return "redirect:/battles/" + id;
+        
+        // Must be LOBBY status
+        if (!"LOBBY".equals(battle.getStatus())) return "redirect:/battles/" + id;
+        
+        java.util.List<BattleParticipant> participants = participantRepository.findByBattle(battle);
+        
+        // Check if user is a participant
+        final User currentUser = user;
+        boolean isParticipant = participants.stream().anyMatch(p -> p.getUser().getId().equals(currentUser.getId()));
+        if (!isParticipant) return "redirect:/battles/" + id;
+        
+        model.addAttribute("battle", battle);
+        model.addAttribute("user", user);
+        model.addAttribute("participants", participants);
+        
+        return "battle-lobby";
     }
 
     @PostMapping("/{id}/leave")

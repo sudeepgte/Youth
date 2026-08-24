@@ -1,25 +1,36 @@
 import java.nio.file.*;
-import java.nio.charset.StandardCharsets;
+import java.util.*;
 
 public class CleanEmojis {
     public static void main(String[] args) throws Exception {
-        Path path = Paths.get("src/main/resources/templates/battle-arena.html");
-        String content = new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
+        Path p = Paths.get("src/main/resources/templates/battle-arena.html");
+        byte[] bytes = Files.readAllBytes(p);
+        String content = new String(bytes, "UTF-8");
         
-        // Remove corrupted HTML comment lines (those containing a lot of A??, or similar)
-        // We will just replace any line that has "<!-- A" and "-->"
-        content = content.replaceAll("(?m)^\\s*<!--\\s*A.*-->\\s*$", "");
+        String[] lines = content.split("\n");
+        List<String> newLines = new ArrayList<>();
         
-        // Replace corrupted "Battle Arena" emoji
-        content = content.replaceAll("A\\?\\?A_A,A\\?\\s*Battle Arena", "⚔️ Battle Arena");
+        for (String line : lines) {
+            if (line.contains("ðŸ †") || line.contains("ðŸ¥‡") || line.contains("ðŸ¥ˆ") || line.contains("ðŸ¥‰")) {
+                continue; // Skip lines with broken trophy/medal emojis
+            }
+            if (line.contains("dY?+") || line.contains("dY")) {
+                 if (line.contains("font-size: 64px") || line.contains("font-size: 24px")) {
+                     continue; // Skip lines with alternative broken string
+                 }
+            }
+            
+            line = line.replace("ðŸ—‘ï¸", "");
+            line = line.replace("ðŸŽ‰", "");
+            line = line.replace("ðŸ—³ï¸", "");
+            line = line.replace("ðŸ”´", "<i class=\"fas fa-circle\" style=\"color:red\"></i>");
+            line = line.replace("ðŸ‘ ï¸", "<i class=\"fas fa-eye\"></i>");
+            line = line.replace("ðŸ¤¼", "<i class=\"fas fa-fist-raised\"></i>");
+            
+            newLines.add(line);
+        }
         
-        // Replace corrupted "Create Battle" emoji
-        content = content.replaceAll("A\\?\\?A_A,A\\?\\s*Create Battle", "⚔️ Create Battle");
-        
-        // Replace corrupted "Online" and "Offline" emojis
-        content = content.replaceAll("A,'A\\?\\s*Online", "🌐 Online");
-        content = content.replaceAll("A,A\\?A\\s*Offline", "🏢 Offline");
-
-        Files.write(path, content.getBytes(StandardCharsets.UTF_8));
+        Files.write(p, String.join("\n", newLines).getBytes("UTF-8"));
+        System.out.println("Done cleaning!");
     }
 }

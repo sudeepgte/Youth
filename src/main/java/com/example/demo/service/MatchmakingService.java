@@ -24,6 +24,12 @@ public class MatchmakingService {
     private SimpMessagingTemplate messagingTemplate;
 
     @Autowired
+    private NotificationService notificationService;
+    
+    @Autowired
+    private AuditLogService auditLogService;
+
+    @Autowired
     private BattleRepository battleRepository;
 
     @Autowired
@@ -95,20 +101,45 @@ public class MatchmakingService {
         while (unmatched.size() >= 2) {
             MatchRequest p1 = unmatched.remove(0);
             MatchRequest matchedP2 = null;
+            int bestScore = Integer.MAX_VALUE;
+
+            // Calculate how long p1 has been waiting
+            long p1WaitSeconds = java.time.Duration.between(p1.requestTime, LocalDateTime.now()).getSeconds();
+
+            // Expanding ELO range: starts at 150, +50 every 10 seconds, caps at 1000
+            int eloRange = Math.min(150 + (int)(p1WaitSeconds / 10) * 50, 1000);
+
+            // After 30s, relax skill level requirement
+            boolean relaxSkill = p1WaitSeconds >= 30;
+
+            // After 60s, relax duration requirement too
+            boolean relaxDuration = p1WaitSeconds >= 60;
 
             for (MatchRequest p2 : unmatched) {
                 // Must not be the same user
                 if (p1.userId.equals(p2.userId)) continue;
                 
-                // Must match category, skill, duration
+                // Must always match category
                 if (!p1.category.equals(p2.category)) continue;
-                if (!p1.skillLevel.equals(p2.skillLevel)) continue;
-                if (!p1.durationMinutes.equals(p2.durationMinutes)) continue;
 
-                // ELO check (Expanding search radius over time could be added here, currently fixed 150)
-                if (Math.abs(p1.elo - p2.elo) <= 150) {
-                    matchedP2 = p2;
-                    break;
+                // Skill level check (relaxed after 30s)
+                if (!relaxSkill && !p1.skillLevel.equals(p2.skillLevel)) continue;
+
+                // Duration check (relaxed after 60s)
+                if (!relaxDuration && !p1.durationMinutes.equals(p2.durationMinutes)) continue;
+
+                // Also check from p2's perspective for fair expanding
+                long p2WaitSeconds = java.time.Duration.between(p2.requestTime, LocalDateTime.now()).getSeconds();
+                int p2EloRange = Math.min(150 + (int)(p2WaitSeconds / 10) * 50, 1000);
+                int maxRange = Math.max(eloRange, p2EloRange);
+
+                int eloDiff = Math.abs(p1.elo - p2.elo);
+                if (eloDiff <= maxRange) {
+                    // Pick the closest ELO match
+                    if (eloDiff < bestScore) {
+                        bestScore = eloDiff;
+                        matchedP2 = p2;
+                    }
                 }
             }
 
@@ -127,7 +158,7 @@ public class MatchmakingService {
         User u2 = userRepository.findById(p2.userId).orElse(null);
         if (u1 == null || u2 == null) return;
 
-        // 1. Create a new Battle in LOBBY status
+        // 1. Create a new Battle in LOBBY status (goes ACTIVE after both players ready + countdown)
         Battle battle = new Battle();
         battle.setTitle("Quick Battle: " + u1.getUsername() + " vs " + u2.getUsername());
         battle.setCategory(p1.category);
@@ -136,8 +167,10 @@ public class MatchmakingService {
         battle.setMode("ONLINE");
         battle.setBattleType("QUICK");
         battle.setStatus("LOBBY");
+        battle.setIsLive(true);
         battle.setRoomCode(generateRoomCode());
         battle.setCreatedAt(LocalDateTime.now());
+        battle.setCreator(u1);
         
         battle = battleRepository.save(battle);
 
@@ -159,7 +192,7 @@ public class MatchmakingService {
         lobby.player2Id = p2.userId;
         activeLobbies.put(battle.getId(), lobby);
 
-        // 4. Broadcast Match Found to both users
+        // 4. Broadcast Match Found to both users — link goes to /lobby
         Map<String, Object> msg = new HashMap<>();
         msg.put("type", "MATCH_FOUND");
         msg.put("battleId", battle.getId());
@@ -180,10 +213,12 @@ public class MatchmakingService {
         Map<String, Object> p1Msg = new HashMap<>(msg);
         p1Msg.put("opponent", opponentForP1);
         messagingTemplate.convertAndSendToUser(p1.userId.toString(), "/queue/matchmaking", p1Msg);
+        notificationService.sendNotification(p1.userId, "Opponent Found", "You have been matched against " + u2.getUsername(), "fas fa-search", "/battles/lobby?roomCode=" + battle.getRoomCode());
 
         Map<String, Object> p2Msg = new HashMap<>(msg);
         p2Msg.put("opponent", opponentForP2);
         messagingTemplate.convertAndSendToUser(p2.userId.toString(), "/queue/matchmaking", p2Msg);
+        notificationService.sendNotification(p2.userId, "Opponent Found", "You have been matched against " + u1.getUsername(), "fas fa-search", "/battles/lobby?roomCode=" + battle.getRoomCode());
     }
 
     public void setPlayerReady(Long battleId, Long userId) {
@@ -208,7 +243,7 @@ public class MatchmakingService {
     private void startCountdown(Long battleId) {
         new Thread(() -> {
             try {
-                for (int i = 10; i > 0; i--) {
+                for (int i = 5; i > 0; i--) {
                     Map<String, Object> msg = new HashMap<>();
                     msg.put("type", "COUNTDOWN");
                     msg.put("seconds", i);
@@ -228,6 +263,14 @@ public class MatchmakingService {
                     startMsg.put("type", "BATTLE_START");
                     startMsg.put("endsAt", battle.getEndsAt().toString());
                     messagingTemplate.convertAndSend("/topic/battle/" + battleId, (Object) startMsg);
+                    
+                    // Notify participants
+                    List<BattleParticipant> participants = participantRepository.findByBattle(battle);
+                    for (BattleParticipant bp : participants) {
+                        notificationService.sendNotification(bp.getUser().getId(), "Battle Starting", "Your battle is starting now!", "fas fa-play", "/battles/" + battle.getId());
+                    }
+                    
+                    auditLogService.log("BATTLE_START", battle.getCreator().getId(), "Battle " + battle.getId() + " started.");
                 }
                 
                 activeLobbies.remove(battleId);

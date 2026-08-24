@@ -22,6 +22,8 @@ public class BattleTimerService {
     @Autowired private UserRepository userRepository;
     @Autowired private WalletService walletService;
     @Autowired private SimpMessagingTemplate messagingTemplate;
+    @Autowired private NotificationService notificationService;
+    @Autowired private AuditLogService auditLogService;
 
     @Scheduled(fixedRate = 2000)
     public void checkBattleTimers() {
@@ -100,9 +102,60 @@ public class BattleTimerService {
         msg.put("status", "COMPLETED");
         msg.put("reason", "TIME_UP");
         messagingTemplate.convertAndSend("/topic/battle/" + battle.getId() + "/status", (Object) msg);
+        
+        auditLogService.log("BATTLE_END", battle.getCreator().getId(), "Battle " + battle.getId() + " ended with status " + battle.getStatus());
+        
+        // Send notifications
+        if (participants.size() == 2) {
+            User p1 = participants.get(0).getUser();
+            User p2 = participants.get(1).getUser();
+            BattleSubmission sub1 = submissionRepository.findByBattleAndUser(battle, p1).orElse(null);
+            BattleSubmission sub2 = submissionRepository.findByBattleAndUser(battle, p2).orElse(null);
+            double score1 = (sub1 != null && sub1.getVoteCount() != null) ? sub1.getVoteCount() : 0.0;
+            double score2 = (sub2 != null && sub2.getVoteCount() != null) ? sub2.getVoteCount() : 0.0;
+
+            if (score1 == score2) {
+                notificationService.sendNotification(p1.getId(), "Battle Ended in a Tie", "Your battle ended in a tie.", "fas fa-handshake", "/battles/" + battle.getId());
+                notificationService.sendNotification(p2.getId(), "Battle Ended in a Tie", "Your battle ended in a tie.", "fas fa-handshake", "/battles/" + battle.getId());
+            } else if (score1 > score2) {
+                notificationService.sendNotification(p1.getId(), "You Won!", "Congratulations, you won the battle!", "fas fa-trophy", "/battles/" + battle.getId());
+                notificationService.sendNotification(p2.getId(), "You Lost", "You lost the battle. Better luck next time!", "fas fa-sad-tear", "/battles/" + battle.getId());
+            } else {
+                notificationService.sendNotification(p2.getId(), "You Won!", "Congratulations, you won the battle!", "fas fa-trophy", "/battles/" + battle.getId());
+                notificationService.sendNotification(p1.getId(), "You Lost", "You lost the battle. Better luck next time!", "fas fa-sad-tear", "/battles/" + battle.getId());
+            }
+            
+            Double prize = battle.getPrizePool() != null ? battle.getPrizePool() : (battle.getPrize1() != null ? battle.getPrize1() : 0.0);
+            if (prize > 0) {
+                if (score1 == score2) {
+                    notificationService.sendNotification(p1.getId(), "Reward Received", "You received " + (prize/2) + " coins for tying.", "fas fa-coins", "/wallet");
+                    notificationService.sendNotification(p2.getId(), "Reward Received", "You received " + (prize/2) + " coins for tying.", "fas fa-coins", "/wallet");
+                } else if (score1 > score2) {
+                    notificationService.sendNotification(p1.getId(), "Reward Received", "You received " + prize + " coins for winning!", "fas fa-coins", "/wallet");
+                } else {
+                    notificationService.sendNotification(p2.getId(), "Reward Received", "You received " + prize + " coins for winning!", "fas fa-coins", "/wallet");
+                }
+            }
+        }
     }
 
-    private void updateElo(User player1, User player2, boolean isTie, boolean p1Wins) {
+    private static final Map<String, Integer> recentMatchups = new java.util.concurrent.ConcurrentHashMap<>();
+
+    public void updateElo(User player1, User player2, boolean isTie, boolean p1Wins) {
+        // --- Anti-Cheat: Rating manipulation protection / Multiple-account abuse detection ---
+        String matchupKey = player1.getId() < player2.getId() ? 
+            (player1.getId() + "_" + player2.getId()) : (player2.getId() + "_" + player1.getId());
+        
+        int matchCount = recentMatchups.getOrDefault(matchupKey, 0) + 1;
+        recentMatchups.put(matchupKey, matchCount);
+
+        // If they played more than 3 times, don't update ELO or give XP to prevent win-trading
+        if (matchCount > 3) {
+            System.out.println("ANTI-CHEAT: Blocked ELO update for potential win-trading between User " + player1.getId() + " and " + player2.getId());
+            // We can optionally flag them or shadowban here
+            return;
+        }
+
         int k = 32;
         double p1Rating = player1.getBattleRating() != null ? player1.getBattleRating() : 1500;
         double p2Rating = player2.getBattleRating() != null ? player2.getBattleRating() : 1500;
