@@ -501,6 +501,9 @@
         .msg-meta.sent {
             align-self: flex-end;
             margin-right: 4px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
         }
 
         .msg-meta.received {
@@ -514,6 +517,15 @@
             text-align: right;
             margin-top: -10px;
             margin-bottom: 12px;
+            display: none;
+        }
+
+        .msg-seen-status {
+            font-size: 11px;
+            color: var(--secondary-text, #8e8e93);
+            text-align: right;
+            margin-top: 2px;
+            white-space: nowrap;
             display: none;
         }
 
@@ -2607,11 +2619,30 @@
 
                 stompClient.subscribe('/user/queue/seen', function (msg) {
                     const data = JSON.parse(msg.body);
-                    if (activeConversationId === data.conversationId) {
+                    if (String(activeConversationId) === String(data.conversationId)) {
                         if (data.userId && String(data.userId) === String(currentUser.id)) return;
-                        const seenIndicator = document.getElementById('seenIndicator');
-                        seenIndicator.innerText = 'Seen \u00B7 ' + formatTime(data.seenAt);
-                        seenIndicator.style.display = 'block';
+                        
+                        let targetMeta = data.messageId ? document.getElementById('msg-meta-' + data.messageId) : null;
+                        if (!targetMeta) {
+                            const sentMetas = document.querySelectorAll('#messagesArea .msg-meta.sent');
+                            if (sentMetas.length > 0) {
+                                targetMeta = sentMetas[sentMetas.length - 1];
+                            }
+                        }
+                        
+                        if (targetMeta) {
+                            let seenDiv = targetMeta.querySelector('.msg-seen-status');
+                            if (!seenDiv) {
+                                seenDiv = document.createElement('div');
+                                seenDiv.className = 'msg-seen-status';
+                                targetMeta.appendChild(seenDiv);
+                            }
+                            seenDiv.innerText = 'Seen \u00B7 ' + formatTime(data.seenAt || new Date());
+                            seenDiv.style.display = 'block';
+                        }
+                        
+                        const globalIndicator = document.getElementById('seenIndicator');
+                        if (globalIndicator) globalIndicator.style.display = 'none';
                     }
                 });
 
@@ -3104,7 +3135,8 @@
         async function loadMessages(convId) {
             if (!convId) {
                 document.getElementById('messagesArea').innerHTML = '';
-                document.getElementById('seenIndicator').style.display = 'none';
+                const seenInd = document.getElementById('seenIndicator');
+                if (seenInd) seenInd.style.display = 'none';
                 return;
             }
             
@@ -3271,10 +3303,27 @@
             wrapper.appendChild(bubble);
             wrapper.appendChild(actions);
 
-            // Metadata (Time)
+            // Metadata (Time & Seen status)
             const meta = document.createElement('div');
             meta.className = `msg-meta ${isSent ? 'sent' : 'received'}`;
-            meta.innerText = formatTime(msg.timestamp);
+            meta.id = `msg-meta-${msg.id}`;
+
+            const timeSpan = document.createElement('span');
+            timeSpan.className = 'msg-time';
+            timeSpan.innerText = formatTime(msg.timestamp);
+            meta.appendChild(timeSpan);
+
+            if (isSent) {
+                const seenDiv = document.createElement('div');
+                seenDiv.className = 'msg-seen-status';
+                seenDiv.id = `msg-seen-${msg.id}`;
+                const isSeen = msg.seenAt || msg.status === 'READ' || msg.status === 'SEEN' || msg.seen;
+                if (isSeen) {
+                    seenDiv.innerText = 'Seen \u00B7 ' + formatTime(msg.seenAt || msg.timestamp);
+                    seenDiv.style.display = 'block';
+                }
+                meta.appendChild(seenDiv);
+            }
 
             let isGroupConv = false;
             try {
@@ -3719,7 +3768,8 @@
                     renderConversationList(conversationsData);
                     selectConversation(dummyConv, partner);
                     document.getElementById('messagesArea').innerHTML = '';
-                    document.getElementById('seenIndicator').style.display = 'none';
+                    const gInd = document.getElementById('seenIndicator');
+                    if (gInd) gInd.style.display = 'none';
                 }
             }
         }

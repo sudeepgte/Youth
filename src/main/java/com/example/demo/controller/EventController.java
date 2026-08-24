@@ -867,7 +867,7 @@ public class EventController {
         event.setEntryFeeType(entryFeeType);
         event.setMaxParticipants(maxParticipants);
         event.setStatus(status != null ? status : "UPCOMING");
-        event.setOrganizer("Zentrix Admin");
+        event.setOrganizer("Youthian Admin");
         event.setEventMode(eventMode);
         event.setMeetingLink(meetingLink);
         event.setFinalVotingEnabled(finalVotingEnabled);

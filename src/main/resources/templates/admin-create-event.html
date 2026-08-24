@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${event.id != null} ? 'Edit Event | Zentrix Admin' : 'Create Event | Zentrix Admin'">Create Event |
-        Zentrix Admin</title>
+    <title th:text="${event.id != null} ? 'Edit Event | Youthian Admin' : 'Create Event | Youthian Admin'">Create Event |
+        Youthian Admin</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
@@ -462,15 +462,21 @@
         #posterPreview {
             display: none;
             margin-top: 16px;
-            border-radius: 12px;
+            border-radius: 14px;
             overflow: hidden;
-            max-height: 220px;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            background: #0f172a;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            align-items: center;
+            justify-content: center;
         }
 
         #posterPreview img {
             width: 100%;
-            height: 220px;
-            object-fit: cover;
+            height: 100%;
+            object-fit: contain;
+            display: block;
         }
 
         /* Responsive Media Queries */
@@ -1294,7 +1300,7 @@
                     <div class="field-group" style="margin-bottom: 20px;">
                         <label>Event Name <span class="required">*</span></label>
                         <input type="text" name="title" id="titleInput" th:value="${event.title}"
-                            placeholder="e.g. Zentrix Gaming Championship 2025" required maxlength="120"
+                            placeholder="e.g. Youthian Gaming Championship 2025" required maxlength="120"
                             oninput="this.value = this.value.replace(/^[^a-zA-Z]+/, '')">
                     </div>
 
@@ -2252,12 +2258,11 @@
 
                     <!-- Live Preview -->
                     <div id="posterPreview"
-                        th:style="${event.imageUrl != null and !event.imageUrl.isEmpty()} ? 'display:block; margin-top:16px; border-radius:12px; overflow:hidden;' : 'display:none; margin-top:16px; border-radius:12px; overflow:hidden;'">
+                        th:style="${event.imageUrl != null and !event.imageUrl.isEmpty()} ? 'display:flex; margin-top:16px; border-radius:14px; overflow:hidden;' : 'display:none; margin-top:16px; border-radius:14px; overflow:hidden;'">
                         <img id="posterImg" th:src="${event.imageUrl}"
-                            style="width:100%; height:220px; object-fit:cover; border-radius:12px;" alt="Preview"
+                            style="width:100%; height:100%; object-fit:contain; border-radius:14px;" alt="Preview"
                             onerror="this.parentElement.style.display='none'">
-                        <p style="font-size:12px; color:#334155; margin-top:8px; text-align:center;">Image
-                            preview</p>
+                        <p style="font-size:12px; color:#64748b; margin-top:8px; text-align:center;">Image preview</p>
                     </div>
                 </div>
 
@@ -2513,7 +2518,7 @@
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     img.src = e.target.result;
-                    preview.style.display = 'block';
+                    preview.style.display = 'flex';
                 };
                 reader.readAsDataURL(input.files[0]);
             } else {
