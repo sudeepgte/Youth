@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zentrix Reward Shop</title>
+    <title>Youthians Reward Shop</title>
     <script>if(localStorage.getItem('youthian_theme')==='dark') document.documentElement.classList.add('dark-theme');</script>
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -256,7 +256,7 @@
 
 <body>
     <nav>
-        <a th:href="@{/dashboard}" class="logo">ZENTRIX</a>
+        <a th:href="@{/dashboard}" class="logo">YOUTHIANS</a>
         <div class="coin-balance" onclick="GameRewards.showHistory()" style="cursor: pointer;">
             <i class="fas fa-coins text-warning"></i>
             <span th:text="${user.coins}">0</span> Coins
@@ -268,7 +268,7 @@
             <a th:href="@{/dashboard}" class="back-link"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
         </div>
         <h1>Reward Shop</h1>
-        <p>Spend your Zentrix Coins to unlock exclusive benefits and premium features.</p>
+        <p>Spend your Youthians Coins to unlock exclusive benefits and premium features.</p>
         
         <button class="recent-activity-btn" onclick="GameRewards.showHistory()">
             <i class="fas fa-history"></i> View Game Earning History

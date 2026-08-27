@@ -449,6 +449,8 @@ public class BattleLiveWebSocketController {
         messagingTemplate.convertAndSend("/topic/battle/" + battleId + "/votes", (Object) broadcast);
     }
 
+    public int getViewerCount(Long battleId) { Set<Long> viewers = battleViewers.get(battleId); return viewers != null ? viewers.size() : 0; }
+
     @MessageMapping("/battle/{battleId}/viewer-join")
     public void handleViewerJoin(@DestinationVariable Long battleId, Principal principal, org.springframework.messaging.simp.SimpMessageHeaderAccessor headerAccessor) {
         if (principal != null) {
@@ -480,3 +482,5 @@ public class BattleLiveWebSocketController {
         messagingTemplate.convertAndSend("/topic/battle/" + battleId + "/status", (Object) data);
     }
 }
+
+

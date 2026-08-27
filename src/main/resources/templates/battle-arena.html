@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Battle Arena | Zentrix</title>
+    <title>Battle Arena | Youthians</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
@@ -831,7 +831,7 @@
         <path d="M 15 60 Q 50 90 90 40 Q 80 50 50 80 Q 25 70 15 60 Z" fill="url(#yg)" />
         <polygon points="75,10 80,15 85,10 80,5" fill="#0ea5e9" />
     </svg>
-    <span style="font-size: 11px; font-weight: 800; color: #1e3a8a; letter-spacing: 1px; margin-top: 2px;">YOUTHIAN</span>
+    <span style="font-size: 11px; font-weight: 800; color: #1e3a8a; letter-spacing: 1px; margin-top: 2px;">YOUTHIANS</span>
 </a>
 
         <div class="dashboard-spacer"></div>
@@ -1156,8 +1156,9 @@
                                 <span th:if="${battle.category == 'Acting'}"><i class="fas fa-theater-masks" style="color:#EC4899;"></i> Upload Acting Video</span>
                                 <span th:if="${battle.category == 'Fashion'}"><i class="fas fa-tshirt" style="color:#F84464;"></i> Upload Fashion Look Photo</span>
                                 <span th:if="${battle.category == 'Cooking'}"><i class="fas fa-utensils" style="color:#F97316;"></i> Upload Food Photo</span>
-                                <span th:if="${battle.category == 'Writing' or battle.category == 'Poetry'}"><i class="fas fa-pen-fancy" style="color:#3B82F6;"></i> Upload Document (PDF / DOC)</span>
+                                <span th:if="${battle.category == 'Writing' or battle.category == 'Poetry' or battle.category == 'Story Teller'}"><i class="fas fa-pen-fancy" style="color:#3B82F6;"></i> Upload Document (PDF / DOC)</span>
                                 <span th:if="${battle.category == 'Comedy'}"><i class="fas fa-grin-tears" style="color:#FBBF24;"></i> Upload Comedy Video</span>
+
                             </label>
 
                             <!-- Upload Zone Box -->
@@ -1173,7 +1174,7 @@
                                     <span th:if="${battle.category == 'Dance' or battle.category == 'Acting' or battle.category == 'Comedy' or battle.category == 'Video Editing' or battle.category == 'Gaming'}"><i class="fas fa-file-video" style="color:#EC4899;"></i></span>
                                     <span th:if="${battle.category == 'Photography' or battle.category == 'Drawing' or battle.category == 'Art' or battle.category == 'Meme' or battle.category == 'AI Prompt' or battle.category == 'Fashion' or battle.category == 'Cooking'}"><i class="fas fa-file-image" style="color:#22D3EE;"></i></span>
                                     <span th:if="${battle.category == 'Fitness'}"><i class="fas fa-file-video" style="color:#F59E0B;"></i></span>
-                                    <span th:if="${battle.category == 'Writing' or battle.category == 'Poetry'}"><i class="fas fa-file-pdf" style="color:#EF4444;"></i></span>
+                                    <span th:if="${battle.category == 'Writing' or battle.category == 'Poetry' or battle.category == 'Story Teller'}"><i class="fas fa-file-pdf" style="color:#EF4444;"></i></span>
                                 </div>
 
                                 <div style="font-size:13px; font-weight:800; color:var(--text-primary); margin-bottom:4px;">
@@ -1185,7 +1186,7 @@
                                     <span th:if="${battle.category == 'Dance' or battle.category == 'Acting' or battle.category == 'Comedy' or battle.category == 'Video Editing'}">Accepts: .mp4, .mov, .avi, .webm, .mkv</span>
                                     <span th:if="${battle.category == 'Photography' or battle.category == 'Drawing' or battle.category == 'Art' or battle.category == 'Meme' or battle.category == 'AI Prompt' or battle.category == 'Fashion' or battle.category == 'Cooking'}">Accepts: .jpg, .png, .webp, .gif, .heic</span>
                                     <span th:if="${battle.category == 'Gaming' or battle.category == 'Fitness'}">Accepts: .mp4, .mov, .avi, .webm, .jpg, .png</span>
-                                    <span th:if="${battle.category == 'Writing' or battle.category == 'Poetry'}">Accepts: .pdf, .doc, .docx, .txt</span>
+                                    <span th:if="${battle.category == 'Writing' or battle.category == 'Poetry' or battle.category == 'Story Teller'}">Accepts: .pdf, .doc, .docx, .txt, .mp4, .mp3</span>
                                 </div>
 
                                 <!-- Upload status shown inside zone -->
@@ -1199,7 +1200,7 @@
                                        ((battle.category == 'Dance' or battle.category == 'Acting' or battle.category == 'Comedy' or battle.category == 'Video Editing') ? 'video/mp4,video/quicktime,video/x-msvideo,video/webm,video/*' : 
                                        ((battle.category == 'Photography' or battle.category == 'Drawing' or battle.category == 'Art' or battle.category == 'Meme' or battle.category == 'AI Prompt' or battle.category == 'Fashion' or battle.category == 'Cooking') ? 'image/jpeg,image/png,image/webp,image/gif,image/*' : 
                                        ((battle.category == 'Coding') ? 'application/zip,application/x-rar-compressed,application/pdf,text/plain,text/javascript,text/html,text/css,.py,.java,.js,.html,.css,.zip,.rar' : 
-                                       ((battle.category == 'Writing' or battle.category == 'Poetry') ? 'application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,.pdf,.doc,.docx,.txt' : 
+                                       ((battle.category == 'Writing' or battle.category == 'Poetry' or battle.category == 'Story Teller') ? 'application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,.pdf,.doc,.docx,.txt,video/mp4,audio/mpeg,audio/wav,.mp4,.mp3' : 
                                        ((battle.category == 'Gaming' or battle.category == 'Fitness') ? 'video/*,image/*' : 
                                        'image/*,video/*,audio/*,application/pdf,application/zip')))))}"
                                    onchange="uploadLocalFile('submissionFile', 'submissionUrlInput', 'uploadStatusPrimary')" />
@@ -1224,7 +1225,7 @@
                                 <span th:if="${battle.category == 'Photography' or battle.category == 'Drawing' or battle.category == 'Art' or battle.category == 'Meme' or battle.category == 'AI Prompt' or battle.category == 'Fashion' or battle.category == 'Cooking'}">Image URL (Imgur / Drive)</span>
                                 <span th:if="${battle.category == 'Gaming'}">Gameplay Recording URL</span>
                                 <span th:if="${battle.category == 'Fitness'}">Workout Video / Photo Link</span>
-                                <span th:if="${battle.category == 'Writing' or battle.category == 'Poetry'}">Google Docs / Drive Link</span>
+                                <span th:if="${battle.category == 'Writing' or battle.category == 'Poetry' or battle.category == 'Story Teller'}">Google Docs / Drive Link</span>
                             </label>
                             <input type="text" id="submissionLinkInput" placeholder="https://..." 
                                    oninput="if(this.value.trim()) document.getElementById('submissionUrlInput').value = this.value.trim();" />
@@ -1395,8 +1396,6 @@
                 <!-- â”€â”€â”€ WINNER ANNOUNCEMENT â”€â”€â”€ -->
                 <div th:if="${(battle.status == 'COMPLETED' or battle.status == 'TIE') and battle.winner != null}" class="winner-section" id="winner-display" style="padding: 20px;">
 
-                    <div class="winner-trophy" style="font-size: 64px; margin-bottom: 15px;">ðŸ†</div>
-
                     <div class="winner-trophy" style="font-size: 64px; margin-bottom: 15px;"><i class="fas fa-trophy" style="color: #FFD700;"></i></div>
 
                     <div style="font-size:18px; color:var(--text-primary); font-weight:900; margin-bottom:20px; text-transform: uppercase;">
@@ -1407,8 +1406,6 @@
                     <!-- 1st Place -->
                     <div style="background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.2); border-radius: 12px; padding: 15px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
                         <div style="display: flex; align-items: center; gap: 15px;">
-
-                            <div style="font-size: 24px;">ðŸ¥‡</div>
 
                             <div style="font-size: 24px;"><i class="fas fa-medal" style="color: #FFD700;"></i></div>
 
@@ -1427,8 +1424,6 @@
                     <div th:if="${battle.winner2 != null}" style="background: rgba(255,255,255,0.6); border: 1px solid rgba(15,23,42,0.1); border-radius: 12px; padding: 15px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
                         <div style="display: flex; align-items: center; gap: 15px;">
 
-                            <div style="font-size: 24px;">ðŸ¥ˆ</div>
-
                             <div style="font-size: 24px;"><i class="fas fa-medal" style="color: #C0C0C0;"></i></div>
 
                             <div style="text-align: left;">
@@ -1446,7 +1441,6 @@
                     <div th:if="${battle.winner3 != null}" style="background: rgba(255,255,255,0.6); border: 1px solid rgba(15,23,42,0.1); border-radius: 12px; padding: 15px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
                         <div style="display: flex; align-items: center; gap: 15px;">
 
-                            <div style="font-size: 24px;">ðŸ¥‰</div>
                             <div style="font-size: 24px;"><i class="fas fa-medal" style="color: #CD7F32;"></i></div>
 
                             <div style="text-align: left;">
@@ -1761,6 +1755,7 @@
                             <div class="category-option" onclick="selectBattleCategory(this, 'Cooking')"><i class="fas fa-utensils"></i> Cooking</div>
                             <div class="category-option" onclick="selectBattleCategory(this, 'Writing')"><i class="fas fa-pen-fancy"></i> Writing</div>
                             <div class="category-option" onclick="selectBattleCategory(this, 'Comedy')"><i class="fas fa-grin-tears"></i> Comedy</div>
+                            <div class="category-option" onclick="selectBattleCategory(this, 'Story Teller')"><i class="fas fa-book-reader"></i> Story Teller</div>
                         </div>
                     </div>
                     <button type="button" class="btn-arena btn-arena-primary" style="width:100%; justify-content:center; margin-top:6px;" onclick="goToStep2()">
@@ -1943,11 +1938,13 @@
                         <option value="Photography">Photography</option>
                         <option value="Singing">Singing</option>
                         <option value="Video Editing">Video Editing</option>
+                        <option value="Story Teller">Story Teller</option>
                         <option value="Drawing">Drawing</option>
                         <option value="Meme">Meme</option>
                         <option value="AI Prompt">AI Prompt</option>
                         <option value="Art">Art</option>
                         <option value="Writing">Writing</option>
+                        <option value="Story Teller">Story Teller</option>
                     </select>
                 </div>
 
@@ -2558,6 +2555,14 @@
     </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
 
 
 

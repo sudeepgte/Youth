@@ -4,9 +4,9 @@ import com.example.demo.model.*;
 import com.example.demo.repository.*;
 import com.example.demo.config.JwtUtil;
 import com.example.demo.config.TokenBlacklist;
-import com.example.demo.music.room.MusicRoom;
-import com.example.demo.music.room.MusicRoomRepository;
 import com.example.demo.service.FeedAlgorithmService;
+import com.example.demo.model.AdPlacement;
+import com.example.demo.service.AdvertisementService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -153,6 +153,8 @@ public class MainController {
 
     @Autowired
     private FeedAlgorithmService feedAlgorithmService;
+    @Autowired
+    private AdvertisementService advertisementService;
 
     @Autowired
     private PostCollaborationRepository postCollaborationRepository;
@@ -174,9 +176,6 @@ public class MainController {
 
     @Autowired
     private FollowRequestRepository followRequestRepository;
-
-    @Autowired
-    private MusicRoomRepository musicRoomRepository;
 
 
     @Autowired
@@ -204,6 +203,10 @@ public class MainController {
         // Fetch all public events (UPCOMING, ONGOING, VOTING)
         model.addAttribute("events", eventRepository.findByStatusInOrderByCreatedAtDesc(
                 java.util.List.of("UPCOMING", "ONGOING", "VOTING")));
+                model.addAttribute("adsHero", advertisementService.getValidAdsForPlacement(AdPlacement.HERO));
+        model.addAttribute("adsFeatured", advertisementService.getValidAdsForPlacement(AdPlacement.FEATURED));
+        model.addAttribute("adsBetween", advertisementService.getValidAdsForPlacement(AdPlacement.BETWEEN_SECTIONS));
+        model.addAttribute("adsBottom", advertisementService.getValidAdsForPlacement(AdPlacement.BOTTOM_CTA));
         return "home";
     }
 
@@ -456,10 +459,6 @@ public class MainController {
         }
         model.addAttribute("votedPollIds", votedPollIds);
 
-        // Ongoing music battles (rooms)
-        List<MusicRoom> ongoingBattles = musicRoomRepository.findTop5ByActiveTrueAndPhaseNotOrderByCreatedAtDesc("ENDED");
-        model.addAttribute("ongoingMusicBattles", ongoingBattles);
-
         // Auto-resolve expired events
         LocalDateTime now = LocalDateTime.now();
         List<Event> expiredEvents = eventRepository.findAll().stream()
@@ -510,7 +509,8 @@ public class MainController {
             double entryFee = b.getEntryFee() != null ? b.getEntryFee() : 0.0;
             // Creator auto-joins and is stored in b.participants, so other joining users are (participants size - 1)
             int joinsCount = b.getParticipants() != null ? Math.max(0, b.getParticipants().size() - 1) : 0;
-            totalAdminCommission += entryFee * 0.07 * joinsCount;
+            double pct = b.getAdminCommissionPct() != null ? b.getAdminCommissionPct() : 7.0;
+            totalAdminCommission += entryFee * (pct / 100.0) * joinsCount;
         }
 
         model.addAttribute("battles", battles);
@@ -538,7 +538,8 @@ public class MainController {
         for (Battle b : battles) {
             double entryFee = b.getEntryFee() != null ? b.getEntryFee() : 0.0;
             int joinsCount = b.getParticipants() != null ? Math.max(0, b.getParticipants().size() - 1) : 0;
-            totalAdminCommission += entryFee * 0.07 * joinsCount;
+            double pct = b.getAdminCommissionPct() != null ? b.getAdminCommissionPct() : 7.0;
+            totalAdminCommission += entryFee * (pct / 100.0) * joinsCount;
         }
 
         model.addAttribute("battles", battles);
@@ -797,3 +798,6 @@ public class MainController {
         return u instanceof User || "admin".equals(u);
     }
 }
+
+
+

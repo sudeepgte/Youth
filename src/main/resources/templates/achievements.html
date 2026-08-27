@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Leaderboard & Achievements | Zentrix</title>
+    <title>Leaderboard & Achievements | Youthians</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
@@ -711,7 +711,7 @@
         <path d="M 15 60 Q 50 90 90 40 Q 80 50 50 80 Q 25 70 15 60 Z" fill="url(#yg)" />
         <polygon points="75,10 80,15 85,10 80,5" fill="#0ea5e9" />
     </svg>
-    <span style="font-size: 11px; font-weight: 800; color: #1e3a8a; letter-spacing: 1px; margin-top: 2px;">YOUTHIAN</span>
+    <span style="font-size: 11px; font-weight: 800; color: #1e3a8a; letter-spacing: 1px; margin-top: 2px;">YOUTHIANS</span>
 </a>
 
         <div class="dashboard-spacer"></div>
@@ -753,7 +753,7 @@
         <main class="content-area">
 
             <div class="lb-header">
-                <h1><i class="fas fa-crown"></i> Zentrix Leaderboard</h1>
+                <h1><i class="fas fa-crown"></i> Youthians Leaderboard</h1>
             </div>
 
             <!-- Current User Stats -->
@@ -786,7 +786,7 @@
                         (<span th:text="${attendedCount}">0</span> / 3 Attended)
                     </p>
                     <p th:if="${attendedCount >= 3}" style="color:#4ade80; font-weight:700;">
-                        Congratulations! You've unlocked the Elite Zentrix Reward.
+                        Congratulations! You've unlocked the Elite Youthians Reward.
                     </p>
 
                     <div class="mystery-bar">
@@ -808,7 +808,7 @@
 
             <!-- Top Scorer Section -->
             <div class="achievements-section" th:if="${not #lists.isEmpty(leaderboard)}">
-                <h2><i class="fas fa-trophy" style="color:#fbbf24;"></i> Zentrix Top Scorer</h2>
+                <h2><i class="fas fa-trophy" style="color:#fbbf24;"></i> Youthians Top Scorer</h2>
 
                 <div class="achievement-card" style="background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(255, 255, 255, 0.5)); border-color: rgba(251, 191, 36, 0.4); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 20px;">
                     <div style="display: flex; align-items: center; gap: 18px;">

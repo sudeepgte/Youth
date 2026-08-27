@@ -77,18 +77,6 @@ public class BattleTimerService {
             // Gamification and ELO
             updateElo(p1, p2, isTie, p1Wins);
 
-            // Prize Distribution
-            Double prize = battle.getPrizePool() != null ? battle.getPrizePool() : (battle.getPrize1() != null ? battle.getPrize1() : 0.0);
-            if (prize > 0) {
-                if (isTie) {
-                    walletService.processTransaction(p1, prize / 2.0, "COINS", "CREDIT", "Battle Tie Prize", "BATTLE_" + battle.getId());
-                    walletService.processTransaction(p2, prize / 2.0, "COINS", "CREDIT", "Battle Tie Prize", "BATTLE_" + battle.getId());
-                } else {
-                    User winner = p1Wins ? p1 : p2;
-                    walletService.processTransaction(winner, prize, "COINS", "CREDIT", "Battle Victory Prize", "BATTLE_" + battle.getId());
-                }
-            }
-
             userRepository.save(p1);
             userRepository.save(p2);
         } else {
@@ -193,3 +181,5 @@ public class BattleTimerService {
         }
     }
 }
+
+

@@ -4,15 +4,6 @@ import com.example.demo.config.ActiveLoginRegistry;
 import com.example.demo.config.JwtUtil;
 import com.example.demo.config.TokenBlacklist;
 import com.example.demo.model.*;
-import com.example.demo.music.MusicService;
-import com.example.demo.music.Track;
-import com.example.demo.music.TrackLikeRepository;
-import com.example.demo.music.TrackRepository;
-import com.example.demo.music.TrackStatus;
-import com.example.demo.music.room.MusicRoom;
-import com.example.demo.music.room.MusicRoomRepository;
-import com.example.demo.music.room.MusicRoomVote;
-import com.example.demo.music.room.MusicRoomVoteRepository;
 import com.example.demo.repository.*;
 import com.example.demo.service.FeedAlgorithmService;
 import com.example.demo.service.RewardService;
@@ -52,11 +43,6 @@ public class MobileApiController {
     @Autowired private BattleVoteRepository battleVoteRepository;
     @Autowired private NotificationRepository notificationRepository;
     @Autowired private WalletTransactionRepository walletTransactionRepository;
-    @Autowired private TrackRepository trackRepository;
-    @Autowired private TrackLikeRepository trackLikeRepository;
-    @Autowired private MusicRoomRepository musicRoomRepository;
-    @Autowired private MusicRoomVoteRepository musicRoomVoteRepository;
-    @Autowired private MusicService musicService;
     @Autowired private FollowRequestRepository followRequestRepository;
     @Autowired private PostCollaborationRepository postCollaborationRepository;
     @Autowired private UserRewardRepository userRewardRepository;
@@ -1345,84 +1331,6 @@ public class MobileApiController {
     }
 
     // ── Music ─────────────────────────────────────────────────────────────
-
-    @GetMapping("/music/tracks")
-    public ResponseEntity<?> tracks(HttpSession session) {
-        User user = currentUser(session);
-        if (user == null) return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
-        List<Map<String, Object>> list = trackRepository.findByStatusOrderByCreatedAtDesc(TrackStatus.APPROVED)
-                .stream().map(t -> {
-                    Map<String, Object> m = new LinkedHashMap<>();
-                    m.put("id", t.getId());
-                    m.put("title", t.getTitle());
-                    m.put("artist", t.getArtistName());
-                    m.put("durationSeconds", t.getDurationSeconds());
-                    m.put("streamUrl", "/music/stream/" + t.getId());
-                    m.put("likeCount", musicService.likeCount(t));
-                    m.put("liked", trackLikeRepository.existsByTrackAndUser(t, user));
-                    return m;
-                }).collect(Collectors.toList());
-        return ResponseEntity.ok(list);
-    }
-
-    @GetMapping("/music/leaderboard")
-    @Transactional(readOnly = true)
-    public ResponseEntity<?> musicLeaderboard(HttpSession session) {
-        User user = currentUser(session);
-        if (user == null) return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
-
-        Map<Long, Long> votesByUser = new HashMap<>();
-        for (MusicRoomVote v : musicRoomVoteRepository.findAll()) {
-            if (v.getVoter() == null || v.getVoter().getId() == null) continue;
-            votesByUser.merge(v.getVoter().getId(), 1L, Long::sum);
-        }
-        Map<Long, Long> roomsByHost = new HashMap<>();
-        for (MusicRoom r : musicRoomRepository.findAll()) {
-            if (r.getHost() == null || r.getHost().getId() == null) continue;
-            roomsByHost.merge(r.getHost().getId(), 1L, Long::sum);
-        }
-
-        Map<String, Object> out = new LinkedHashMap<>();
-        out.put("topVoters", topMusicUsers(votesByUser, 10));
-        out.put("topHosts", topMusicUsers(roomsByHost, 10));
-        return ResponseEntity.ok(out);
-    }
-
-    private List<Map<String, Object>> topMusicUsers(Map<Long, Long> counts, int limit) {
-        List<Map.Entry<Long, Long>> sorted = new ArrayList<>(counts.entrySet());
-        sorted.sort((a, b) -> Long.compare(b.getValue(), a.getValue()));
-        if (sorted.size() > limit) sorted = sorted.subList(0, limit);
-        List<Map<String, Object>> rows = new ArrayList<>();
-        for (Map.Entry<Long, Long> e : sorted) {
-            User u = userRepository.findById(e.getKey()).orElse(null);
-            if (u == null) continue;
-            Map<String, Object> row = new LinkedHashMap<>();
-            row.put("username", u.getUsername());
-            row.put("count", e.getValue());
-            rows.add(row);
-        }
-        return rows;
-    }
-
-    @GetMapping("/music/rooms")
-    @Transactional(readOnly = true)
-    public ResponseEntity<?> musicRooms(HttpSession session) {
-        if (currentUser(session) == null) return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
-        List<Map<String, Object>> list = musicRoomRepository.findAll().stream().map(r -> {
-            Map<String, Object> m = new LinkedHashMap<>();
-            m.put("id", r.getId());
-            m.put("code", r.getCode());
-            m.put("name", r.getName());
-            m.put("status", r.getPhase());
-            m.put("active", r.isActive());
-            m.put("hostUsername", r.getHost() != null ? r.getHost().getUsername() : null);
-            return m;
-        }).collect(Collectors.toList());
-        return ResponseEntity.ok(list);
-    }
-
-    // ── Stories ────────────────────────────────────────────────────────────
-
     @GetMapping("/stories")
     @Transactional(readOnly = true)
     public ResponseEntity<?> stories(HttpSession session) {
@@ -1573,3 +1481,4 @@ public class MobileApiController {
         return ResponseEntity.ok(resp);
     }
 }
+

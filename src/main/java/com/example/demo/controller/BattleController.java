@@ -22,6 +22,8 @@ import java.util.stream.Collectors;
 @RequestMapping(value = "/battles")
 public class BattleController {
 
+    @Autowired private BattleLiveWebSocketController battleLiveWebSocketController;
+
     @Autowired private BattleRepository battleRepository;
     @Autowired private BattleParticipantRepository participantRepository;
     @Autowired private BattleSubmissionRepository submissionRepository;
@@ -678,6 +680,7 @@ public class BattleController {
         model.addAttribute("comments", comments);
         model.addAttribute("likeCount", likeCount);
         model.addAttribute("giftCount", giftCount);
+        model.addAttribute("viewerCount", battleLiveWebSocketController.getViewerCount(battle.getId()));
         model.addAttribute("hasLiked", hasLiked);
         model.addAttribute("hasVoted", hasVoted);
         model.addAttribute("devices", devices);
@@ -742,3 +745,4 @@ public class BattleController {
         return "redirect:/battles";
     }
 }
+

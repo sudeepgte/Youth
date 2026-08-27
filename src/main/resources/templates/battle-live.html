@@ -56,13 +56,13 @@
 
                 <!-- Participant A Video Box -->
                 <div class="live-video-box" id="video-box-a">
-                    <div th:if="${#lists.size(participants) > 0}" style="width: 100%; height: 100%;">
+                    <div style="width: 100%; height: 100%; position: relative;">
                         <video id="local-video"
-                               th:if="${participants[0].user.id.equals(user.id)}"
-                               autoplay playsinline muted></video>
+                               autoplay playsinline muted
+                               style="width:100%; height:100%; object-fit:cover; display:none;"></video>
                         <video id="remote-video-a"
-                               th:if="${!participants[0].user.id.equals(user.id)}"
-                               autoplay playsinline></video>
+                               autoplay playsinline
+                               style="width:100%; height:100%; object-fit:cover; display:none;"></video>
                     </div>
                     <!-- Placeholder if no video yet -->
                     <div class="live-video-placeholder" id="placeholder-a">
@@ -108,13 +108,13 @@
 
                 <!-- Participant B Video Box -->
                 <div class="live-video-box" id="video-box-b">
-                    <div th:if="${#lists.size(participants) > 1}" style="width: 100%; height: 100%;">
+                    <div style="width: 100%; height: 100%; position: relative;">
                         <video id="local-video-b"
-                               th:if="${participants[1].user.id.equals(user.id)}"
-                               autoplay playsinline muted></video>
+                               autoplay playsinline muted
+                               style="width:100%; height:100%; object-fit:cover; display:none;"></video>
                         <video id="remote-video-b"
-                               th:if="${!participants[1].user.id.equals(user.id)}"
-                               autoplay playsinline></video>
+                               autoplay playsinline
+                               style="width:100%; height:100%; object-fit:cover; display:none;"></video>
                     </div>
                     <!-- Placeholder if no video yet -->
                     <div class="live-video-placeholder" id="placeholder-b">
@@ -345,6 +345,7 @@
     let cameraOn = true;
     let micOn = true;
     let pendingViewerRequests = [];
+    let orphanCandidates = {}; // Buffer ICE candidates that arrive before PeerConnection exists
     let hasLiked = /*[[${hasLiked}]]*/ false;
     let hasVoted = /*[[${hasVoted}]]*/ false;
     let selectedContestant = null;
@@ -369,7 +370,7 @@
             // Subscribe to all battle channels
             stompClient.subscribe('/topic/battle/' + battleId + '/comments', onCommentReceived);
             stompClient.subscribe('/topic/battle/' + battleId + '/moderation', onModerationReceived);
-            stompClient.subscribe('/topic/battle/' + battleId + '/reactions', onReactionReceived);
+
             stompClient.subscribe('/topic/battle/' + battleId + '/likes', onLikeReceived);
             stompClient.subscribe('/topic/battle/' + battleId + '/gifts', onGiftReceived);
             stompClient.subscribe('/topic/battle/' + battleId + '/votes', onVoteReceived);
@@ -398,11 +399,7 @@
     async function startLocalMedia() {
         const constraints = {};
         if (devices.includes('camera')) {
-            constraints.video = {
-                width: { ideal: 640, max: 1280 },
-                height: { ideal: 480, max: 720 },
-                frameRate: { ideal: 20, max: 24 }
-            };
+            constraints.video = true;
         }
         if (devices.includes('mic')) constraints.audio = true;
 
@@ -430,10 +427,19 @@
 
         hideMediaError();
 
-        // Show local video
-        const localVideo = document.getElementById('local-video') || document.getElementById('local-video-b');
+        // Show local video - pick correct element based on participant position
+        let localVideo = null;
+        if (userId == participantA_Id) {
+            localVideo = document.getElementById('local-video');
+        } else if (userId == participantB_Id) {
+            localVideo = document.getElementById('local-video-b');
+        } else {
+            localVideo = document.getElementById('local-video') || document.getElementById('local-video-b');
+        }
         if (localVideo) {
             localVideo.srcObject = localStream;
+            localVideo.style.display = 'block';
+            localVideo.play().catch(function(e) { console.warn('Local autoplay blocked:', e); });
             // Hide placeholder for local video box
             const box = localVideo.closest('.live-video-box');
             if (box) {
@@ -486,11 +492,8 @@
         if (banner) banner.style.display = 'none';
     }
 
-    function toggleCamera() {
-        if (!localStream) {
-            alert("Camera not available or access denied.");
-            return;
-        }
+    async function toggleCamera() {
+        if (!localStream) { await startLocalMedia(); if (!localStream) { alert("Camera not available or access denied."); return; } }
         const videoTracks = localStream.getVideoTracks();
         videoTracks.forEach(function(t) { t.enabled = !t.enabled; });
         cameraOn = !cameraOn;
@@ -505,11 +508,8 @@
         }
     }
 
-    function toggleMic() {
-        if (!localStream) {
-            alert("Microphone not available or access denied.");
-            return;
-        }
+    async function toggleMic() {
+        if (!localStream) { await startLocalMedia(); if (!localStream) { alert("Microphone not available or access denied."); return; } }
         const audioTracks = localStream.getAudioTracks();
         audioTracks.forEach(function(t) { t.enabled = !t.enabled; });
         micOn = !micOn;
@@ -556,7 +556,10 @@
     /* ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ 3. WebRTC Peer Connection ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ */
     const ICE_SERVERS = {
         iceServers: [
-            { urls: 'stun:stun.l.google.com:19302' }, { urls: 'turn:turn.zentrix.com:3478', username: 'user', credential: 'pass' }, { urls: 'turn:turn.zentrix.com:3478', username: 'user', credential: 'pass' },
+            { urls: 'stun:stun.l.google.com:19302' }, // Free TURN servers for NAT traversal on live server
+            { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
+            { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
+            { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' },
             { urls: 'stun:stun1.l.google.com:19302' },
             { urls: 'stun:stun2.l.google.com:19302' },
             { urls: 'stun:stun3.l.google.com:19302' },
@@ -569,6 +572,15 @@
         pc.remoteUserId = remoteUserId;
         pc.iceCandidateQueue = [];
         peerConnections[remoteUserId] = pc;
+
+        // Drain any orphaned ICE candidates that arrived before this PeerConnection existed
+        if (orphanCandidates[remoteUserId]) {
+            console.log('Draining', orphanCandidates[remoteUserId].length, 'orphan candidates for', remoteUserId);
+            orphanCandidates[remoteUserId].forEach(function(cand) {
+                pc.iceCandidateQueue.push(cand);
+            });
+            delete orphanCandidates[remoteUserId];
+        }
 
         // Add local tracks
         if (localStream) {
@@ -592,7 +604,16 @@
             if (remoteVideo) {
                 if (remoteVideo.srcObject !== event.streams[0]) {
                     remoteVideo.srcObject = event.streams[0];
+                    remoteVideo.style.display = 'block';
                     console.log('Assigned remote stream to video element for user:', remoteUserId);
+                    // Explicit play() to handle browser autoplay policy
+                    remoteVideo.play().catch(function(playErr) {
+                        console.warn('Autoplay blocked, will retry on click:', playErr);
+                        document.addEventListener('click', function retryPlay() {
+                            remoteVideo.play().catch(function(e2) { console.error('Retry play failed:', e2); });
+                            document.removeEventListener('click', retryPlay);
+                        }, { once: true });
+                    });
                 }
                 // Hide placeholder
                 const box = remoteVideo.closest('.live-video-box');
@@ -743,6 +764,13 @@
         }
         else if (data.type === 'candidate' && data.targetUserId === userId) {
             var pc4 = peerConnections[data.userId];
+            if (!pc4) {
+                // Buffer orphaned candidates - PeerConnection not created yet
+                if (!orphanCandidates[data.userId]) orphanCandidates[data.userId] = [];
+                orphanCandidates[data.userId].push(data.candidate);
+                console.log('Buffered orphan ICE candidate for user:', data.userId);
+                return;
+            }
             if (pc4) {
                 if (pc4.remoteDescription && pc4.remoteDescription.type) {
                     try {
@@ -1112,6 +1140,9 @@
 
 </body>
 </html>
+
+
+
 
 
 

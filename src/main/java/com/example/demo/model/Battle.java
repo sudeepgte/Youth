@@ -221,6 +221,14 @@ public class Battle {
     }
     public void setPrize3(Double prize3) { this.prize3 = prize3; }
 
+    private Double adminCommissionPct = 7.0;
+    public Double getAdminCommissionPct() { return adminCommissionPct; }
+    public void setAdminCommissionPct(Double adminCommissionPct) { this.adminCommissionPct = adminCommissionPct; }
+
+    private Boolean payoutReleased = false;
+    public Boolean getPayoutReleased() { return payoutReleased; }
+    public void setPayoutReleased(Boolean payoutReleased) { this.payoutReleased = payoutReleased; }
+
     public Integer getDurationMinutes() { return durationMinutes; }
     public void setDurationMinutes(Integer durationMinutes) { this.durationMinutes = durationMinutes; }
 
@@ -243,4 +251,6 @@ public class Battle {
     public Boolean getAudienceVotingEnabled() { return audienceVotingEnabled; }
     public void setAudienceVotingEnabled(Boolean audienceVotingEnabled) { this.audienceVotingEnabled = audienceVotingEnabled; }
 }
+
+
 
