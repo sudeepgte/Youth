@@ -42,6 +42,7 @@ public class BattleController {
     
     @Autowired
     private com.example.demo.service.AuditLogService auditLogService;
+    @Autowired private com.example.demo.repository.BattlePredictionRepository predictionRepository;
 
     private User getUserFromSession(HttpSession session) {
         Object authUser = httpServletRequest.getAttribute("authenticatedUser");
@@ -138,6 +139,8 @@ public class BattleController {
         model.addAttribute("isCreator", isCreator);
         model.addAttribute("hasSubmitted", hasSubmitted);
         model.addAttribute("hasVoted", hasVoted);
+        boolean hasPredicted = predictionRepository.existsByBattleAndBettor(battle, user);
+        model.addAttribute("hasPredicted", hasPredicted);
         model.addAttribute("submissions", submissions);
         model.addAttribute("participants", participants);
         model.addAttribute("participantCount", participants.size());
@@ -683,6 +686,8 @@ public class BattleController {
         model.addAttribute("viewerCount", battleLiveWebSocketController.getViewerCount(battle.getId()));
         model.addAttribute("hasLiked", hasLiked);
         model.addAttribute("hasVoted", hasVoted);
+        boolean hasPredicted = predictionRepository.existsByBattleAndBettor(battle, user);
+        model.addAttribute("hasPredicted", hasPredicted);
         model.addAttribute("devices", devices);
         model.addAttribute("endsAtStr", battle.getEndsAt() != null ? battle.getEndsAt().toString() : null);
         

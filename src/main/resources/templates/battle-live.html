@@ -90,6 +90,11 @@
                                     <span>L:<span th:text="${participants[0].user.battleLosses != null ? participants[0].user.battleLosses : 0}">0</span></span>
                                 </div>
                             </div>
+						<form th:if="${userRole == 'AUDIENCE' && !hasPredicted}" th:action="@{/battles/{id}/predict(id=${battle.id})}" method="post" style="margin-left: 10px; display: flex; gap: 5px; align-items: center;">
+							<input type="hidden" name="predictedWinnerId" th:value="${participants[0].user.id}" />
+							<input type="number" name="amount" placeholder="Bet Coins" min="1" style="width: 70px; padding: 4px; border-radius: 4px; border: none; background: rgba(0,0,0,0.5); color: white;" required/>
+							<button type="submit" style="padding: 4px 8px; border-radius: 4px; border: none; background: #F84464; color: white; cursor: pointer;">Predict</button>
+						</form>
                         </div>
                         <div class="live-video-votes" th:if="${#lists.size(participants) > 0}">
                             <i class="fas fa-star"></i>
@@ -142,6 +147,11 @@
                                     <span>L:<span th:text="${participants[1].user.battleLosses != null ? participants[1].user.battleLosses : 0}">0</span></span>
                                 </div>
                             </div>
+						<form th:if="${userRole == 'AUDIENCE' && !hasPredicted}" th:action="@{/battles/{id}/predict(id=$)}" method="post" style="margin-left: 10px; display: flex; gap: 5px; align-items: center;">
+							<input type="hidden" name="predictedWinnerId" th:value="${participants[1].user.id}" />
+							<input type="number" name="amount" placeholder="Bet Coins" min="1" style="width: 70px; padding: 4px; border-radius: 4px; border: none; background: rgba(0,0,0,0.5); color: white;" required/>
+							<button type="submit" style="padding: 4px 8px; border-radius: 4px; border: none; background: #F84464; color: white; cursor: pointer;">Predict</button>
+						</form>
                         </div>
                         <div class="live-video-votes" th:if="${#lists.size(participants) > 1}">
                             <i class="fas fa-star"></i>
@@ -1140,6 +1150,10 @@
 
 </body>
 </html>
+
+
+
+
 
 
 

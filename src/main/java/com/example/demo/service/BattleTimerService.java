@@ -7,11 +7,14 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.example.demo.repository.TournamentBattleRepository;
+import com.example.demo.model.TournamentBattle;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class BattleTimerService {
@@ -22,8 +25,11 @@ public class BattleTimerService {
     @Autowired private UserRepository userRepository;
     @Autowired private WalletService walletService;
     @Autowired private SimpMessagingTemplate messagingTemplate;
+    @Autowired private TournamentBattleRepository tournamentBattleRepository;
+    @Autowired private TournamentService tournamentService;
     @Autowired private NotificationService notificationService;
     @Autowired private AuditLogService auditLogService;
+    @Autowired private com.example.demo.repository.BattlePredictionRepository predictionRepository;
 
     @Scheduled(fixedRate = 2000)
     public void checkBattleTimers() {
@@ -86,6 +92,11 @@ public class BattleTimerService {
         
         battleRepository.save(battle);
 
+        TournamentBattle tb = tournamentBattleRepository.findByBattle(battle);
+        if (tb != null && battle.getWinner() != null) {
+            tournamentService.advanceWinner(tb.getId(), battle.getWinner().getId());
+        }
+
         Map<String, Object> msg = new HashMap<>();
         msg.put("status", "COMPLETED");
         msg.put("reason", "TIME_UP");
@@ -123,6 +134,33 @@ public class BattleTimerService {
                 } else {
                     notificationService.sendNotification(p2.getId(), "Reward Received", "You received " + prize + " coins for winning!", "fas fa-coins", "/wallet");
                 }
+            }
+        }
+        
+        // --- Prediction Betting Payouts ---
+        if (battle.getWinner() != null && !"TIE".equals(battle.getStatus())) {
+            java.util.List<com.example.demo.model.BattlePrediction> predictions = predictionRepository.findByBattle(battle);
+            for (com.example.demo.model.BattlePrediction pred : predictions) {
+                User bettor = pred.getBettor();
+                if (pred.getPredictedWinner().getId().equals(battle.getWinner().getId())) {
+                    // Won the bet! Payout 2x
+                    double payout = pred.getAmount() * 2.0;
+                    bettor.addWalletBalance(payout);
+                    userRepository.save(bettor);
+                    notificationService.sendNotification(bettor.getId(), "Prediction Won!", "Your bet on " + battle.getWinner().getUsername() + " was correct! You won " + payout + " coins.", "fas fa-coins", "/wallet");
+                } else {
+                    // Lost the bet
+                    notificationService.sendNotification(bettor.getId(), "Prediction Lost", "Your bet on " + pred.getPredictedWinner().getUsername() + " was incorrect.", "fas fa-times-circle", "/wallet");
+                }
+            }
+        } else if ("TIE".equals(battle.getStatus())) {
+            // Refund all bets in case of a tie
+            java.util.List<com.example.demo.model.BattlePrediction> predictions = predictionRepository.findByBattle(battle);
+            for (com.example.demo.model.BattlePrediction pred : predictions) {
+                User bettor = pred.getBettor();
+                bettor.addWalletBalance(pred.getAmount());
+                userRepository.save(bettor);
+                notificationService.sendNotification(bettor.getId(), "Prediction Refunded", "The battle ended in a tie. Your bet of " + pred.getAmount() + " coins was refunded.", "fas fa-undo", "/wallet");
             }
         }
     }

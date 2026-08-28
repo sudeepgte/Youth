@@ -1096,6 +1096,7 @@
                         <a th:href="@{/admin/advertisements}" class="sidebar-link"><i class="fas fa-ad" style="color: inherit;"></i> Manage Ads</a>
             <a th:href="@{/events/admin/manage}" class="sidebar-link"><i class="fas fa-calendar-alt" style="color: inherit;"></i> Manage Events</a>
             <a th:href="@{/admin/battles}" class="sidebar-link"><i class="fas fa-fire" style="color: inherit;"></i> Manage Battles</a>
+            <a th:href="@{/admin/tournaments}" class="sidebar-link"><i class="fas fa-trophy" style="color: inherit;"></i> Tournaments</a>
             <a th:href="@{/events/admin/create}" class="sidebar-link"><i class="fas fa-plus-circle" style="color: inherit;"></i> Create Event</a>
             
             <div style="border-top: 1px solid rgba(0,0,0,0.08); margin: 15px 0;"></div>
@@ -1107,7 +1108,40 @@
         <!-- Main Content -->
         <main class="social-feed" style="max-width: 100%; padding-bottom: 60px;">
 
-        <h1 style="margin-bottom: 30px; color: var(--text-primary); font-weight: 900;">Platform Overview</h1>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                <h1 style="margin: 0; color: var(--text-primary); font-weight: 900;">Platform Overview</h1>
+                <button onclick="document.getElementById('createTournamentModal').style.display='flex'" style="background: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-trophy"></i> Create Tournament
+                </button>
+            </div>
+            
+            <!-- Create Tournament Modal -->
+            <div class="mobile-menu-overlay" id="createTournamentModal" style="display: none; align-items: center; justify-content: center; z-index: 2000;">
+                <div style="background: white; padding: 30px; border-radius: 20px; width: 90%; max-width: 500px; position: relative;">
+                    <button onclick="document.getElementById('createTournamentModal').style.display='none'" style="position: absolute; top: 15px; right: 20px; background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
+                    <h2 style="margin-top: 0;"><i class="fas fa-trophy" style="color:var(--primary);"></i> Create Tournament</h2>
+                    <form action="/admin/tournaments/create" method="POST" style="display: flex; flex-direction: column; gap: 15px;">
+                        <div>
+                            <label style="display: block; font-weight: bold; margin-bottom: 5px;">Tournament Name</label>
+                            <input type="text" name="name" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px;">
+                        </div>
+                        <div>
+                            <label style="display: block; font-weight: bold; margin-bottom: 5px;">Description</label>
+                            <textarea name="description" rows="3" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px;"></textarea>
+                        </div>
+                        <div>
+                            <label style="display: block; font-weight: bold; margin-bottom: 5px;">Max Participants</label>
+                            <select name="maxParticipants" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px;">
+                                <option value="4">4 Players</option>
+                                <option value="8" selected>8 Players</option>
+                                <option value="16">16 Players</option>
+                                <option value="32">32 Players</option>
+                            </select>
+                        </div>
+                        <button type="submit" style="background: var(--primary); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer;">Create Tournament</button>
+                    </form>
+                </div>
+            </div>
 
         <!-- Stats -->
         <div class="admin-stats">

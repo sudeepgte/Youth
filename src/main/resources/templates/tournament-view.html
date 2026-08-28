@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tournament Bracket | Youthians</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f8fafc;
+            margin: 0;
+            padding: 0;
+        }
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #475569;
+            text-decoration: none;
+            font-weight: 700;
+            margin-bottom: 25px;
+            background: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: 0.2s;
+        }
+        .btn-back:hover {
+            transform: translateX(-3px);
+            color: #0f172a;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+        }
+        .tournament-header {
+            background: #FFFFFF;
+            border: 1px solid rgba(15, 23, 42, 0.08);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+            position: relative;
+        }
+        .btn-join {
+            background: linear-gradient(135deg, #10B981, #059669);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 800;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.3s;
+        }
+        .btn-join:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(16,185,129,0.3); }
+
+        .btn-battle {
+            background: linear-gradient(135deg, #F84464, #E11D48);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 15px;
+            font-weight: 800;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 16px;
+            animation: pulse-red 2s infinite;
+        }
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(248, 68, 100, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(248, 68, 100, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(248, 68, 100, 0); }
+        }
+
+        .bracket-container {
+            display: flex;
+            gap: 40px;
+            overflow-x: auto;
+            padding: 20px 0;
+            align-items: center;
+        }
+        
+        .bracket-round {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            min-width: 250px;
+        }
+
+        .match-card {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            position: relative;
+        }
+        .match-card.active { border-color: #F84464; }
+        .match-card.completed { border-color: #cbd5e1; }
+        
+        .match-player {
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .match-player:first-child { border-bottom: 1px solid #f1f5f9; }
+        .match-player.winner { background: rgba(16, 185, 129, 0.05); color: #059669; }
+        .match-player.loser { color: #94a3b8; text-decoration: line-through; }
+        .match-player.tbd { color: #94a3b8; font-style: italic; }
+
+        .round-title {
+            font-weight: 800;
+            color: #475569;
+            text-transform: uppercase;
+            font-size: 13px;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        
+        <a th:href="@{/tournaments}" class="btn-back"><i class="fas fa-arrow-left"></i> Back to Tournaments</a>
+
+        <div class="tournament-header">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 20px;">
+                <div>
+                    <h1 style="margin: 0 0 10px 0; font-size: 28px; font-weight: 900; color: #0f172a;" th:text="${tournament.name}">Tournament Name</h1>
+                    <p style="margin: 0 0 15px 0; color: #475569; max-width: 600px; line-height: 1.6;" th:text="${tournament.description}"></p>
+                    <div style="display: flex; gap: 15px; font-size: 13px; font-weight: 700; color: #64748b;">
+                        <span><i class="fas fa-users"></i> <span th:text="${participantCount}"></span> / <span th:text="${tournament.maxParticipants}"></span> Registered</span>
+                        <span><i class="fas fa-clock"></i> Status: <span th:text="${tournament.status}" style="color: #F84464;"></span></span>
+                    </div>
+                </div>
+                
+                <div>
+                    <form th:if="${!isRegistered and tournament.status == 'REGISTRATION_OPEN'}" th:action="@{/tournaments/{id}/join(id=${tournament.id})}" method="post">
+                        <button type="submit" class="btn-join"><i class="fas fa-ticket-alt"></i> Join Tournament</button>
+                    </form>
+                    
+                    <div th:if="${isRegistered}" style="background: rgba(16, 185, 129, 0.1); color: #059669; padding: 12px 20px; border-radius: 12px; font-weight: 800; display: inline-flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-check-circle"></i> You are registered!
+                    </div>
+                </div>
+            </div>
+
+            <!-- Call to Action for Active Match -->
+            <div th:if="${currentMatch != null}" style="margin-top: 25px; padding-top: 25px; border-top: 1px solid #f1f5f9; text-align: center;">
+                <h3 style="margin: 0 0 15px 0; color: #0f172a;">🔥 Your Next Match is Ready!</h3>
+                <p style="margin: 0 0 20px 0; color: #64748b;">
+                    <strong th:text="${currentMatch.player1.username}"></strong> vs <strong th:text="${currentMatch.player2.username}"></strong><br>
+                    (<span th:text="${currentMatch.round.name}"></span>)
+                </p>
+                <a th:href="@{/battles/{id}(id=${currentMatch.battle.id})}" class="btn-battle"><i class="fas fa-fire"></i> Enter Battle Room</a>
+            </div>
+        </div>
+
+        <!-- Bracket Visualization -->
+        <div style="background: white; border-radius: 20px; padding: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); overflow-x: auto;">
+            <h3 style="margin-top: 0; margin-bottom: 25px; color: #0f172a;"><i class="fas fa-sitemap" style="color: #F84464;"></i> Tournament Bracket</h3>
+            
+            <div th:if="${rounds.isEmpty()}" style="text-align: center; color: #94a3b8; padding: 30px 0;">
+                <i class="fas fa-project-diagram" style="font-size: 40px; margin-bottom: 10px; opacity: 0.5;"></i>
+                <p>Bracket will be generated once registration closes.</p>
+            </div>
+
+            <div class="bracket-container" th:if="${!rounds.isEmpty()}">
+                
+                <div class="bracket-round" th:each="round : ${rounds}">
+                    <div class="round-title" th:text="${round.name}">Round</div>
+                    
+                    <div th:each="battle : ${round.battles}" th:class="'match-card ' + ${battle.status == 'COMPLETED' ? 'completed' : (battle.status == 'READY' or battle.status == 'LIVE' ? 'active' : '')}">
+                        
+                        <!-- Player 1 -->
+                        <div th:class="'match-player ' + ${battle.player1 == null ? 'tbd' : (battle.winner != null ? (battle.winner.id == battle.player1.id ? 'winner' : 'loser') : '')}">
+                            <span th:text="${battle.player1 != null ? battle.player1.username : 'TBD / BYE'}"></span>
+                            <i th:if="${battle.winner != null and battle.player1 != null and battle.winner.id == battle.player1.id}" class="fas fa-check"></i>
+                        </div>
+
+                        <!-- Player 2 -->
+                        <div th:class="'match-player ' + ${battle.player2 == null ? 'tbd' : (battle.winner != null ? (battle.winner.id == battle.player2.id ? 'winner' : 'loser') : '')}">
+                            <span th:text="${battle.player2 != null ? battle.player2.username : 'TBD / BYE'}"></span>
+                            <i th:if="${battle.winner != null and battle.player2 != null and battle.winner.id == battle.player2.id}" class="fas fa-check"></i>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Grand Winner Column -->
+                <div class="bracket-round" th:if="${tournament.winner != null}">
+                    <div class="round-title"><i class="fas fa-crown" style="color: #FFD700;"></i> Champion</div>
+                    <div class="match-card" style="border-color: #FFD700; background: rgba(255, 215, 0, 0.05);">
+                        <div class="match-player winner" style="justify-content: center; padding: 20px;">
+                            <div style="text-align: center;">
+                                <i class="fas fa-crown" style="color: #FFD700; font-size: 24px; margin-bottom: 5px;"></i><br>
+                                <span th:text="${tournament.winner.username}" style="font-size: 18px; color: #b45309;"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>
