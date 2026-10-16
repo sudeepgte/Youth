@@ -39,6 +39,7 @@ public class AuthInterceptor implements HandlerInterceptor {
             path.equals("/register") || path.equals("/about") || path.equals("/about-us") || path.equals("/careers") || path.equals("/privacy") || path.equals("/privacy-policy") || path.equals("/terms") || path.equals("/terms-of-service") || path.equals("/faq") || path.equals("/featured-events") || path.equals("/categories") || path.equals("/support") || path.equals("/contact") ||
             // Allow unauthenticated multiplayer room creation/join
             path.startsWith("/api/ludo/") ||
+            path.startsWith("/api/leaderboards") ||
             path.startsWith("/api/snake/") ||
             path.startsWith("/api/uno/") ||
             path.startsWith("/api/chess/") ||

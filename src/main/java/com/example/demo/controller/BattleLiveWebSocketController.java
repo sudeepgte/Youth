@@ -2,6 +2,7 @@ package com.example.demo.controller;
 
 import com.example.demo.model.*;
 import com.example.demo.repository.*;
+import com.example.demo.service.WalletService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -12,41 +13,72 @@ import org.springframework.stereotype.Controller;
 import java.security.Principal;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 
 @Controller
 public class BattleLiveWebSocketController {
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
-
     @Autowired
     private BattleRepository battleRepository;
-
     @Autowired
     private UserRepository userRepository;
-
     @Autowired
     private BattleLiveCommentRepository commentRepository;
-
     @Autowired
     private BattleLikeRepository likeRepository;
-
     @Autowired
     private BattleGiftRepository giftRepository;
-
     @Autowired
     private BattleVoteRepository voteRepository;
-
     @Autowired
     private BattleSubmissionRepository submissionRepository;
-
     @Autowired
     private BattleParticipantRepository participantRepository;
+    @Autowired
+    private WalletService walletService;
+    @Autowired
+    private com.example.demo.service.BattleDisconnectService battleDisconnectService;
+    @Autowired
+    private com.example.demo.service.VoteProtectionService voteProtectionService;
+    @Autowired
+    private com.example.demo.service.NotificationService notificationService;
+    @Autowired
+    private com.example.demo.service.AuditLogService auditLogService;
 
-    // Track online viewers per battle (in-memory)
+    // Track online viewers
     private final ConcurrentHashMap<Long, Set<Long>> battleViewers = new ConcurrentHashMap<>();
+    
+    // Chat Rate Limiting: user id -> deque of timestamps
+    private final ConcurrentHashMap<Long, Deque<Long>> chatTimestamps = new ConcurrentHashMap<>();
+    
+    // Spam protection: user id -> last message text & timestamp
+    private final ConcurrentHashMap<Long, String> lastMessageText = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Long, Long> lastMessageTime = new ConcurrentHashMap<>();
 
-    // 1. WebRTC Signaling - just forward the message to the battle topic
+    // Moderation state per battle
+    private final ConcurrentHashMap<Long, Set<Long>> mutedUsers = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Long, Set<Long>> blockedUsers = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Long, Integer> battleSlowMode = new ConcurrentHashMap<>(); // delay in seconds
+
+    // Simple profanity list
+    private static final List<String> BAD_WORDS = Arrays.asList("fuck", "shit", "bitch", "asshole", "cunt", "dick", "bastard");
+
+    private String filterProfanity(String text) {
+        if (text == null) return null;
+        String filtered = text;
+        for (String word : BAD_WORDS) {
+            filtered = Pattern.compile("(?i)\\b" + Pattern.quote(word) + "\\b").matcher(filtered).replaceAll("***");
+        }
+        return filtered;
+    }
+
+    private boolean isAdminOrCreator(User user, Battle battle) {
+        // Checking if user is battle creator
+        return battle.getCreator().getId().equals(user.getId()); 
+    }
+
     @MessageMapping("/battle/{battleId}/signal")
     public void handleSignal(@DestinationVariable Long battleId, @Payload Map<String, Object> signal, Principal principal) {
         Object targetUserIdObj = signal.get("targetUserId");
@@ -58,38 +90,219 @@ public class BattleLiveWebSocketController {
         }
     }
 
-    // 2. Live Comment
     @MessageMapping("/battle/{battleId}/comment")
     public void handleComment(@DestinationVariable Long battleId, @Payload Map<String, String> payload, Principal principal) {
         Long userId = Long.parseLong(principal.getName());
+        
+        // Check blocks and mutes
+        Set<Long> blocked = blockedUsers.getOrDefault(battleId, Collections.emptySet());
+        if (blocked.contains(userId)) return; // Blocked completely from interaction
+
+        Set<Long> muted = mutedUsers.getOrDefault(battleId, Collections.emptySet());
+        if (muted.contains(userId)) {
+            // Send personal notification to user that they are muted
+            messagingTemplate.convertAndSendToUser(userId.toString(), "/queue/battle/" + battleId + "/notifications", 
+                Collections.singletonMap("error", "You have been muted in this chat."));
+            return;
+        }
+
+        long now = System.currentTimeMillis();
+
+        // Slow Mode check
+        int slowModeDelaySeconds = battleSlowMode.getOrDefault(battleId, 0);
+        if (slowModeDelaySeconds > 0) {
+            Long lastSent = lastMessageTime.get(userId);
+            if (lastSent != null && now - lastSent < (slowModeDelaySeconds * 1000L)) {
+                // Too fast for slow mode
+                return;
+            }
+        }
+
+        // --- Rate Limiting: Max 5 messages per 10 seconds ---
+        Deque<Long> stamps = chatTimestamps.computeIfAbsent(userId, k -> new LinkedList<>());
+        synchronized (stamps) {
+            while (!stamps.isEmpty() && now - stamps.peekFirst() > 10000) {
+                stamps.pollFirst();
+            }
+            if (stamps.size() >= 5) {
+                // Rate limit exceeded
+                return;
+            }
+            stamps.addLast(now);
+        }
+        
         User user = userRepository.findById(userId).orElse(null);
         Battle battle = battleRepository.findById(battleId).orElse(null);
         if (user == null || battle == null) return;
 
         String message = payload.get("message");
         if (message == null || message.trim().isEmpty()) return;
+        message = message.trim();
+
+        // Spam protection (duplicate messages within 15 seconds)
+        Long lastTime = lastMessageTime.get(userId);
+        String lastMsg = lastMessageText.get(userId);
+        if (lastTime != null && lastMsg != null && lastMsg.equalsIgnoreCase(message) && (now - lastTime < 15000)) {
+            return; // Duplicate spam blocked
+        }
+
         if (message.length() > 500) message = message.substring(0, 500);
 
-        // Persist
+        // Profanity Filter
+        message = filterProfanity(message);
+
+        // Update spam trackers
+        lastMessageText.put(userId, message);
+        lastMessageTime.put(userId, now);
+
         BattleLiveComment comment = new BattleLiveComment();
         comment.setBattle(battle);
         comment.setUser(user);
-        comment.setMessage(message.trim());
-        commentRepository.save(comment);
+        comment.setMessage(message);
+        comment = commentRepository.save(comment);
 
-        // Broadcast
         Map<String, Object> broadcast = new HashMap<>();
+        broadcast.put("id", comment.getId());
+        broadcast.put("userId", user.getId());
         broadcast.put("username", user.getUsername());
         broadcast.put("profilePhotoUrl", user.getProfilePhotoUrl());
-        broadcast.put("message", message.trim());
+        broadcast.put("message", message);
         broadcast.put("sentAt", comment.getSentAt().toString());
         messagingTemplate.convertAndSend("/topic/battle/" + battleId + "/comments", (Object) broadcast);
     }
 
-    // 3. Like
+    // Moderation: Delete a comment
+    @MessageMapping("/battle/{battleId}/comment/delete")
+    public void handleDeleteComment(@DestinationVariable Long battleId, @Payload Map<String, Long> payload, Principal principal) {
+        Long userId = Long.parseLong(principal.getName());
+        User user = userRepository.findById(userId).orElse(null);
+        Battle battle = battleRepository.findById(battleId).orElse(null);
+        
+        if (user == null || battle == null || !isAdminOrCreator(user, battle)) return; // Admin/creator only
+
+        // Handle possible casting issues since JS might send as Integer depending on size
+        Object commentIdObj = payload.get("commentId");
+        if (commentIdObj == null) return;
+        Long commentId = Long.parseLong(commentIdObj.toString());
+
+        BattleLiveComment comment = commentRepository.findById(commentId).orElse(null);
+        if (comment != null && comment.getBattle().getId().equals(battleId)) {
+            comment.setDeleted(true);
+            commentRepository.save(comment);
+
+            // Broadcast deletion so UI removes it
+            Map<String, Object> broadcast = new HashMap<>();
+            broadcast.put("action", "delete");
+            broadcast.put("commentId", commentId);
+            messagingTemplate.convertAndSend("/topic/battle/" + battleId + "/moderation", (Object) broadcast);
+            
+            auditLogService.log("MODERATION_DELETE", userId, "Deleted comment " + commentId + " in battle " + battleId);
+        }
+    }
+
+    // Moderation: Report a comment
+    @MessageMapping("/battle/{battleId}/comment/report")
+    public void handleReportComment(@DestinationVariable Long battleId, @Payload Map<String, Long> payload, Principal principal) {
+        Object commentIdObj = payload.get("commentId");
+        if (commentIdObj == null) return;
+        Long commentId = Long.parseLong(commentIdObj.toString());
+
+        BattleLiveComment comment = commentRepository.findById(commentId).orElse(null);
+        if (comment != null && comment.getBattle().getId().equals(battleId)) {
+            comment.setReported(true);
+            commentRepository.save(comment);
+            
+            // Send acknowledgement to the user who reported
+            messagingTemplate.convertAndSendToUser(principal.getName(), "/queue/battle/" + battleId + "/notifications", 
+                Collections.singletonMap("message", "Comment reported successfully."));
+                
+            auditLogService.log("MODERATION_REPORT", Long.parseLong(principal.getName()), "Reported comment " + commentId + " in battle " + battleId);
+        }
+    }
+
+    // Moderation: Mute a user
+    @MessageMapping("/battle/{battleId}/mute")
+    public void handleMuteUser(@DestinationVariable Long battleId, @Payload Map<String, Long> payload, Principal principal) {
+        Long adminId = Long.parseLong(principal.getName());
+        User admin = userRepository.findById(adminId).orElse(null);
+        Battle battle = battleRepository.findById(battleId).orElse(null);
+        
+        if (admin == null || battle == null || !isAdminOrCreator(admin, battle)) return; 
+
+        Object targetUserIdObj = payload.get("userId");
+        if (targetUserIdObj == null) return;
+        Long targetUserId = Long.parseLong(targetUserIdObj.toString());
+
+        mutedUsers.computeIfAbsent(battleId, k -> ConcurrentHashMap.newKeySet()).add(targetUserId);
+
+        Map<String, Object> broadcast = new HashMap<>();
+        broadcast.put("action", "mute");
+        broadcast.put("userId", targetUserId);
+        messagingTemplate.convertAndSend("/topic/battle/" + battleId + "/moderation", (Object) broadcast);
+        
+        auditLogService.log("MODERATION_MUTE", adminId, "Muted user " + targetUserId + " in battle " + battleId);
+    }
+
+    // Moderation: Block a user
+    @MessageMapping("/battle/{battleId}/block")
+    public void handleBlockUser(@DestinationVariable Long battleId, @Payload Map<String, Long> payload, Principal principal) {
+        Long adminId = Long.parseLong(principal.getName());
+        User admin = userRepository.findById(adminId).orElse(null);
+        Battle battle = battleRepository.findById(battleId).orElse(null);
+        
+        if (admin == null || battle == null || !isAdminOrCreator(admin, battle)) return; 
+
+        Object targetUserIdObj = payload.get("userId");
+        if (targetUserIdObj == null) return;
+        Long targetUserId = Long.parseLong(targetUserIdObj.toString());
+
+        blockedUsers.computeIfAbsent(battleId, k -> ConcurrentHashMap.newKeySet()).add(targetUserId);
+
+        Map<String, Object> broadcast = new HashMap<>();
+        broadcast.put("action", "block");
+        broadcast.put("userId", targetUserId);
+        messagingTemplate.convertAndSend("/topic/battle/" + battleId + "/moderation", (Object) broadcast);
+        
+        auditLogService.log("MODERATION_BLOCK", adminId, "Blocked user " + targetUserId + " in battle " + battleId);
+    }
+
+    // Moderation: Set Slow Mode
+    @MessageMapping("/battle/{battleId}/slowmode")
+    public void handleSlowMode(@DestinationVariable Long battleId, @Payload Map<String, Integer> payload, Principal principal) {
+        Long adminId = Long.parseLong(principal.getName());
+        User admin = userRepository.findById(adminId).orElse(null);
+        Battle battle = battleRepository.findById(battleId).orElse(null);
+        
+        if (admin == null || battle == null || !isAdminOrCreator(admin, battle)) return; 
+
+        Integer delaySeconds = payload.getOrDefault("delay", 0);
+        battleSlowMode.put(battleId, delaySeconds);
+
+        Map<String, Object> broadcast = new HashMap<>();
+        broadcast.put("action", "slowmode");
+        broadcast.put("delaySeconds", delaySeconds);
+        messagingTemplate.convertAndSend("/topic/battle/" + battleId + "/moderation", (Object) broadcast);
+    }
+    
+    @MessageMapping("/battle/{battleId}/reaction")
+    public void handleReaction(@DestinationVariable Long battleId, @Payload Map<String, String> payload, Principal principal) {
+        Long userId = Long.parseLong(principal.getName());
+        Set<Long> blocked = blockedUsers.getOrDefault(battleId, Collections.emptySet());
+        if (blocked.contains(userId)) return;
+
+        String reaction = payload.get("reaction"); // e.g. "heart", "fire"
+        Map<String, Object> broadcast = new HashMap<>();
+        broadcast.put("reaction", reaction);
+        broadcast.put("senderId", principal.getName());
+        messagingTemplate.convertAndSend("/topic/battle/" + battleId + "/reactions", (Object) broadcast);
+    }
+
     @MessageMapping("/battle/{battleId}/like")
     public void handleLike(@DestinationVariable Long battleId, Principal principal) {
         Long userId = Long.parseLong(principal.getName());
+        Set<Long> blocked = blockedUsers.getOrDefault(battleId, Collections.emptySet());
+        if (blocked.contains(userId)) return;
+
         User user = userRepository.findById(userId).orElse(null);
         Battle battle = battleRepository.findById(battleId).orElse(null);
         if (user == null || battle == null) return;
@@ -104,18 +317,18 @@ public class BattleLiveWebSocketController {
             battle.setLikeCount((int) count);
             battleRepository.save(battle);
         }
-
-        long totalLikes = likeRepository.countByBattle(battle);
+        
         Map<String, Object> broadcast = new HashMap<>();
-        broadcast.put("likeCount", totalLikes);
-        broadcast.put("username", user.getUsername());
+        broadcast.put("totalLikes", likeRepository.countByBattle(battle));
         messagingTemplate.convertAndSend("/topic/battle/" + battleId + "/likes", (Object) broadcast);
     }
 
-    // 4. Gift
     @MessageMapping("/battle/{battleId}/gift")
     public void handleGift(@DestinationVariable Long battleId, @Payload Map<String, Object> payload, Principal principal) {
         Long userId = Long.parseLong(principal.getName());
+        Set<Long> blocked = blockedUsers.getOrDefault(battleId, Collections.emptySet());
+        if (blocked.contains(userId)) return;
+
         User sender = userRepository.findById(userId).orElse(null);
         Battle battle = battleRepository.findById(battleId).orElse(null);
         if (sender == null || battle == null) return;
@@ -125,20 +338,18 @@ public class BattleLiveWebSocketController {
         User recipient = userRepository.findById(recipientId).orElse(null);
         if (recipient == null) return;
 
-        // Gift costs
         Map<String, Integer> giftCosts = Map.of(
             "ROSE", 10, "FIRE", 20, "GIFT_BOX", 50, "DIAMOND", 100, "CROWN", 200
         );
         int cost = giftCosts.getOrDefault(giftType, 10);
 
-        // Check coins
-        if (sender.getCoins() < cost) return;
+        // Transactional Debit
+        boolean success = walletService.processTransaction(sender, (double) cost, "COINS", "DEBIT", 
+                "Gifted " + giftType + " to " + recipient.getUsername(), "GIFT_" + battleId);
+        
+        if (!success) return; // Insufficient coins
 
-        // Deduct coins from sender
-        sender.setCoins(sender.getCoins() - cost);
-        userRepository.save(sender);
-
-        // Save gift
+        // Save gift record
         BattleGift gift = new BattleGift();
         gift.setBattle(battle);
         gift.setSender(sender);
@@ -150,29 +361,60 @@ public class BattleLiveWebSocketController {
         long giftCount = giftRepository.countByBattle(battle);
         battle.setGiftCount((int) giftCount);
         battleRepository.save(battle);
+        
+        auditLogService.log("GIFT", sender.getId(), "Gifted " + giftType + " to participant " + recipientId + " in battle " + battleId + " (Cost: " + cost + ")");
 
-        // Broadcast
         Map<String, Object> broadcast = new HashMap<>();
+        broadcast.put("senderId", sender.getId());
         broadcast.put("senderUsername", sender.getUsername());
         broadcast.put("recipientUsername", recipient.getUsername());
         broadcast.put("giftType", giftType);
         broadcast.put("coinsCost", cost);
         broadcast.put("totalGifts", giftCount);
         messagingTemplate.convertAndSend("/topic/battle/" + battleId + "/gifts", (Object) broadcast);
+        
+        notificationService.sendNotification(recipient.getId(), "Gift Received", sender.getUsername() + " sent you a " + giftType + "!", "fas fa-gift", "/battles/" + battleId);
+    }
+    
+    @MessageMapping("/battle/{battleId}/rematch")
+    public void handleRematch(@DestinationVariable Long battleId, Principal principal) {
+        Long userId = Long.parseLong(principal.getName());
+        User sender = userRepository.findById(userId).orElse(null);
+        Battle battle = battleRepository.findById(battleId).orElse(null);
+        if (sender == null || battle == null) return;
+        
+        // Find the opponent
+        List<BattleParticipant> participants = participantRepository.findByBattle(battle);
+        for (BattleParticipant bp : participants) {
+            if (!bp.getUser().getId().equals(userId)) {
+                notificationService.sendNotification(bp.getUser().getId(), "Rematch Request", sender.getUsername() + " wants a rematch!", "fas fa-redo", "/battles/create"); // Or wherever rematch leads
+                
+                // Also broadcast to the battle chat/status so UI can show it if they are still on the page
+                Map<String, Object> broadcast = new HashMap<>();
+                broadcast.put("type", "REMATCH_REQUEST");
+                broadcast.put("senderId", userId);
+                broadcast.put("senderUsername", sender.getUsername());
+                messagingTemplate.convertAndSend("/topic/battle/" + battleId + "/status", (Object) broadcast);
+            }
+        }
     }
 
-    // 5. Vote (real-time)
     @MessageMapping("/battle/{battleId}/live-vote")
     public void handleVote(@DestinationVariable Long battleId, @Payload Map<String, Object> payload, Principal principal) {
         Long userId = Long.parseLong(principal.getName());
+        Set<Long> blocked = blockedUsers.getOrDefault(battleId, Collections.emptySet());
+        if (blocked.contains(userId)) return;
+
         User voter = userRepository.findById(userId).orElse(null);
         Battle battle = battleRepository.findById(battleId).orElse(null);
         if (voter == null || battle == null) return;
         if (!"ACTIVE".equals(battle.getStatus()) && !"VOTING".equals(battle.getStatus())) return;
-        if (voteRepository.existsByBattleAndVoter(battle, voter)) return;
-
+        
         Long participantUserId = Long.parseLong(payload.get("participantUserId").toString());
-        // Find or create submission for this participant
+        
+        if (!voteProtectionService.isVoteAllowed(battleId, voter, participantUserId)) return;
+        
+        if (voteRepository.existsByBattleAndVoter(battle, voter)) return;
         User participant = userRepository.findById(participantUserId).orElse(null);
         if (participant == null) return;
 
@@ -184,127 +426,61 @@ public class BattleLiveWebSocketController {
             sub = new BattleSubmission();
             sub.setBattle(battle);
             sub.setUser(participant);
-            sub.setSubmissionUrl("Live Battle");
-            sub.setDescription("Live battle participant");
-            submissionRepository.save(sub);
+            sub.setSubmissionUrl("Live Vote");
+            sub = submissionRepository.save(sub);
         }
 
-        // Cast vote
         BattleVote vote = new BattleVote();
         vote.setBattle(battle);
-        vote.setVoter(voter);
         vote.setSubmission(sub);
+        vote.setVoter(voter);
         voteRepository.save(vote);
+
+        voteProtectionService.recordVote(battleId, voter.getId());
+
         sub.setVoteCount(sub.getVoteCount() + 1);
         submissionRepository.save(sub);
+        
+        auditLogService.log("VOTE", voter.getId(), "Voted for participant " + participantUserId + " in battle " + battleId);
 
-        // Broadcast updated vote counts for all participants
-        java.util.List<BattleSubmission> allSubs = submissionRepository.findByBattleOrderByVoteCountDesc(battle);
-        java.util.List<Map<String, Object>> leaderboard = new java.util.ArrayList<>();
-        for (BattleSubmission s : allSubs) {
-            Map<String, Object> entry = new HashMap<>();
-            entry.put("userId", s.getUser().getId());
-            entry.put("username", s.getUser().getUsername());
-            entry.put("voteCount", s.getVoteCount());
-            leaderboard.add(entry);
-        }
-        messagingTemplate.convertAndSend("/topic/battle/" + battleId + "/votes", (Object) leaderboard);
+        Map<String, Object> broadcast = new HashMap<>();
+        broadcast.put("participantId", participantUserId);
+        broadcast.put("totalVotes", sub.getVoteCount());
+        messagingTemplate.convertAndSend("/topic/battle/" + battleId + "/votes", (Object) broadcast);
     }
 
-    // 6. Join (viewer count)
+    public int getViewerCount(Long battleId) { Set<Long> viewers = battleViewers.get(battleId); return viewers != null ? viewers.size() : 0; }
+
     @MessageMapping("/battle/{battleId}/viewer-join")
-    public void handleViewerJoin(@DestinationVariable Long battleId, Principal principal) {
-        Long userId = Long.parseLong(principal.getName());
-        battleViewers.computeIfAbsent(battleId, k -> ConcurrentHashMap.newKeySet()).add(userId);
-        broadcastViewerCount(battleId);
+    public void handleViewerJoin(@DestinationVariable Long battleId, Principal principal, org.springframework.messaging.simp.SimpMessageHeaderAccessor headerAccessor) {
+        if (principal != null) {
+            Long userId = Long.parseLong(principal.getName());
+            battleViewers.computeIfAbsent(battleId, k -> ConcurrentHashMap.newKeySet()).add(userId);
+            broadcastViewerCount(battleId);
+            if (battleDisconnectService != null) {
+                battleDisconnectService.registerSession(headerAccessor.getSessionId(), userId, battleId);
+            }
+        }
     }
 
-    // 7. Leave (viewer count)
     @MessageMapping("/battle/{battleId}/viewer-leave")
     public void handleViewerLeave(@DestinationVariable Long battleId, Principal principal) {
-        Long userId = Long.parseLong(principal.getName());
-        Set<Long> viewers = battleViewers.get(battleId);
-        if (viewers != null) viewers.remove(userId);
-        broadcastViewerCount(battleId);
-    }
-
-    // 8. Media status (camera/mic toggle)
-    @MessageMapping("/battle/{battleId}/media-status")
-    public void handleMediaStatus(@DestinationVariable Long battleId, @Payload Map<String, Object> payload, Principal principal) {
-        Long userId = Long.parseLong(principal.getName());
-        User user = userRepository.findById(userId).orElse(null);
-        if (user == null) return;
-        payload.put("userId", userId);
-        payload.put("username", user.getUsername());
-        messagingTemplate.convertAndSend("/topic/battle/" + battleId + "/participants", (Object) payload);
-    }
-    // 9. End Battle & Determine Winners
-    @MessageMapping("/battle/{battleId}/end-battle")
-    public void endBattle(@DestinationVariable Long battleId, Principal principal) {
-        Long userId = Long.parseLong(principal.getName());
-        Battle battle = battleRepository.findById(battleId).orElse(null);
-        if (battle == null) return;
-        
-        // Only creator can end it manually/auto
-        if (!battle.getCreator().getId().equals(userId)) return;
-        
-        if ("COMPLETED".equals(battle.getStatus())) return; // Already ended
-
-        // Auto-generate submissions for any participant who doesn't have one
-        java.util.List<BattleParticipant> participants = participantRepository.findByBattle(battle);
-        for (BattleParticipant p : participants) {
-            if (!submissionRepository.existsByBattleAndUser(battle, p.getUser())) {
-                BattleSubmission sub = new BattleSubmission();
-                sub.setBattle(battle);
-                sub.setUser(p.getUser());
-                sub.setSubmissionUrl("Live Battle");
-                sub.setDescription("Live battle participant");
-                submissionRepository.save(sub);
+        if (principal != null) {
+            Long userId = Long.parseLong(principal.getName());
+            Set<Long> viewers = battleViewers.get(battleId);
+            if (viewers != null) {
+                viewers.remove(userId);
+                broadcastViewerCount(battleId);
             }
         }
-
-        // Calculate winners based on votes
-        java.util.List<BattleSubmission> subs = submissionRepository.findByBattleOrderByVoteCountDesc(battle);
-        
-        if (subs.size() > 0) {
-            User firstPlace = subs.get(0).getUser();
-            battle.setWinner(firstPlace);
-            if (battle.getPrize1() != null && battle.getPrize1() > 0) {
-                firstPlace.setWalletBalance((firstPlace.getWalletBalance() != null ? firstPlace.getWalletBalance() : 0.0) + battle.getPrize1());
-                firstPlace.setXp((firstPlace.getXp() != null ? firstPlace.getXp() : 0) + (battle.getWinnerXp() != null ? battle.getWinnerXp() : 500));
-                userRepository.save(firstPlace);
-            }
-        }
-        if (subs.size() > 1) {
-            User secondPlace = subs.get(1).getUser();
-            battle.setWinner2(secondPlace);
-            if (battle.getPrize2() != null && battle.getPrize2() > 0) {
-                secondPlace.setWalletBalance((secondPlace.getWalletBalance() != null ? secondPlace.getWalletBalance() : 0.0) + battle.getPrize2());
-                userRepository.save(secondPlace);
-            }
-        }
-        if (subs.size() > 2) {
-            User thirdPlace = subs.get(2).getUser();
-            battle.setWinner3(thirdPlace);
-            if (battle.getPrize3() != null && battle.getPrize3() > 0) {
-                thirdPlace.setWalletBalance((thirdPlace.getWalletBalance() != null ? thirdPlace.getWalletBalance() : 0.0) + battle.getPrize3());
-                userRepository.save(thirdPlace);
-            }
-        }
-
-        battle.setStatus("COMPLETED");
-        battle.setIsLive(false);
-        battleRepository.save(battle);
-
-        Map<String, Object> msg = new HashMap<>();
-        msg.put("status", "COMPLETED");
-        messagingTemplate.convertAndSend("/topic/battle/" + battleId + "/status", (Object) msg);
     }
 
     private void broadcastViewerCount(Long battleId) {
-        Set<Long> viewers = battleViewers.getOrDefault(battleId, java.util.Collections.emptySet());
+        Set<Long> viewers = battleViewers.getOrDefault(battleId, Collections.emptySet());
         Map<String, Object> data = new HashMap<>();
         data.put("viewerCount", viewers.size());
         messagingTemplate.convertAndSend("/topic/battle/" + battleId + "/status", (Object) data);
     }
 }
+
+

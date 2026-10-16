@@ -25,6 +25,9 @@ public class AuthController {
     private RewardService rewardService;
 
     @Autowired
+    private com.example.demo.service.AuditLogService auditLogService;
+
+    @Autowired
     private JwtUtil jwtUtil;
 
     @Autowired
@@ -60,6 +63,7 @@ public class AuthController {
             return "redirect:/register?error=invalid_email_domain";
         }
         userRepository.save(user);
+        auditLogService.log("USER_REGISTER", user.getId(), "User " + user.getUsername() + " registered successfully.");
         return "redirect:/home";
     }
 
@@ -104,10 +108,15 @@ public class AuthController {
             
             activeLoginRegistry.registerLogin(username, token);
             
+            auditLogService.log("USER_LOGIN", user.getId(), "User " + user.getUsername() + " logged in.");
+            
             session.setAttribute("user", user);
             session.setAttribute("userId", user.getId());
             return "redirect:/dashboard";
         } else {
+            if (user != null) {
+                auditLogService.log("LOGIN_FAILED", user.getId(), "Failed login attempt for user " + user.getUsername());
+            }
             return "redirect:/login?error=bad_credentials";
         }
     }
@@ -186,6 +195,8 @@ public class AuthController {
 
         user.setPassword(newPassword);
         userRepository.save(user);
+        
+        auditLogService.log("PASSWORD_RESET", user.getId(), "User " + user.getUsername() + " reset their password.");
 
         return "redirect:/forgot-password?success=true";
     }

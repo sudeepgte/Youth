@@ -43,6 +43,14 @@ public class User implements Serializable {
 
     // Gamification & Ranking
     private Integer xp = 0;
+    
+    // Battle Statistics (ELO)
+    private Integer battleRating = 1500; // Default starting ELO
+    private Integer battleWins = 0;
+    private Integer battleLosses = 0;
+    private Integer battleDraws = 0;
+    private Integer winStreak = 0;
+    private Integer bestWinStreak = 0;
     private String level = "Novice"; // Novice, Bronze, Silver, Gold, Platinum
 
     @JsonIgnore
@@ -335,4 +343,17 @@ public class User implements Serializable {
     private String status = "ACTIVE";
     public String getStatus() { return status != null ? status : "ACTIVE"; }
     public void setStatus(String status) { this.status = status; }
+    public Integer getBattleRating() { return battleRating != null ? battleRating : 1500; }
+    public void setBattleRating(Integer battleRating) { this.battleRating = battleRating; }
+    public Integer getBattleWins() { return battleWins != null ? battleWins : 0; }
+    public void setBattleWins(Integer battleWins) { this.battleWins = battleWins; }
+    public Integer getBattleLosses() { return battleLosses != null ? battleLosses : 0; }
+    public void setBattleLosses(Integer battleLosses) { this.battleLosses = battleLosses; }
+    public Integer getBattleDraws() { return battleDraws != null ? battleDraws : 0; }
+    public void setBattleDraws(Integer battleDraws) { this.battleDraws = battleDraws; }
+    public Integer getWinStreak() { return winStreak != null ? winStreak : 0; }
+    public void setWinStreak(Integer winStreak) { this.winStreak = winStreak; }
+    public Integer getBestWinStreak() { return bestWinStreak != null ? bestWinStreak : 0; }
+    public void setBestWinStreak(Integer bestWinStreak) { this.bestWinStreak = bestWinStreak; }
 }
+

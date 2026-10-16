@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${event.title} + ' &middot; Attendance | Zentrix Admin'">Attendance</title>
+    <title th:text="${event.title} + ' &middot; Attendance | Youthian Admin'">Attendance</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
@@ -1092,7 +1092,7 @@
 
         <div th:if="${param.completed}" class="alert alert-success">
             <i class="fas fa-flag-checkered"></i>
-            Event Results declared! <strong>XP awarded</strong>, <strong>Leaderboard updated</strong>, and ?? Status set
+            Event Results declared! <strong>XP awarded</strong>, <strong>Leaderboard updated</strong>, and Event status set
             to <strong>COMPLETED</strong>.
         </div>
         <div th:if="${param.started}" class="alert alert-success">

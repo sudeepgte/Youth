@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 
-<head th:replace="~{fragments/template :: head('My Bookings | Zentrix')}">
+<head th:replace="~{fragments/template :: head('My Bookings | Youthians')}">
 </head>
 
 <body class="events-page">
@@ -113,7 +113,7 @@
         <path d="M 15 60 Q 50 90 90 40 Q 80 50 50 80 Q 25 70 15 60 Z" fill="url(#yg)" />
         <polygon points="75,10 80,15 85,10 80,5" fill="#0ea5e9" />
     </svg>
-    <span style="font-size: 11px; font-weight: 800; color: #1e3a8a; letter-spacing: 1px; margin-top: 2px;">YOUTHIAN</span>
+    <span style="font-size: 11px; font-weight: 800; color: #1e3a8a; letter-spacing: 1px; margin-top: 2px;">YOUTHIANS</span>
 </a>
         <div class="dashboard-spacer"></div>
         <div class="dashboard-nav-links">
@@ -139,7 +139,7 @@
             <a th:href="@{/messages}" class="sidebar-link"><i class="fas fa-comment-dots"></i> Chat</a>
             <a th:href="@{/reels}" class="sidebar-link"><i class="fas fa-film"></i> Reels</a>
             <a th:href="@{/profile}" class="sidebar-link"><i class="fas fa-user"></i> Profile</a>
-            <a th:href="@{/games}" class="sidebar-link"><i class="fas fa-gamepad"></i> Games</a>
+            
             <a th:href="@{/wallet}" class="sidebar-link"><i class="fas fa-wallet"></i> Wallet</a>
             <a th:href="@{/user/my-bookings}" class="sidebar-link active"><i class="fas fa-ticket-alt"></i> My Bookings</a>
             <a href="javascript:void(0)" class="sidebar-link" onclick="openCreateModal()"><i class="fas fa-plus-circle" style="color: var(--accent);"></i> Create Post</a>
@@ -224,7 +224,7 @@
                                 <div class="booking-info-item">
                                     <div class="info-label">Amount Paid / Status</div>
                                     <div class="info-value">
-                                        <span th:text="${booking.totalPrice > 0 ? '\\u20B9' + booking.totalPrice : 'Free'}">&#8377;500</span> 
+                                        <span th:text="${booking.totalPrice > 0 ? '₹' + booking.totalPrice : 'Free'}">&#8377;500</span> 
                                         <small th:if="${booking.paymentStatus != null}" th:text="'(' + ${booking.paymentStatus} + ')'" style="color: var(--text-secondary);"></small>
                                     </div>
                                 </div>

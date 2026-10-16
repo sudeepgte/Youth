@@ -4,9 +4,9 @@ import com.example.demo.model.*;
 import com.example.demo.repository.*;
 import com.example.demo.config.JwtUtil;
 import com.example.demo.config.TokenBlacklist;
-import com.example.demo.music.room.MusicRoom;
-import com.example.demo.music.room.MusicRoomRepository;
 import com.example.demo.service.FeedAlgorithmService;
+import com.example.demo.model.AdPlacement;
+import com.example.demo.service.AdvertisementService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -153,6 +153,8 @@ public class MainController {
 
     @Autowired
     private FeedAlgorithmService feedAlgorithmService;
+    @Autowired
+    private AdvertisementService advertisementService;
 
     @Autowired
     private PostCollaborationRepository postCollaborationRepository;
@@ -175,11 +177,6 @@ public class MainController {
     @Autowired
     private FollowRequestRepository followRequestRepository;
 
-    @Autowired
-    private MusicRoomRepository musicRoomRepository;
-
-    @Autowired
-    private com.example.demo.repository.GameRepository gameRepository;
 
     @Autowired
     private ContactMessageRepository contactMessageRepository;
@@ -202,11 +199,14 @@ public class MainController {
         model.addAttribute("user", getUserFromSession(session));
         // Fetch real student thoughts
         model.addAttribute("thoughts", postRepository.findByPostTypeOrderByCreatedAtDesc("THOUGHT"));
-        // Fetch all games
-        model.addAttribute("games", gameRepository.findAll());
+
         // Fetch all public events (UPCOMING, ONGOING, VOTING)
         model.addAttribute("events", eventRepository.findByStatusInOrderByCreatedAtDesc(
                 java.util.List.of("UPCOMING", "ONGOING", "VOTING")));
+                model.addAttribute("adsHero", advertisementService.getValidAdsForPlacement(AdPlacement.HERO));
+        model.addAttribute("adsFeatured", advertisementService.getValidAdsForPlacement(AdPlacement.FEATURED));
+        model.addAttribute("adsBetween", advertisementService.getValidAdsForPlacement(AdPlacement.BETWEEN_SECTIONS));
+        model.addAttribute("adsBottom", advertisementService.getValidAdsForPlacement(AdPlacement.BOTTOM_CTA));
         return "home";
     }
 
@@ -309,79 +309,7 @@ public class MainController {
         model.addAttribute("user", getUserFromSession(session));
         return "organizers";
     }
-
-    @GetMapping("/games")
-    public String games(Model model, HttpSession session, HttpServletRequest request) {
-        validateSessionOnPublicPage(session, request);
-        model.addAttribute("user", getUserFromSession(session));
-        return "games";
-    }
-
-    @GetMapping("/games/rock-paper-scissors")
-    public String rockPaperScissors(Model model, HttpSession session) {
-        User user = getUserFromSession(session);
-        model.addAttribute("user", user);
-        return "rock-paper-scissors";
-    }
-
-    @GetMapping("/games/snake-and-ladder")
-    public String snakeAndLadder(Model model, HttpSession session) {
-        model.addAttribute("user", getUserFromSession(session));
-        return "snake-and-ladder";
-    }
-
-    @GetMapping("/play-chess")
-    public String playChess(Model model, HttpSession session) {
-        model.addAttribute("user", getUserFromSession(session));
-        return "chess-game";
-    }
-
-    @GetMapping("/play-uno")
-    public String playUno(Model model, HttpSession session) {
-        User user = getUserFromSession(session);
-        model.addAttribute("user", user);
-        return "uno";
-    }
-
-    @GetMapping("/play-ludo")
-    public String playLudo(Model model, HttpSession session) {
-        User user = getUserFromSession(session);
-        model.addAttribute("user", user);
-        return "ludo";
-    }
-
-    @GetMapping("/play-mario")
-    public String playMario() {
-        return "mario";
-    }
-
-    @GetMapping("/play-bubble-shooter")
-    public String playBubbleShooter() {
-        return "bubble-shooter";
-    }
-
-    @GetMapping("/play-candy-crush")
-    public String playCandyCrush() {
-        return "candy-crush";
-    }
-
-    @GetMapping("/play-memory")
-    public String playMemory() {
-        return "memory-game";
-    }
-
-    @GetMapping("/play-runner")
-    @Transactional
-    public String playRunner(Model model, HttpSession session, HttpServletRequest request) {
-        validateSessionOnPublicPage(session, request);
-        model.addAttribute("user", getUserFromSession(session));
-        return "runner";
-    }
-
-    @GetMapping("/play-car-game")
-    public String playCarGame() {
-        return "car-game";
-    }
+    
 
     @GetMapping("/settings")
     public String settings(HttpSession session) {
@@ -531,12 +459,22 @@ public class MainController {
         }
         model.addAttribute("votedPollIds", votedPollIds);
 
-        // Ongoing music battles (rooms)
-        List<MusicRoom> ongoingBattles = musicRoomRepository.findTop5ByActiveTrueAndPhaseNotOrderByCreatedAtDesc("ENDED");
-        model.addAttribute("ongoingMusicBattles", ongoingBattles);
+        // Auto-resolve expired events
+        LocalDateTime now = LocalDateTime.now();
+        List<Event> expiredEvents = eventRepository.findAll().stream()
+                .filter(e -> ("UPCOMING".equals(e.getStatus()) || "ONGOING".equals(e.getStatus()) || e.getStatus() == null))
+                .filter(e -> e.getDateTime() != null && e.getDateTime().isBefore(now))
+                .collect(Collectors.toList());
+        for (Event e : expiredEvents) {
+            e.setStatus("COMPLETED");
+            eventRepository.save(e);
+        }
 
-        // Trending Events
+        // Trending Events - Only upcoming active events
         List<Event> trendingEvents = eventRepository.findAllByOrderByCreatedAtDesc().stream()
+                .filter(e -> !e.isDeleted())
+                .filter(e -> e.getStatus() == null || (!"COMPLETED".equalsIgnoreCase(e.getStatus()) && !"CANCELLED".equalsIgnoreCase(e.getStatus()) && !"REJECTED".equalsIgnoreCase(e.getStatus())))
+                .filter(e -> e.getDateTime() == null || !e.getDateTime().isBefore(now))
                 .limit(3)
                 .collect(Collectors.toList());
         model.addAttribute("trendingEvents", trendingEvents);
@@ -571,7 +509,8 @@ public class MainController {
             double entryFee = b.getEntryFee() != null ? b.getEntryFee() : 0.0;
             // Creator auto-joins and is stored in b.participants, so other joining users are (participants size - 1)
             int joinsCount = b.getParticipants() != null ? Math.max(0, b.getParticipants().size() - 1) : 0;
-            totalAdminCommission += entryFee * 0.07 * joinsCount;
+            double pct = b.getAdminCommissionPct() != null ? b.getAdminCommissionPct() : 7.0;
+            totalAdminCommission += entryFee * (pct / 100.0) * joinsCount;
         }
 
         model.addAttribute("battles", battles);
@@ -599,7 +538,8 @@ public class MainController {
         for (Battle b : battles) {
             double entryFee = b.getEntryFee() != null ? b.getEntryFee() : 0.0;
             int joinsCount = b.getParticipants() != null ? Math.max(0, b.getParticipants().size() - 1) : 0;
-            totalAdminCommission += entryFee * 0.07 * joinsCount;
+            double pct = b.getAdminCommissionPct() != null ? b.getAdminCommissionPct() : 7.0;
+            totalAdminCommission += entryFee * (pct / 100.0) * joinsCount;
         }
 
         model.addAttribute("battles", battles);
@@ -858,3 +798,6 @@ public class MainController {
         return u instanceof User || "admin".equals(u);
     }
 }
+
+
+

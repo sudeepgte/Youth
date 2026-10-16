@@ -22,6 +22,9 @@ public class BattleLiveComment {
     @Column(length = 500)
     private String message;
 
+    private boolean isDeleted = false;
+    private boolean isReported = false;
+
     private LocalDateTime sentAt;
 
     @PrePersist
@@ -44,4 +47,10 @@ public class BattleLiveComment {
 
     public LocalDateTime getSentAt() { return sentAt; }
     public void setSentAt(LocalDateTime sentAt) { this.sentAt = sentAt; }
+
+    public boolean isDeleted() { return isDeleted; }
+    public void setDeleted(boolean isDeleted) { this.isDeleted = isDeleted; }
+
+    public boolean isReported() { return isReported; }
+    public void setReported(boolean isReported) { this.isReported = isReported; }
 }

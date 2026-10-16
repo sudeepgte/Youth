@@ -62,6 +62,9 @@ public class ProfileController {
     private UserRepository userRepository;
 
     @Autowired
+    private com.example.demo.service.AuditLogService auditLogService;
+
+    @Autowired
     private PostRepository postRepository;
 
     @Autowired
@@ -254,6 +257,78 @@ public class ProfileController {
             model.addAttribute("userRewards", new java.util.ArrayList<>());
         }
 
+        // Fetch Battle History
+        List<BattleParticipant> myParticipations = battleParticipantRepository.findByUser(targetUser);
+        List<Map<String, Object>> battleHistory = new java.util.ArrayList<>();
+        
+        for (BattleParticipant bp : myParticipations) {
+            Battle b = bp.getBattle();
+            // Only show completed battles
+            if (!"COMPLETED".equals(b.getStatus())) {
+                continue;
+            }
+            
+            Map<String, Object> record = new java.util.HashMap<>();
+            record.put("id", b.getId());
+            record.put("date", b.getEndsAt() != null ? b.getEndsAt() : b.getCreatedAt());
+            record.put("category", b.getCategory() != null ? b.getCategory() : "General");
+            
+            // Determine result
+            String result = "DRAW";
+            if (b.getWinner() != null) {
+                if (b.getWinner().getId().equals(targetUser.getId())) {
+                    result = "WIN";
+                } else {
+                    result = "LOSS";
+                }
+            }
+            record.put("result", result);
+            
+            // Mock Score, Rating Change, XP, Coins based on Result
+            if ("WIN".equals(result)) {
+                record.put("score", "95 - 80");
+                record.put("ratingChange", 25);
+                record.put("xp", 500);
+                record.put("coins", 50);
+            } else if ("LOSS".equals(result)) {
+                record.put("score", "78 - 85");
+                record.put("ratingChange", -15);
+                record.put("xp", 100);
+                record.put("coins", 0);
+            } else {
+                record.put("score", "85 - 85");
+                record.put("ratingChange", 0);
+                record.put("xp", 250);
+                record.put("coins", 10);
+            }
+            
+            // Find opponent
+            User opponent = null;
+            if (b.getParticipants() != null) {
+                for (BattleParticipant p : b.getParticipants()) {
+                    if (p.getUser() != null && !p.getUser().getId().equals(targetUser.getId())) {
+                        opponent = p.getUser();
+                        break;
+                    }
+                }
+            }
+            record.put("opponent", opponent);
+            
+            battleHistory.add(record);
+        }
+        
+        // Sort by date desc
+        battleHistory.sort((b1, b2) -> {
+            java.time.LocalDateTime d1 = (java.time.LocalDateTime) b1.get("date");
+            java.time.LocalDateTime d2 = (java.time.LocalDateTime) b2.get("date");
+            if (d1 == null && d2 == null) return 0;
+            if (d1 == null) return 1;
+            if (d2 == null) return -1;
+            return d2.compareTo(d1); // Descending
+        });
+        
+        model.addAttribute("battleHistory", battleHistory);
+
         return "profile";
     }
 
@@ -338,6 +413,7 @@ public class ProfileController {
                     dbUser.setCollegeName(collegeName.length() > 255 ? collegeName.substring(0, 255) : collegeName);
                 dbUser.setPrivateAccount(privateAccount);
                 userRepository.save(dbUser);
+                auditLogService.log("PROFILE_UPDATE", dbUser.getId(), "User " + dbUser.getUsername() + " updated their profile.");
                 
                 // If username is changed, generate a new token and update the client-side cookie
                 if (!oldUsername.equals(username)) {
@@ -380,6 +456,7 @@ public class ProfileController {
             }
             dbUser.setPassword(newPassword);
             userRepository.save(dbUser);
+            auditLogService.log("PASSWORD_CHANGE", dbUser.getId(), "User " + dbUser.getUsername() + " changed their password.");
         }
         return "redirect:/profile?passwordReset";
     }

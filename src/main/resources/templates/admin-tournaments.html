@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Tournaments | Youthian Admin</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+            --text-primary: #0f172a;
+            --text-secondary: #334155;
+        }
+        body { background: var(--bg-gradient) !important; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
+        .main-container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
+        
+        .btn-back {
+            display: inline-flex; align-items: center; gap: 8px; color: #475569; text-decoration: none; font-weight: 700; margin-bottom: 25px; background: white; padding: 10px 20px; border-radius: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: 0.2s;
+        }
+        .btn-back:hover { transform: translateX(-3px); color: #0f172a; box-shadow: 0 6px 12px rgba(0,0,0,0.08); }
+        
+        .table-card {
+            background: #ffffff; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #f8fafc; padding: 15px 20px; text-align: left; font-weight: 700; color: #475569; font-size: 13px; text-transform: uppercase; border-bottom: 2px solid #e2e8f0; }
+        td { padding: 15px 20px; border-bottom: 1px solid #f1f5f9; color: #334155; font-size: 14px; }
+        tr:hover { background: #f8fafc; }
+        
+        .status-badge { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; display: inline-block; }
+        .status-DRAFT { background: #f1f5f9; color: #64748b; }
+        .status-REGISTRATION_OPEN { background: #dcfce7; color: #16a34a; }
+        .status-IN_PROGRESS { background: #fee2e2; color: #dc2626; }
+        .status-COMPLETED { background: #fef9c3; color: #ca8a04; }
+        
+        .btn-action { padding: 8px 15px; border-radius: 10px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; font-size: 13px; transition: 0.2s; }
+        .btn-edit { background: white; color: #3b82f6; border: 1px solid #3b82f6; }
+        .btn-edit:hover { background: #3b82f6; color: white; }
+        
+        .header-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .btn-create { background: white; color: #10B981; border: 2px solid #10B981; padding: 12px 24px; border-radius: 12px; font-weight: bold; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; }
+        .btn-create:hover { background: #10B981; color: white; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(16,185,129,0.3); }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        
+        <a th:href="@{/admin}" class="btn-back"><i class="fas fa-arrow-left"></i> Back to Admin Dashboard</a>
+        
+        <div class="header-actions">
+            <h1 style="margin: 0; color: var(--text-primary); font-weight: 900;">Manage Tournaments</h1>
+            <a th:href="@{/admin/tournaments/create}" class="btn-create"><i class="fas fa-plus"></i> Create Tournament</a>
+        </div>
+
+        <div class="table-card">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Status</th>
+                        <th>Participants</th>
+                        <th>Winner</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="t : ${tournaments}">
+                        <td>
+                            <strong th:text="${t.name}"></strong><br>
+                            <small style="color: #64748b;" th:text="${t.type}"></small>
+                        </td>
+                        <td><span th:class="'status-badge status-' + ${t.status}" th:text="${t.status}"></span></td>
+                        <td th:text="${t.participants.size() + ' / ' + t.maxParticipants}"></td>
+                        <td><span th:if="${t.winner != null}" th:text="${t.winner.username}"></span><span th:if="${t.winner == null}">-</span></td>
+                        <td>
+                            <a th:href="@{/admin/tournaments/{id}/manage(id=${t.id})}" class="btn-action btn-edit"><i class="fas fa-cog"></i> Manage</a>
+                        </td>
+                    </tr>
+                    <tr th:if="${tournaments.isEmpty()}">
+                        <td colspan="5" style="text-align: center; padding: 40px; color: #94a3b8;">
+                            <i class="fas fa-box-open" style="font-size: 30px; margin-bottom: 10px; display: block;"></i>
+                            No tournaments created yet.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

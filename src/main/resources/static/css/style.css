@@ -1670,6 +1670,7 @@ input[type="file"].form-input::file-selector-button:hover {
     overflow-x: hidden;
     padding-top: 15px;
     padding-bottom: 20px;
+    border-right: 1px solid var(--glass-border);
 }
 .sidebar::-webkit-scrollbar {
     width: 6px;
@@ -1802,6 +1803,7 @@ input[type="file"].form-input::file-selector-button:hover {
 .widgets {
     position: sticky;
     top: 90px;
+    border-left: 1px solid var(--glass-border);
 }
 
 .widget-card {
@@ -2139,15 +2141,19 @@ input[type="file"].form-input::file-selector-button:hover {
 }
 
 .events-page .event-card-media {
-    height: 190px;
+    width: 100%;
+    aspect-ratio: 16 / 9;
     position: relative;
     overflow: hidden;
+    background: #0f172a;
 }
 
 .events-page .event-card-media img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    object-position: center;
+    display: block;
     transition: transform 420ms ease;
 }
 

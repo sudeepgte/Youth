@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registration Confirmed | Zentrix</title>
+    <title>Registration Confirmed | Youthians</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap"
@@ -477,9 +477,9 @@
             <!-- Public Verification Banner (Only shows when scanned/public) -->
             <div th:if="${session.user == null}"
                 style="background: #10b981; color: #fff; padding: 12px; text-align: center; font-weight: 800; font-size: 13px; text-transform: uppercase; letter-spacing: 2px; border-radius: 20px 20px 0 0;">
-                <i class="fas fa-shield-check"></i> Zentrix Official Verified Ticket
+                <i class="fas fa-shield-check"></i> Youthians Official Verified Ticket
             </div>
-            <div class="ticket-watermark">ZENTRIX</div>
+            <div class="ticket-watermark">YOUTHIANS</div>
 
             <!-- Top Section -->
             <div class="ticket-top">
@@ -547,7 +547,7 @@
                 </div>
                 <div class="ticket-field">
                     <label>Amount Paid</label>
-                    <div class="val" th:text="${registration.totalPrice != null and registration.totalPrice > 0 ? '\\u20B9' + #numbers.formatDecimal(registration.totalPrice, 1, 0) : (event.price == null or event.price == 'Free' or event.price == '0' ? 'Free' : '₹0')}">Free</div>
+                    <div class="val" th:text="${registration.totalPrice != null and registration.totalPrice > 0 ? '₹' + #numbers.formatDecimal(registration.totalPrice, 1, 0) : (event.price == null or event.price == 'Free' or event.price == '0' ? 'Free' : '₹0')}">Free</div>
                 </div>
                 
                 <!-- Secret Reward Section -->
@@ -580,7 +580,6 @@
                                     <div th:if="${userReward.secretReward.redeemStallNumber != null and !userReward.secretReward.redeemStallNumber.isEmpty()}" style="margin-top: 10px; font-size: 12px; color: #fff; background: rgba(0,0,0,0.3); padding: 8px; border-radius: 6px;">
                                         <div style="color: rgba(255,255,255,0.7); text-transform: uppercase; font-size: 10px; margin-bottom: 3px;">Redeem At</div>
                                         <div style="font-weight: 700;">Stall <span th:text="${userReward.secretReward.redeemStallNumber}">A1</span></div>
-                                        <div style="margin-top: 5px; color: #ffd700;"><i class="fas fa-qrcode"></i> Show Reward QR</div>
                                     </div>
                                     
                                     <div th:if="${userReward.secretReward.storeName != null and !userReward.secretReward.storeName.isEmpty()}" style="margin-top: 10px; font-size: 12px; color: #fff; background: rgba(0,0,0,0.3); padding: 8px; border-radius: 6px; line-height: 1.4;">

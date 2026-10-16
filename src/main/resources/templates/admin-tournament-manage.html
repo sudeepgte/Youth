@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Tournament | Youthian Admin</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+            --text-primary: #0f172a;
+            --text-secondary: #334155;
+        }
+        body { background: var(--bg-gradient) !important; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
+        
+        .main-container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
+        
+        .btn-back {
+            display: inline-flex; align-items: center; gap: 8px; color: #475569; text-decoration: none; font-weight: 700; margin-bottom: 25px; background: white; padding: 10px 20px; border-radius: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: 0.2s;
+        }
+        .btn-back:hover { transform: translateX(-3px); color: #0f172a; box-shadow: 0 6px 12px rgba(0,0,0,0.08); }
+
+        .form-card {
+            background: #ffffff; border-radius: 20px; padding: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 25px;
+        }
+        .header-actions { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 25px; gap: 20px; flex-wrap: wrap; }
+        
+        .status-badge {
+            padding: 8px 15px; border-radius: 20px; font-size: 13px; font-weight: 800; display: inline-block;
+        }
+        .status-DRAFT { background: #f1f5f9; color: #64748b; }
+        .status-REGISTRATION_OPEN { background: #dcfce7; color: #16a34a; }
+        .status-IN_PROGRESS { background: #fee2e2; color: #dc2626; }
+        .status-COMPLETED { background: #fef9c3; color: #ca8a04; }
+
+        .btn-action {
+            padding: 10px 20px; border-radius: 12px; font-weight: 700; text-decoration: none; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; transition: 0.2s;
+        }
+        .btn-start { background: linear-gradient(135deg, #10B981, #059669); color: white; }
+        .btn-start:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(16,185,129,0.3); }
+        .btn-status { background: #3b82f6; color: white; }
+        .btn-status:hover { background: #2563eb; }
+        
+        select.status-select {
+            padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-weight: 600; color: #334155; margin-right: 10px;
+        }
+        
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        
+        .info-group { margin-bottom: 15px; }
+        .info-label { font-size: 12px; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 5px; }
+        .info-value { font-size: 15px; font-weight: 600; color: #0f172a; }
+
+        .participant-list {
+            list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px;
+        }
+        .participant-item {
+            background: #f8fafc; padding: 12px 15px; border-radius: 10px; border: 1px solid #e2e8f0; font-weight: 600; display: flex; align-items: center; gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        
+        <a th:href="@{/admin/tournaments}" class="btn-back"><i class="fas fa-arrow-left"></i> Back to Tournaments</a>
+
+        <div class="form-card">
+            <div class="header-actions">
+                <div>
+                    <h1 style="margin: 0 0 10px 0; color: var(--text-primary); font-weight: 900;" th:text="${tournament.name}">Tournament Name</h1>
+                    <span th:class="'status-badge status-' + ${tournament.status}" th:text="${tournament.status}"></span>
+                </div>
+                
+                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                    
+                    <!-- Change Status Form -->
+                    <form th:action="@{/admin/tournaments/{id}/status(id=${tournament.id})}" method="post" style="display: flex; align-items: center; background: #f8fafc; padding: 10px; border-radius: 12px; border: 1px solid #e2e8f0;">
+                        <select name="status" class="status-select">
+                            <option value="DRAFT" th:selected="${tournament.status == 'DRAFT'}">DRAFT</option>
+                            <option value="REGISTRATION_OPEN" th:selected="${tournament.status == 'REGISTRATION_OPEN'}">REGISTRATION OPEN</option>
+                            <option value="IN_PROGRESS" th:selected="${tournament.status == 'IN_PROGRESS'}">IN PROGRESS</option>
+                            <option value="COMPLETED" th:selected="${tournament.status == 'COMPLETED'}">COMPLETED</option>
+                        </select>
+                        <button type="submit" class="btn-action btn-status">Update</button>
+                    </form>
+
+                    <!-- Start Tournament Form -->
+                    <form th:if="${tournament.status == 'REGISTRATION_OPEN'}" th:action="@{/admin/tournaments/{id}/start(id=${tournament.id})}" method="post">
+                        <button type="submit" class="btn-action btn-start" onclick="return confirm('Are you sure you want to close registration and generate the bracket?');">
+                            <i class="fas fa-play"></i> Generate Bracket & Start
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div th:if="${param.error}" style="background: #fee2e2; color: #dc2626; padding: 15px; border-radius: 10px; margin-bottom: 20px; font-weight: bold;">
+                <i class="fas fa-exclamation-triangle"></i> Failed to start tournament. Check player counts.
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 25px 0;">
+
+            <div class="grid-2">
+                <div>
+                    <h3 style="margin-top: 0; color: #0f172a;"><i class="fas fa-info-circle" style="color: #3b82f6;"></i> Details</h3>
+                    <div class="info-group">
+                        <div class="info-label">Type</div>
+                        <div class="info-value" th:text="${tournament.type}"></div>
+                    </div>
+                    <div class="info-group">
+                        <div class="info-label">Description</div>
+                        <div class="info-value" th:text="${tournament.description}"></div>
+                    </div>
+                    <div class="info-group">
+                        <div class="info-label">Battle Duration</div>
+                        <div class="info-value" th:text="${tournament.battleDurationMinutes + ' mins'}"></div>
+                    </div>
+                </div>
+                <div>
+                    <h3 style="margin-top: 0; color: #0f172a;"><i class="fas fa-calendar-alt" style="color: #8B5CF6;"></i> Schedule</h3>
+                    <div class="info-group">
+                        <div class="info-label">Registration Starts</div>
+                        <div class="info-value" th:text="${#temporals.format(tournament.registrationStart, 'dd MMM yyyy, HH:mm')}"></div>
+                    </div>
+                    <div class="info-group">
+                        <div class="info-label">Registration Ends</div>
+                        <div class="info-value" th:text="${#temporals.format(tournament.registrationEnd, 'dd MMM yyyy, HH:mm')}"></div>
+                    </div>
+                    <div class="info-group">
+                        <div class="info-label">Tournament Starts</div>
+                        <div class="info-value" th:text="${#temporals.format(tournament.tournamentStart, 'dd MMM yyyy, HH:mm')}"></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="form-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin: 0; color: #0f172a;"><i class="fas fa-users" style="color: #10B981;"></i> Registered Participants</h3>
+                <span style="background: #f1f5f9; padding: 5px 15px; border-radius: 20px; font-weight: bold; color: #475569;" th:text="${tournament.participants.size() + ' / ' + tournament.maxParticipants}">0 / 16</span>
+            </div>
+
+            <ul class="participant-list">
+                <li th:each="p : ${tournament.participants}" class="participant-item">
+                    <i class="fas fa-user-circle" style="color: #94a3b8; font-size: 18px;"></i>
+                    <span th:text="${p.user.username}">Username</span>
+                </li>
+                <li th:if="${tournament.participants.isEmpty()}" style="color: #94a3b8; grid-column: 1 / -1; text-align: center; padding: 20px;">
+                    No participants registered yet.
+                </li>
+            </ul>
+        </div>
+
+        <div th:if="${tournament.winner != null}" class="form-card" style="background: linear-gradient(135deg, #FFD700 0%, #F59E0B 100%); border: none; text-align: center;">
+            <h2 style="margin: 0 0 10px 0; color: #78350f;"><i class="fas fa-crown"></i> Tournament Champion</h2>
+            <div style="font-size: 24px; font-weight: 900; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.2);" th:text="${tournament.winner.username}">Winner</div>
+        </div>
+
+    </div>
+</body>
+</html>
