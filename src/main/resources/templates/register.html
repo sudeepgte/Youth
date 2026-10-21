@@ -244,9 +244,9 @@
         
         // 1. Username Validation: Alphanumeric only, at least one letter or number
         const username = form.username.value.trim();
-        const usernameRegex = /^[a-zA-Z0-9_-]+$/;
+        const usernameRegex = /^[a-zA-Z0-9_ -]+$/;
         if (!usernameRegex.test(username)) {
-            showError("Username can only contain letters, numbers, underscores, and hyphens.");
+            showError("Username can only contain letters, numbers, spaces, underscores, and hyphens.");
             return false;
         }
         const hasAlphaNum = /[a-zA-Z0-9]/.test(username);

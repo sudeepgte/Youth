@@ -111,6 +111,12 @@
     <div class="login-container">
         <h2>Welcome Back</h2>
 
+        <!-- ✅ Registered successfully -->
+        <div th:if="${param.registered}"
+             style="color: #15803d; background: rgba(21,128,61,0.08); border: 1.5px solid #86efac; padding: 12px 14px; border-radius: 10px; text-align: center; margin-bottom: 1rem; font-weight: 600; font-size: 14px; display:flex; align-items:center; gap:8px; justify-content:center;">
+            <i class="fas fa-check-circle"></i> Account created successfully! Please sign in with your credentials.
+        </div>
+
         <!-- ✅ Logged out successfully -->
         <div th:if="${param.loggedOut}"
              style="color: #15803d; background: rgba(21,128,61,0.08); border: 1.5px solid #86efac; padding: 12px 14px; border-radius: 10px; text-align: center; margin-bottom: 1rem; font-weight: 600; font-size: 14px; display:flex; align-items:center; gap:8px; justify-content:center;">

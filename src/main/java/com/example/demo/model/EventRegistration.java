@@ -43,6 +43,12 @@ public class EventRegistration {
     private String college;
     private String yearOfStudy;
 
+    // Cancellation & Refund tracking
+    private String cancellationReason;
+    private Double refundAmount = 0.0;
+    private Double cancellationCharges = 0.0;
+    private LocalDateTime cancelledAt;
+
     // Ladies Party specific fields
     private Integer age;
     private String city;
@@ -173,6 +179,18 @@ public class EventRegistration {
 
     public String getSpecialRequests() { return specialRequests; }
     public void setSpecialRequests(String specialRequests) { this.specialRequests = specialRequests; }
+
+    public String getCancellationReason() { return cancellationReason; }
+    public void setCancellationReason(String cancellationReason) { this.cancellationReason = cancellationReason; }
+
+    public Double getRefundAmount() { return refundAmount != null ? refundAmount : 0.0; }
+    public void setRefundAmount(Double refundAmount) { this.refundAmount = refundAmount; }
+
+    public Double getCancellationCharges() { return cancellationCharges != null ? cancellationCharges : 0.0; }
+    public void setCancellationCharges(Double cancellationCharges) { this.cancellationCharges = cancellationCharges; }
+
+    public LocalDateTime getCancelledAt() { return cancelledAt; }
+    public void setCancelledAt(LocalDateTime cancelledAt) { this.cancelledAt = cancelledAt; }
 
     @PrePersist
     protected void onCreate() {

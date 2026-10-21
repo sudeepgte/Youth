@@ -1439,7 +1439,7 @@
                     <div class="event-footer">
                         <span class="badge-pill"
                             th:classappend="${event.entryFeeType == 'Paid'} ? 'badge-paid' : 'badge-free'"
-                            th:text="${event.price != null ? event.price : 'Free'}">Free</span>
+                            th:text="${event.price != null ? #strings.replace(event.price, '$', '₹') : 'Free'}">Free</span>
 
                         <a th:href="@{'/events/admin/edit/' + ${event.id}}" class="action-btn btn-edit">
                             <i class="fas fa-edit"></i> Edit

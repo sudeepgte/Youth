@@ -178,7 +178,17 @@
             </div>
 
             <!-- Empty State -->
-            <div th:if="${#lists.isEmpty(bookings)}" style="text-align:center; padding:80px 20px; background: var(--card-bg); border-radius: 24px; border: 1px dashed var(--glass-border);">
+            <!-- Empty State: Invalid Ticket ID or Search with no results -->
+            <div th:if="${#lists.isEmpty(bookings) and (isSearchActive or hasAnyBookings)}" style="text-align:center; padding:80px 20px; background: var(--card-bg); border-radius: 24px; border: 1px dashed var(--glass-border);">
+                <i class="fas fa-search" style="font-size:48px; color:var(--text-secondary); margin-bottom:16px;"></i>
+                <h3 style="color:var(--text-primary);">No booking found for the entered ticket ID.</h3>
+                <p style="color:var(--text-secondary); margin-bottom: 24px;">Please verify the ticket ID or search keyword and try again.</p>
+                <a th:href="@{/user/my-bookings}" class="btn btn-outline" style="display:inline-block; padding: 12px 24px; margin-right: 10px; border-radius: 12px; border: 1px solid var(--glass-border); color: var(--text-primary); text-decoration: none;"><i class="fas fa-times"></i> Clear Search</a>
+                <a th:href="@{/events}" class="btn btn-primary" style="display:inline-block; padding: 12px 24px; border-radius: 12px; text-decoration: none;"><i class="fas fa-compass"></i> Explore Events</a>
+            </div>
+
+            <!-- Empty State: Truly no bookings yet -->
+            <div th:if="${#lists.isEmpty(bookings) and not (isSearchActive or hasAnyBookings)}" style="text-align:center; padding:80px 20px; background: var(--card-bg); border-radius: 24px; border: 1px dashed var(--glass-border);">
                 <i class="fas fa-receipt" style="font-size:48px; color:var(--text-secondary); margin-bottom:16px;"></i>
                 <h3 style="color:var(--text-primary);">You haven't booked any events yet.</h3>
                 <p style="color:var(--text-secondary); margin-bottom: 24px;">Discover exciting events, parties, and battles to join.</p>
@@ -239,11 +249,15 @@
                             
                             <a th:if="${booking.event != null}" th:href="@{'/events/' + ${booking.event.id}}" class="btn" style="padding: 8px 16px; font-size: 13px; background: transparent; border: 1px solid rgba(255,255,255,0.2);"><i class="fas fa-eye"></i> View Event</a>
                             
-                            <!-- Only show cancel if Upcoming -->
-                            <form th:if="${booking.registrationStatus == 'REGISTERED' and booking.event != null and booking.event.dateTime != null and booking.event.dateTime.isAfter(#temporals.createNow())}" 
-                                  th:action="@{'/user/my-bookings/cancel/' + ${booking.id}}" method="POST" onsubmit="return confirm('Are you sure you want to cancel this booking? This action cannot be undone.');">
-                                <button type="submit" class="btn" style="padding: 8px 16px; font-size: 13px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3);"><i class="fas fa-times-circle"></i> Cancel Booking</button>
-                            </form>
+                            <!-- Cancel Booking button with Modal Trigger -->
+                            <button th:if="${booking.registrationStatus == 'REGISTERED' and booking.event != null and booking.event.dateTime != null and booking.event.dateTime.isAfter(#temporals.createNow())}"
+                                    type="button" 
+                                    class="btn" 
+                                    style="padding: 8px 16px; font-size: 13px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); cursor: pointer;"
+                                    th:attr="data-id=${booking.id}, data-title=${booking.event.title}, data-amount=${booking.totalPrice != null ? booking.totalPrice : 0}"
+                                    onclick="openCancelModal(this.getAttribute('data-id'), this.getAttribute('data-title'), this.getAttribute('data-amount'))">
+                                <i class="fas fa-times-circle"></i> Cancel Booking
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -251,6 +265,124 @@
 
         </main>
     </div>
+
+    <!-- Cancellation Confirmation Modal -->
+    <div id="cancelTicketModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 9999; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box;">
+        <div style="background: var(--bg-card, #1e293b); border: 1px solid var(--border-color, #334155); border-radius: 20px; max-width: 480px; width: 100%; padding: 28px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); color: var(--text-primary, #fff);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(239, 68, 68, 0.15); color: #ef4444; display: flex; align-items: center; justify-content: center; font-size: 20px;">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div>
+                        <h3 style="margin: 0; font-size: 18px; font-weight: 800;">Cancel Ticket?</h3>
+                        <p id="cancelEventTitle" style="margin: 2px 0 0 0; font-size: 12px; color: var(--text-secondary, #94a3b8);">Event Booking</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeCancelModal()" style="background: none; border: none; color: var(--text-secondary, #94a3b8); font-size: 18px; cursor: pointer;"><i class="fas fa-times"></i></button>
+            </div>
+
+            <form id="cancelBookingForm" method="POST">
+                <div style="margin-bottom: 18px;">
+                    <label style="display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; color: var(--text-secondary, #94a3b8);">Reason for cancellation *</label>
+                    <select name="reason" id="cancellationReasonSelect" required onchange="toggleOtherReasonField(this.value)" style="width: 100%; padding: 12px; border-radius: 10px; background: rgba(255,255,255,0.06); border: 1px solid var(--border-color, #475569); color: var(--text-primary, #fff); font-size: 14px; box-sizing: border-box; outline: none;">
+                        <option value="" disabled selected>Select a reason</option>
+                        <option value="Schedule conflict or personal emergency">Schedule conflict or personal emergency</option>
+                        <option value="Change of travel plans">Change of travel plans</option>
+                        <option value="Booked by mistake / wrong event">Booked by mistake / wrong event</option>
+                        <option value="Event timing or location changed">Event timing or location changed</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
+                <div id="otherReasonGroup" style="display: none; margin-bottom: 18px;">
+                    <label style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 6px; color: var(--text-secondary, #94a3b8);">Please specify reason *</label>
+                    <input type="text" name="otherReason" id="otherReasonInput" placeholder="Enter reason" style="width: 100%; padding: 10px 14px; border-radius: 10px; background: rgba(255,255,255,0.06); border: 1px solid var(--border-color, #475569); color: var(--text-primary, #fff); font-size: 13px; box-sizing: border-box; outline: none;">
+                </div>
+
+                <!-- Refund Policy & Calculation Summary Card -->
+                <div style="background: rgba(15, 23, 42, 0.4); border: 1px solid var(--border-color, rgba(255,255,255,0.1)); border-radius: 12px; padding: 16px; margin-bottom: 22px;">
+                    <div style="font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; color: var(--primary, #3b82f6); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+                        <i class="fas fa-receipt"></i> Refund Details
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 8px; color: var(--text-secondary, #94a3b8);">
+                        <span>Amount Paid</span>
+                        <span id="modalPaidAmount" style="font-weight: 700; color: var(--text-primary, #fff);">₹0.00</span>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 8px; color: var(--text-secondary, #94a3b8);">
+                        <span>Cancellation Fee</span>
+                        <span id="modalCancellationFee" style="font-weight: 700; color: #ef4444;">₹0.00</span>
+                    </div>
+
+                    <div style="border-top: 1px dashed rgba(255,255,255,0.15); margin: 10px 0; padding-top: 10px; display: flex; justify-content: space-between; font-size: 14px; font-weight: 800;">
+                        <span>Estimated Refund</span>
+                        <span id="modalRefundAmount" style="color: #10b981;">₹0.00</span>
+                    </div>
+
+                    <div style="font-size: 11px; color: var(--text-secondary, #94a3b8); margin-top: 10px; line-height: 1.5; background: rgba(255,255,255,0.03); padding: 8px 10px; border-radius: 8px;">
+                        <i class="fas fa-info-circle"></i> <strong>Refund Policy:</strong> 100% refund for cancellations made >24 hours prior to the event. Free events incur ₹0 charges. Refunds are processed back to the original payment source within 5–7 business days.
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 12px;">
+                    <button type="button" onclick="closeCancelModal()" style="flex: 1; padding: 12px; border-radius: 10px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: var(--text-primary, #fff); font-weight: 700; font-size: 14px; cursor: pointer;">Keep Booking</button>
+                    <button type="submit" style="flex: 1.3; padding: 12px; border-radius: 10px; background: #ef4444; border: none; color: #fff; font-weight: 800; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">Confirm Cancellation</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openCancelModal(bookingId, eventTitle, amountPaid) {
+            const modal = document.getElementById('cancelTicketModal');
+            const form = document.getElementById('cancelBookingForm');
+            const titleEl = document.getElementById('cancelEventTitle');
+            const paidEl = document.getElementById('modalPaidAmount');
+            const feeEl = document.getElementById('modalCancellationFee');
+            const refundEl = document.getElementById('modalRefundAmount');
+            const reasonSelect = document.getElementById('cancellationReasonSelect');
+            const otherReasonGroup = document.getElementById('otherReasonGroup');
+
+            form.action = '/user/my-bookings/cancel/' + bookingId;
+            titleEl.textContent = eventTitle || 'Event Ticket Booking';
+            
+            const paid = parseFloat(amountPaid) || 0.0;
+            if (paid <= 0) {
+                paidEl.textContent = 'Free';
+                feeEl.textContent = '₹0.00';
+                refundEl.textContent = 'Free (₹0.00)';
+            } else {
+                paidEl.textContent = '₹' + paid.toFixed(2);
+                feeEl.textContent = '₹0.00 (Standard)';
+                refundEl.textContent = '₹' + paid.toFixed(2);
+            }
+
+            reasonSelect.selectedIndex = 0;
+            otherReasonGroup.style.display = 'none';
+            document.getElementById('otherReasonInput').required = false;
+
+            modal.style.display = 'flex';
+        }
+
+        function closeCancelModal() {
+            document.getElementById('cancelTicketModal').style.display = 'none';
+        }
+
+        function toggleOtherReasonField(val) {
+            const otherGroup = document.getElementById('otherReasonGroup');
+            const otherInput = document.getElementById('otherReasonInput');
+            if (val === 'Other') {
+                otherGroup.style.display = 'block';
+                otherInput.required = true;
+                otherInput.focus();
+            } else {
+                otherGroup.style.display = 'none';
+                otherInput.required = false;
+            }
+        }
+    </script>
 
     <!-- Footer Fragment -->
     <footer th:replace="~{fragments/template :: footer}"></footer>

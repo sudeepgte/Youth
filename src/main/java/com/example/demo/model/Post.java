@@ -192,6 +192,14 @@ public class Post {
         return likes.stream().anyMatch(l -> l.getUser() != null && l.getUser().getId().equals(user.getId()));
     }
 
+    public boolean isSavedByUser(User user) {
+        if (user == null || userActivities == null) {
+            return false;
+        }
+        return userActivities.stream().anyMatch(a -> a.getActivityType() == ActivityType.SAVE 
+                && a.getUser() != null && a.getUser().getId().equals(user.getId()));
+    }
+
     private boolean blocked = false;
     public boolean isBlocked() { return blocked; }
     public void setBlocked(boolean blocked) { this.blocked = blocked; }

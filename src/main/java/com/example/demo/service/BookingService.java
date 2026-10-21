@@ -74,6 +74,10 @@ public class BookingService {
     }
 
     public boolean cancelBooking(Long regId, User user) {
+        return cancelBooking(regId, user, "User Requested Cancellation");
+    }
+
+    public boolean cancelBooking(Long regId, User user, String reason) {
         EventRegistration reg = eventRegistrationRepository.findById(regId).orElse(null);
         if (reg == null || reg.getUser() == null || !reg.getUser().getId().equals(user.getId())) {
             return false;
@@ -89,8 +93,26 @@ public class BookingService {
             return false;
         }
 
-        // 1. Mark as cancelled
+        // Calculate refund details based on time to event:
+        // If cancellation is more than 24h before event: 100% refund (0 charges)
+        // If cancellation is within 24h of event: 90% refund (10% cancellation charges)
+        double totalPaid = reg.getTotalPrice() != null ? reg.getTotalPrice() : 0.0;
+        double refund = totalPaid;
+        double charge = 0.0;
+        if (totalPaid > 0 && reg.getEvent() != null && reg.getEvent().getDateTime() != null) {
+            long hoursUntilEvent = java.time.Duration.between(now, reg.getEvent().getDateTime()).toHours();
+            if (hoursUntilEvent < 24) {
+                charge = Math.round(totalPaid * 0.10 * 100.0) / 100.0;
+                refund = Math.max(0.0, totalPaid - charge);
+            }
+        }
+
+        // 1. Mark as cancelled with reason and refund info
         reg.setRegistrationStatus("CANCELLED");
+        reg.setCancellationReason(reason != null && !reason.isBlank() ? reason.trim() : "User Requested Cancellation");
+        reg.setRefundAmount(refund);
+        reg.setCancellationCharges(charge);
+        reg.setCancelledAt(now);
         eventRegistrationRepository.save(reg);
 
         // 2. Release seats (if any were booked)

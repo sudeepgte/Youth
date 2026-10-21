@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Component
 public class EventDataInitializer implements CommandLineRunner {
@@ -13,8 +14,38 @@ public class EventDataInitializer implements CommandLineRunner {
     @Autowired
     private EventRepository eventRepository;
 
+    @org.springframework.beans.factory.annotation.Value("${app.seed.events:false}")
+    private boolean seedEventsEnabled;
+
     @Override
     public void run(String... args) throws Exception {
+        if (!seedEventsEnabled) {
+            // Remove known sample/preseeded events if they exist so production environment only retains legitimate events
+            List<String> sampleTitles = List.of(
+                "Summer Cricket League",
+                "Zentrix Football Cup",
+                "Rhythmic Night Fest",
+                "Zentrix Film Festival",
+                "Tech Hackathon 2024",
+                "AI & Future Workshop",
+                "Valorant Ultimate Showdown",
+                "Next Big Concert: EDM vs Rock?",
+                "Workshop Series: Cloud Computing"
+            );
+            for (String title : sampleTitles) {
+                eventRepository.findAll().stream()
+                    .filter(e -> title.equalsIgnoreCase(e.getTitle()))
+                    .forEach(e -> {
+                        try {
+                            eventRepository.delete(e);
+                        } catch (Exception ex) {
+                            // If has dependent child records, skip deletion
+                        }
+                    });
+            }
+            return;
+        }
+
         if (eventRepository.count() == 0) {
             // Sports
             createEvent("Summer Cricket League",
@@ -27,7 +58,7 @@ public class EventDataInitializer implements CommandLineRunner {
                     "A 5-a-side football tournament for all skill levels. Bring your squad and dominate the pitch!",
                     "https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=1986&auto=format&fit=crop",
                     LocalDateTime.now().plusDays(15).withHour(16).withMinute(0),
-                    "Blue Turf Arena", "$15 Team", "Sports", "FC Zentrix", "UPCOMING");
+                    "Blue Turf Arena", "₹150 Team", "Sports", "FC Zentrix", "UPCOMING");
 
             // Cultural
             createEvent("Rhythmic Night Fest",
@@ -40,14 +71,14 @@ public class EventDataInitializer implements CommandLineRunner {
                     "Showcasing short films and documentaries from talented student creators. Awards for Best Director and Screenplay.",
                     "https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=2059&auto=format&fit=crop",
                     LocalDateTime.now().plusDays(25).withHour(17).withMinute(0),
-                    "Auditorium B", "$5 Entry", "Cultural", "Media Society", "UPCOMING");
+                    "Auditorium B", "₹50 Entry", "Cultural", "Media Society", "UPCOMING");
 
             // Tech
             createEvent("Tech Hackathon 2024",
                     "48 hours of intense coding, problem-solving, and innovation. Build the future with Zentrix!",
                     "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?q=80&w=2070&auto=format&fit=crop",
                     LocalDateTime.now().plusDays(5).withHour(9).withMinute(0),
-                    "Digital Innovation Hub", "$10 Registration", "Tech", "Tech Innovators", "UPCOMING");
+                    "Digital Innovation Hub", "₹100 Registration", "Tech", "Tech Innovators", "UPCOMING");
 
             createEvent("AI & Future Workshop",
                     "Learn about the latest trends in Artificial Intelligence and Machine Learning from industry experts.",
@@ -60,7 +91,7 @@ public class EventDataInitializer implements CommandLineRunner {
                     "Compete against the best tactical shooters in the college. High stakes, big prizes!",
                     "https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=2070&auto=format&fit=crop",
                     LocalDateTime.now().plusDays(8).withHour(15).withMinute(0),
-                    "Gaming Lounge / Online", "$2 Entry", "E-Sports", "Pro Gamers League", "UPCOMING");
+                    "Gaming Lounge / Online", "₹20 Entry", "E-Sports", "Pro Gamers League", "UPCOMING");
 
             // Voting Polls
             createEvent("Next Big Concert: EDM vs Rock?",

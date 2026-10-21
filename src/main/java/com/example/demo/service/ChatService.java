@@ -466,8 +466,30 @@ public class ChatService {
         if (conv.getCreator() != null && conv.getCreator().getId().equals(user.getId())) {
             throw new RuntimeException("Sender cannot reject their own request");
         }
-        // Instead of deleting, we could mark as REJECTED, but usually deletion is
-        // cleaner for chat requests
+
+        // Clean up child messages and read receipts before deleting conversation to prevent FK 500 error
+        List<ChatMessage> messages = chatMessageRepository.findByConversationOrderByTimestampAsc(conv);
+        for (ChatMessage msg : messages) {
+            // Nullify parent reference to avoid self-referential FK constraint
+            if (msg.getParentMessage() != null) {
+                msg.setParentMessage(null);
+                chatMessageRepository.save(msg);
+            }
+        }
+        for (ChatMessage msg : messages) {
+            // Remove reactions collection
+            if (msg.getReactions() != null) {
+                msg.getReactions().clear();
+                chatMessageRepository.save(msg);
+            }
+            // Delete all read receipts for this message
+            for (User participant : conv.getParticipants()) {
+                readReceiptRepository.findByMessageAndUser(msg, participant).ifPresent(readReceiptRepository::delete);
+            }
+            chatMessageRepository.delete(msg);
+        }
+
+        conv.getParticipants().clear();
         conversationRepository.delete(conv);
     }
 }

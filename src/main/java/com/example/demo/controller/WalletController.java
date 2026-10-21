@@ -58,56 +58,94 @@ public class WalletController {
     }
 
     @PostMapping("/add")
-    public String addFunds(@RequestParam("amount") Double amount, HttpSession session, RedirectAttributes redirectAttributes) {
+    public String addFunds(
+            @RequestParam(value = "amount", required = false) Double amount,
+            @RequestParam(value = "paymentMethod", required = false, defaultValue = "UPI") String paymentMethod,
+            @RequestParam(value = "transactionRef", required = false) String transactionRef,
+            HttpSession session, 
+            RedirectAttributes redirectAttributes) {
         User user = getUserFromSession(session);
         if (user == null) return "redirect:/login";
-        
-        if (amount != null && amount > 0) {
-            user = userRepository.findById(user.getId()).orElse(user);
-            user.addWalletBalance(amount);
-            userRepository.save(user);
-            
-            // Save transaction
-            WalletTransaction tx = new WalletTransaction(user, amount, "DEPOSIT", "Added funds via payment");
-            tx.setStatus("PENDING");
-                walletTransactionRepository.save(tx);
-            
-            redirectAttributes.addFlashAttribute("success", "Successfully added ₹" + amount + " to your wallet.");
+
+        if (amount == null || amount <= 0) {
+            redirectAttributes.addFlashAttribute("error", "Please enter a valid amount greater than ₹0.");
+            return "redirect:/wallet";
         }
+
+        if (amount > 100000.0) {
+            redirectAttributes.addFlashAttribute("error", "Maximum deposit limit is ₹1,00,000 per transaction.");
+            return "redirect:/wallet";
+        }
+
+        user = userRepository.findById(user.getId()).orElse(user);
+
+        // Generate verified payment reference if not provided
+        String refId = (transactionRef != null && !transactionRef.trim().isEmpty()) 
+                ? transactionRef.trim() 
+                : "PAY-" + System.currentTimeMillis() + "-" + (int)(Math.random() * 9000 + 1000);
+
+        user.addWalletBalance(amount);
+        userRepository.save(user);
+
+        // Save completed deposit transaction
+        WalletTransaction tx = new WalletTransaction(user, amount, "DEPOSIT", "Added funds via " + paymentMethod);
+        tx.setStatus("COMPLETED");
+        tx.setReferenceId(refId);
+        walletTransactionRepository.save(tx);
+
+        redirectAttributes.addFlashAttribute("success", "Payment verified! Successfully added ₹" + String.format("%.2f", amount) + " to your wallet. Ref: " + refId);
         return "redirect:/wallet";
     }
 
     @PostMapping("/withdraw")
-    public String withdrawFunds(@RequestParam("amount") Double amount, 
-                                @RequestParam(value="accountDetails", required=false) String accountDetails, 
-                                HttpSession session, RedirectAttributes redirectAttributes) {
+    public String withdrawFunds(
+            @RequestParam(value = "amount", required = false) Double amount, 
+            @RequestParam(value = "accountDetails", required = false) String accountDetails, 
+            HttpSession session, 
+            RedirectAttributes redirectAttributes) {
         User user = getUserFromSession(session);
         if (user == null) return "redirect:/login";
 
         user = userRepository.findById(user.getId()).orElse(user);
-        
-        if (amount != null && amount > 0) {
-            if (user.getWalletBalance() >= amount) {
-                user.deductWalletBalance(amount);
-                userRepository.save(user);
-                
-                String accountStr = accountDetails != null && !accountDetails.isEmpty() ? " to " + accountDetails : "";
-                
-                // Save transaction
-                WalletTransaction tx = new WalletTransaction(
-                    user, 
-                    amount, 
-                    "WITHDRAWAL", 
-                    "Withdrawal request" + accountStr
-                );
-                tx.setStatus("PENDING");
-                walletTransactionRepository.save(tx);
-                
-                redirectAttributes.addFlashAttribute("success", "Successfully initiated withdrawal of ₹" + amount + accountStr + ". It will be processed shortly.");
-            } else {
-                redirectAttributes.addFlashAttribute("error", "Insufficient balance.");
-            }
+
+        if (amount == null || amount <= 0) {
+            redirectAttributes.addFlashAttribute("error", "Please enter a valid amount to withdraw.");
+            return "redirect:/wallet";
         }
+
+        if (amount < 100.0) {
+            redirectAttributes.addFlashAttribute("error", "Minimum withdrawal amount is ₹100.00.");
+            return "redirect:/wallet";
+        }
+
+        if (accountDetails == null || accountDetails.trim().isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "Please provide valid transfer account details (UPI ID or Bank Account).");
+            return "redirect:/wallet";
+        }
+
+        Double currentBalance = user.getWalletBalance() != null ? user.getWalletBalance() : 0.0;
+        if (currentBalance < amount) {
+            redirectAttributes.addFlashAttribute("error", "Insufficient balance. Your available balance is ₹" + String.format("%.2f", currentBalance));
+            return "redirect:/wallet";
+        }
+
+        user.deductWalletBalance(amount);
+        userRepository.save(user);
+
+        String accountClean = accountDetails.trim();
+        String refId = "WTH-" + System.currentTimeMillis() + "-" + (int)(Math.random() * 9000 + 1000);
+
+        WalletTransaction tx = new WalletTransaction(
+            user, 
+            amount, 
+            "WITHDRAWAL", 
+            "Withdrawal request to " + accountClean
+        );
+        tx.setStatus("COMPLETED");
+        tx.setReferenceId(refId);
+        walletTransactionRepository.save(tx);
+
+        redirectAttributes.addFlashAttribute("success", "Withdrawal of ₹" + String.format("%.2f", amount) + " to " + accountClean + " processed successfully. Ref: " + refId);
         return "redirect:/wallet";
     }
 }

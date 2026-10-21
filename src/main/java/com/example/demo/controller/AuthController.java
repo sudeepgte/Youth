@@ -64,7 +64,7 @@ public class AuthController {
         }
         userRepository.save(user);
         auditLogService.log("USER_REGISTER", user.getId(), "User " + user.getUsername() + " registered successfully.");
-        return "redirect:/home";
+        return "redirect:/login?registered=true";
     }
 
     @RequestMapping(value = "/login", method = RequestMethod.GET)

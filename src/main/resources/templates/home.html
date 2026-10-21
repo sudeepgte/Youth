@@ -475,7 +475,7 @@
                         
                         <div style="margin-top: auto; padding-top: 15px; border-top: 1px solid rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center;">
                             <div style="font-size: 15px; font-weight: 900; color: #111;">
-                                <span th:text="${event.price != null ? event.price : 'Free'}">Free</span>
+                                <span th:text="${event.price != null ? #strings.replace(event.price, '$', '₹') : 'Free'}">Free</span>
                             </div>
                             <a th:href="${session.user != null} ? @{/events/{id}(id=${event.id})} : @{/login}"
                                 class="btn btn-primary" style="padding: 10px 20px; font-size: 13px; border-radius: 12px; font-weight: 800; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);">

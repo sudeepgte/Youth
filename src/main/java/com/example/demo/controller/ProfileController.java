@@ -568,7 +568,7 @@ public class ProfileController {
                     post, collabUser, com.example.demo.model.CollaborationStatus.PENDING);
             postCollaborationRepository.save(collaboration);
         }
-        rewardService.awardTalentPost(user); // Coins for Posting 🎨
+        rewardService.awardTalentPost(user, post.getId(), postType); // Coins for Posting/Reels 🎨 with deduplication & limit
         return "redirect:/profile";
     }
 

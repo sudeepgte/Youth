@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.demo.service.FeedAlgorithmService;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(value = "/api/posts")
@@ -100,7 +101,8 @@ public class PostInteractionController {
     @RequestMapping(value = "/{postId}/comment", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> addComment(
             @PathVariable Long postId,
-            @RequestParam String content,
+            @RequestParam(required = false) String content,
+            @RequestBody(required = false) Map<String, Object> body,
             HttpSession session) {
 
         User user = getUserFromSession(session);
@@ -112,10 +114,18 @@ public class PostInteractionController {
         if (post == null)
             return ResponseEntity.notFound().build();
 
-        if (content == null || content.trim().isEmpty())
+        String commentText = content;
+        if ((commentText == null || commentText.trim().isEmpty()) && body != null && body.containsKey("content")) {
+            commentText = Objects.toString(body.get("content"), null);
+        }
+
+        if (commentText == null || commentText.trim().isEmpty())
             return ResponseEntity.badRequest().build();
 
-        PostComment comment = postCommentRepository.save(new PostComment(post, user, content.trim()));
+        PostComment comment = postCommentRepository.save(new PostComment(post, user, commentText.trim()));
+
+        // Also track user activity for algorithm / interactions
+        userActivityRepository.save(new UserActivity(user, post, ActivityType.COMMENT));
 
         // Trigger Notification for the owner (if not commenting on own post)
         if (!post.getUser().getId().equals(user.getId())) {
@@ -123,7 +133,7 @@ public class PostInteractionController {
             String postSnippet = post.getContent() != null && !post.getContent().isBlank() ? 
                 (post.getContent().length() > 15 ? post.getContent().substring(0, 15) + "..." : post.getContent()) : "media";
             String msg = "@" + user.getUsername() + " commented on (" + postSnippet + "): \"" + 
-                         (content.length() > 20 ? content.substring(0, 17) + "..." : content.trim()) + "\"";
+                         (commentText.length() > 20 ? commentText.substring(0, 17) + "..." : commentText.trim()) + "\"";
             notificationRepository.save(new Notification(post.getUser(), user, msg, "COMMENT", post.getId()));
         }
 
@@ -204,12 +214,14 @@ public class PostInteractionController {
             return ResponseEntity.notFound().build();
 
         List<UserActivity> existing = userActivityRepository.findByUserIdAndPostId(user.getId(), postId);
-        Optional<UserActivity> savedAct = existing.stream()
-            .filter(a -> a.getActivityType() == ActivityType.SAVE).findFirst();
+        List<UserActivity> savedActs = existing.stream()
+            .filter(a -> a.getActivityType() == ActivityType.SAVE)
+            .collect(Collectors.toList());
 
         boolean nowSaved;
-        if (savedAct.isPresent()) {
-            userActivityRepository.delete(savedAct.get());
+        if (!savedActs.isEmpty()) {
+            // Delete all existing save records to prevent duplicates
+            userActivityRepository.deleteAll(savedActs);
             nowSaved = false;
         } else {
             userActivityRepository.save(new UserActivity(user, post, ActivityType.SAVE));

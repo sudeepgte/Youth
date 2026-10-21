@@ -50,9 +50,15 @@ public class BookingController {
         user = userRepository.findById(user.getId()).orElse(user);
         session.setAttribute("user", user);
 
+        List<EventRegistration> allUserBookings = bookingService.getBookingsByUser(user);
         List<EventRegistration> bookings = bookingService.getFilteredAndSortedBookings(user, search, filter, sort);
 
+        boolean hasAnyBookings = allUserBookings != null && !allUserBookings.isEmpty();
+        boolean isSearchActive = search != null && !search.trim().isEmpty();
+
         model.addAttribute("bookings", bookings);
+        model.addAttribute("hasAnyBookings", hasAnyBookings);
+        model.addAttribute("isSearchActive", isSearchActive);
         model.addAttribute("activeSearch", search != null ? search : "");
         model.addAttribute("activeFilter", filter);
         model.addAttribute("activeSort", sort);
@@ -62,13 +68,23 @@ public class BookingController {
     }
 
     @PostMapping("/cancel/{id}")
-    public String cancelBooking(@PathVariable Long id, HttpSession session) {
+    public String cancelBooking(@PathVariable Long id, 
+                                @RequestParam(required = false) String reason,
+                                @RequestParam(required = false) String otherReason,
+                                HttpSession session) {
         User user = getUserFromSession(session);
         if (user == null) {
             return "redirect:/login";
         }
 
-        boolean success = bookingService.cancelBooking(id, user);
+        String finalReason = reason;
+        if ("Other".equalsIgnoreCase(reason) && otherReason != null && !otherReason.isBlank()) {
+            finalReason = "Other: " + otherReason.trim();
+        } else if (finalReason == null || finalReason.isBlank()) {
+            finalReason = "Change of plans";
+        }
+
+        boolean success = bookingService.cancelBooking(id, user, finalReason);
         if (success) {
             return "redirect:/user/my-bookings?cancelSuccess=true";
         } else {

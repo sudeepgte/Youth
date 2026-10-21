@@ -1289,13 +1289,14 @@
                     </button>
                     <!-- Save Button -->
                     <button class="action-btn" th:id="'save-btn-' + ${post.id}" th:onclick="'toggleSave(' + ${post.id} + ')'"
+                        th:style="${user != null and post.isSavedByUser(user)} ? 'color: var(--accent);' : ''"
                         title="Save">
-                        <i class="far fa-bookmark"></i>
+                        <i th:class="${user != null and post.isSavedByUser(user)} ? 'fas fa-bookmark' : 'far fa-bookmark'"></i>
                     </button>
                     <!-- Comment Button -->
                     <button class="action-btn" th:onclick="'toggleComments(' + ${post.id} + ')'" title="Comment">
                         <i class="far fa-comment"></i>
-                        <span style="font-size:13px; margin-left:3px;"
+                        <span th:id="'comment-count-' + ${post.id}" style="font-size:13px; margin-left:3px;"
                             th:text="${post.comments != null ? post.comments.size() : 0}"></span>
                     </button>
                     <!-- Share Button -->
@@ -1742,6 +1743,7 @@
             const data = await res.json();
             if (icon) {
                 icon.className = data.saved ? 'fas fa-bookmark' : 'far fa-bookmark';
+                if (btn) btn.style.color = data.saved ? 'var(--accent)' : '';
                 if (data.saved) {
                     showToast("Saved successfully! \uD83C\uDF89");
                 } else {

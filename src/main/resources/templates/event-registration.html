@@ -1604,43 +1604,43 @@
 
                 <div class="form-group-field">
                     <label>Full Name *</label>
-                    <input type="text" name="fullName" id="regFullName" placeholder="Enter your full name" required>
+                    <input type="text" name="fullName" id="regFullName" th:value="${user != null ? user.username : ''}" placeholder="Enter your full name" required>
                 </div>
 
                 <div class="two-cols-field">
                     <div class="form-group-field">
                         <label>Email Address *</label>
-                        <input type="email" name="email" id="regEmail" placeholder="your@email.com" required>
+                        <input type="email" name="email" id="regEmail" th:value="${user != null ? user.email : ''}" placeholder="your@email.com" required>
                     </div>
                     <div class="form-group-field">
                         <label>Phone Number *</label>
-                        <input type="tel" name="phone" id="regPhone" placeholder="Phone number" maxlength="15" required pattern="[+]?[0-9]{10,15}">
+                        <input type="tel" name="phone" id="regPhone" th:value="${prefillPhone}" placeholder="Phone number" maxlength="15" required pattern="[+]?[0-9]{10,15}">
                     </div>
                 </div>
 
                 <div class="form-group-field">
                     <label>College / Organization</label>
-                    <input type="text" name="college" id="regCollege" placeholder="e.g. Anna University">
+                    <input type="text" name="college" id="regCollege" th:value="${user != null ? user.collegeName : ''}" placeholder="e.g. Anna University">
                 </div>
 
                 <div class="two-cols-field">
                     <div class="form-group-field">
                         <label>Year of Study</label>
                         <select name="yearOfStudy" id="regYear">
-                            <option value="">Select year</option>
-                            <option value="1st Year">1st Year</option>
-                            <option value="2nd Year">2nd Year</option>
-                            <option value="3rd Year">3rd Year</option>
-                            <option value="4th Year">4th Year</option>
-                            <option value="Postgraduate">Postgraduate</option>
+                            <option value="" th:selected="${prefillYearOfStudy == null or prefillYearOfStudy == ''}">Select year</option>
+                            <option value="1st Year" th:selected="${prefillYearOfStudy == '1st Year'}">1st Year</option>
+                            <option value="2nd Year" th:selected="${prefillYearOfStudy == '2nd Year'}">2nd Year</option>
+                            <option value="3rd Year" th:selected="${prefillYearOfStudy == '3rd Year'}">3rd Year</option>
+                            <option value="4th Year" th:selected="${prefillYearOfStudy == '4th Year'}">4th Year</option>
+                            <option value="Postgraduate" th:selected="${prefillYearOfStudy == 'Postgraduate'}">Postgraduate</option>
                         </select>
                     </div>
                     <div class="form-group-field">
                         <label>Gender</label>
                         <select name="gender">
-                            <option value="">Prefer not to say</option>
-                            <option value="Male">Male</option>
-                            <option value="Female">Female</option>
+                            <option value="" th:selected="${user == null or user.gender == null or user.gender == ''}">Prefer not to say</option>
+                            <option value="Male" th:selected="${user != null and user.gender == 'Male'}">Male</option>
+                            <option value="Female" th:selected="${user != null and user.gender == 'Female'}">Female</option>
                         </select>
                     </div>
                 </div>

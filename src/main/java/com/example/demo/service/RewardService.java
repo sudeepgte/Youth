@@ -56,9 +56,30 @@ public class RewardService {
     }
 
     public void awardRegistration(User user) {
+        awardRegistration(user, null);
+    }
+
+    public synchronized void awardRegistration(User user, String ticketId) {
+        if (user == null) return;
+        user = userRepository.findById(user.getId()).orElse(user);
+
+        String reason = (ticketId != null && !ticketId.isBlank()) 
+                ? "Ticket Booking #" + ticketId 
+                : "Event Registration";
+
+        // Prevent duplicate reward for the same ticket/booking
+        if (ticketId != null && !ticketId.isBlank()) {
+            boolean alreadyAwarded = coinTransactionRepository.existsByUserAndSourceAndReason(user, "Event Booking", reason);
+            if (alreadyAwarded) {
+                return;
+            }
+        }
+
         RewardConfig config = getConfig();
-        user.addCoins(config.getRegisterForEvent());
+        int amount = config.getRegisterForEvent();
+        user.addCoins(amount);
         userRepository.save(user);
+        coinTransactionRepository.save(new CoinTransaction(user, amount, "Event Booking", reason));
     }
 
     public void awardAttendance(User user) {
@@ -86,9 +107,36 @@ public class RewardService {
     }
 
     public void awardTalentPost(User user) {
+        awardTalentPost(user, null, "POST");
+    }
+
+    public synchronized void awardTalentPost(User user, Long postId, String postType) {
+        if (user == null) return;
+        user = userRepository.findById(user.getId()).orElse(user);
+
+        String type = (postType != null && postType.equalsIgnoreCase("REEL")) ? "Reel" : "Post";
+        String reason = (postId != null) ? type + " #" + postId : "Created " + type;
+
+        // Prevent duplicate rewards for the same post/reel
+        if (postId != null) {
+            boolean alreadyAwarded = coinTransactionRepository.existsByUserAndSourceAndReason(user, "Content Creation", reason);
+            if (alreadyAwarded) {
+                return;
+            }
+        }
+
+        // Daily rate limit: max 5 rewarded posts/reels in 24 hours to prevent abuse
+        java.time.LocalDateTime twentyFourHoursAgo = java.time.LocalDateTime.now().minusHours(24);
+        long recentAwards = coinTransactionRepository.countByUserAndSourceAndTimestampAfter(user, "Content Creation", twentyFourHoursAgo);
+        if (recentAwards >= 5) {
+            return;
+        }
+
         RewardConfig config = getConfig();
-        user.addCoins(config.getTalentPost());
+        int amount = config.getTalentPost();
+        user.addCoins(amount);
         userRepository.save(user);
+        coinTransactionRepository.save(new CoinTransaction(user, amount, "Content Creation", reason));
     }
 
     public void awardGamePlay(User user, String gameName) {

@@ -10,4 +10,6 @@ import java.util.List;
 @Repository
 public interface CoinTransactionRepository extends JpaRepository<CoinTransaction, Long> {
     List<CoinTransaction> findByUserOrderByTimestampDesc(User user);
+    boolean existsByUserAndSourceAndReason(User user, String source, String reason);
+    long countByUserAndSourceAndTimestampAfter(User user, String source, java.time.LocalDateTime timestamp);
 }

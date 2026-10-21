@@ -2134,20 +2134,20 @@
                         <div class="recording-overlay" id="recordingOverlay">
                             <div class="rec-dot"></div>
                             <div class="rec-timer" id="recTimer">0:00</div>
-                            <div class="rec-pause" id="recPauseBtn" onclick="togglePauseRecording()">
+                            <div class="rec-pause" id="recPauseBtn" title="Pause / Resume" onclick="togglePauseRecording()">
                                 <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
                                     <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path>
                                 </svg>
                             </div>
-                            <div class="rec-cancel" onclick="stopRecording(false)">Cancel</div>
-                            <div class="rec-send" onclick="stopRecording(true)">
+                            <div class="rec-cancel" title="Cancel Recording" onclick="stopRecording(false)">Cancel</div>
+                            <div class="rec-send" title="Send Voice Message" onclick="stopRecording(true)">
                                 <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
                                     <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
                                 </svg>
                             </div>
                         </div>
                         <div style="cursor: pointer; padding: 0 4px; flex-shrink: 0;"
-                            onclick="document.getElementById('fileInput').click()">
+                            title="Attach Photo or Video" aria-label="Attach Photo or Video" onclick="document.getElementById('fileInput').click()">
                             <svg aria-label="Add Photo or Video" color="var(--text-main)" fill="var(--text-main)"
                                 height="24" role="img" viewBox="0 0 24 24" width="24">
                                 <path
