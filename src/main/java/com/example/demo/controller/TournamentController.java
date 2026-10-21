@@ -5,6 +5,7 @@ import com.example.demo.model.TournamentParticipant;
 import com.example.demo.model.TournamentRound;
 import com.example.demo.model.TournamentBattle;
 import com.example.demo.model.User;
+import com.example.demo.model.WalletTransaction;
 import com.example.demo.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -24,6 +25,7 @@ public class TournamentController {
     @Autowired private TournamentRoundRepository roundRepository;
     @Autowired private UserRepository userRepository;
     @Autowired private TournamentBattleRepository tournamentBattleRepository;
+    @Autowired private WalletTransactionRepository walletTransactionRepository;
 
     private User getUserFromSession(HttpSession session) {
         Object userObj = session.getAttribute("user");
@@ -66,6 +68,13 @@ public class TournamentController {
                 .findFirst().orElse(null);
         }
 
+        if (isRegistered) {
+            TournamentParticipant myParticipant = participantRepository.findByTournament(t).stream()
+                .filter(p -> p.getUser().getId().equals(user.getId()))
+                .findFirst().orElse(null);
+            model.addAttribute("myParticipant", myParticipant);
+        }
+
         model.addAttribute("tournament", t);
         model.addAttribute("user", user);
         model.addAttribute("isRegistered", isRegistered);
@@ -76,9 +85,12 @@ public class TournamentController {
         return "tournament-view";
     }
 
-    @PostMapping("/{id}/join")
+        @PostMapping("/{id}/join")
     public String joinTournament(@PathVariable Long id, HttpSession session) {
         User user = getUserFromSession(session);
+        if (user == null) return "redirect:/login";
+        
+        user = userRepository.findById(user.getId()).orElse(null);
         if (user == null) return "redirect:/login";
 
         Tournament t = tournamentRepository.findById(id).orElse(null);
@@ -94,13 +106,52 @@ public class TournamentController {
         }
 
         if (!participantRepository.existsByTournamentAndUser(t, user)) {
+            // Check Entry Fee
+            if (t.getEntryFee() != null && t.getEntryFee() > 0) {
+                if (user.getWalletBalance() < t.getEntryFee()) {
+                    return "redirect:/tournaments/" + id + "?error=insufficient_funds";
+                }
+                // Deduct entry fee
+                user.deductWalletBalance(t.getEntryFee());
+                userRepository.save(user);
+                session.setAttribute("user", user);
+                
+                // Record wallet transaction
+                WalletTransaction tx = new WalletTransaction(
+                    user, 
+                    t.getEntryFee(), 
+                    "DEBIT", 
+                    "Tournament Entry Fee: " + t.getName()
+                );
+                tx.setStatus("COMPLETED");
+                walletTransactionRepository.save(tx);
+            }
+
             TournamentParticipant tp = new TournamentParticipant();
             tp.setTournament(t);
             tp.setUser(user);
             tp.setSeed((int) count + 1);
+            tp.setParticipantNumber(String.format("OFF-%03d", count + 1));
+            tp.setCheckedIn(false);
             participantRepository.save(tp);
         }
 
         return "redirect:/tournaments/" + id;
     }
+    @GetMapping("/pass/{qrCode}")
+    public String viewDigitalPass(@PathVariable String qrCode, Model model) {
+        TournamentParticipant tp = participantRepository.findAll().stream()
+            .filter(p -> p.getQrPassCode() != null && p.getQrPassCode().equals(qrCode))
+            .findFirst().orElse(null);
+        if (tp == null) {
+            return "redirect:/tournaments";
+        }
+        model.addAttribute("participant", tp);
+        model.addAttribute("tournament", tp.getTournament());
+        return "tournament-pass";
+    }
 }
+
+
+
+

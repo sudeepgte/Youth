@@ -69,7 +69,8 @@ public class WalletController {
             
             // Save transaction
             WalletTransaction tx = new WalletTransaction(user, amount, "DEPOSIT", "Added funds via payment");
-            walletTransactionRepository.save(tx);
+            tx.setStatus("PENDING");
+                walletTransactionRepository.save(tx);
             
             redirectAttributes.addFlashAttribute("success", "Successfully added ₹" + amount + " to your wallet.");
         }
@@ -99,6 +100,7 @@ public class WalletController {
                     "WITHDRAWAL", 
                     "Withdrawal request" + accountStr
                 );
+                tx.setStatus("PENDING");
                 walletTransactionRepository.save(tx);
                 
                 redirectAttributes.addFlashAttribute("success", "Successfully initiated withdrawal of ₹" + amount + accountStr + ". It will be processed shortly.");
@@ -109,3 +111,4 @@ public class WalletController {
         return "redirect:/wallet";
     }
 }
+

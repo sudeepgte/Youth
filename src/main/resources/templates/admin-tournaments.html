@@ -41,7 +41,25 @@
         .header-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
         .btn-create { background: white; color: #10B981; border: 2px solid #10B981; padding: 12px 24px; border-radius: 12px; font-weight: bold; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; }
         .btn-create:hover { background: #10B981; color: white; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(16,185,129,0.3); }
+        /* Modal Styles */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-overlay.active { display: flex; }
+        .mode-modal { background: white; padding: 40px; border-radius: 20px; text-align: center; max-width: 500px; width: 90%; }
+        .mode-modal h2 { margin-top: 0; color: #0f172a; font-weight: 900; }
+        .mode-modal p { color: #64748b; margin-bottom: 30px; }
+        .mode-options { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .mode-card { border: 2px solid #e2e8f0; border-radius: 15px; padding: 30px 20px; cursor: pointer; transition: 0.2s; text-decoration: none; color: inherit; display: block; }
+        .mode-card:hover { border-color: #3b82f6; transform: translateY(-5px); box-shadow: 0 10px 20px rgba(59, 130, 246, 0.1); }
+        .mode-card.offline:hover { border-color: #f84464; box-shadow: 0 10px 20px rgba(248, 68, 100, 0.1); }
+        .mode-card i { font-size: 40px; margin-bottom: 15px; color: #94a3b8; transition: 0.2s; }
+        .mode-card:hover i { color: #3b82f6; }
+        .mode-card.offline:hover i { color: #f84464; }
+        .mode-card h3 { margin: 0 0 10px 0; font-weight: 800; }
+        .mode-card p { margin: 0; font-size: 13px; color: #94a3b8; }
+        .btn-close-modal { margin-top: 25px; background: none; border: none; color: #94a3b8; font-weight: bold; cursor: pointer; }
+        .btn-close-modal:hover { color: #0f172a; text-decoration: underline; }
     </style>
+    <script defer th:src="@{/js/game-rewards.js}"></script>
 </head>
 <body>
     <div class="main-container">
@@ -50,7 +68,7 @@
         
         <div class="header-actions">
             <h1 style="margin: 0; color: var(--text-primary); font-weight: 900;">Manage Tournaments</h1>
-            <a th:href="@{/admin/tournaments/create}" class="btn-create"><i class="fas fa-plus"></i> Create Tournament</a>
+            <button onclick="document.getElementById('modeModal').classList.add('active')" class="btn-create" style="cursor: pointer;"><i class="fas fa-plus"></i> Create Tournament</button>
         </div>
 
         <div class="table-card">
@@ -87,5 +105,30 @@
             </table>
         </div>
     </div>
+    <!-- MODE MODAL -->
+    <div class="modal-overlay" id="modeModal">
+        <div class="mode-modal">
+            <h2>Select Tournament Mode</h2>
+            <p>What kind of tournament are you hosting?</p>
+            
+            <div class="mode-options">
+                <a th:href="@{/admin/tournaments/create(mode='ONLINE')}" class="mode-card">
+                    <i class="fas fa-globe"></i>
+                    <h3>Online Battle</h3>
+                    <p>Virtual event on the platform</p>
+                </a>
+                
+                <a th:href="@{/admin/tournaments/create(mode='OFFLINE')}" class="mode-card offline">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <h3>Offline Event</h3>
+                    <p>Physical venue with QR tickets</p>
+                </a>
+            </div>
+            
+            <button class="btn-close-modal" onclick="document.getElementById('modeModal').classList.remove('active')">Cancel</button>
+        </div>
+    </div>
+
 </body>
 </html>
+

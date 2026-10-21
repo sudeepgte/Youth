@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
@@ -806,6 +806,7 @@
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script defer th:src="@{/js/game-rewards.js}"></script>
 </head>
 <body class="battle-arena-page">
     <!-- Navbar -->
@@ -836,7 +837,7 @@
 
         <div class="dashboard-spacer"></div>
         <div class="dashboard-nav-links">
-            <a href="javascript:void(0)" class="coin-nav"
+            <a href="javascript:void(0)" onclick="GameRewards.showHistory()" class="coin-nav"
                 style="background: rgba(255, 215, 0, 0.1); border: 1px solid rgba(255, 215, 0, 0.2); border-radius: 20px; padding: 5px 12px; display: flex; align-items: center; gap: 8px; text-decoration: none; color: #ffd700; font-weight: 800; font-size: 13px;">
                 <i class="fas fa-coins" style="font-size: 14px;"></i>
                 <span th:text="${user.coins}">0</span>
@@ -1025,7 +1026,7 @@
 
                     <!-- Creator Actions -->
                     <div th:if="${isCreator}" style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;">
-                        <form th:if="${battle.status == 'WAITING' and participants.size() >= 2}" th:action="@{'/battles/' + ${battle.id} + '/start'}" method="POST"
+                        <form th:if="${(battle.status == 'WAITING' or battle.status == 'LOBBY') and participants.size() >= 2}" th:action="@{'/battles/' + ${battle.id} + '/start'}" method="POST"
                               th:onsubmit="${participants.size() < battle.maxParticipants} ? 'return confirm(\'Only ' + ${participants.size()} + ' of ' + ${battle.maxParticipants} + ' spots are filled. Starting now will close joining for everyone else. Start anyway?\');' : null">
                             <button type="submit" class="btn-arena btn-arena-green btn-arena-sm"><i class="fas fa-play"></i> Start Battle</button>
                         </form>
@@ -1043,7 +1044,7 @@
                     </div>
 
                     <!-- Non-Participant Actions (Register / Join) -->
-                    <div th:if="${!isParticipant and !isCreator and battle.status == 'WAITING'}" style="margin-bottom:16px;">
+                    <div th:if="${!isParticipant and !isCreator and (battle.status == 'WAITING' or battle.status == 'LOBBY')}" style="margin-bottom:16px;">
                         <!-- Online Battle: Join with Room Code -->
                         <form th:if="${battle.mode != 'OFFLINE'}" th:action="@{/battles/join}" method="POST">
                             <input type="hidden" name="roomCode" th:value="${battle.roomCode}" />
@@ -1061,7 +1062,7 @@
                     </div>
 
                     <!-- Non-Participant: Battle already progressed past WAITING, joining closed -->
-                    <div th:if="${!isParticipant and !isCreator and battle.status != 'WAITING' and battle.status != 'COMPLETED'}"
+                    <div th:if="${!isParticipant and !isCreator and battle.status != 'WAITING' and battle.status != 'LOBBY' and battle.status != 'COMPLETED'}"
                          style="display:flex; align-items:center; gap:10px; background:rgba(148,163,184,0.12); border:1px solid rgba(148,163,184,0.3); border-radius:12px; padding:12px 16px; margin-bottom:16px; color:var(--text-secondary); font-size:13px; font-weight:600;">
                         <i class="fas fa-lock" style="color:var(--text-muted);"></i>
                         <span>Joining is closed &mdash; this battle has already started.</span>

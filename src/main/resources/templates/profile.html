@@ -569,6 +569,7 @@
         }
     </style>
     <script defer th:src="@{/js/tab-support.js}"></script>
+    <script defer th:src="@{/js/game-rewards.js}"></script>
 </head>
 
 <body>
@@ -680,7 +681,7 @@
                     </span>
 
                     <!-- Coin Balance -->
-                    <a th:href="@{/shop}" class="coin-nav"
+                    <a href="javascript:void(0)" onclick="GameRewards.showHistory()" class="coin-nav"
                         style="background: rgba(255, 215, 0, 0.1); border: 1px solid rgba(255, 215, 0, 0.2); border-radius: 20px; padding: 5px 12px; height: auto; display: flex; align-items: center; gap: 8px; text-decoration: none; color: #ffd700; font-weight: 800; font-size: 13px; margin-left: 10px;">
                         <i class="fas fa-coins" style="font-size: 14px;"></i>
                         <span th:text="${user.coins}">0</span>

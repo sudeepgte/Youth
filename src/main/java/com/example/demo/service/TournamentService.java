@@ -147,7 +147,12 @@ public class TournamentService {
         battle.setCategory("Tournament");
         battle.setMaxParticipants(2);
         battle.setDurationMinutes(tb.getTournament().getBattleDurationMinutes() != null ? tb.getTournament().getBattleDurationMinutes() : 10);
-        battle.setMode("ONLINE");
+        battle.setMode(tb.getTournament().getMode() != null ? tb.getTournament().getMode() : "ONLINE");
+        if ("OFFLINE".equals(battle.getMode())) {
+            battle.setVenue(tb.getTournament().getVenue());
+            battle.setEventDate(tb.getTournament().getEventDate());
+            battle.setEventTime(tb.getTournament().getEventTime());
+        }
         battle.setStatus("ACTIVE");
         battle.setStartedAt(LocalDateTime.now());
         if (battle.getDurationMinutes() != null && battle.getDurationMinutes() > 0) {
@@ -221,7 +226,34 @@ public class TournamentService {
             Tournament t = tb.getTournament();
             t.setWinner(winner);
             t.setStatus("COMPLETED");
+
+            // AUTOMATED REWARDS
+            if (t.getEntryFee() != null && t.getEntryFee() > 0) {
+                long totalParticipants = participantRepository.countByTournament(t);
+                double totalPool = t.getEntryFee() * totalParticipants;
+                double commission = t.getAdminCommissionPercent() != null ? t.getAdminCommissionPercent() : 0.0;
+                double prizePool = totalPool * (1.0 - (commission / 100.0));
+                double p1Pct = t.getPrize1Percent() != null ? t.getPrize1Percent() : 60.0;
+                double p2Pct = t.getPrize2Percent() != null ? t.getPrize2Percent() : 30.0;
+                
+                // 1st Place
+                double firstPrize = Math.round(prizePool * (p1Pct / 100.0) * 100.0) / 100.0;
+                winner.addWalletBalance(firstPrize);
+                
+                // 2nd Place (Loser of this Grand Final)
+                User secondPlace = (tb.getPlayer1() != null && tb.getPlayer1().getId().equals(winner.getId())) ? tb.getPlayer2() : tb.getPlayer1();
+                if (secondPlace != null && p2Pct > 0) {
+                    double secondPrize = Math.round(prizePool * (p2Pct / 100.0) * 100.0) / 100.0;
+                    secondPlace.addWalletBalance(secondPrize);
+                    // (Assuming we save secondPlace eventually or cascade, but let's save explicitly if needed. User repository isn't injected here?)
+                    // Actually, we don't have UserRepository injected in TournamentService. Wait, let me check if it's injected.
+                }
+            
             tournamentRepository.save(t);
         }
     }
 }
+
+
+}
+

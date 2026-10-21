@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Entry Pass | Youthian</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            --pass-bg: #ffffff;
+            --accent: #F84464;
+        }
+        body { background: var(--bg-gradient) !important; font-family: 'Inter', sans-serif; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        
+        .pass-container {
+            background: var(--pass-bg);
+            border-radius: 20px;
+            max-width: 400px;
+            width: 100%;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+        .pass-container::before, .pass-container::after {
+            content: '';
+            position: absolute;
+            top: 250px;
+            width: 30px;
+            height: 30px;
+            background: #0f172a;
+            border-radius: 50%;
+        }
+        .pass-container::before { left: -15px; }
+        .pass-container::after { right: -15px; }
+
+        .pass-header {
+            background: var(--accent);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .pass-header h2 { margin: 0 0 5px 0; font-size: 24px; font-weight: 900; }
+        .pass-header p { margin: 0; opacity: 0.9; font-weight: 600; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
+
+        .pass-body {
+            padding: 30px 20px;
+            border-bottom: 2px dashed #cbd5e1;
+        }
+        
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .detail-item { flex: 1; }
+        .detail-item:last-child { text-align: right; }
+        .detail-label { font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 700; margin-bottom: 5px; }
+        .detail-value { font-size: 15px; font-weight: 800; color: #0f172a; }
+
+        .qr-section {
+            padding: 30px 20px;
+            text-align: center;
+            background: #f8fafc;
+        }
+        .qr-img {
+            width: 200px;
+            height: 200px;
+            border-radius: 10px;
+            margin: 0 auto 15px auto;
+            border: 5px solid white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            background: white;
+        }
+        
+        .participant-info h3 { margin: 0 0 5px 0; color: #0f172a; font-size: 20px; }
+        .participant-info p { margin: 0; color: #64748b; font-weight: 600; }
+
+        .btn-close {
+            display: block;
+            text-align: center;
+            color: white;
+            text-decoration: none;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        .btn-close:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    
+    <div>
+        <div class="pass-container">
+            <div class="pass-header">
+                <p>OFFLINE BATTLE PASS</p>
+                <h2 th:text="${tournament.name}">Tournament Name</h2>
+            </div>
+            
+            <div class="pass-body">
+                <div class="detail-row">
+                    <div class="detail-item">
+                        <div class="detail-label">Event Date & Time</div>
+                        <div class="detail-value" th:text="${tournament.tournamentStart != null ? #temporals.format(tournament.tournamentStart, 'dd-MMM-yyyy hh:mm a') : 'TBD'}"></div>
+                    </div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-item">
+                        <div class="detail-label">Physical Venue</div>
+                        <div class="detail-value" th:text="${tournament.venue}">Koramangala Stadium</div>
+                    </div>
+                </div>
+                
+                <div class="detail-row" style="margin-bottom: 0;">
+                    <div class="detail-item">
+                        <div class="detail-label">Entry Fee Paid</div>
+                        <div class="detail-value" th:text="${tournament.entryFee > 0 ? '?' + tournament.entryFee : 'FREE'}">?100.0</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Prize Pool</div>
+                        <div class="detail-value" th:text="${'1st: ' + tournament.prize1Percent + '%'}"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="qr-section">
+                <!-- Using raw UUID so physical scanner works -->
+                <img th:src="@{'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + ${participant.qrPassCode}}" class="qr-img" alt="QR Code">
+                
+                <div class="participant-info">
+                    <h3 th:text="${participant.user.username}">Username</h3>
+                    <p th:text="'Participant ID: ' + ${participant.participantNumber}">OFF-001</p>
+                    
+                    <div style="margin-top: 15px;">
+                        <span th:if="${participant.checkedIn}" style="background: #d1fae5; color: #059669; padding: 5px 12px; border-radius: 20px; font-size: 13px; font-weight: 800;"><i class="fas fa-check-double"></i> Checked In</span>
+                        <span th:if="${!participant.checkedIn}" style="background: #f1f5f9; color: #64748b; padding: 5px 12px; border-radius: 20px; font-size: 13px; font-weight: 800;">Pending Check-in</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <a href="javascript:history.back()" class="btn-close">Close Pass</a>
+    </div>
+
+</body>
+</html>

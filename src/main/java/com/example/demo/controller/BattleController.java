@@ -369,7 +369,7 @@ public class BattleController {
         Battle battle = battleRepository.findById(id).orElse(null);
         if (battle == null) return "redirect:/battles";
         if (!battle.getCreator().getId().equals(user.getId())) return "redirect:/battles/" + id;
-        if (!"WAITING".equals(battle.getStatus())) return "redirect:/battles/" + id;
+        if (!"WAITING".equals(battle.getStatus()) && !"LOBBY".equals(battle.getStatus())) return "redirect:/battles/" + id;
 
         long participantCount = participantRepository.countByBattle(battle);
         if (participantCount < 2) return "redirect:/battles/" + id;
@@ -383,6 +383,9 @@ public class BattleController {
         }
         battleRepository.save(battle);
 
+        if (Boolean.TRUE.equals(battle.getIsLive())) {
+            return "redirect:/battles/" + id + "/live";
+        }
         return "redirect:/battles/" + id;
     }
 

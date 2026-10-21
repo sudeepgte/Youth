@@ -23,6 +23,7 @@ public class WalletTransaction {
     private String description;
 
     private String referenceId;
+    private String status = "COMPLETED";
 
     private LocalDateTime timestamp = LocalDateTime.now();
 
@@ -51,6 +52,8 @@ public class WalletTransaction {
     public void setDetails(String details) { this.description = details; }
     public String getReferenceId() { return referenceId; }
     public void setReferenceId(String referenceId) { this.referenceId = referenceId; }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
     public LocalDateTime getTimestamp() { return timestamp; }
     public void setTimestamp(LocalDateTime timestamp) { this.timestamp = timestamp; }
     

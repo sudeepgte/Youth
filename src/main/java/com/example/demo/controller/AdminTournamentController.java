@@ -42,9 +42,11 @@ public class AdminTournamentController {
     }
 
     @GetMapping("/create")
-    public String createTournamentForm(Model model, HttpSession session) {
+    public String createTournamentForm(@RequestParam(required = false, defaultValue = "ONLINE") String mode, Model model, HttpSession session) {
         if (!isAdmin(session)) return "redirect:/admin/login";
-        model.addAttribute("tournament", new Tournament());
+        Tournament t = new Tournament();
+        t.setMode(mode);
+        model.addAttribute("tournament", t);
         return "admin-tournament-create";
     }
 
@@ -91,5 +93,49 @@ public class AdminTournamentController {
             return "redirect:/admin/tournaments/" + id + "/manage?error=" + e.getMessage();
         }
         return "redirect:/admin/tournaments/" + id + "/manage";
+    }
+
+    @GetMapping("/{id}/checkin")
+    public String checkinTournament(@PathVariable Long id, Model model, HttpSession session) {
+        if (!isAdmin(session)) return "redirect:/admin/login";
+        Tournament t = tournamentRepository.findById(id).orElse(null);
+        if (t == null) return "redirect:/admin/tournaments";
+
+        List<TournamentParticipant> participants = participantRepository.findByTournament(t);
+        model.addAttribute("tournament", t);
+        model.addAttribute("participants", participants);
+        
+        long checkedInCount = participants.stream().filter(TournamentParticipant::getCheckedIn).count();
+        model.addAttribute("checkedInCount", checkedInCount);
+        model.addAttribute("registeredCount", participants.size());
+        
+        return "admin-tournament-checkin";
+    }
+
+    @PostMapping("/{id}/checkin/scan")
+    public String scanCheckin(@PathVariable Long id, @RequestParam String qrPassCode, HttpSession session, org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
+        if (!isAdmin(session)) return "redirect:/admin/login";
+        String finalCode = qrPassCode;
+        if (finalCode != null && finalCode.contains("/")) {
+            finalCode = finalCode.substring(finalCode.lastIndexOf("/") + 1);
+        }
+        Tournament t = tournamentRepository.findById(id).orElse(null);
+        if (t == null) return "redirect:/admin/tournaments";
+
+        List<TournamentParticipant> participants = participantRepository.findByTournament(t);
+        final String searchCode = finalCode;
+        TournamentParticipant match = participants.stream()
+            .filter(p -> p.getQrPassCode() != null && p.getQrPassCode().equals(searchCode))
+            .findFirst().orElse(null);
+            
+        if (match != null) {
+            match.setCheckedIn(true);
+            participantRepository.save(match);
+            redirectAttributes.addFlashAttribute("successMessage", "Successfully checked in: " + match.getUser().getUsername() + " (" + match.getParticipantNumber() + ")");
+        } else {
+            redirectAttributes.addFlashAttribute("errorMessage", "Invalid QR code or participant not found in this tournament.");
+        }
+        
+        return "redirect:/admin/tournaments/" + id + "/checkin";
     }
 }

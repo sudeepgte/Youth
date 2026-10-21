@@ -22,6 +22,15 @@ public class TournamentParticipant {
     
     // ACTIVE, ELIMINATED
     private String status = "ACTIVE";
+    
+    private Boolean checkedIn = false;
+    private String participantNumber;
+    private String qrPassCode;
+
+    @PrePersist
+    public void prePersist() {
+        if (qrPassCode == null) qrPassCode = java.util.UUID.randomUUID().toString();
+    }
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -37,4 +46,13 @@ public class TournamentParticipant {
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
+    public Boolean getCheckedIn() { return checkedIn != null ? checkedIn : false; }
+    public void setCheckedIn(Boolean checkedIn) { this.checkedIn = checkedIn; }
+
+    public String getParticipantNumber() { return participantNumber; }
+    public void setParticipantNumber(String participantNumber) { this.participantNumber = participantNumber; }
+
+    public String getQrPassCode() { return qrPassCode; }
+    public void setQrPassCode(String qrPassCode) { this.qrPassCode = qrPassCode; }
 }

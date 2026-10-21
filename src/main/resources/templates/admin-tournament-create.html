@@ -45,7 +45,12 @@
         <a th:href="@{/admin/tournaments}" class="btn-back"><i class="fas fa-arrow-left"></i> Back to Tournaments</a>
 
         <div class="form-card">
-            <h2 style="margin-top: 0; color: var(--text-primary); font-weight: 900; margin-bottom: 25px;"><i class="fas fa-plus-circle" style="color: #3b82f6;"></i> Create New Tournament</h2>
+            <div th:if="${tournament.mode == 'ONLINE'}" style="background: #eff6ff; color: #1e3a8a; padding: 15px 20px; border-radius: 12px; margin-bottom: 25px; font-weight: bold; display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-globe" style="font-size: 24px;"></i> Creating Online Tournament
+            </div>
+            <div th:if="${tournament.mode == 'OFFLINE'}" style="background: #fff1f2; color: #9f1239; padding: 15px 20px; border-radius: 12px; margin-bottom: 25px; font-weight: bold; display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-map-marker-alt" style="font-size: 24px;"></i> Creating Offline Tournament
+            </div>
             
             <form th:action="@{/admin/tournaments/create}" th:object="${tournament}" method="post">
                 
@@ -98,10 +103,80 @@
                     </div>
                 </div>
 
+                <h3 style="margin: 25px 0 15px; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;">Tournament Mode & Settings</h3>
+                
+                <!-- Hidden Mode Field -->
+                <input type="hidden" th:field="*{mode}" id="modeSelect" />
+
+                <!-- OFFLINE SPECIFIC SETTINGS -->
+                <div id="offlineSettings" th:style="${tournament.mode == 'OFFLINE' ? 'display: block;' : 'display: none;'}" style="background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 20px;">
+                    <h4 style="margin: 0 0 15px 0; color: #0f172a;"><i class="fas fa-map-marker-alt" style="color: #8b5cf6;"></i> Physical Venue Details</h4>
+                    <div class="form-group">
+                        <label>Venue</label>
+                        <input type="text" th:field="*{venue}" class="form-control" placeholder="e.g. Koramangala Indoor Stadium" />
+                    </div>
+
+                </div>
+
+                <!-- JUDGE SETTINGS -->
+                <div class="form-group">
+                    <label>Judges (Select users to be judges)</label>
+                    <select name="judgeIds" class="form-control" multiple style="height: 120px;">
+                        <option th:each="u : ${users}" th:value="${u.id}" th:text="${u.username + ' (' + u.email + ')'}"></option>
+                    </select>
+                    <small style="color: #64748b;">Hold Ctrl (Windows) or Cmd (Mac) to select multiple judges.</small>
+                </div>
+
+                <h3 style="margin: 25px 0 15px; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;">Prize & Economy</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Entry Fee (?)</label>
+                        <input type="number" step="0.01" class="form-control" th:field="*{entryFee}" placeholder="0.0">
+                    </div>
+                    <div class="form-group">
+                        <label>Admin Commission (%)</label>
+                        <input type="number" step="0.01" class="form-control" th:field="*{adminCommissionPercent}" placeholder="e.g. 10">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>1st Place Prize Split (%)</label>
+                        <input type="number" step="0.1" class="form-control" th:field="*{prize1Percent}">
+                    </div>
+                    <div class="form-group">
+                        <label>2nd Place Split (%)</label>
+                        <input type="number" step="0.1" class="form-control" th:field="*{prize2Percent}">
+                    </div>
+                    <div class="form-group">
+                        <label>3rd Place Split (%)</label>
+                        <input type="number" step="0.1" class="form-control" th:field="*{prize3Percent}">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Custom Prizes (Physical/Other)</label>
+                    <input type="text" class="form-control" th:field="*{customPrizes}" placeholder="e.g. Trophy, Signed T-Shirt">
+                </div>
+
                 <button type="submit" class="btn-submit">Create Tournament</button>
                 <a th:href="@{/admin/tournaments}" class="btn-cancel">Cancel and return</a>
             </form>
         </div>
     </div>
+    <script>
+        function toggleModeSettings() {
+            var mode = document.getElementById("modeSelect").value;
+            var offlineSettings = document.getElementById("offlineSettings");
+            if (mode === "OFFLINE") {
+                offlineSettings.style.display = "block";
+            } else {
+                offlineSettings.style.display = "none";
+            }
+        }
+        // Initialize on load
+        document.addEventListener("DOMContentLoaded", toggleModeSettings);
+    </script>
 </body>
 </html>
+
+
+
