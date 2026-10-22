@@ -3705,3 +3705,61 @@ redirecting to /login?error=timeout
 AuthInterceptor Debug Log
 token is NULL!
 redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token found = eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJOYXlhbmEiLCJpYXQiOjE3OTI2NTU3NTEsImV4cCI6MTc5MjY5MTc1MX0.NlEHTlGfRWkkd9s0Wc6KkcAxrK6W3Y-KTuHeQOCxqueqc76qoAKghkEgCFfrWM2H1vedjixbQclkwC4-aPdBrw
+extracted username = Nayana
+Exception caught: Null value was assigned to a property [class com.example.demo.model.User.welcomeBonusClaimed] of primitive type: 'com.example.demo.model.User.welcomeBonusClaimed' (setter)
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token found = eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJOYXlhbmEiLCJpYXQiOjE3OTI2NTU3NTEsImV4cCI6MTc5MjY5MTc1MX0.NlEHTlGfRWkkd9s0Wc6KkcAxrK6W3Y-KTuHeQOCxqueqc76qoAKghkEgCFfrWM2H1vedjixbQclkwC4-aPdBrw
+extracted username = Nayana
+Exception caught: Null value was assigned to a property [class com.example.demo.model.User.welcomeBonusClaimed] of primitive type: 'com.example.demo.model.User.welcomeBonusClaimed' (setter)
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout
+AuthInterceptor Debug Log
+token is NULL!
+redirecting to /login?error=timeout

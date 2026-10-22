@@ -47,29 +47,33 @@
                 <thead>
                     <tr>
                         <th>User</th>
-                        <th>Amount</th>
-                        <th>Details</th>
+                        <th>Gross Requested</th>
+                        <th>Platform Fee (5%)</th>
+                        <th>Net Payout to Send</th>
+                        <th>Destination Details</th>
                         <th>Date</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr th:each="tx : ${pendingWithdrawals}">
-                        <td th:text="${tx.user.username}"></td>
-                        <td style="font-weight: 800; color: #0f172a;" th:text="${tx.amount}"></td>
-                        <td th:text="${tx.description}"></td>
+                        <td th:text="'@' + ${tx.user.username}"></td>
+                        <td style="font-weight: 700; color: #0f172a;" th:text="'&#8377;' + ${#numbers.formatDecimal(tx.amount, 1, 2)}"></td>
+                        <td style="font-weight: 700; color: #ea580c;" th:text="'-&#8377;' + ${#numbers.formatDecimal(tx.fee != null ? tx.fee : (tx.amount * 0.05), 1, 2)}"></td>
+                        <td style="font-weight: 900; color: #16a34a; font-size: 15px;" th:text="'&#8377;' + ${#numbers.formatDecimal(tx.netAmount != null ? tx.netAmount : (tx.amount * 0.95), 1, 2)}"></td>
+                        <td th:text="${tx.description}" style="font-size: 12px; max-width: 280px; word-break: break-all;"></td>
                         <td th:text="${#temporals.format(tx.timestamp, 'MMM dd, HH:mm')}"></td>
                         <td style="display: flex; gap: 8px;">
                             <form th:action="@{/admin/withdrawals/{id}/approve(id=${tx.id})}" method="post">
-                                <button type="submit" class="btn-approve">Approve</button>
+                                <button type="submit" class="btn-approve">Approve &amp; Pay</button>
                             </form>
                             <form th:action="@{/admin/withdrawals/{id}/reject(id=${tx.id})}" method="post">
-                                <button type="submit" class="btn-reject">Reject</button>
+                                <button type="submit" class="btn-reject">Reject &amp; Refund</button>
                             </form>
                         </td>
                     </tr>
                     <tr th:if="${#lists.isEmpty(pendingWithdrawals)}">
-                        <td colspan="5" style="text-align: center; color: #94a3b8; padding: 30px;">No pending withdrawal requests.</td>
+                        <td colspan="7" style="text-align: center; color: #94a3b8; padding: 30px;">No pending withdrawal requests.</td>
                     </tr>
                 </tbody>
             </table>

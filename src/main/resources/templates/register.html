@@ -182,7 +182,7 @@
         Password must be strong (at least 8 characters, one uppercase, one lowercase, one number, and one special character).
     </div>
     <div th:if="${param.error != null and param.error[0] == 'invalid_email_domain'}" style="background-color: #fce8e8; border: 1px solid #f5c2c2; color: #a94442; padding: 10px; border-radius: 4px; margin-bottom: 1rem; text-align: center; font-size: 14px;">
-        Please enter a valid email address ending with .com.
+        Please enter a valid email address.
     </div>
     <form th:action="@{/register}" th:object="${user}" method="post" onsubmit="return validateRegistrationForm(this)">
         <div class="form-group">
@@ -292,11 +292,11 @@
             return false;
         }
 
-        // 5. Email Validation: Must end with .com
+        // 5. Email Validation: Accepts all valid domains (.com, .org, .edu, .in, .net, etc.)
         const email = form.email.value.trim();
-        const emailRegex = /^[^\s@]+@[^\s@]+\.com$/i;
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
         if (!emailRegex.test(email)) {
-            showError("Please enter a valid email address ending with .com.");
+            showError("Please enter a valid email address.");
             return false;
         }
 

@@ -58,11 +58,41 @@ public class HeatmapApiController {
         long weekCount = allEvents.stream().filter(e -> e.getDateTime() != null && !e.getDateTime().isBefore(startOfWeek) && !e.getDateTime().isAfter(endOfWeek)).count();
         long monthCount = allEvents.stream().filter(e -> e.getDateTime() != null && !e.getDateTime().isBefore(startOfMonth) && !e.getDateTime().isAfter(endOfMonth)).count();
 
+        // Auto-assign coordinates if any active event is missing them
+        double[][] fallbackCoords = {
+            {12.9716, 77.5946}, // Bangalore
+            {19.0760, 72.8777}, // Mumbai
+            {28.7041, 77.1025}, // Delhi
+            {17.3850, 78.4867}, // Hyderabad
+            {18.5204, 73.8567}, // Pune
+            {13.0827, 80.2707}, // Chennai
+            {22.5726, 88.3639}, // Kolkata
+            {23.0225, 72.5714}  // Ahmedabad
+        };
+        List<Event> unplaced = eventRepository.findAll().stream()
+                .filter(e -> !e.isDeleted())
+                .filter(e -> e.getLatitude() == null || e.getLongitude() == null)
+                .collect(Collectors.toList());
+        if (!unplaced.isEmpty()) {
+            int fIdx = 0;
+            for (Event e : unplaced) {
+                double[] c = fallbackCoords[fIdx % fallbackCoords.length];
+                e.setLatitude(c[0]);
+                e.setLongitude(c[1]);
+                try {
+                    eventRepository.save(e);
+                } catch (Exception ignored) {}
+                allEvents.add(e);
+                fIdx++;
+            }
+        }
+
         // Apply filter
         List<Event> filtered;
-        switch (filter.toLowerCase()) {
+        String filterKey = filter != null ? filter.trim().toLowerCase() : "all";
+        switch (filterKey) {
             case "live":
-                filtered = allEvents.stream().filter(e -> "ONGOING".equals(e.getStatus()) || (e.getDateTime() != null && e.getDateTime().toLocalDate().equals(now.toLocalDate()) && !e.getDateTime().isAfter(now))).collect(Collectors.toList());
+                filtered = allEvents.stream().filter(e -> "ONGOING".equalsIgnoreCase(e.getStatus()) || (e.getDateTime() != null && e.getDateTime().toLocalDate().equals(now.toLocalDate()) && !e.getDateTime().isAfter(now))).collect(Collectors.toList());
                 break;
             case "today":
                 filtered = allEvents.stream().filter(e -> e.getDateTime() != null && !e.getDateTime().isBefore(startOfToday) && !e.getDateTime().isAfter(endOfToday)).collect(Collectors.toList());
@@ -71,13 +101,43 @@ public class HeatmapApiController {
                 filtered = allEvents.stream().filter(e -> e.getDateTime() != null && !e.getDateTime().isBefore(startOfTomorrow) && !e.getDateTime().isAfter(endOfTomorrow)).collect(Collectors.toList());
                 break;
             case "week":
-                filtered = allEvents.stream().filter(e -> e.getDateTime() != null && !e.getDateTime().isBefore(startOfToday) && !e.getDateTime().isAfter(endOfWeek)).collect(Collectors.toList());
+                filtered = allEvents.stream().filter(e -> e.getDateTime() != null && !e.getDateTime().isBefore(startOfWeek) && !e.getDateTime().isAfter(endOfWeek)).collect(Collectors.toList());
                 break;
             case "month":
-                filtered = allEvents.stream().filter(e -> e.getDateTime() != null && !e.getDateTime().isBefore(startOfToday) && !e.getDateTime().isAfter(endOfMonth)).collect(Collectors.toList());
+                filtered = allEvents.stream().filter(e -> e.getDateTime() != null && !e.getDateTime().isBefore(startOfMonth) && !e.getDateTime().isAfter(endOfMonth)).collect(Collectors.toList());
+                break;
+            case "all":
+            case "":
+                filtered = allEvents;
+                break;
+            case "music":
+                filtered = allEvents.stream()
+                        .filter(e -> (e.getCategory() != null && e.getCategory().toLowerCase().contains("music"))
+                                  || (e.getTitle() != null && (e.getTitle().toLowerCase().contains("music") || e.getTitle().toLowerCase().contains("concert") || e.getTitle().toLowerCase().contains("rhythmic"))))
+                        .collect(Collectors.toList());
+                break;
+            case "tech":
+                filtered = allEvents.stream()
+                        .filter(e -> (e.getCategory() != null && (e.getCategory().toLowerCase().contains("tech") || e.getCategory().toLowerCase().contains("workshop")))
+                                  || (e.getTitle() != null && (e.getTitle().toLowerCase().contains("tech") || e.getTitle().toLowerCase().contains("hackathon") || e.getTitle().toLowerCase().contains("ai") || e.getTitle().toLowerCase().contains("cloud"))))
+                        .collect(Collectors.toList());
+                break;
+            case "comedy":
+                filtered = allEvents.stream()
+                        .filter(e -> (e.getCategory() != null && e.getCategory().toLowerCase().contains("comedy"))
+                                  || (e.getTitle() != null && (e.getTitle().toLowerCase().contains("comedy") || e.getTitle().toLowerCase().contains("standup") || e.getTitle().toLowerCase().contains("laugh"))))
+                        .collect(Collectors.toList());
+                break;
+            case "sports":
+                filtered = allEvents.stream()
+                        .filter(e -> (e.getCategory() != null && (e.getCategory().toLowerCase().contains("sport") || e.getCategory().toLowerCase().contains("cricket") || e.getCategory().toLowerCase().contains("football")))
+                                  || (e.getTitle() != null && (e.getTitle().toLowerCase().contains("cricket") || e.getTitle().toLowerCase().contains("football") || e.getTitle().toLowerCase().contains("cup") || e.getTitle().toLowerCase().contains("league"))))
+                        .collect(Collectors.toList());
                 break;
             default:
-                filtered = allEvents;
+                filtered = allEvents.stream()
+                        .filter(e -> e.getCategory() != null && (e.getCategory().equalsIgnoreCase(filterKey) || e.getCategory().toLowerCase().contains(filterKey)))
+                        .collect(Collectors.toList());
                 break;
         }
 
@@ -106,6 +166,8 @@ public class HeatmapApiController {
             marker.put("tomorrow", locTomorrow);
             marker.put("week", locWeek);
             marker.put("month", locMonth);
+            marker.put("titles", eventsAtLoc.stream().map(Event::getTitle).collect(Collectors.toList()));
+            marker.put("categories", eventsAtLoc.stream().map(Event::getCategory).filter(Objects::nonNull).distinct().collect(Collectors.toList()));
             markers.add(marker);
         }
 

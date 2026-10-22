@@ -73,6 +73,9 @@ public class User implements Serializable {
     @Column(name = "wallet_balance")
     private Double walletBalance = 0.0;
 
+    @Column(name = "welcome_bonus_claimed")
+    private Boolean welcomeBonusClaimed = false;
+
     private LocalDate lastLoginDate;
 
     // Music reward bookkeeping (Option C MVP)
@@ -277,6 +280,8 @@ public class User implements Serializable {
         this.votedEvents = votedEvents;
     }
 
+    public String getFullName() { return this.username; }
+
     // Zentrix Coins & Rewards Getters/Setters
     public Integer getCoins() { return coins != null ? coins : 0; }
     public void setCoins(Integer coins) { this.coins = coins; }
@@ -296,6 +301,10 @@ public class User implements Serializable {
         }
         return false;
     }
+
+    public boolean isWelcomeBonusClaimed() { return Boolean.TRUE.equals(welcomeBonusClaimed); }
+    public Boolean getWelcomeBonusClaimed() { return Boolean.TRUE.equals(welcomeBonusClaimed); }
+    public void setWelcomeBonusClaimed(Boolean welcomeBonusClaimed) { this.welcomeBonusClaimed = welcomeBonusClaimed; }
 
     public LocalDate getLastLoginDate() { return lastLoginDate; }
     public void setLastLoginDate(LocalDate lastLoginDate) { this.lastLoginDate = lastLoginDate; }

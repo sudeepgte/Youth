@@ -185,6 +185,9 @@ public class MainController {
     private BattleRepository battleRepository;
 
     @Autowired
+    private com.example.demo.repository.WalletTransactionRepository walletTransactionRepository;
+
+    @Autowired
     private BattleParticipantRepository battleParticipantRepository;
 
     @GetMapping("/")

@@ -21,8 +21,47 @@ public class GlobalModelAttributeAdvice {
     @Autowired
     private jakarta.servlet.http.HttpServletRequest httpServletRequest;
 
+    @org.springframework.beans.factory.annotation.Value("${promotional.banner.enabled:true}")
+    private boolean promoBannerEnabled;
+
+    @org.springframework.beans.factory.annotation.Value("${promotional.banner.text:Youthians Spring Fest 2026 — Registrations now open!}")
+    private String promoBannerText;
+
+    @org.springframework.beans.factory.annotation.Value("${promotional.banner.link:/events}")
+    private String promoBannerLink;
+
+    @org.springframework.beans.factory.annotation.Value("${youthians.support.email:support@youthians.com}")
+    private String supportEmail;
+
+    @org.springframework.beans.factory.annotation.Value("${youthians.social.instagram:https://www.instagram.com/youthians}")
+    private String socialInstagram;
+
+    @org.springframework.beans.factory.annotation.Value("${youthians.social.twitter:https://x.com/youthians}")
+    private String socialTwitter;
+
+    @org.springframework.beans.factory.annotation.Value("${youthians.social.facebook:https://www.facebook.com/youthians}")
+    private String socialFacebook;
+
     @ModelAttribute
     public void addGlobalAttributes(HttpSession session, Model model) {
+        // Dynamic baseUrl for QR codes, links, and callbacks
+        String scheme = httpServletRequest.getScheme();
+        String serverName = httpServletRequest.getServerName();
+        int serverPort = httpServletRequest.getServerPort();
+        String contextPath = httpServletRequest.getContextPath();
+        String portPart = (("http".equalsIgnoreCase(scheme) && serverPort == 80) || 
+                           ("https".equalsIgnoreCase(scheme) && serverPort == 443)) ? "" : (":" + serverPort);
+        String baseUrl = scheme + "://" + serverName + portPart + contextPath;
+
+        model.addAttribute("baseUrl", baseUrl);
+        model.addAttribute("promoBannerEnabled", promoBannerEnabled);
+        model.addAttribute("promoBannerText", promoBannerText);
+        model.addAttribute("promoBannerLink", promoBannerLink);
+        model.addAttribute("supportEmail", supportEmail);
+        model.addAttribute("socialInstagram", socialInstagram);
+        model.addAttribute("socialTwitter", socialTwitter);
+        model.addAttribute("socialFacebook", socialFacebook);
+
         User user = getUserFromSession(session);
         if (user != null) {
             // Always refresh from DB to get latest coins/xp

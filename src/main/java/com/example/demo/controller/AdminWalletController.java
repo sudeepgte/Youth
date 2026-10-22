@@ -20,6 +20,12 @@ public class AdminWalletController {
     @Autowired
     private WalletTransactionRepository walletTransactionRepository;
 
+    @Autowired
+    private com.example.demo.repository.UserRepository userRepository;
+
+    @Autowired
+    private com.example.demo.repository.NotificationRepository notificationRepository;
+
     private boolean isAdmin(HttpSession session) {
         Object userAttr = session.getAttribute("user");
         return "admin".equals(userAttr);
@@ -49,6 +55,12 @@ public class AdminWalletController {
         if (tx != null && "PENDING".equals(tx.getStatus())) {
             tx.setStatus("APPROVED");
             walletTransactionRepository.save(tx);
+            if (tx.getUser() != null) {
+                double net = tx.getNetAmount() != null ? tx.getNetAmount() : (tx.getAmount() != null ? tx.getAmount() * 0.95 : 0.0);
+                notificationRepository.save(new com.example.demo.model.Notification(tx.getUser(), null, 
+                    "Your withdrawal of Rs. " + String.format("%.2f", tx.getAmount()) 
+                    + " (Net Payout: Rs. " + String.format("%.2f", net) + ") has been APPROVED and sent to your account!", "WALLET"));
+            }
         }
         return "redirect:/admin/withdrawals";
     }
@@ -62,7 +74,13 @@ public class AdminWalletController {
             walletTransactionRepository.save(tx);
             // Refund the user
             if (tx.getUser() != null && tx.getAmount() != null) {
-                tx.getUser().addWalletBalance(tx.getAmount());
+                com.example.demo.model.User user = userRepository.findById(tx.getUser().getId()).orElse(tx.getUser());
+                user.addWalletBalance(tx.getAmount());
+                userRepository.save(user);
+
+                notificationRepository.save(new com.example.demo.model.Notification(user, null, 
+                    "Your withdrawal request of Rs. " + String.format("%.2f", tx.getAmount()) 
+                    + " was rejected. The full amount has been refunded back to your wallet.", "WALLET"));
             }
         }
         return "redirect:/admin/withdrawals";

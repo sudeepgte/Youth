@@ -27,6 +27,9 @@ public class WalletTransaction {
 
     private LocalDateTime timestamp = LocalDateTime.now();
 
+    private Double fee = 0.0;
+    private Double netAmount;
+
     public WalletTransaction() {}
 
     public WalletTransaction(User user, Double amount, String type, String description) {
@@ -60,4 +63,9 @@ public class WalletTransaction {
     // Alias for createdAt if anything else expects it
     public LocalDateTime getCreatedAt() { return timestamp; }
     public void setCreatedAt(LocalDateTime createdAt) { this.timestamp = createdAt; }
+
+    public Double getFee() { return fee; }
+    public void setFee(Double fee) { this.fee = fee; }
+    public Double getNetAmount() { return netAmount != null ? netAmount : (amount != null ? (amount - (fee != null ? fee : 0.0)) : 0.0); }
+    public void setNetAmount(Double netAmount) { this.netAmount = netAmount; }
 }

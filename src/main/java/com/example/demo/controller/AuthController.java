@@ -1,7 +1,13 @@
 package com.example.demo.controller;
 
 import com.example.demo.model.User;
+import com.example.demo.model.WalletTransaction;
+import com.example.demo.model.CoinTransaction;
+import com.example.demo.model.Notification;
 import com.example.demo.repository.UserRepository;
+import com.example.demo.repository.WalletTransactionRepository;
+import com.example.demo.repository.CoinTransactionRepository;
+import com.example.demo.repository.NotificationRepository;
 import com.example.demo.service.RewardService;
 import com.example.demo.config.TokenBlacklist;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +29,15 @@ public class AuthController {
 
     @Autowired
     private RewardService rewardService;
+
+    @Autowired
+    private WalletTransactionRepository walletTransactionRepository;
+
+    @Autowired
+    private CoinTransactionRepository coinTransactionRepository;
+
+    @Autowired
+    private NotificationRepository notificationRepository;
 
     @Autowired
     private com.example.demo.service.AuditLogService auditLogService;
@@ -59,7 +74,7 @@ public class AuthController {
         if (pwd == null || pwd.length() < 8 || !pwd.matches(".*[A-Z].*") || !pwd.matches(".*[a-z].*") || !pwd.matches(".*\\d.*") || !pwd.matches(".*[@$!%*?&].*")) {
             return "redirect:/register?error=weak_password";
         }
-        if (user.getEmail() == null || !user.getEmail().toLowerCase().endsWith(".com")) {
+        if (user.getEmail() == null || !user.getEmail().trim().matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
             return "redirect:/register?error=invalid_email_domain";
         }
         userRepository.save(user);
@@ -98,6 +113,23 @@ public class AuthController {
                 return "redirect:/login?error=already_logged_in";
             }
             rewardService.awardDailyLogin(user); // Zen Coins Awarded here
+            
+            // ── Welcome Bonus for new users (Awarded once on first login) ──
+            if (!user.isWelcomeBonusClaimed()) {
+                user.setWelcomeBonusClaimed(true);
+                user.addCoins(100);
+                user.addWalletBalance(50.0);
+                user = userRepository.save(user);
+
+                WalletTransaction bonusTx = new WalletTransaction(user, 50.0, "BONUS", "Welcome Gift: Rs. 50.00 Credits + 100 Coins gifted to you!");
+                bonusTx.setStatus("COMPLETED");
+                bonusTx.setReferenceId("BONUS-" + System.currentTimeMillis());
+                walletTransactionRepository.save(bonusTx);
+
+                coinTransactionRepository.save(new CoinTransaction(user, 100, "System", "Welcome Gift"));
+                notificationRepository.save(new Notification(user, null, "Welcome to Youthians! We have credited Rs. 50.00 and 100 Coins to your wallet as a welcome gift.", "BONUS"));
+                session.setAttribute("welcomeBonusAwarded", true);
+            }
             
             String token = jwtUtil.generateToken(username);
             jakarta.servlet.http.Cookie cookie = new jakarta.servlet.http.Cookie("jwtToken", token);

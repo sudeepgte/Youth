@@ -9,6 +9,220 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script defer th:src="@{/js/tab-support.js}"></script>
     <script defer th:src="@{/js/game-rewards.js}"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <style>
+        /* 2-Column Balanced Dashboard Layout for Wallet */
+        .dashboard-container {
+            display: grid !important;
+            grid-template-columns: 250px minmax(0, 1fr) !important;
+            gap: 28px !important;
+            max-width: 1200px !important;
+            margin: calc(var(--dashboard-nav-height) + 16px) auto 40px !important;
+            padding: 0 20px !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+        }
+
+        .sidebar {
+            grid-column: 1 !important;
+            width: 250px !important;
+            flex-shrink: 0 !important;
+        }
+
+        .social-feed {
+            grid-column: 2 !important;
+            max-width: 860px !important;
+            width: 100% !important;
+            min-width: 0 !important;
+            margin: 0 auto !important;
+        }
+
+        /* P2P Incoming Request Card Anti-Collapse */
+        .p2p-req-card {
+            background: var(--card-bg);
+            border: 1.5px solid rgba(59, 130, 246, 0.25);
+            border-radius: 18px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            box-shadow: var(--shadow-sm);
+            width: 100%;
+            box-sizing: border-box;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .p2p-req-card:hover {
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+        }
+
+        .p2p-req-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+
+        .p2p-req-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 800;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .p2p-req-info {
+            flex: 1 1 auto;
+            min-width: 0;
+            overflow: hidden;
+        }
+
+        .p2p-req-name {
+            font-weight: 800;
+            color: var(--text-primary);
+            font-size: 15px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .p2p-req-details {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 3px;
+            word-break: break-word;
+            line-height: 1.4;
+        }
+
+        .p2p-req-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .p2p-btn-accept {
+            background: #10B981;
+            color: white;
+            border: none;
+            padding: 9px 16px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+        .p2p-btn-accept:hover {
+            background: #059669;
+            transform: translateY(-1px);
+        }
+
+        .p2p-btn-decline {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            padding: 9px 14px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+        .p2p-btn-decline:hover {
+            background: rgba(239, 68, 68, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .p2p-sent-item {
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .p2p-sent-item:last-child {
+            border-bottom: none;
+        }
+
+        @media (max-width: 960px) {
+            .dashboard-container {
+                grid-template-columns: 220px minmax(0, 1fr) !important;
+                gap: 18px !important;
+                padding: 0 16px !important;
+            }
+            .sidebar {
+                width: 220px !important;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-container {
+                grid-template-columns: 1fr !important;
+                padding: 0 12px !important;
+                margin-top: calc(var(--dashboard-nav-height) + 10px) !important;
+            }
+            .sidebar {
+                width: 260px !important;
+            }
+            .social-feed {
+                grid-column: 1 !important;
+                max-width: 100% !important;
+            }
+            .p2p-req-card {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                gap: 14px !important;
+                padding: 16px !important;
+            }
+            .p2p-req-actions {
+                width: 100% !important;
+                display: flex !important;
+                gap: 10px !important;
+            }
+            .p2p-req-actions form {
+                flex: 1 1 50% !important;
+            }
+            .p2p-req-actions button {
+                width: 100% !important;
+                justify-content: center !important;
+            }
+        }
+
+        .chip-btn {
+            background: rgba(16, 185, 129, 0.08);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: var(--text-primary);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .chip-btn:hover, .chip-btn.active {
+            background: #10B981;
+            color: white;
+            border-color: #10B981;
+        }
+    </style>
 </head>
 <body>
     <!-- Navbar -->
@@ -39,7 +253,7 @@
             <a th:href="@{/messages}" style="position: relative;">
                 <i class="fas fa-comment-dots"></i>
             </a>
-            <a href="#" onclick="openM('notifModal')" style="position: relative;">
+            <a href="javascript:void(0)" onclick="openM('notifModal')" style="position: relative;">
                 <i class="fas fa-bell"></i>
             </a>
             <div class="profile-dropdown">
@@ -85,34 +299,181 @@
                 </div>
             </div>
 
-            <div class="profile-header" style="flex-direction: column; align-items: center; text-align: center; background: var(--card-bg); padding: 40px 20px; border-radius: 24px; border: 1px solid var(--glass-border); box-shadow: var(--shadow-premium);">
-                <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #10B981, #3B82F6); display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
-                    <i class="fas fa-wallet" style="font-size: 36px; color: white;"></i>
+            <div class="profile-header" style="display: flex !important; flex-direction: column !important; align-items: center !important; text-align: center !important; background: var(--card-bg); padding: 36px 20px; border-radius: 24px; border: 1px solid var(--glass-border); box-shadow: var(--shadow-premium); width: 100%; box-sizing: border-box;">
+                <div style="width: 76px; height: 76px; border-radius: 50%; background: linear-gradient(135deg, #10B981, #3B82F6); display: flex; align-items: center; justify-content: center; margin-bottom: 16px; box-shadow: 0 8px 24px rgba(16,185,129,0.3);">
+                    <i class="fas fa-wallet" style="font-size: 34px; color: white;"></i>
                 </div>
-                <h1 style="font-size: 28px; font-weight: 800; color: var(--text-primary); margin-bottom: 8px;">My Wallet</h1>
-                <p style="color: var(--text-secondary); margin-bottom: 24px;">Manage your funds and transactions</p>
+                <h1 style="font-size: 28px; font-weight: 800; color: var(--text-primary); margin-bottom: 6px;">Youth Wallet</h1>
+                <p style="color: var(--text-secondary); margin-bottom: 24px; font-size: 14px;">Manage your real cash, Youth Coins, and peer-to-peer transfers</p>
                 
-                <div style="background: rgba(16, 185, 129, 0.1); border: 2px solid rgba(16, 185, 129, 0.3); border-radius: 24px; padding: 30px; width: 100%; max-width: 400px; margin-bottom: 30px;">
-                    <h3 style="font-size: 14px; text-transform: uppercase; color: #10B981; font-weight: 700; letter-spacing: 1px; margin-bottom: 8px;">Available Balance</h3>
-                    <div style="font-size: 48px; font-weight: 900; color: var(--text-primary); display: flex; justify-content: center; align-items: center; gap: 8px;">
-                        <span style="color: #10B981;">&#8377;</span>
-                        <span th:text="${user.walletBalance != null ? #numbers.formatDecimal(user.walletBalance, 1, 'COMMA', 2, 'POINT') : '0.00'}">0.00</span>
+                <!-- Dual Balance Grid -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; width: 100%; max-width: 540px; margin-bottom: 24px;">
+                    <!-- Cash Balance -->
+                    <div style="background: rgba(16, 185, 129, 0.08); border: 2px solid rgba(16, 185, 129, 0.25); border-radius: 20px; padding: 22px 18px; text-align: center;">
+                        <div style="font-size: 12px; text-transform: uppercase; color: #10B981; font-weight: 800; letter-spacing: 1px; margin-bottom: 6px;">
+                            <i class="fas fa-money-bill-wave"></i> Cash Balance
+                        </div>
+                        <div style="font-size: 34px; font-weight: 900; color: var(--text-primary); display: flex; justify-content: center; align-items: center; gap: 4px;">
+                            <span style="color: #10B981;">&#8377;</span>
+                            <span th:text="${user.walletBalance != null ? #numbers.formatDecimal(user.walletBalance, 1, 'COMMA', 2, 'POINT') : '0.00'}">0.00</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Youth Coins -->
+                    <div style="background: rgba(245, 158, 11, 0.08); border: 2px solid rgba(245, 158, 11, 0.25); border-radius: 20px; padding: 22px 18px; text-align: center;">
+                        <div style="font-size: 12px; text-transform: uppercase; color: #f59e0b; font-weight: 800; letter-spacing: 1px; margin-bottom: 6px;">
+                            <i class="fas fa-coins"></i> Youth Coins
+                        </div>
+                        <div style="font-size: 34px; font-weight: 900; color: var(--text-primary); display: flex; justify-content: center; align-items: center; gap: 6px;">
+                            <span style="font-size: 28px;">🪙</span>
+                            <span th:text="${user.coins != null ? user.coins : 0}">0</span>
+                        </div>
                     </div>
                 </div>
                 
-                <div style="display: flex; gap: 16px; width: 100%; max-width: 400px;">
-                    <button onclick="openM('addFundsModal')" style="flex: 1; padding: 12px; font-size: 15px; background: #10B981; border: none; color: white; border-radius: 12px; font-weight: 600; cursor: pointer;"><i class="fas fa-plus-circle"></i> Add Funds</button>
-                    <button onclick="openM('withdrawModal')" style="flex: 1; justify-content: center; padding: 12px; font-size: 15px; background: var(--card-bg); border: 1px solid var(--glass-border); color: var(--text-primary); border-radius: 12px; font-weight: 600; cursor: pointer;"><i class="fas fa-money-bill-wave"></i> Withdraw</button>
+                <!-- Quick Action Buttons (P2P Transfer, Request & Withdrawal) -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; width: 100%; max-width: 520px;">
+                    <button onclick="openM('requestFundsModal')" style="padding: 13px 14px; font-size: 14px; background: linear-gradient(135deg, #8B5CF6, #7C3AED); border: none; color: white; border-radius: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 16px rgba(139,92,246,0.3); transition: transform 0.2s ease;">
+                        <i class="fas fa-hand-holding-usd"></i> Request Coins / Cash
+                    </button>
+                    <button onclick="openM('sendFundsModal')" style="padding: 13px 14px; font-size: 14px; background: #3B82F6; border: none; color: white; border-radius: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 16px rgba(59,130,246,0.25); transition: transform 0.2s ease;">
+                        <i class="fas fa-paper-plane"></i> Send
+                    </button>
+                    <button onclick="openM('withdrawModal')" style="padding: 13px 14px; font-size: 14px; background: var(--card-bg); border: 1px solid var(--glass-border); color: var(--text-primary); border-radius: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.2s ease;">
+                        <i class="fas fa-university"></i> Withdraw
+                    </button>
+                </div>
+            </div>
+
+            <!-- Incoming P2P Requests Section (Prominently displayed right under hero balance) -->
+            <div th:if="${incomingRequests != null and !#lists.isEmpty(incomingRequests)}" style="margin-top: 28px; width: 100%;">
+                <h3 style="font-size: 18px; font-weight: 800; margin-bottom: 14px; color: var(--text-primary); display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-bell" style="color: #3b82f6;"></i> Action Required: Incoming Requests
+                    <span style="font-size: 11px; background: rgba(59, 130, 246, 0.15); color: #3b82f6; padding: 2px 10px; border-radius: 12px; font-weight: 800;" th:text="${incomingRequests.size()} + ' Pending'">1 Pending</span>
+                </h3>
+                <div style="display: flex; flex-direction: column; gap: 14px;">
+                    <div th:each="req : ${incomingRequests}" class="p2p-req-card">
+                        <div class="p2p-req-left">
+                            <div class="p2p-req-avatar">
+                                <span th:text="${req.requester != null && req.requester.username != null && !req.requester.username.isEmpty() ? #strings.substring(req.requester.username, 0, 1).toUpperCase() : 'U'}">U</span>
+                            </div>
+                            <div class="p2p-req-info">
+                                <div class="p2p-req-name">
+                                    <span style="color: var(--text-primary); font-weight: 800;" th:text="${req.requester != null ? req.requester.username : 'User'}">Requester</span>
+                                    <span style="font-size: 12px; color: var(--text-secondary); font-weight: 500;" th:text="'(@' + ${req.requester != null ? req.requester.username : ''} + ')'">@user</span>
+                                </div>
+                                <div class="p2p-req-details">
+                                    Requested: 
+                                    <span th:if="${req.currency == 'COINS'}">
+                                        <strong style="color: #f59e0b; font-weight: 800;" th:text="${(req.amount != null ? req.amount.intValue() : 0) + ' Youth Coins 🪙'}">50 Coins 🪙</strong>
+                                    </span>
+                                    <span th:if="${req.currency != 'COINS'}">
+                                        <strong style="color: #10B981; font-weight: 800;">&#8377;<span th:text="${#numbers.formatDecimal(req.amount != null ? req.amount : 0, 1, 'COMMA', 2, 'POINT')}">0.00</span> Cash</strong>
+                                    </span>
+                                    <span th:if="${req.note != null && !req.note.isEmpty()}" th:text="' &bull; &quot;' + ${req.note} + '&quot;'" style="font-style: italic; color: var(--text-muted); word-break: break-word;"></span>
+                                </div>
+                                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;" th:text="${#temporals.format(req.createdAt, 'dd MMM yyyy, HH:mm')}">Date</div>
+                            </div>
+                        </div>
+                        <div class="p2p-req-actions">
+                            <form th:action="@{/wallet/request/accept/{id}(id=${req.id})}" method="POST" style="margin: 0;">
+                                <button type="submit" class="p2p-btn-accept" title="Accept and transfer funds">
+                                    <i class="fas fa-check-circle"></i> Accept &amp; Send
+                                </button>
+                            </form>
+                            <form th:action="@{/wallet/request/decline/{id}(id=${req.id})}" method="POST" style="margin: 0;">
+                                <button type="submit" class="p2p-btn-decline" title="Decline this request">
+                                    <i class="fas fa-times-circle"></i> Decline
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sent P2P Requests Tracking (if any) -->
+            <div th:if="${sentRequests != null and !#lists.isEmpty(sentRequests)}" style="margin-top: 28px; width: 100%;">
+                <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 12px; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-paper-plane" style="color: #8b5cf6;"></i> Requests You Sent
+                </h3>
+                <div style="background: var(--card-bg); border: 1px solid var(--glass-border); border-radius: 16px; overflow: hidden;">
+                    <div th:each="sreq : ${sentRequests}" class="p2p-sent-item">
+                        <div style="flex: 1 1 auto; min-width: 0;">
+                            <div style="font-size: 13px; font-weight: 700; color: var(--text-primary); word-break: break-word;">
+                                Requested from <span th:text="'@' + ${sreq.targetUser != null ? sreq.targetUser.username : ''}">@friend</span>:
+                                <span th:if="${sreq.currency == 'COINS'}">
+                                    <strong style="color: #8b5cf6;" th:text="${(sreq.amount != null ? sreq.amount.intValue() : 0) + ' Coins 🪙'}">50 Coins 🪙</strong>
+                                </span>
+                                <span th:if="${sreq.currency != 'COINS'}">
+                                    <strong style="color: #8b5cf6;">&#8377;<span th:text="${#numbers.formatDecimal(sreq.amount != null ? sreq.amount : 0, 1, 'COMMA', 2, 'POINT')}">0.00</span> Cash</strong>
+                                </span>
+                            </div>
+                            <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px; word-break: break-word;">
+                                <span th:text="${#temporals.format(sreq.createdAt, 'dd MMM yyyy, HH:mm')}">Date</span>
+                                <span th:if="${sreq.note != null && !sreq.note.isEmpty()}" th:text="' &bull; ' + ${sreq.note}"></span>
+                            </div>
+                        </div>
+                        <div style="flex: 0 0 auto; margin-left: 12px;">
+                            <span style="font-size: 10px; font-weight: 800; padding: 3px 10px; border-radius: 12px; text-transform: uppercase;"
+                                  th:styleappend="${sreq.status == 'PENDING'} ? 'background: rgba(245,158,11,0.15); color: #f59e0b;' : (${sreq.status == 'ACCEPTED'} ? 'background: rgba(16,185,129,0.15); color: #10b981;' : 'background: rgba(239,68,68,0.15); color: #ef4444;')"
+                                  th:text="${sreq.status}">PENDING</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- How to Earn Coins & Funds Info Card -->
+            <div style="margin-top: 28px; background: var(--card-bg); border: 1px solid var(--glass-border); border-radius: 20px; padding: 22px 20px; box-shadow: var(--shadow-sm); width: 100%; box-sizing: border-box;">
+                <div style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin-bottom: 14px; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-coins" style="color: #f59e0b;"></i> How to Get Coins &amp; Cash in Youthians
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px;">
+                    <div style="background: rgba(139, 92, 246, 0.05); border: 1px solid rgba(139, 92, 246, 0.15); border-radius: 14px; padding: 14px;">
+                        <div style="font-weight: 800; font-size: 13px; color: #8b5cf6; margin-bottom: 4px;">
+                            <i class="fas fa-hand-holding-usd"></i> Request from Friends
+                        </div>
+                        <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.4;">
+                            Running low? Click <strong>Request</strong> to ask any friend or peer. Once accepted, funds transfer directly.
+                        </div>
+                    </div>
+
+                    <div style="background: rgba(245, 158, 11, 0.05); border: 1px solid rgba(245, 158, 11, 0.15); border-radius: 14px; padding: 14px;">
+                        <div style="font-weight: 800; font-size: 13px; color: #f59e0b; margin-bottom: 4px;">
+                            <i class="fas fa-fire"></i> Win Battles &amp; Tournaments
+                        </div>
+                        <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.4;">
+                            Compete in Battle Arena 1v1s, Tournaments, and Spectator Predictions to earn winning prize pools.
+                        </div>
+                    </div>
+
+                    <div style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.15); border-radius: 14px; padding: 14px;">
+                        <div style="font-weight: 800; font-size: 13px; color: #10B981; margin-bottom: 4px;">
+                            <i class="fas fa-gift"></i> Starter Welcome Bonus
+                        </div>
+                        <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.4;">
+                            Every new user automatically receives 100 Youth Coins + &#8377;50 starter cash upon first login.
+                        </div>
+                    </div>
+
+                    <div style="background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.15); border-radius: 14px; padding: 14px;">
+                        <div style="font-weight: 800; font-size: 13px; color: #3b82f6; margin-bottom: 4px;">
+                            <i class="fas fa-trophy"></i> Quests &amp; Achievements
+                        </div>
+                        <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.4;">
+                            Complete daily milestones, check-ins, and game quests to unlock coin reward drops in your profile.
+                        </div>
+                    </div>
                 </div>
             </div>
             
-            <h3 style="font-size: 18px; font-weight: 800; margin: 30px 0 20px 0; color: var(--text-primary);"><i class="fas fa-history"></i> Recent Transactions</h3>
+            <!-- Recent Transactions List -->
+            <h3 style="font-size: 18px; font-weight: 800; margin: 34px 0 16px 0; color: var(--text-primary);"><i class="fas fa-history"></i> Recent Transactions</h3>
             
             <div style="background: var(--card-bg); border: 1px solid var(--glass-border); border-radius: 16px; overflow: hidden;">
                 <!-- If transactions is empty -->
                 <div th:if="${#lists.isEmpty(transactions)}" style="text-align: center; padding: 40px 20px; color: var(--text-secondary);">
                     <i class="fas fa-receipt" style="font-size: 40px; opacity: 0.3; margin-bottom: 12px;"></i>
-                    <p>No recent transactions.</p>
+                    <p>No transactions yet.</p>
                 </div>
                 
                 <!-- If transactions is not empty -->
@@ -123,7 +484,7 @@
                                 <span style="font-weight: 700; font-size: 14px; color: var(--text-primary);" th:text="${tx.details}">Details</span>
                                 <span th:if="${tx.status != null}" 
                                       style="font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 12px; text-transform: uppercase;"
-                                      th:styleappend="${tx.status == 'COMPLETED'} ? 'background: rgba(16,185,129,0.15); color: #10B981;' : 'background: rgba(245,158,11,0.15); color: #f59e0b;'"
+                                      th:styleappend="${tx.status == 'COMPLETED'} ? 'background: rgba(16,185,129,0.15); color: #10B981;' : (${tx.status == 'PENDING'} ? 'background: rgba(245,158,11,0.15); color: #f59e0b;' : 'background: rgba(239,68,68,0.15); color: #ef4444;')"
                                       th:text="${tx.status}">COMPLETED</span>
                             </div>
                             <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px; display: flex; gap: 12px;">
@@ -132,8 +493,8 @@
                             </div>
                         </div>
                         <div style="font-weight: 800; font-size: 16px;" 
-                             th:styleappend="${tx.type == 'DEPOSIT'} ? 'color: #10B981;' : 'color: #ef4444;'">
-                            <span th:text="${tx.type == 'DEPOSIT' ? '+' : '-'}"></span> &#8377;<span th:text="${#numbers.formatDecimal(tx.amount, 1, 'COMMA', 2, 'POINT')}">0.00</span>
+                             th:styleappend="${tx.type == 'DEPOSIT' || tx.type == 'CREDIT' || tx.type == 'BONUS'} ? 'color: #10B981;' : 'color: #ef4444;'">
+                            <span th:text="${(tx.type == 'DEPOSIT' || tx.type == 'CREDIT' || tx.type == 'BONUS') ? '+' : '-'}"></span> &#8377;<span th:text="${#numbers.formatDecimal(tx.amount, 1, 'COMMA', 2, 'POINT')}">0.00</span>
                         </div>
                     </div>
                 </div>
@@ -142,20 +503,81 @@
         </main>
     </div>
     
-    <!-- Add Funds Modal -->
-    <div class="overlay" id="addFundsModal">
-        <div class="modal" style="max-width: 400px; background: var(--card-bg); border-radius: 16px; border: 1px solid var(--glass-border);">
+    <!-- P2P Send Funds Modal -->
+    <div class="overlay" id="sendFundsModal">
+        <div class="modal" style="max-width: 440px; background: var(--card-bg); border-radius: 20px; border: 1px solid var(--glass-border); box-shadow: var(--shadow-premium);">
             <div style="padding: 20px; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center;">
-                <h3 style="font-size: 18px; font-weight: 700; color: var(--text-primary);">Add Funds</h3>
-                <button onclick="closeM('addFundsModal')" style="background: none; border: none; font-size: 20px; color: var(--text-secondary); cursor: pointer;"><i class="fas fa-times"></i></button>
+                <h3 style="font-size: 18px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-paper-plane" style="color: #3b82f6;"></i> Send Coins / Cash
+                </h3>
+                <button onclick="closeM('sendFundsModal')" style="background: none; border: none; font-size: 20px; color: var(--text-secondary); cursor: pointer;"><i class="fas fa-times"></i></button>
             </div>
             <div style="padding: 20px;">
-                <form th:action="@{/wallet/add}" method="POST">
-                    <div style="margin-bottom: 16px;">
-                        <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px;">Amount (&#8377;)</label>
-                        <input type="number" name="amount" min="1" step="any" placeholder="e.g., 500" required style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--bg-color); color: var(--text-primary);">
+                <form th:action="@{/wallet/send}" method="POST" onsubmit="return validateSendForm(this)">
+                    <div style="margin-bottom: 14px;">
+                        <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">Transfer Type</label>
+                        <select name="currency" id="sendCurrencySelect" onchange="updateSendBalanceHint()" style="width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--glass-border); background: var(--bg-color); color: var(--text-primary); box-sizing: border-box;">
+                            <option value="COINS">Youth Coins (🪙 Available: [[${user.coins != null ? user.coins : 0}]])</option>
+                            <option value="CASH">Wallet Cash (&#8377; Available: [[${user.walletBalance != null ? #numbers.formatDecimal(user.walletBalance, 1, 'COMMA', 2, 'POINT') : '0.00'}]])</option>
+                        </select>
                     </div>
-                    <button type="submit" style="width: 100%; padding: 12px; background: #10B981; border: none; color: white; font-weight: 600; border-radius: 8px; cursor: pointer;">Proceed to Pay</button>
+                    <div style="margin-bottom: 14px;">
+                        <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">Recipient Username</label>
+                        <input type="text" name="recipientUsername" placeholder="e.g. rohit_kumar (without @)" required style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--glass-border); background: var(--bg-color); color: var(--text-primary); box-sizing: border-box;">
+                    </div>
+                    <div style="margin-bottom: 14px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                            <label style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Amount</label>
+                            <span id="sendBalanceLimit" style="font-size: 11px; color: #3b82f6; font-weight: 600;">Min: 1</span>
+                        </div>
+                        <input type="number" id="sendAmountInput" name="amount" min="1" step="any" placeholder="Enter amount" required style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--glass-border); background: var(--bg-color); color: var(--text-primary); box-sizing: border-box;">
+                        <p id="sendErrorMsg" style="display: none; color: #ef4444; font-size: 12px; margin-top: 6px; font-weight: 600;"></p>
+                    </div>
+                    <div style="margin-bottom: 18px;">
+                        <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">Note (Optional)</label>
+                        <input type="text" name="note" placeholder="e.g. For battle match / gift" maxlength="120" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--glass-border); background: var(--bg-color); color: var(--text-primary); box-sizing: border-box;">
+                    </div>
+                    <button type="submit" style="width: 100%; padding: 12px; background: #3B82F6; border: none; color: white; font-weight: 700; border-radius: 10px; cursor: pointer; font-size: 14px;">Send Now</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- P2P Request Funds Modal -->
+    <div class="overlay" id="requestFundsModal">
+        <div class="modal" style="max-width: 440px; background: var(--card-bg); border-radius: 20px; border: 1px solid var(--glass-border); box-shadow: var(--shadow-premium);">
+            <div style="padding: 20px; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="font-size: 18px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-hand-holding-usd" style="color: #8b5cf6;"></i> Request Coins / Cash
+                </h3>
+                <button onclick="closeM('requestFundsModal')" style="background: none; border: none; font-size: 20px; color: var(--text-secondary); cursor: pointer;"><i class="fas fa-times"></i></button>
+            </div>
+            <div style="padding: 20px;">
+                <div style="background: rgba(139, 92, 246, 0.08); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 12px; padding: 12px 14px; margin-bottom: 16px; font-size: 12px; color: var(--text-secondary); line-height: 1.4;">
+                    <i class="fas fa-info-circle" style="color: #8b5cf6; margin-right: 4px;"></i>
+                    Send a direct coin or cash request to your friend. They can accept it with one click to transfer funds to you.
+                </div>
+                <form th:action="@{/wallet/request}" method="POST" onsubmit="return validateRequestForm(this)">
+                    <div style="margin-bottom: 14px;">
+                        <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">Request Type</label>
+                        <select name="currency" style="width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--glass-border); background: var(--bg-color); color: var(--text-primary); box-sizing: border-box;">
+                            <option value="COINS">Youth Coins (🪙)</option>
+                            <option value="CASH">Wallet Cash (&#8377;)</option>
+                        </select>
+                    </div>
+                    <div style="margin-bottom: 14px;">
+                        <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">Request From Username</label>
+                        <input type="text" name="targetUsername" placeholder="e.g. friend_username" required style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--glass-border); background: var(--bg-color); color: var(--text-primary); box-sizing: border-box;">
+                    </div>
+                    <div style="margin-bottom: 14px;">
+                        <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">Amount</label>
+                        <input type="number" name="amount" min="1" max="10000" step="any" placeholder="Enter amount (Min: 1)" required style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--glass-border); background: var(--bg-color); color: var(--text-primary); box-sizing: border-box;">
+                    </div>
+                    <div style="margin-bottom: 18px;">
+                        <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">Reason / Note</label>
+                        <input type="text" name="note" placeholder="e.g. Split tournament pass / Need coins for battle" maxlength="120" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--glass-border); background: var(--bg-color); color: var(--text-primary); box-sizing: border-box;">
+                    </div>
+                    <button type="submit" style="width: 100%; padding: 12px; background: #8B5CF6; border: none; color: white; font-weight: 700; border-radius: 10px; cursor: pointer; font-size: 14px;">Send Request</button>
                 </form>
             </div>
         </div>
@@ -163,23 +585,54 @@
 
     <!-- Withdraw Modal -->
     <div class="overlay" id="withdrawModal">
-        <div class="modal" style="max-width: 400px; background: var(--card-bg); border-radius: 16px; border: 1px solid var(--glass-border);">
+        <div class="modal" style="max-width: 440px; background: var(--card-bg); border-radius: 20px; border: 1px solid var(--glass-border); box-shadow: var(--shadow-premium);">
             <div style="padding: 20px; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center;">
-                <h3 style="font-size: 18px; font-weight: 700; color: var(--text-primary);">Withdraw Funds</h3>
+                <h3 style="font-size: 18px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-university" style="color: var(--accent);"></i> Withdraw Funds
+                </h3>
                 <button onclick="closeM('withdrawModal')" style="background: none; border: none; font-size: 20px; color: var(--text-secondary); cursor: pointer;"><i class="fas fa-times"></i></button>
             </div>
             <div style="padding: 20px;">
-                <form th:action="@{/wallet/withdraw}" method="POST">
+                <div style="background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 12px; padding: 12px 14px; margin-bottom: 12px; font-size: 12px; color: var(--text-secondary); line-height: 1.4;">
+                    <i class="fas fa-info-circle" style="color: #3b82f6; margin-right: 4px;"></i>
+                    Withdrawal requests are reviewed and sent to your UPI / Bank within 24 hours. The requested amount is locked under <strong>PENDING</strong> review.
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 12px; padding: 10px 14px; margin-bottom: 16px; font-size: 12px; color: #b45309; font-weight: 600;">
+                    <span style="display: flex; align-items: center; gap: 6px;"><i class="fas fa-percentage"></i> Platform Charge: 5%</span>
+                    <span style="font-size: 11px; color: var(--text-secondary);">Deducted from payout</span>
+                </div>
+                <form th:action="@{/wallet/withdraw}" method="POST" onsubmit="return validateWithdrawForm(this)">
                     <div style="margin-bottom: 16px;">
-                        <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px;">Amount to Withdraw (&#8377;)</label>
-                        <input type="number" name="amount" min="1" step="any" placeholder="e.g., 500" required style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--bg-color); color: var(--text-primary);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <label style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Amount to Withdraw (&#8377;)</label>
+                            <span style="font-size: 11px; font-weight: 600; color: var(--accent);">Min: &#8377;100 &middot; Max: &#8377;50,000</span>
+                        </div>
+                        <input type="number" id="withdrawAmountInput" name="amount" min="100" max="50000" step="any" placeholder="e.g., 500" required style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--glass-border); background: var(--bg-color); color: var(--text-primary); box-sizing: border-box;">
+                        
+                        <!-- Dynamic Fee Breakdown -->
+                        <div id="withdrawBreakdown" style="background: rgba(16, 185, 129, 0.05); border: 1px dashed rgba(16, 185, 129, 0.3); border-radius: 12px; padding: 12px 14px; margin-top: 10px; display: none;">
+                            <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-secondary); margin-bottom: 6px;">
+                                <span>Gross Withdrawal:</span>
+                                <span id="breakdownGross" style="font-weight: 600;">&#8377;0.00</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 12px; color: #ea580c; margin-bottom: 6px;">
+                                <span>Platform Charge (5%):</span>
+                                <span id="breakdownFee" style="font-weight: 700;">-&#8377;0.00</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 800; color: #10B981; border-top: 1px dashed rgba(16, 185, 129, 0.25); padding-top: 8px;">
+                                <span>Net Payout to Account:</span>
+                                <span id="breakdownNet">&#8377;0.00</span>
+                            </div>
+                        </div>
+
+                        <p id="withdrawErrorMsg" style="display: none; color: #ef4444; font-size: 12px; margin-top: 6px; font-weight: 600;"></p>
                     </div>
                     <div style="margin-bottom: 20px;">
-                        <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px;">Transfer To (UPI ID / Bank A/C)</label>
-                        <input type="text" name="accountDetails" placeholder="e.g., yourname@upi" required style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--bg-color); color: var(--text-primary);">
-                        <p style="font-size: 11px; color: var(--text-muted); margin-top: 6px;">Withdrawals are usually processed within 24 hours.</p>
+                        <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px;">Transfer To (UPI ID / Bank A/C &amp; IFSC)</label>
+                        <input type="text" name="accountDetails" placeholder="e.g. yourname@upi or Account No + IFSC" maxlength="80" required style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--glass-border); background: var(--bg-color); color: var(--text-primary); box-sizing: border-box;">
+                        <p style="font-size: 11px; color: var(--text-muted); margin-top: 6px;">Available Balance: &#8377;[[${user.walletBalance != null ? #numbers.formatDecimal(user.walletBalance, 1, 'COMMA', 2, 'POINT') : '0.00'}]]</p>
                     </div>
-                    <button type="submit" style="width: 100%; padding: 12px; background: var(--accent); border: none; color: white; font-weight: 600; border-radius: 8px; cursor: pointer;">Withdraw to Account</button>
+                    <button type="submit" style="width: 100%; padding: 12px; background: var(--accent); border: none; color: white; font-weight: 700; border-radius: 10px; cursor: pointer; font-size: 14px;">Submit Withdrawal Request</button>
                 </form>
             </div>
         </div>
@@ -188,7 +641,14 @@
     <div th:replace="~{fragments/modals :: createPostModal}"></div>
     <div class="overlay" id="overlay" onclick="closeAllModals()"></div>
 
-    <script>
+    <script th:inline="javascript">
+        /* User balance variables for client-side validation */
+        const currentCashBalance = /*[[${user.walletBalance != null ? user.walletBalance : 0.0}]]*/ 0.0;
+        const currentCoinBalance = /*[[${user.coins != null ? user.coins : 0}]]*/ 0;
+        const razorpayKey = /*[[${razorpayKeyId}]]*/ 'rzp_test_youthiansMockKey';
+
+        let activeCoinPackPrice = 99;
+
         function openM(id) {
             const el = document.getElementById(id);
             if (el) {
@@ -216,6 +676,94 @@
             });
         }
         function openCreateModal() { openM('createPostModal'); }
+        // P2P Transfer & Request Helpers
+        function updateSendBalanceHint() {
+            const cur = document.getElementById('sendCurrencySelect').value;
+            const hint = document.getElementById('sendBalanceLimit');
+            if (cur === 'COINS') {
+                hint.textContent = 'Max available: ' + currentCoinBalance + ' Coins';
+            } else {
+                hint.textContent = 'Max available: ₹' + currentCashBalance.toFixed(2);
+            }
+        }
+
+        function validateSendForm(form) {
+            const cur = form.currency.value;
+            const amt = parseFloat(form.amount.value);
+            const err = document.getElementById('sendErrorMsg');
+            if (isNaN(amt) || amt <= 0) {
+                if (err) { err.textContent = 'Please enter a valid amount greater than 0.'; err.style.display = 'block'; }
+                return false;
+            }
+            if (cur === 'COINS' && amt > currentCoinBalance) {
+                if (err) { err.textContent = 'Insufficient coins. You currently have ' + currentCoinBalance + ' coins.'; err.style.display = 'block'; }
+                return false;
+            }
+            if (cur === 'CASH' && amt > currentCashBalance) {
+                if (err) { err.textContent = 'Insufficient balance. You currently have ₹' + currentCashBalance.toFixed(2) + '.'; err.style.display = 'block'; }
+                return false;
+            }
+            if (err) err.style.display = 'none';
+            return true;
+        }
+
+        function validateRequestForm(form) {
+            const amt = parseFloat(form.amount.value);
+            if (isNaN(amt) || amt <= 0) {
+                alert('Please enter a valid request amount greater than 0.');
+                return false;
+            }
+            return true;
+        }
+
+        function validateWithdrawForm(form) {
+            const val = parseFloat(form.amount.value);
+            const err = document.getElementById('withdrawErrorMsg');
+            if (isNaN(val) || val < 100) {
+                if (err) {
+                    err.textContent = 'Minimum withdrawal amount is ₹100.00.';
+                    err.style.display = 'block';
+                }
+                return false;
+            }
+            if (val > currentCashBalance) {
+                if (err) {
+                    err.textContent = 'Insufficient balance. Your available balance is ₹' + currentCashBalance.toFixed(2) + '.';
+                    err.style.display = 'block';
+                }
+                return false;
+            }
+            if (val > 50000) {
+                if (err) {
+                    err.textContent = 'Maximum withdrawal limit is ₹50,000.00 per transaction.';
+                    err.style.display = 'block';
+                }
+                return false;
+            }
+            if (err) err.style.display = 'none';
+            return true;
+        }
+
+        // Live Fee Calculator for Withdrawal
+        document.addEventListener('DOMContentLoaded', function() {
+            const wInput = document.getElementById('withdrawAmountInput');
+            if (wInput) {
+                wInput.addEventListener('input', function() {
+                    const val = parseFloat(this.value);
+                    const bd = document.getElementById('withdrawBreakdown');
+                    if (!isNaN(val) && val >= 100) {
+                        const fee = Math.round(val * 0.05 * 100) / 100;
+                        const net = Math.round((val - fee) * 100) / 100;
+                        document.getElementById('breakdownGross').textContent = '₹' + val.toFixed(2);
+                        document.getElementById('breakdownFee').textContent = '-₹' + fee.toFixed(2);
+                        document.getElementById('breakdownNet').textContent = '₹' + net.toFixed(2);
+                        bd.style.display = 'block';
+                    } else {
+                        bd.style.display = 'none';
+                    }
+                });
+            }
+        });
     </script>
 </body>
 </html>

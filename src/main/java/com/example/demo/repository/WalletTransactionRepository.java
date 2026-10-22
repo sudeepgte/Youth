@@ -8,4 +8,8 @@ import java.util.List;
 public interface WalletTransactionRepository extends JpaRepository<WalletTransaction, Long> {
     List<WalletTransaction> findByUserOrderByTimestampDesc(User user);
     List<WalletTransaction> findByUserOrderByCreatedAtDesc(User user);
+    List<WalletTransaction> findByStatusOrderByTimestampDesc(String status);
+    List<WalletTransaction> findByTypeAndStatusOrderByTimestampDesc(String type, String status);
+    boolean existsByReferenceId(String referenceId);
+    java.util.Optional<WalletTransaction> findByReferenceId(String referenceId);
 }
