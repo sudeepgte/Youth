@@ -237,17 +237,6 @@ public class WalletController {
         User user = getUserFromSession(session);
         if (user == null) return "redirect:/login";
 
-
-        if (amount == null || amount <= 0) {
-            redirectAttributes.addFlashAttribute("error", "Please enter a valid amount greater than \u20B90.");
-            return "redirect:/wallet";
-        }
-
-        if (amount > 100000.0) {
-            redirectAttributes.addFlashAttribute("error", "Maximum deposit limit is \u20B91,00,000 per transaction.");
-            return "redirect:/wallet";
-        }
-
         user = userRepository.findById(user.getId()).orElse(user);
 
         WalletRequest req = walletRequestRepository.findById(id).orElse(null);
@@ -267,7 +256,6 @@ public class WalletController {
             return "redirect:/wallet";
         }
 
-        redirectAttributes.addFlashAttribute("success", "Payment verified! Successfully added \u20B9" + String.format("%.2f", amount) + " to your wallet. Ref: " + refId);
         boolean isCoins = "COINS".equalsIgnoreCase(req.getCurrency());
         if (isCoins) {
             int coinAmt = req.getAmount().intValue();
@@ -337,6 +325,7 @@ public class WalletController {
         notificationRepository.save(new Notification(req.getRequester(), user, "@" + user.getUsername() + " declined your request for funds.", "WALLET_REQ"));
 
         redirectAttributes.addFlashAttribute("success", "Request declined.");
+        return "redirect:/wallet";
     }
 
     @PostMapping("/withdraw")
@@ -355,8 +344,6 @@ public class WalletController {
             return "redirect:/wallet";
         }
 
-        if (amount < 100.0) {
-            redirectAttributes.addFlashAttribute("error", "Minimum withdrawal amount is \u20B9100.00.");
         if (amount > 50000.0) {
             redirectAttributes.addFlashAttribute("error", "Maximum withdrawal limit is Rs. 50,000.00 per transaction.");
             return "redirect:/wallet";
