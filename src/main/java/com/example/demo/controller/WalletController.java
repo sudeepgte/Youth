@@ -68,12 +68,12 @@ public class WalletController {
         if (user == null) return "redirect:/login";
 
         if (amount == null || amount <= 0) {
-            redirectAttributes.addFlashAttribute("error", "Please enter a valid amount greater than ₹0.");
+            redirectAttributes.addFlashAttribute("error", "Please enter a valid amount greater than \u20B90.");
             return "redirect:/wallet";
         }
 
         if (amount > 100000.0) {
-            redirectAttributes.addFlashAttribute("error", "Maximum deposit limit is ₹1,00,000 per transaction.");
+            redirectAttributes.addFlashAttribute("error", "Maximum deposit limit is \u20B91,00,000 per transaction.");
             return "redirect:/wallet";
         }
 
@@ -93,7 +93,7 @@ public class WalletController {
         tx.setReferenceId(refId);
         walletTransactionRepository.save(tx);
 
-        redirectAttributes.addFlashAttribute("success", "Payment verified! Successfully added ₹" + String.format("%.2f", amount) + " to your wallet. Ref: " + refId);
+        redirectAttributes.addFlashAttribute("success", "Payment verified! Successfully added \u20B9" + String.format("%.2f", amount) + " to your wallet. Ref: " + refId);
         return "redirect:/wallet";
     }
 
@@ -114,7 +114,7 @@ public class WalletController {
         }
 
         if (amount < 100.0) {
-            redirectAttributes.addFlashAttribute("error", "Minimum withdrawal amount is ₹100.00.");
+            redirectAttributes.addFlashAttribute("error", "Minimum withdrawal amount is \u20B9100.00.");
             return "redirect:/wallet";
         }
 
@@ -125,7 +125,7 @@ public class WalletController {
 
         Double currentBalance = user.getWalletBalance() != null ? user.getWalletBalance() : 0.0;
         if (currentBalance < amount) {
-            redirectAttributes.addFlashAttribute("error", "Insufficient balance. Your available balance is ₹" + String.format("%.2f", currentBalance));
+            redirectAttributes.addFlashAttribute("error", "Insufficient balance. Your available balance is \u20B9" + String.format("%.2f", currentBalance));
             return "redirect:/wallet";
         }
 
@@ -145,7 +145,7 @@ public class WalletController {
         tx.setReferenceId(refId);
         walletTransactionRepository.save(tx);
 
-        redirectAttributes.addFlashAttribute("success", "Withdrawal of ₹" + String.format("%.2f", amount) + " to " + accountClean + " processed successfully. Ref: " + refId);
+        redirectAttributes.addFlashAttribute("success", "Withdrawal of \u20B9" + String.format("%.2f", amount) + " to " + accountClean + " processed successfully. Ref: " + refId);
         return "redirect:/wallet";
     }
 }
