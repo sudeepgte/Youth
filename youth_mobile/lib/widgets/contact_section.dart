@@ -57,7 +57,7 @@ class ContactSection extends StatelessWidget {
             icon: FontAwesomeIcons.solidEnvelope,
             color: Colors.blueAccent,
             title: 'Email Us',
-            info: 'support@zentrix.com',
+            info: 'support@youthians.com',
           ),
           const SizedBox(height: 16),
           _buildContactCard(

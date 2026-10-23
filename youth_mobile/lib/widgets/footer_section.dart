@@ -52,7 +52,7 @@ class FooterSection extends StatelessWidget {
               const FaIcon(FontAwesomeIcons.envelope, color: Colors.blueAccent, size: 14),
               const SizedBox(width: 12),
               Text(
-                'support@youthian.com',
+                'support@youthians.com',
                 style: GoogleFonts.inter(
                   fontSize: 14,
                   color: const Color(0xFF475569),
@@ -139,7 +139,7 @@ class FooterSection extends StatelessWidget {
           const SizedBox(height: 60),
           Center(
             child: Text(
-              '© 2026 Youthian. All rights reserved.',
+              '© 2026 Youthians. All rights reserved.',
               style: GoogleFonts.inter(
                 fontSize: 12,
                 fontWeight: FontWeight.w700,

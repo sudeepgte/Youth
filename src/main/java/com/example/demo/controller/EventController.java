@@ -157,11 +157,35 @@ public class EventController {
         // Redirect only if neither student nor admin
         if (user == null && !adminViewing) return "redirect:/login";
 
+        // Sanitize search query: strip HTML tags/script markup, strip dangerous characters and quotes
+        String sanitizedSearch = "";
+        String displaySearch = "";
+        if (search != null) {
+            String cleaned = search.replaceAll("(?i)<script.*?>.*?</script.*?>", "")
+                                  .replaceAll("<[^>]*>", "")
+                                  .replaceAll("[<>]", "")
+                                  .replaceAll("[\"']", "")
+                                  .replaceAll("\\s+", " ")
+                                  .trim();
+            if (cleaned.isEmpty() && !search.trim().isEmpty()) {
+                cleaned = search.replaceAll("[^a-zA-Z0-9 ]", "").trim();
+            }
+            if (cleaned.length() > 80) {
+                cleaned = cleaned.substring(0, 80).trim();
+            }
+            sanitizedSearch = cleaned;
+            if (sanitizedSearch.length() > 28) {
+                displaySearch = sanitizedSearch.substring(0, 28).trim() + "...";
+            } else {
+                displaySearch = sanitizedSearch;
+            }
+        }
+
         // ── Step 1: Base query — search by location/venue/title keyword ──
         List<Event> allItems;
-        boolean hasSearch = search != null && !search.trim().isEmpty();
+        boolean hasSearch = !sanitizedSearch.isEmpty();
         if (hasSearch) {
-            allItems = eventRepository.searchByVenueOrTitle(search.trim());
+            allItems = eventRepository.searchByVenueOrTitle(sanitizedSearch);
         } else {
             allItems = eventRepository.findAll();
         }
@@ -209,7 +233,8 @@ public class EventController {
         model.addAttribute("votingPolls", votingPolls);
         model.addAttribute("trending", trending);
         model.addAttribute("activeCategory", category != null ? category : "All");
-        model.addAttribute("activeSearch", search != null ? search : "");
+        model.addAttribute("activeSearch", sanitizedSearch);
+        model.addAttribute("displaySearch", displaySearch);
         model.addAttribute("user", user);
         model.addAttribute("isAdmin", adminViewing);
         

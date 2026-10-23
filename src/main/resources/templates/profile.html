@@ -1204,6 +1204,7 @@
                              th:src="@{/api/qrcode/generate(text=${(baseUrl != null ? baseUrl : 'http://localhost:8009') + '/rewards/redeem/' + reward.rewardCode})}" 
                              style="width:100px; height:100px; border-radius:8px; border:2px solid #fff;" 
                              alt="QR Code" />
+                        <img th:src="@{/api/qrcode/generate(text=${(baseUrl != null ? baseUrl : 'http://localhost:8009') + '/rewards/redeem/' + reward.rewardCode})}" style="width:100px; height:100px; border-radius:8px; border:2px solid #fff;" alt="QR Code" />
                         <p style="font-size:10px; margin-top:5px; color:#aaa;" th:text="${reward.rewardCode}">CODE</p>
                     </div>
                 </div>
@@ -1629,7 +1630,7 @@
         }
 
         function deletePost() {
-            if (!confirm('Detele this post?')) return;
+            if (!confirm('Delete this post?')) return;
             fetch(`/profile/post/delete/${currentId}`, { method: 'POST' }).then(() => location.reload());
         }
 

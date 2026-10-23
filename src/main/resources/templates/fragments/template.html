@@ -10,29 +10,15 @@
 </head>
 <body>
 	<header th:fragment="navbar(active)"
-	th:style="${active} != 'home'
-	and ${active} != 'games'
-	and ${active} != 'about'
-	and ${active} != 'careers'
-	and ${active} != 'faq'
-	and ${active} != 'support'
-	and ${active} != 'events'
-	and ${active} != 'event-details'
-	? '--nav-height: 86px;' : '--nav-height: 56px;'">
+	th:style="${promoBannerEnabled != false} ? '--nav-height: 86px;' : '--nav-height: 56px;'">
 	<div class="top-bar"
-	th:if="${active} != 'home'
-	and ${active} != 'games'
-	and ${active} != 'about'
-	and ${active} != 'careers'
-	and ${active} != 'faq'
-	and ${active} != 'support'
-	and ${active} != 'events'
-	and ${active} != 'event-details'">
+	th:if="${promoBannerEnabled != false}">
             <div class="nav-shell top-bar-inner">
-                <div class="top-bar-message">
+                <a th:href="@{${promoBannerLink != null ? promoBannerLink : '/events'}}" class="top-bar-message" style="text-decoration: none; color: inherit; display: inline-flex; align-items: center; gap: 8px;">
                     <i class="fa-solid fa-bullhorn"></i>
-                    <span>Join the Spring Tech Fest 2026 — Registrations now open!</span>
-                </div>
+                    <span th:text="${promoBannerText != null ? promoBannerText : 'Youthians Spring Fest 2026 — Registrations now open!'}">Youthians Spring Fest 2026 — Registrations now open!</span>
+                    <i class="fa-solid fa-arrow-right" style="font-size: 10px; margin-left: 4px; color: var(--primary);"></i>
+                </a>
                 <div class="top-links">
                     <a th:href="@{/support}">Support</a>
                     <a th:href="@{/faq}">Help Center</a>
@@ -40,15 +26,7 @@
             </div>
         </div>
 		<nav class="navbar"
-		th:classappend="(${active} != 'home'
-		and ${active} != 'games'
-		and ${active} != 'about'
-		and ${active} != 'careers'
-		and ${active} != 'faq'
-		and ${active} != 'support'
-		and ${active} != 'events'
-		and ${active} != 'event-details'
-		? ' has-topbar' : '') + ' navbar-home' + (${active} != 'home' ? ' solid-bg' : '')">
+		th:classappend="(${promoBannerEnabled != false} ? ' has-topbar' : '') + ' navbar-home' + (${active} != 'home' ? ' solid-bg' : '')">
             <div class="nav-shell navbar-inner" style="display: flex; align-items: center; justify-content: space-between; width: 100%; height: 100%; padding: 0;">
                 
                 <a class="logo" th:href="@{/home}" style="font-size: 22px; font-weight: 900; color: #0f172a; text-decoration: none; font-family: 'Outfit', sans-serif; letter-spacing: -0.5px; z-index: 1010; display: flex; align-items: center; gap: 6px;">
@@ -257,8 +235,8 @@
                     <a href="tel:+919876543210" style="display: inline-flex; align-items: center; gap: 10px; color: var(--text-secondary); margin-bottom: 0;">
                         <i class="fa-solid fa-phone" style="color: var(--primary); font-size: 14px; width: 16px;"></i> +91 98765 43210
                     </a>
-                    <a href="mailto:support@zentrix.com" style="display: inline-flex; align-items: center; gap: 10px; color: var(--text-secondary); margin-bottom: 0;">
-                        <i class="fa-solid fa-envelope" style="color: var(--primary); font-size: 14px; width: 16px;"></i> support@youthians.com
+                    <a th:href="'mailto:' + ${supportEmail != null ? supportEmail : 'support@youthians.com'}" style="display: inline-flex; align-items: center; gap: 10px; color: var(--text-secondary); margin-bottom: 0;">
+                        <i class="fa-solid fa-envelope" style="color: var(--primary); font-size: 14px; width: 16px;"></i> <span th:text="${supportEmail != null ? supportEmail : 'support@youthians.com'}">support@youthians.com</span>
                     </a>
                 </div>
             </div>
@@ -287,19 +265,25 @@
                 <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 5px; color: var(--text-primary);">Connect With Us</h3>
                 <p style="font-size: 13px; color: var(--text-secondary); margin: 0; line-height: 1.5;">Follow our socials for community updates, hackathon releases, and gaming fests!</p>
                 <div style="display: flex; gap: 12px; margin-top: 5px;">
-                    <a href="https://instagram.com/zentrix" target="_blank" aria-label="Follow Zentrix on Instagram" 
+                    <a th:href="${socialInstagram != null ? socialInstagram : 'https://www.instagram.com/youthians'}" 
+                       target="_blank" rel="noopener noreferrer"
+                       aria-label="Follow Youthians on Instagram" title="Follow Youthians on Instagram"
                        style="display: inline-flex; align-items: center; justify-content: center; width: 42px; height: 42px; border-radius: 50%; background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(0,0,0,0.06); color: #ec4899; font-size: 18px; margin: 0; transition: all 0.3s ease; box-shadow: 0 4px 10px rgba(0,0,0,0.03);"
                        onmouseover="this.style.background='linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)'; this.style.color='#fff'; this.style.transform='translateY(-3px)'; this.style.boxShadow='0 10px 20px rgba(220, 39, 67, 0.3)'"
                        onmouseout="this.style.background='rgba(59, 130, 246, 0.05)'; this.style.color='#ec4899'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 10px rgba(0,0,0,0.03)'">
                         <i class="fa-brands fa-instagram"></i>
                     </a>
-                    <a href="https://x.com/zentrix" target="_blank" aria-label="Follow Zentrix on Twitter/X" 
+                    <a th:href="${socialTwitter != null ? socialTwitter : 'https://x.com/youthians'}" 
+                       target="_blank" rel="noopener noreferrer"
+                       aria-label="Follow Youthians on Twitter/X" title="Follow Youthians on Twitter/X"
                        style="display: inline-flex; align-items: center; justify-content: center; width: 42px; height: 42px; border-radius: 50%; background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(0,0,0,0.06); color: #111; font-size: 18px; margin: 0; transition: all 0.3s ease; box-shadow: 0 4px 10px rgba(0,0,0,0.03);"
                        onmouseover="this.style.background='#000'; this.style.color='#fff'; this.style.transform='translateY(-3px)'; this.style.boxShadow='0 10px 20px rgba(0,0,0,0.3)'"
                        onmouseout="this.style.background='rgba(59, 130, 246, 0.05)'; this.style.color='#111'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 10px rgba(0,0,0,0.03)'">
                         <i class="fa-brands fa-x-twitter"></i>
                     </a>
-                    <a href="https://facebook.com/zentrix" target="_blank" aria-label="Follow Zentrix on Facebook" 
+                    <a th:href="${socialFacebook != null ? socialFacebook : 'https://www.facebook.com/youthians'}" 
+                       target="_blank" rel="noopener noreferrer"
+                       aria-label="Follow Youthians on Facebook" title="Follow Youthians on Facebook"
                        style="display: inline-flex; align-items: center; justify-content: center; width: 42px; height: 42px; border-radius: 50%; background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(0,0,0,0.06); color: #1877f2; font-size: 18px; margin: 0; transition: all 0.3s ease; box-shadow: 0 4px 10px rgba(0,0,0,0.03);"
                        onmouseover="this.style.background='#1877f2'; this.style.color='#fff'; this.style.transform='translateY(-3px)'; this.style.boxShadow='0 10px 20px rgba(24, 119, 242, 0.3)'"
                        onmouseout="this.style.background='rgba(59, 130, 246, 0.05)'; this.style.color='#1877f2'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 10px rgba(0,0,0,0.03)'">

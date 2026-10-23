@@ -476,8 +476,8 @@ public class MobileApiController {
             return ResponseEntity.badRequest().body(Map.of("error",
                     "Password must be 8+ chars with upper, lower, digit and special (@$!%*?&)"));
         }
-        if (!email.toLowerCase().endsWith(".com")) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Email must end with .com"));
+        if (email == null || !email.trim().matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Please enter a valid email address"));
         }
         User user = new User();
         user.setUsername(username);
@@ -1042,7 +1042,7 @@ public class MobileApiController {
         if (!free && total > 0) {
             double bal = user.getWalletBalance() != null ? user.getWalletBalance() : 0.0;
             if (bal < total) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Insufficient wallet balance. Need ₹" + String.format("%.0f", total)));
+                return ResponseEntity.badRequest().body(Map.of("error", "Insufficient wallet balance. Need Rs. " + String.format("%.0f", total)));
             }
             user.setWalletBalance(bal - total);
             userRepository.save(user);
@@ -1195,8 +1195,15 @@ public class MobileApiController {
     public ResponseEntity<?> walletAdd(@RequestBody Map<String, Object> body, HttpSession session) {
         User user = currentUser(session);
         if (user == null) return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
-        double amount = Double.parseDouble(body.get("amount").toString());
-        if (amount <= 0) return ResponseEntity.badRequest().body(Map.of("error", "Invalid amount"));
+        double amount;
+        try {
+            amount = Double.parseDouble(body.get("amount").toString());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Invalid numerical amount"));
+        }
+        if (Double.isNaN(amount) || Double.isInfinite(amount) || amount < 10.0 || amount > 50000.0) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Deposit amount must be between Rs. 10 and Rs. 50,000 per transaction"));
+        }
         user.addWalletBalance(amount);
         userRepository.save(user);
         walletTransactionRepository.save(new WalletTransaction(user, amount, "DEPOSIT", "Added funds via mobile"));
@@ -1208,9 +1215,17 @@ public class MobileApiController {
     public ResponseEntity<?> walletWithdraw(@RequestBody Map<String, Object> body, HttpSession session) {
         User user = currentUser(session);
         if (user == null) return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
-        double amount = Double.parseDouble(body.get("amount").toString());
+        double amount;
+        try {
+            amount = Double.parseDouble(body.get("amount").toString());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Invalid numerical amount"));
+        }
         double bal = user.getWalletBalance() != null ? user.getWalletBalance() : 0.0;
-        if (amount <= 0 || amount > bal) {
+        if (Double.isNaN(amount) || Double.isInfinite(amount) || amount < 100.0 || amount > 50000.0) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Withdrawal amount must be between Rs. 100 and Rs. 50,000 per transaction"));
+        }
+        if (amount > bal) {
             return ResponseEntity.badRequest().body(Map.of("error", "Insufficient balance"));
         }
         user.addWalletBalance(-amount);

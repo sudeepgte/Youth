@@ -2626,6 +2626,17 @@ input[type="file"].form-input::file-selector-button:hover {
     color: var(--primary);
 }
 
+.filter-summary strong.filter-query-chip,
+strong.filter-query-chip {
+    color: var(--primary);
+    max-width: 200px;
+    display: inline-block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: bottom;
+}
+
 .filter-reset-link {
     color: #ef4444 !important;
     font-weight: 700;

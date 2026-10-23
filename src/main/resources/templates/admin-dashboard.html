@@ -1092,6 +1092,9 @@
                 <a th:href="@{/admin/battles}" class="sidebar-subtab">
                     <i class="fas fa-user-plus"></i> Battle Joins <b th:text="${totalJoinedUsers}">0</b>
                 </a>
+                <a href="#support-inquiries-section" onclick="document.getElementById('support-inquiries-section').scrollIntoView({behavior: 'smooth'})" class="sidebar-subtab">
+                    <i class="fas fa-headset"></i> Support Inquiries <b th:text="${contactMessages != null ? contactMessages.size() : 0}">0</b>
+                </a>
             </div>
 
                         <a th:href="@{/admin/advertisements}" class="sidebar-link"><i class="fas fa-ad" style="color: inherit;"></i> Manage Ads</a>
@@ -1561,7 +1564,25 @@
             </tbody>
         </table>
 
-        <h2 style="margin-bottom: 20px; margin-top: 40px;">Support Inquiries</h2>
+        <div id="support-inquiries-section" style="margin-top: 40px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 10px;">
+            <div>
+                <h2 style="margin: 0; display: inline-flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-headset" style="color: var(--primary);"></i> Support Inquiries
+                    <span class="status-badge status-active" th:text="${contactMessages != null ? contactMessages.size() : 0} + ' Delivered'">0 Delivered</span>
+                </h2>
+                <p style="font-size: 13px; color: var(--text-secondary); margin: 6px 0 0 0;">
+                    Monitoring incoming enquiries for support inbox: <strong style="color: var(--primary);">kishorhavanur07@gmail.com</strong>
+                </p>
+            </div>
+        </div>
+
+        <div th:if="${param.reply != null and param.reply[0] == 'success'}" style="background: #dcfce7; color: #166534; padding: 14px 20px; border-radius: 12px; margin-bottom: 20px; font-weight: 700;">
+            <i class="fas fa-check-circle"></i> Email response sent successfully to the user!
+        </div>
+        <div th:if="${param.reply != null and param.reply[0] == 'failed'}" style="background: #fee2e2; color: #991b1b; padding: 14px 20px; border-radius: 12px; margin-bottom: 20px; font-weight: 700;">
+            <i class="fas fa-exclamation-circle"></i> Failed to send email response. Please check SMTP configuration or reply using your email client.
+        </div>
+
         <table class="data-table">
             <thead>
                 <tr>
@@ -1570,18 +1591,34 @@
                     <th>Subject</th>
                     <th>Message</th>
                     <th>Date</th>
+                    <th style="text-align: center;">Action</th>
                 </tr>
             </thead>
             <tbody>
                 <tr th:each="msg : ${contactMessages}">
                     <td th:text="${msg.name}">Name</td>
-                    <td th:text="${msg.email}">email@example.com</td>
+                    <td>
+                        <a th:href="'mailto:' + ${msg.email}" style="color: var(--primary); text-decoration: none; font-weight: 600;" th:text="${msg.email}">email@example.com</a>
+                    </td>
                     <td th:text="${msg.subject}">Subject</td>
                     <td th:text="${msg.message}" style="max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Message</td>
                     <td th:text="${#temporals.format(msg.createdAt, 'yyyy-MM-dd HH:mm')}">Date</td>
+                    <td style="text-align: center; white-space: nowrap;">
+                        <button type="button" class="status-badge status-active" 
+                                th:data-email="${msg.email}"
+                                th:data-name="${msg.name}"
+                                th:data-subject="${msg.subject}"
+                                onclick="openSupportReplyModal(this.getAttribute('data-email'), this.getAttribute('data-name'), this.getAttribute('data-subject'))"
+                                style="border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-weight: bold; margin-right: 6px;">
+                            <i class="fas fa-paper-plane"></i> Send Reply
+                        </button>
+                        <a th:href="'mailto:' + ${msg.email} + '?subject=Re: ' + ${msg.subject}" class="status-badge status-pending" style="text-decoration: none; display: inline-flex; align-items: center; gap: 4px;" title="Open in Email App">
+                            <i class="fas fa-external-link-alt"></i>
+                        </a>
+                    </td>
                 </tr>
                 <tr th:if="${#lists.isEmpty(contactMessages)}">
-                    <td colspan="5" style="text-align: center; color: var(--text-secondary);">No support inquiries yet.</td>
+                    <td colspan="6" style="text-align: center; color: var(--text-secondary);">No support inquiries yet.</td>
                 </tr>
             </tbody>
         </table>
@@ -1630,8 +1667,50 @@
             updateThemeIcon();
         }
 
+        function openSupportReplyModal(email, name, subject) {
+            document.getElementById('replyToEmail').value = email;
+            document.getElementById('replyRecipientName').value = name;
+            document.getElementById('replySubject').value = subject;
+            document.getElementById('replyModalToDisplay').innerText = name + ' (' + email + ')';
+            document.getElementById('replyModalSubjectDisplay').innerText = subject;
+            document.getElementById('supportReplyModal').style.display = 'flex';
+        }
+
+        function closeSupportReplyModal() {
+            document.getElementById('supportReplyModal').style.display = 'none';
+        }
+
         document.addEventListener('DOMContentLoaded', updateThemeIcon);
     </script>
+
+    <!-- Support Reply Modal -->
+    <div class="mobile-menu-overlay" id="supportReplyModal" style="display: none; align-items: center; justify-content: center; z-index: 2500;">
+        <div style="background: white; padding: 30px; border-radius: 20px; width: 90%; max-width: 550px; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.2);">
+            <button onclick="closeSupportReplyModal()" style="position: absolute; top: 15px; right: 20px; background: none; border: none; font-size: 24px; cursor: pointer; color: #64748b;">&times;</button>
+            <h2 style="margin-top: 0; display: flex; align-items: center; gap: 10px; font-size: 20px;">
+                <i class="fas fa-reply" style="color: var(--primary);"></i> Send Email Response
+            </h2>
+            <div style="background: #f8fafc; padding: 12px 16px; border-radius: 10px; margin-bottom: 16px; font-size: 13px;">
+                <div><strong>To:</strong> <span id="replyModalToDisplay" style="color: var(--primary);"></span></div>
+                <div style="margin-top: 4px;"><strong>Subject:</strong> <span id="replyModalSubjectDisplay"></span></div>
+            </div>
+            <form action="/admin/support/reply" method="POST" style="display: flex; flex-direction: column; gap: 14px;">
+                <input type="hidden" id="replyToEmail" name="toEmail">
+                <input type="hidden" id="replyRecipientName" name="recipientName">
+                <input type="hidden" id="replySubject" name="subject">
+                <div>
+                    <label style="display: block; font-weight: bold; margin-bottom: 6px; font-size: 12px; text-transform: uppercase; color: #64748b;">Your Response Message</label>
+                    <textarea name="replyMessage" required rows="6" placeholder="Type your response to the user here... This will be delivered directly to their email inbox." style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 10px; box-sizing: border-box; font-family: inherit; font-size: 14px; resize: vertical;"></textarea>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px;">
+                    <button type="button" onclick="closeSupportReplyModal()" class="btn btn-outline" style="padding: 10px 18px; border-radius: 10px;">Cancel</button>
+                    <button type="submit" class="btn btn-primary" style="padding: 10px 22px; border-radius: 10px; font-weight: bold;">
+                        <i class="fas fa-paper-plane"></i> Send Email
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 
 </body>
 
