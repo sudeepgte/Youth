@@ -68,4 +68,12 @@ public class ActiveLoginRegistry {
             activeSessions.remove(username);
         }
     }
+
+    public int getActiveSessionCount() {
+        long now = System.currentTimeMillis();
+        long count = activeSessions.values().stream()
+                .filter(s -> (now - s.getLastActivity()) < 30 * 60 * 1000L)
+                .count();
+        return (int) Math.max(1, count);
+    }
 }

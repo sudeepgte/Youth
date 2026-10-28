@@ -9,24 +9,9 @@
     <script defer th:src="@{/js/game-rewards.js}"></script>
 </head>
 <body>
-	<header th:fragment="navbar(active)"
-	th:style="${promoBannerEnabled != false} ? '--nav-height: 86px;' : '--nav-height: 56px;'">
-	<div class="top-bar"
-	th:if="${promoBannerEnabled != false}">
-            <div class="nav-shell top-bar-inner">
-                <a th:href="@{${promoBannerLink != null ? promoBannerLink : '/events'}}" class="top-bar-message" style="text-decoration: none; color: inherit; display: inline-flex; align-items: center; gap: 8px;">
-                    <i class="fa-solid fa-bullhorn"></i>
-                    <span th:text="${promoBannerText != null ? promoBannerText : 'Youthians Spring Fest 2026 — Registrations now open!'}">Youthians Spring Fest 2026 — Registrations now open!</span>
-                    <i class="fa-solid fa-arrow-right" style="font-size: 10px; margin-left: 4px; color: var(--primary);"></i>
-                </a>
-                <div class="top-links">
-                    <a th:href="@{/support}">Support</a>
-                    <a th:href="@{/faq}">Help Center</a>
-                </div>
-            </div>
-        </div>
-		<nav class="navbar"
-		th:classappend="(${promoBannerEnabled != false} ? ' has-topbar' : '') + ' navbar-home' + (${active} != 'home' ? ' solid-bg' : '')">
+	<header th:fragment="navbar(active)" style="--nav-height: 56px;">
+		<nav class="navbar navbar-home"
+		th:classappend="${active} != 'home' ? ' solid-bg' : ''">
             <div class="nav-shell navbar-inner" style="display: flex; align-items: center; justify-content: space-between; width: 100%; height: 100%; padding: 0;">
                 
                 <a class="logo" th:href="@{/home}" style="font-size: 22px; font-weight: 900; color: #0f172a; text-decoration: none; font-family: 'Outfit', sans-serif; letter-spacing: -0.5px; z-index: 1010; display: flex; align-items: center; gap: 6px;">
@@ -65,10 +50,8 @@
 						</a>
 						
                         <a th:href="@{/home} + '#contact'">Contact</a>
-							<a th:href="@{/faq}"
-						   th:classappend="${active} == 'faq' ? ' active' : ''">
-						    FAQs
-						</a>
+						<a th:href="@{/support}" th:classappend="${active} == 'support' ? ' active' : ''">Support</a>
+						<a th:href="@{/faq}" th:classappend="${active} == 'faq' ? ' active' : ''">Help Center</a>
 						<a href="javascript:void(0)" onclick="scrollToHeatmap()">Heat Map</a>
                     </div>
                     <div class="nav-actions">
@@ -95,7 +78,8 @@
                             <a th:href="@{/about-us}" onclick="toggleMobileNav()">About Us</a>
               
                             <a th:href="@{/home} + '#contact'" onclick="toggleMobileNav()">Contact</a>
-                            <a th:href="@{/faq}" onclick="toggleMobileNav()">FAQs</a>
+                            <a th:href="@{/support}" onclick="toggleMobileNav()">Support</a>
+                            <a th:href="@{/faq}" onclick="toggleMobileNav()">Help Center</a>
                             <a href="javascript:void(0)" onclick="toggleMobileNav(); scrollToHeatmap()">Heat Map</a>
                         </div>
                         <div class="nav-actions">

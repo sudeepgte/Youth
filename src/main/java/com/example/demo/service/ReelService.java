@@ -21,8 +21,31 @@ public class ReelService {
     @Autowired
     private ReelRepository reelRepository;
 
+    @Autowired
+    private com.example.demo.repository.PostRepository postRepository;
+
     @Value("${upload.path.reels:src/main/resources/static/uploads/reels/}")
     private String UPLOAD_DIR;
+
+    @jakarta.annotation.PostConstruct
+    public void syncExistingReels() {
+        try {
+            java.util.List<com.example.demo.model.Post> webReels = postRepository.findByPostTypeOrderByCreatedAtDesc("REEL");
+            for (com.example.demo.model.Post p : webReels) {
+                if (p.getMediaUrl() != null && !reelRepository.existsByVideoUrl(p.getMediaUrl())) {
+                    Reel r = new Reel();
+                    r.setUser(p.getUser());
+                    r.setVideoUrl(p.getMediaUrl());
+                    r.setCaption(p.getContent());
+                    r.setApproved(true);
+                    r.setCategory(com.example.demo.model.ReelCategory.LIFESTYLE);
+                    reelRepository.save(r);
+                }
+            }
+        } catch (Exception e) {
+            // Log & continue
+        }
+    }
 
     public Reel uploadReel(User user, MultipartFile videoFile, Reel reelMetadata) throws IOException {
         // Ensure directory exists
@@ -39,13 +62,30 @@ public class ReelService {
         // Prepare entity
         reelMetadata.setUser(user);
         reelMetadata.setVideoUrl("/uploads/reels/" + filename); // Public URL relative to static
-
-        // Admins uploading get auto-approval depending on logic, else false
-        if ("admin".equals(user.getUsername())) { // Or check roles/auth
-            reelMetadata.setApproved(true);
+        reelMetadata.setApproved(true); // Approved by default for immediate availability (DEF-04)
+        if (reelMetadata.getCategory() == null) {
+            reelMetadata.setCategory(com.example.demo.model.ReelCategory.LIFESTYLE);
         }
 
-        return reelRepository.save(reelMetadata);
+        Reel savedReel = reelRepository.save(reelMetadata);
+
+        // Synchronize with Post table for web visibility (DEF-04)
+        try {
+            com.example.demo.model.Post post = new com.example.demo.model.Post(
+                reelMetadata.getCaption() != null ? reelMetadata.getCaption() : "",
+                user,
+                reelMetadata.getVideoUrl(),
+                "video/mp4",
+                null,
+                "REEL",
+                reelMetadata.getCategory().name()
+            );
+            postRepository.save(post);
+        } catch (Exception e) {
+            // Ignore if post sync fails
+        }
+
+        return savedReel;
     }
 
     public Page<Reel> getApprovedReels(Pageable pageable) {

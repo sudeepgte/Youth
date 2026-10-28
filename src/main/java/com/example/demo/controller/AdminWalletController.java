@@ -27,13 +27,16 @@ public class AdminWalletController {
     private com.example.demo.repository.NotificationRepository notificationRepository;
 
     private boolean isAdmin(HttpSession session) {
+        if (session == null) return false;
         Object userAttr = session.getAttribute("user");
-        return "admin".equals(userAttr);
+        if ("admin".equals(userAttr)) return true;
+        if (userAttr instanceof com.example.demo.model.User && "admin".equalsIgnoreCase(((com.example.demo.model.User) userAttr).getUsername())) return true;
+        return "admin".equals(session.getAttribute("admin"));
     }
 
     @GetMapping
     public String viewWithdrawals(Model model, HttpSession session) {
-        if (!isAdmin(session)) return "redirect:/admin/login";
+        if (!isAdmin(session)) return "redirect:/login";
         
         List<WalletTransaction> pendingWithdrawals = walletTransactionRepository.findAll().stream()
                 .filter(tx -> "WITHDRAWAL".equals(tx.getType()) && "PENDING".equals(tx.getStatus()))
@@ -50,7 +53,7 @@ public class AdminWalletController {
 
     @PostMapping("/{id}/approve")
     public String approveWithdrawal(@PathVariable Long id, HttpSession session) {
-        if (!isAdmin(session)) return "redirect:/admin/login";
+        if (!isAdmin(session)) return "redirect:/login";
         WalletTransaction tx = walletTransactionRepository.findById(id).orElse(null);
         if (tx != null && "PENDING".equals(tx.getStatus())) {
             tx.setStatus("APPROVED");
@@ -67,7 +70,7 @@ public class AdminWalletController {
 
     @PostMapping("/{id}/reject")
     public String rejectWithdrawal(@PathVariable Long id, HttpSession session) {
-        if (!isAdmin(session)) return "redirect:/admin/login";
+        if (!isAdmin(session)) return "redirect:/login";
         WalletTransaction tx = walletTransactionRepository.findById(id).orElse(null);
         if (tx != null && "PENDING".equals(tx.getStatus())) {
             tx.setStatus("REJECTED");

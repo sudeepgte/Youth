@@ -119,6 +119,11 @@
                                 <i class="fas fa-camera" style="font-size:18px;"></i>
                                 Camera
                             </button>
+                            <button type="button" class="type-btn" data-type="THOUGHT" onclick="selectPostType(this)"
+                                style="flex: 0 0 auto; padding:10px 12px; border-radius:10px; border:2px solid var(--glass-border); background:transparent; color:var(--text-secondary); font-weight:600; font-size:13px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; transition:all 0.2s;">
+                                <i class="fas fa-quote-left" style="font-size:18px; color: #3b82f6;"></i>
+                                Thought
+                            </button>
                             <button type="button" class="type-btn" data-type="GOLIVE" onclick="selectPostType(this)"
                                 style="flex: 0 0 auto; padding:10px 12px; border-radius:10px; border:2px solid var(--glass-border); background:transparent; color:var(--text-secondary); font-weight:600; font-size:13px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; transition:all 0.2s;">
                                 <i class="fas fa-broadcast-tower" style="font-size:18px; color: #ef4444;"></i>
@@ -548,6 +553,7 @@
             POST: { accept: 'image/*', hint: 'Share a photo with your followers', label: 'Share Post', zone: 'Click or drag to upload a photo' },
             REEL: { accept: 'video/*', hint: 'Upload a short video reel 🎬', label: 'Share Reel', zone: 'Click or drag to upload a video' },
             STORY: { accept: 'image/*,video/*', hint: 'Your story disappears in 24 hours ⏳', label: 'Share Story', zone: 'Click or drag to upload a photo or video' },
+            THOUGHT: { accept: '', hint: 'Your words will appear on the public home page for everyone to see! 💬', label: 'Publish to Home Page', zone: '' },
             CAMERA: { accept: 'image/*,video/*', hint: 'Select what you want to capture 📸', label: 'Continue', zone: 'Click to open camera' },
             GOLIVE: { accept: '', hint: 'Broadcast live to your followers 📡', label: 'Start Live Now', zone: '' }
         };
@@ -607,6 +613,18 @@
                 const hg = document.getElementById('hashtagGroup'); if(hg) hg.style.display = 'none';
                 const sbtn = document.getElementById('submitPostBtn'); if(sbtn) sbtn.style.display = 'block';
                 document.getElementById('submitBtnLabel').textContent = cfg.label;
+            } else if (type === 'THOUGHT') {
+                document.getElementById('cameraTypeDropdown').style.display = 'none';
+                document.getElementById('mediaDropZone').style.display = 'none';
+                document.getElementById('goLiveOptions').style.display = 'none';
+                document.getElementById('liveCameraContainer').style.display = 'none';
+                closeCamera();
+                const cg = document.getElementById('collabGroup'); if(cg) cg.style.display = 'none';
+                const hg = document.getElementById('hashtagGroup'); if(hg) hg.style.display = 'none';
+                const sbtn = document.getElementById('submitPostBtn'); if(sbtn) sbtn.style.display = 'block';
+                document.getElementById('submitBtnLabel').textContent = cfg.label;
+                const ta = document.getElementById('postContent');
+                if (ta) ta.placeholder = 'Share your thoughts, experiences, or feedback for the public home page...';
             } else {
                 document.getElementById('mediaFile').removeAttribute('capture');
                 document.getElementById('cameraTypeDropdown').style.display = 'none';
@@ -623,6 +641,8 @@
                 const sbtn = document.getElementById('submitPostBtn'); if(sbtn) sbtn.style.display = 'block';
                 document.getElementById('submitBtnLabel').textContent = cfg.label;
                 document.getElementById('dropZoneLabel').textContent = cfg.zone;
+                const ta = document.getElementById('postContent');
+                if (ta) ta.placeholder = "What's on your mind? Type @ to mention...";
             }
 
             const prev = document.getElementById('mediaPreview');

@@ -934,6 +934,7 @@ public class EventController {
     public String adminManageEvents(@RequestParam(required = false) String status, Model model, HttpSession session) {
         if (!isAdmin(session)) return "redirect:/login";
 
+
         List<Event> events;
         if (status != null && !status.isEmpty()) {
             events = eventRepository.findByStatusOrderByCreatedAtDesc(status);
@@ -947,12 +948,14 @@ public class EventController {
         model.addAttribute("ongoingCount", eventRepository.countByStatus("ONGOING"));
         model.addAttribute("completedCount", eventRepository.countByStatus("COMPLETED"));
         model.addAttribute("votingCount", eventRepository.countByStatus("VOTING"));
+        model.addAttribute("activeSubpage", status != null ? status.toLowerCase() : "all");
         return "admin-events";
     }
 
     @RequestMapping(value = "/admin/create", method = RequestMethod.GET)
     public String showCreateEventForm(Model model, HttpSession session) {
         if (!isAdmin(session)) return "redirect:/login";
+
         model.addAttribute("event", new Event());
         return "admin-create-event";
     }
@@ -987,6 +990,11 @@ public class EventController {
             HttpSession session) {
 
         if (!isAdmin(session)) return "redirect:/login";
+
+        // Server-side validation: Event title must not be empty or blank (DEF-13)
+        if (title == null || title.trim().isEmpty()) {
+            return "redirect:/events/admin/create?error=empty_title";
+        }
 
         Event event = new Event();
         event.setTitle(title);
@@ -1253,6 +1261,7 @@ public class EventController {
     @RequestMapping(value = "/admin/edit/{id}", method = RequestMethod.GET)
     public String showEditEventForm(@PathVariable Long id, Model model, HttpSession session) {
         if (!isAdmin(session)) return "redirect:/login";
+
         Event event = eventRepository.findById(id).orElse(null);
         if (event == null) return "redirect:/events/admin/manage";
         model.addAttribute("event", event);
@@ -1288,6 +1297,7 @@ public class EventController {
             HttpSession session) {
 
         if (!isAdmin(session)) return "redirect:/login";
+
         Event event = eventRepository.findById(id).orElse(null);
         if (event == null) return "redirect:/events/admin/manage";
 
@@ -1396,6 +1406,7 @@ public class EventController {
     @RequestMapping(value = "/admin/delete/{id}", method = RequestMethod.POST)
     public String deleteEvent(@PathVariable Long id, HttpSession session) {
         if (!isAdmin(session)) return "redirect:/login";
+
         
         Event event = eventRepository.findById(id).orElse(null);
         if (event != null) {
@@ -1428,6 +1439,7 @@ public class EventController {
     public String adminAttendancePage(@PathVariable Long id, Model model, HttpSession session) {
         if (!isAdmin(session)) return "redirect:/login";
 
+
         Event event = eventRepository.findById(id).orElse(null);
         if (event == null) return "redirect:/events/admin/manage";
 
@@ -1445,6 +1457,7 @@ public class EventController {
     @RequestMapping(value = "/admin/{id}/start", method = RequestMethod.POST)
     public String startEvent(@PathVariable Long id, HttpSession session) {
         if (!isAdmin(session)) return "redirect:/login";
+
         Event event = eventRepository.findById(id).orElse(null);
         if (event != null) {
             event.setStatus("ONGOING");
@@ -1467,6 +1480,7 @@ public class EventController {
             HttpSession session,
             jakarta.servlet.http.HttpServletRequest request) {
         if (!isAdmin(session)) return "redirect:/login";
+
 
         Event event = eventRepository.findById(id).orElse(null);
         if (event == null) return "redirect:/events/admin/manage";
@@ -1565,6 +1579,7 @@ public class EventController {
 
         if (!isAdmin(session)) return "redirect:/login";
 
+
         Event event = eventRepository.findById(id).orElse(null);
         if (event == null) return "redirect:/events/admin/manage";
 
@@ -1611,6 +1626,7 @@ public class EventController {
                                   HttpSession session) {
         if (!isAdmin(session)) return "redirect:/login";
 
+
         EventRegistration reg = eventRegistrationRepository.findByTicketId(ticketId.trim().toUpperCase()).orElse(null);
         if (reg == null || !reg.getEvent().getId().equals(id)) {
             return "redirect:/events/admin/" + id + "/attendance?error=invalid";
@@ -1633,6 +1649,7 @@ public class EventController {
                                      @RequestParam(required = false) String next, 
                                      HttpSession session) {
         if (!isAdmin(session)) return "redirect:/login";
+
         Event event = eventRepository.findById(id).orElse(null);
         if (event != null) {
             List<EventRegistration> regs = eventRegistrationRepository.findByEvent(event);

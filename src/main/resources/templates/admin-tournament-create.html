@@ -1,182 +1,149 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
+<head th:replace="~{fragments/admin-fragments :: admin-head('Create Tournament | Youthian Admin')}">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Tournament | Youthian Admin</title>
-    <link rel="stylesheet" th:href="@{/css/style.css}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        :root {
-            --bg-gradient: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
-            --text-primary: #0f172a;
-            --text-secondary: #334155;
-        }
-        body { background: var(--bg-gradient) !important; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
-        .main-container { max-width: 800px; margin: 0 auto; padding: 40px 20px; }
-        
-        .btn-back {
-            display: inline-flex; align-items: center; gap: 8px; color: #475569; text-decoration: none; font-weight: 700; margin-bottom: 25px; background: white; padding: 10px 20px; border-radius: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: 0.2s;
-        }
-        .btn-back:hover { transform: translateX(-3px); color: #0f172a; box-shadow: 0 6px 12px rgba(0,0,0,0.08); }
-
-        .form-card {
-            background: #ffffff; border-radius: 20px; padding: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        }
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; font-weight: 700; color: #334155; margin-bottom: 8px; font-size: 14px; }
-        .form-control { width: 100%; padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 12px; font-size: 14px; font-family: inherit; transition: 0.2s; box-sizing: border-box; }
-        .form-control:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
-        .form-row { display: flex; gap: 20px; }
-        .form-row .form-group { flex: 1; }
-        
-        .btn-submit {
-            background: #10B981; color: white; border: none; padding: 15px 30px; border-radius: 12px; font-weight: 800; cursor: pointer; transition: 0.2s; width: 100%; font-size: 16px; margin-top: 10px;
-        }
-        .btn-submit:hover { background: #059669; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(16,185,129,0.3); }
-        .btn-cancel {
-            display: block; text-align: center; color: #64748b; font-weight: 600; text-decoration: none; margin-top: 15px; font-size: 14px;
-        }
-        .btn-cancel:hover { color: #0f172a; text-decoration: underline; }
-    </style>
+    <title>Create Tournament</title>
 </head>
 <body>
-    <div class="main-container">
-        <a th:href="@{/admin/tournaments}" class="btn-back"><i class="fas fa-arrow-left"></i> Back to Tournaments</a>
 
-        <div class="form-card">
-            <div th:if="${tournament.mode == 'ONLINE'}" style="background: #eff6ff; color: #1e3a8a; padding: 15px 20px; border-radius: 12px; margin-bottom: 25px; font-weight: bold; display: flex; align-items: center; gap: 10px;">
-                <i class="fas fa-globe" style="font-size: 24px;"></i> Creating Online Tournament
+    <!-- Unified Admin Top Navbar -->
+    <div th:replace="~{fragments/admin-fragments :: admin-navbar('tournaments')}"></div>
+
+    <div class="admin-layout-container dashboard-container">
+        <div class="mobile-menu-overlay" onclick="toggleAdminMobileMenu()"></div>
+        <!-- Unified Left Sidebar -->
+        <aside th:replace="~{fragments/admin-fragments :: admin-sidebar('tournaments', 'none')}"></aside>
+
+        <!-- Main Content -->
+        <main class="social-feed" style="max-width: 100%; padding-bottom: 60px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px;">
+                <div>
+                    <h1 style="margin: 0; color: var(--text-primary); font-weight: 900; font-size: 26px;">
+                        <i class="fas fa-plus-circle" style="color: #10b981; margin-right: 8px;"></i> Create New Tournament
+                    </h1>
+                    <p style="margin: 6px 0 0 0; color: var(--text-secondary); font-size: 14px;">
+                        Configure rounds, bracket rules, participants, prizes, and judges.
+                    </p>
+                </div>
+                <a th:href="@{/admin/tournaments}" class="nav-btn">
+                    <i class="fas fa-arrow-left"></i> Back to Tournaments
+                </a>
             </div>
-            <div th:if="${tournament.mode == 'OFFLINE'}" style="background: #fff1f2; color: #9f1239; padding: 15px 20px; border-radius: 12px; margin-bottom: 25px; font-weight: bold; display: flex; align-items: center; gap: 10px;">
-                <i class="fas fa-map-marker-alt" style="font-size: 24px;"></i> Creating Offline Tournament
-            </div>
-            
-            <form th:action="@{/admin/tournaments/create}" th:object="${tournament}" method="post">
+
+            <div style="background: var(--card-bg); border: 1px solid var(--glass-border); border-radius: 20px; padding: 32px; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);">
+                <div th:if="${tournament.mode == 'ONLINE'}" style="background: rgba(59,130,246,0.1); color: #0284c7; padding: 14px 20px; border-radius: 12px; margin-bottom: 25px; font-weight: 800; display: flex; align-items: center; gap: 10px; border: 1px solid rgba(59,130,246,0.2);">
+                    <i class="fas fa-globe" style="font-size: 22px;"></i> Creating Online Battle Tournament
+                </div>
+                <div th:if="${tournament.mode == 'OFFLINE'}" style="background: rgba(248,68,100,0.1); color: #f84464; padding: 14px 20px; border-radius: 12px; margin-bottom: 25px; font-weight: 800; display: flex; align-items: center; gap: 10px; border: 1px solid rgba(248,68,100,0.2);">
+                    <i class="fas fa-map-marker-alt" style="font-size: 22px;"></i> Creating Offline In-Person Tournament (QR Check-in Enabled)
+                </div>
                 
-                <div class="form-group">
-                    <label>Tournament Name</label>
-                    <input type="text" th:field="*{name}" class="form-control" placeholder="e.g. Summer Code Clash 2026" required />
-                </div>
+                <form th:action="@{/admin/tournaments/create}" th:object="${tournament}" method="post" style="display: flex; flex-direction: column; gap: 20px;">
+                    <input type="hidden" th:field="*{mode}" id="modeSelect" />
 
-                <div class="form-group">
-                    <label>Description & Rules</label>
-                    <textarea th:field="*{description}" class="form-control" rows="4" placeholder="Describe the tournament and entry rules..." required></textarea>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Tournament Type</label>
-                        <input type="text" th:field="*{type}" class="form-control" placeholder="e.g. Coding, Dance, Singing" required />
+                    <div>
+                        <label style="display: block; font-weight: 800; margin-bottom: 8px; font-size: 13px; text-transform: uppercase; color: var(--text-secondary);">Tournament Name</label>
+                        <input type="text" th:field="*{name}" class="form-input" placeholder="e.g. Youthian Apex Championship 2026" required style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.8); font-size: 14px;" />
                     </div>
-                    <div class="form-group">
-                        <label>Max Participants</label>
-                        <select th:field="*{maxParticipants}" class="form-control">
-                            <option value="4">4 Players</option>
-                            <option value="8">8 Players</option>
-                            <option value="16">16 Players</option>
-                            <option value="32">32 Players</option>
-                            <option value="64">64 Players</option>
+
+                    <div>
+                        <label style="display: block; font-weight: 800; margin-bottom: 8px; font-size: 13px; text-transform: uppercase; color: var(--text-secondary);">Description &amp; Rules</label>
+                        <textarea th:field="*{description}" rows="4" placeholder="Detail eligibility, judging criteria, and round structures..." required style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.8); font-size: 14px; font-family: inherit; resize: vertical;"></textarea>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
+                        <div>
+                            <label style="display: block; font-weight: 800; margin-bottom: 8px; font-size: 13px; text-transform: uppercase; color: var(--text-secondary);">Tournament Category</label>
+                            <input type="text" th:field="*{type}" placeholder="e.g. Dance, Music, Gaming, Tech" required style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.8); font-size: 14px;" />
+                        </div>
+                        <div>
+                            <label style="display: block; font-weight: 800; margin-bottom: 8px; font-size: 13px; text-transform: uppercase; color: var(--text-secondary);">Bracket Size</label>
+                            <select th:field="*{maxParticipants}" style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.8); font-size: 14px;">
+                                <option value="4">4 Competitors (Semifinals)</option>
+                                <option value="8">8 Competitors (Quarterfinals)</option>
+                                <option value="16">16 Competitors (Round of 16)</option>
+                                <option value="32">32 Competitors (Round of 32)</option>
+                                <option value="64">64 Competitors</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
+                        <div>
+                            <label style="display: block; font-weight: 800; margin-bottom: 8px; font-size: 13px; text-transform: uppercase; color: var(--text-secondary);">Registration Start</label>
+                            <input type="datetime-local" th:field="*{registrationStart}" required style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.8); font-size: 14px;" />
+                        </div>
+                        <div>
+                            <label style="display: block; font-weight: 800; margin-bottom: 8px; font-size: 13px; text-transform: uppercase; color: var(--text-secondary);">Registration End</label>
+                            <input type="datetime-local" th:field="*{registrationEnd}" required style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.8); font-size: 14px;" />
+                        </div>
+                        <div>
+                            <label style="display: block; font-weight: 800; margin-bottom: 8px; font-size: 13px; text-transform: uppercase; color: var(--text-secondary);">Tournament Kickoff</label>
+                            <input type="datetime-local" th:field="*{tournamentStart}" required style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.8); font-size: 14px;" />
+                        </div>
+                        <div>
+                            <label style="display: block; font-weight: 800; margin-bottom: 8px; font-size: 13px; text-transform: uppercase; color: var(--text-secondary);">Round Duration (Mins)</label>
+                            <input type="number" th:field="*{battleDurationMinutes}" min="1" value="10" required style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.8); font-size: 14px;" />
+                        </div>
+                    </div>
+
+                    <!-- Offline Venue Details -->
+                    <div id="offlineSettings" th:style="${tournament.mode == 'OFFLINE' ? 'display: block;' : 'display: none;'}" style="background: rgba(15,23,42,0.04); padding: 20px; border-radius: 16px; border: 1px solid var(--glass-border);">
+                        <h4 style="margin: 0 0 12px 0; color: var(--text-primary);"><i class="fas fa-map-marker-alt" style="color: #f84464;"></i> Physical Venue Details</h4>
+                        <div>
+                            <label style="display: block; font-weight: 700; margin-bottom: 6px; font-size: 13px;">Venue Address / Hall Name</label>
+                            <input type="text" th:field="*{venue}" placeholder="e.g. Auditorium Hall 2, Youthian Center" style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.8); font-size: 14px;" />
+                        </div>
+                    </div>
+
+                    <!-- Judges -->
+                    <div>
+                        <label style="display: block; font-weight: 800; margin-bottom: 8px; font-size: 13px; text-transform: uppercase; color: var(--text-secondary);">Tournament Judges</label>
+                        <select name="judgeIds" multiple style="width: 100%; min-height: 110px; padding: 10px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.8); font-size: 14px;">
+                            <option th:each="u : ${users}" th:value="${u.id}" th:text="${u.username + ' (' + u.email + ')'}"></option>
                         </select>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Registration Start</label>
-                        <input type="datetime-local" th:field="*{registrationStart}" class="form-control" required />
-                    </div>
-                    <div class="form-group">
-                        <label>Registration End</label>
-                        <input type="datetime-local" th:field="*{registrationEnd}" class="form-control" required />
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Tournament Start</label>
-                        <input type="datetime-local" th:field="*{tournamentStart}" class="form-control" required />
-                    </div>
-                    <div class="form-group">
-                        <label>Battle Duration (mins)</label>
-                        <input type="number" th:field="*{battleDurationMinutes}" class="form-control" min="1" value="10" required />
-                    </div>
-                </div>
-
-                <h3 style="margin: 25px 0 15px; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;">Tournament Mode & Settings</h3>
-                
-                <!-- Hidden Mode Field -->
-                <input type="hidden" th:field="*{mode}" id="modeSelect" />
-
-                <!-- OFFLINE SPECIFIC SETTINGS -->
-                <div id="offlineSettings" th:style="${tournament.mode == 'OFFLINE' ? 'display: block;' : 'display: none;'}" style="background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 20px;">
-                    <h4 style="margin: 0 0 15px 0; color: #0f172a;"><i class="fas fa-map-marker-alt" style="color: #8b5cf6;"></i> Physical Venue Details</h4>
-                    <div class="form-group">
-                        <label>Venue</label>
-                        <input type="text" th:field="*{venue}" class="form-control" placeholder="e.g. Koramangala Indoor Stadium" />
+                        <small style="color: var(--text-secondary); margin-top: 4px; display: block;">Hold Ctrl (Windows) or Cmd (Mac) to select multiple verified judges.</small>
                     </div>
 
-                </div>
+                    <div style="border-top: 1px solid var(--glass-border); margin: 10px 0;"></div>
+                    <h3 style="margin: 0; color: var(--text-primary); font-size: 18px;">Prize Pool &amp; Platform Fees</h3>
 
-                <!-- JUDGE SETTINGS -->
-                <div class="form-group">
-                    <label>Judges (Select users to be judges)</label>
-                    <select name="judgeIds" class="form-control" multiple style="height: 120px;">
-                        <option th:each="u : ${users}" th:value="${u.id}" th:text="${u.username + ' (' + u.email + ')'}"></option>
-                    </select>
-                    <small style="color: #64748b;">Hold Ctrl (Windows) or Cmd (Mac) to select multiple judges.</small>
-                </div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+                        <div>
+                            <label style="display: block; font-weight: 700; margin-bottom: 6px; font-size: 13px;">Entry Fee (₹)</label>
+                            <input type="number" step="0.01" th:field="*{entryFee}" placeholder="0.0" style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.8); font-size: 14px;" />
+                        </div>
+                        <div>
+                            <label style="display: block; font-weight: 700; margin-bottom: 6px; font-size: 13px;">Admin Commission (%)</label>
+                            <input type="number" step="0.01" th:field="*{adminCommissionPercent}" placeholder="e.g. 10" style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.8); font-size: 14px;" />
+                        </div>
+                        <div>
+                            <label style="display: block; font-weight: 700; margin-bottom: 6px; font-size: 13px;">1st Place Split (%)</label>
+                            <input type="number" step="0.1" th:field="*{prize1Percent}" placeholder="e.g. 60" style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.8); font-size: 14px;" />
+                        </div>
+                        <div>
+                            <label style="display: block; font-weight: 700; margin-bottom: 6px; font-size: 13px;">2nd Place Split (%)</label>
+                            <input type="number" step="0.1" th:field="*{prize2Percent}" placeholder="e.g. 30" style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.8); font-size: 14px;" />
+                        </div>
+                    </div>
 
-                <h3 style="margin: 25px 0 15px; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;">Prize & Economy</h3>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Entry Fee (?)</label>
-                        <input type="number" step="0.01" class="form-control" th:field="*{entryFee}" placeholder="0.0">
+                    <div>
+                        <label style="display: block; font-weight: 700; margin-bottom: 6px; font-size: 13px;">Physical / Custom Prizes</label>
+                        <input type="text" th:field="*{customPrizes}" placeholder="e.g. Winner Trophy, Certificate of Excellence, Gear Kit" style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.8); font-size: 14px;" />
                     </div>
-                    <div class="form-group">
-                        <label>Admin Commission (%)</label>
-                        <input type="number" step="0.01" class="form-control" th:field="*{adminCommissionPercent}" placeholder="e.g. 10">
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>1st Place Prize Split (%)</label>
-                        <input type="number" step="0.1" class="form-control" th:field="*{prize1Percent}">
-                    </div>
-                    <div class="form-group">
-                        <label>2nd Place Split (%)</label>
-                        <input type="number" step="0.1" class="form-control" th:field="*{prize2Percent}">
-                    </div>
-                    <div class="form-group">
-                        <label>3rd Place Split (%)</label>
-                        <input type="number" step="0.1" class="form-control" th:field="*{prize3Percent}">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Custom Prizes (Physical/Other)</label>
-                    <input type="text" class="form-control" th:field="*{customPrizes}" placeholder="e.g. Trophy, Signed T-Shirt">
-                </div>
 
-                <button type="submit" class="btn-submit">Create Tournament</button>
-                <a th:href="@{/admin/tournaments}" class="btn-cancel">Cancel and return</a>
-            </form>
-        </div>
+                    <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 15px;">
+                        <a th:href="@{/admin/tournaments}" class="nav-btn" style="padding: 12px 24px;">Cancel</a>
+                        <button type="submit" class="nav-btn" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 12px 28px; font-size: 15px; font-weight: 800; cursor: pointer;">
+                            <i class="fas fa-check-circle"></i> Launch Tournament
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </main>
     </div>
-    <script>
-        function toggleModeSettings() {
-            var mode = document.getElementById("modeSelect").value;
-            var offlineSettings = document.getElementById("offlineSettings");
-            if (mode === "OFFLINE") {
-                offlineSettings.style.display = "block";
-            } else {
-                offlineSettings.style.display = "none";
-            }
-        }
-        // Initialize on load
-        document.addEventListener("DOMContentLoaded", toggleModeSettings);
-    </script>
+
+    <!-- Unified Admin Realtime Scripts -->
+    <div th:replace="~{fragments/admin-fragments :: admin-scripts}"></div>
 </body>
 </html>
-
-
-

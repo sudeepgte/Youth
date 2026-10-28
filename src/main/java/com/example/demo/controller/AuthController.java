@@ -51,6 +51,9 @@ public class AuthController {
     @Autowired
     private com.example.demo.config.ActiveLoginRegistry activeLoginRegistry;
 
+    @Autowired
+    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+
 
 
     @RequestMapping(value = "/register", method = RequestMethod.GET)
@@ -78,6 +81,7 @@ public class AuthController {
         if (user.getEmail() == null || !user.getEmail().trim().matches("^[a-zA-Z0-9][a-zA-Z0-9._%+-]*@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")) {
             return "redirect:/register?error=invalid_email_domain";
         }
+        user.setPassword(passwordEncoder.encode(pwd));
         userRepository.save(user);
         auditLogService.log("USER_REGISTER", user.getId(), "User " + user.getUsername() + " registered successfully.");
         return "redirect:/login?registered=true";
@@ -102,17 +106,38 @@ public class AuthController {
             cookie.setPath(ctx.isEmpty() ? "/" : ctx);
             response.addCookie(cookie);
             
-            session.setAttribute("user", "admin");
+            User adminUser = userRepository.findByUsername("admin");
+            if (adminUser == null) {
+                adminUser = new User("admin", "admin@youthians.com", passwordEncoder.encode("admin123"), java.time.LocalDate.of(2000, 1, 1), "OTHER", null);
+                userRepository.save(adminUser);
+            }
+            session.setAttribute("user", adminUser);
+            session.setAttribute("userId", adminUser.getId());
+            session.setAttribute("admin", "admin");
+            session.setAttribute("role", "ADMIN");
             return "redirect:/admin";
         }
         User user = userRepository.findByUsername(username);
-        if (user != null && user.getPassword().equals(password)) {
+        boolean passwordMatches = false;
+        if (user != null && user.getPassword() != null) {
+            if (user.getPassword().startsWith("$2a$") || user.getPassword().startsWith("$2b$") || user.getPassword().startsWith("$2y$")) {
+                passwordMatches = passwordEncoder.matches(password, user.getPassword());
+            } else if (user.getPassword().equals(password)) {
+                // Upgrade plaintext password to BCrypt hash (DEF-03)
+                passwordMatches = true;
+                user.setPassword(passwordEncoder.encode(password));
+                userRepository.save(user);
+            }
+        }
+
+        if (user != null && passwordMatches) {
             if ("BANNED".equals(user.getStatus()) || "SUSPENDED".equals(user.getStatus())) {
                 return "redirect:/login?error=" + user.getStatus().toLowerCase();
             }
-            if (activeLoginRegistry.isUserAlreadyLoggedIn(username, null)) {
-                return "redirect:/login?error=already_logged_in";
-            }
+            // Session takeover on successful credential validation (DEF-02):
+            // Replace any orphaned session safely without 8-hour lockout
+            activeLoginRegistry.removeLogin(username);
+
             rewardService.awardDailyLogin(user); // Zen Coins Awarded here
             
             // ── Welcome Bonus for new users (Awarded once on first login) ──
@@ -226,11 +251,16 @@ public class AuthController {
             return "redirect:/forgot-password?error=not_found";
         }
 
-        user.setPassword(newPassword);
+        user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
         
         auditLogService.log("PASSWORD_RESET", user.getId(), "User " + user.getUsername() + " reset their password.");
 
         return "redirect:/forgot-password?success=true";
+    }
+
+    @RequestMapping(value = "/admin/login", method = RequestMethod.GET)
+    public String adminLoginRedirect() {
+        return "redirect:/login";
     }
 }

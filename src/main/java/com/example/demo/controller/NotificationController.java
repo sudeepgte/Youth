@@ -22,11 +22,22 @@ public class NotificationController {
     @Autowired
     private NotificationRepository notificationRepository;
 
+    @Autowired
+    private com.example.demo.repository.UserRepository userRepository;
+
+    private User getUser(HttpSession session) {
+        if (session == null) return null;
+        Object u = session.getAttribute("user");
+        if (u instanceof User) return (User) u;
+        if (u instanceof String) return userRepository.findByUsername((String) u);
+        return null;
+    }
+
     @Transactional
     @RequestMapping(value = "/{id}/delete", method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity<?> deleteNotification(@PathVariable Long id, HttpSession session) {
-        User user = (User) session.getAttribute("user");
+        User user = getUser(session);
         if (user == null) {
             return ResponseEntity.status(401).build();
         }
@@ -43,7 +54,7 @@ public class NotificationController {
     @RequestMapping(value = "/clear-all", method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity<?> clearAllNotifications(HttpSession session) {
-        User user = (User) session.getAttribute("user");
+        User user = getUser(session);
         if (user == null) {
             return ResponseEntity.status(401).build();
         }

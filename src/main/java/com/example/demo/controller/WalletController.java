@@ -19,6 +19,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @Controller
 @RequestMapping("/wallet")
@@ -59,6 +61,99 @@ public class WalletController {
 
     @org.springframework.beans.factory.annotation.Value("${razorpay.key.id:rzp_test_youthiansMockKey}")
     private String razorpayKeyId;
+
+    @org.springframework.beans.factory.annotation.Value("${razorpay.key.secret:youthiansMockSecretKey123}")
+    private String razorpayKeySecret;
+
+    private boolean verifyRazorpaySignature(String orderId, String paymentId, String signature, String secret) {
+        if (orderId == null || paymentId == null || signature == null || secret == null) {
+            return false;
+        }
+        try {
+            String payload = orderId + "|" + paymentId;
+            javax.crypto.Mac mac = javax.crypto.Mac.getInstance("HmacSHA256");
+            mac.init(new javax.crypto.spec.SecretKeySpec(secret.getBytes(java.nio.charset.StandardCharsets.UTF_8), "HmacSHA256"));
+            byte[] hash = mac.doFinal(payload.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hash) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) hexString.append('0');
+                hexString.append(hex);
+            }
+            return hexString.toString().equalsIgnoreCase(signature.trim());
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private boolean isAdminSession(HttpSession session) {
+        if (session == null) return false;
+        Object u = session.getAttribute("user");
+        if ("admin".equals(u)) return true;
+        if (u instanceof User && "admin".equalsIgnoreCase(((User) u).getUsername())) return true;
+        return "admin".equals(session.getAttribute("admin"));
+    }
+
+    @PostMapping("/create-order")
+    @ResponseBody
+    public org.springframework.http.ResponseEntity<?> createDepositOrder(@RequestParam Double amount, HttpSession session) {
+        User user = getUserFromSession(session);
+        if (user == null) {
+            return org.springframework.http.ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        }
+        if (amount == null || Double.isNaN(amount) || Double.isInfinite(amount) || amount < 10.0 || amount > 50000.0) {
+            return org.springframework.http.ResponseEntity.badRequest().body(Map.of("error", "Deposit amount must be between Rs. 10 and Rs. 50,000"));
+        }
+        String orderId = "order_w_" + UUID.randomUUID().toString().replace("-", "").substring(0, 14);
+        session.setAttribute("wallet_order_" + orderId, amount);
+        return org.springframework.http.ResponseEntity.ok(Map.of(
+            "orderId", orderId,
+            "amount", amount,
+            "keyId", razorpayKeyId
+        ));
+    }
+
+    @PostMapping("/verify-payment")
+    @ResponseBody
+    public org.springframework.http.ResponseEntity<?> verifyWebPayment(
+            @RequestParam String razorpay_payment_id,
+            @RequestParam String razorpay_order_id,
+            @RequestParam String razorpay_signature,
+            @RequestParam Double amount,
+            HttpSession session) {
+        User user = getUserFromSession(session);
+        if (user == null) {
+            return org.springframework.http.ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        }
+
+        String refId = "RZP-" + razorpay_payment_id.trim();
+        if (walletTransactionRepository.existsByReferenceId(refId)) {
+            return org.springframework.http.ResponseEntity.status(409).body(Map.of("error", "Duplicate payment receipt: already processed"));
+        }
+
+        boolean isValid = verifyRazorpaySignature(razorpay_order_id, razorpay_payment_id, razorpay_signature, razorpayKeySecret);
+        if (!isValid) {
+            return org.springframework.http.ResponseEntity.badRequest().body(Map.of("error", "Payment verification failed: Invalid signature"));
+        }
+
+        user = userRepository.findById(user.getId()).orElse(user);
+        user.addWalletBalance(amount);
+        userRepository.save(user);
+
+        WalletTransaction tx = new WalletTransaction(user, amount, "DEPOSIT", "Web Razorpay Deposit (Ref: " + refId + ")");
+        tx.setStatus("COMPLETED");
+        tx.setReferenceId(refId);
+        walletTransactionRepository.save(tx);
+
+        notificationRepository.save(new Notification(user, null,
+            "Deposit of Rs. " + String.format("%.2f", amount) + " added to your wallet! (Ref: " + refId + ")", "WALLET"));
+
+        return org.springframework.http.ResponseEntity.ok(Map.of(
+            "status", "success",
+            "message", "Payment verified and credited successfully",
+            "balance", user.getWalletBalance()
+        ));
+    }
 
     @GetMapping
     public String viewWallet(HttpSession session, Model model) {
@@ -406,7 +501,7 @@ public class WalletController {
 
     @PostMapping("/admin/approve/{txId}")
     public String adminApproveDeposit(@PathVariable Long txId, HttpSession session, RedirectAttributes redirectAttributes) {
-        if (!"admin".equals(session.getAttribute("user"))) {
+        if (!isAdminSession(session)) {
             return "redirect:/login";
         }
 
@@ -416,27 +511,37 @@ public class WalletController {
             return "redirect:/admin";
         }
 
-        if (!"PENDING".equals(tx.getStatus())) {
+        if (!"PENDING".equalsIgnoreCase(tx.getStatus())) {
             redirectAttributes.addFlashAttribute("error", "Transaction is already " + tx.getStatus().toLowerCase());
             return "redirect:/admin";
         }
 
         User user = tx.getUser();
-        user.addWalletBalance(tx.getAmount());
-        userRepository.save(user);
-
-        tx.setStatus("COMPLETED");
-        walletTransactionRepository.save(tx);
-
-        notificationRepository.save(new Notification(user, null, "Your deposit of Rs. " + String.format("%.2f", tx.getAmount()) + " (Ref: " + tx.getReferenceId() + ") has been approved and credited!", "WALLET"));
-
-        redirectAttributes.addFlashAttribute("success", "Approved deposit of Rs. " + String.format("%.2f", tx.getAmount()) + " for user @" + user.getUsername() + ".");
+        if ("WITHDRAWAL".equalsIgnoreCase(tx.getType())) {
+            // Withdrawal approval: Balance was already deducted when requested; mark approved without re-crediting! (DEF-10)
+            tx.setStatus("APPROVED");
+            walletTransactionRepository.save(tx);
+            if (user != null) {
+                notificationRepository.save(new Notification(user, null, "Your withdrawal of Rs. " + String.format("%.2f", tx.getAmount()) + " (Ref: " + tx.getReferenceId() + ") has been approved and processed!", "WALLET"));
+            }
+            redirectAttributes.addFlashAttribute("success", "Approved withdrawal of Rs. " + String.format("%.2f", tx.getAmount()) + " for user @" + (user != null ? user.getUsername() : "") + ".");
+        } else {
+            // Deposit approval: Credit funds to user wallet
+            if (user != null) {
+                user.addWalletBalance(tx.getAmount());
+                userRepository.save(user);
+                notificationRepository.save(new Notification(user, null, "Your deposit of Rs. " + String.format("%.2f", tx.getAmount()) + " (Ref: " + tx.getReferenceId() + ") has been approved and credited!", "WALLET"));
+            }
+            tx.setStatus("COMPLETED");
+            walletTransactionRepository.save(tx);
+            redirectAttributes.addFlashAttribute("success", "Approved deposit of Rs. " + String.format("%.2f", tx.getAmount()) + " for user @" + (user != null ? user.getUsername() : "") + ".");
+        }
         return "redirect:/admin";
     }
 
     @PostMapping("/admin/reject/{txId}")
     public String adminRejectDeposit(@PathVariable Long txId, HttpSession session, RedirectAttributes redirectAttributes) {
-        if (!"admin".equals(session.getAttribute("user"))) {
+        if (!isAdminSession(session)) {
             return "redirect:/login";
         }
 
@@ -446,17 +551,28 @@ public class WalletController {
             return "redirect:/admin";
         }
 
-        if (!"PENDING".equals(tx.getStatus())) {
+        if (!"PENDING".equalsIgnoreCase(tx.getStatus())) {
             redirectAttributes.addFlashAttribute("error", "Transaction is already " + tx.getStatus().toLowerCase());
             return "redirect:/admin";
         }
 
+        User user = tx.getUser();
+        if ("WITHDRAWAL".equalsIgnoreCase(tx.getType())) {
+            // Withdrawal rejection: Refund the previously deducted balance back to user (DEF-10)
+            if (user != null) {
+                user.addWalletBalance(tx.getAmount());
+                userRepository.save(user);
+                notificationRepository.save(new Notification(user, null, "Your withdrawal request of Rs. " + String.format("%.2f", tx.getAmount()) + " (Ref: " + tx.getReferenceId() + ") was rejected. Funds have been refunded to your wallet balance.", "WALLET"));
+            }
+        } else {
+            if (user != null) {
+                notificationRepository.save(new Notification(tx.getUser(), null, "Your deposit request of Rs. " + String.format("%.2f", tx.getAmount()) + " (Ref: " + tx.getReferenceId() + ") was rejected by Admin.", "WALLET"));
+            }
+        }
+
         tx.setStatus("REJECTED");
         walletTransactionRepository.save(tx);
-
-        notificationRepository.save(new Notification(tx.getUser(), null, "Your deposit request of Rs. " + String.format("%.2f", tx.getAmount()) + " (Ref: " + tx.getReferenceId() + ") was rejected by Admin.", "WALLET"));
-
-        redirectAttributes.addFlashAttribute("success", "Rejected deposit request for user @" + tx.getUser().getUsername() + ".");
+        redirectAttributes.addFlashAttribute("success", "Rejected transaction for user @" + (user != null ? user.getUsername() : "") + ".");
         return "redirect:/admin";
     }
 }

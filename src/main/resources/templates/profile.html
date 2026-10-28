@@ -674,9 +674,10 @@
                             style="width:100%;height:100%;border-radius:50%;border:3px solid var(--bg-color);object-fit:cover;display:block;pointer-events:none;"
                             alt="avatar">
                     </div>
-                    <div class="new-post-fab" th:if="${isOwnProfile}" onclick="openM('createPostModal')"
-                        title="New Post">
-                        <i class="fas fa-plus"></i>
+                    <input type="file" id="directAvatarInput" accept="image/*" style="display:none;" onchange="handleDirectAvatarUpload(this)">
+                    <div class="new-post-fab" th:if="${isOwnProfile}" onclick="document.getElementById('directAvatarInput').click()"
+                        title="Change Profile Photo" id="avatarFabBtn">
+                        <i class="fas fa-plus" id="avatarFabIcon"></i>
                     </div>
                 </div>
 
@@ -1552,6 +1553,64 @@
 
         function livePhoto(v) {
             document.getElementById('editAvatarPrev').src = v || FB;
+        }
+
+        function handleDirectAvatarUpload(input) {
+            if (!input.files || !input.files[0]) return;
+            const file = input.files[0];
+
+            // Immediate local preview
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const mainAvatar = document.getElementById('mainAvatar');
+                if (mainAvatar) mainAvatar.src = e.target.result;
+                const editPrev = document.getElementById('editAvatarPrev');
+                if (editPrev) editPrev.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+
+            // Spinner animation on the + icon
+            const fabIcon = document.getElementById('avatarFabIcon');
+            if (fabIcon) fabIcon.className = 'fas fa-spinner fa-spin';
+
+            // Automatic upload via AJAX
+            const formData = new FormData();
+            formData.append('profilePhotoFile', file);
+
+            fetch('/profile/upload-photo', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && data.profilePhotoUrl) {
+                    const mainAvatar = document.getElementById('mainAvatar');
+                    if (mainAvatar) mainAvatar.src = data.profilePhotoUrl;
+                    const editPrev = document.getElementById('editAvatarPrev');
+                    if (editPrev) editPrev.src = data.profilePhotoUrl;
+
+                    document.querySelectorAll('.user-avatar').forEach(img => {
+                        img.src = data.profilePhotoUrl;
+                    });
+
+                    toast('Profile photo updated successfully!');
+
+                    if (fabIcon) {
+                        fabIcon.className = 'fas fa-check';
+                        setTimeout(() => {
+                            fabIcon.className = 'fas fa-plus';
+                        }, 1800);
+                    }
+                } else {
+                    toast(data.message || 'Failed to upload photo');
+                    if (fabIcon) fabIcon.className = 'fas fa-plus';
+                }
+            })
+            .catch(err => {
+                console.error('Photo upload error:', err);
+                toast('Network error during upload');
+                if (fabIcon) fabIcon.className = 'fas fa-plus';
+            });
         }
 
 

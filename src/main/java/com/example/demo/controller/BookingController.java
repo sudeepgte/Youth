@@ -24,9 +24,13 @@ public class BookingController {
     private User getUserFromSession(HttpSession session) {
         if (session != null) {
             try {
-                User user = (User) session.getAttribute("user");
-                if (user != null) return user;
-                Long userId = (Long) session.getAttribute("userId");
+                Object userObj = session.getAttribute("user");
+                if (userObj instanceof User) return (User) userObj;
+                if (userObj instanceof String) {
+                    User u = userRepository.findByUsername((String) userObj);
+                    if (u != null) return u;
+                }
+                Long userId = session.getAttribute("userId") instanceof Number ? ((Number) session.getAttribute("userId")).longValue() : null;
                 if (userId != null) {
                     return userRepository.findById(userId).orElse(null);
                 }

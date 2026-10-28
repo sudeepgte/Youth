@@ -6,7 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard | Youthian Admin</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         *, *::before, *::after {
             box-sizing: border-box;
@@ -1027,115 +1028,41 @@
 
 <body>
 
-    <nav class="dashboard-navbar">
-        <button class="mobile-menu-btn" onclick="const s=document.querySelector('.sidebar'); if(s) { s.classList.toggle('mobile-open'); const isOpen = s.classList.contains('mobile-open'); document.body.style.overflow = isOpen ? 'hidden' : ''; } const o=document.querySelector('.mobile-menu-overlay'); if(o) o.classList.toggle('active');">
-            <i class="fas fa-bars"></i>
-        </button>
-        <a class="dashboard-logo" th:href="@{/admin}" style="display: inline-flex; flex-direction: column; align-items: center; text-decoration: none; line-height: 1.1; margin-right: 15px;">
-    <svg width="28" height="28" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-            <linearGradient id="yg" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#6b21a8" />
-                <stop offset="50%" stop-color="#2563eb" />
-                <stop offset="100%" stop-color="#0ea5e9" />
-            </linearGradient>
-        </defs>
-        <circle cx="50" cy="22" r="12" fill="url(#yg)" />
-        <path d="M 25 25 Q 40 50 45 65 L 45 90 Q 55 90 55 65 Q 60 50 80 25 Q 65 45 55 55 L 45 55 Q 35 45 25 25 Z" fill="url(#yg)" />
-        <path d="M 15 60 Q 50 90 90 40 Q 80 50 50 80 Q 25 70 15 60 Z" fill="url(#yg)" />
-        <polygon points="75,10 80,15 85,10 80,5" fill="#0ea5e9" />
-    </svg>
-    <span style="font-size: 11px; font-weight: 800; color: #1e3a8a; letter-spacing: 1px; margin-top: 2px;">YOUTHIAN <span style="font-size: 9px; color: var(--primary);">ADMIN</span></span>
-</a>
+    <!-- Unified Admin Top Navbar -->
+    <div th:replace="~{fragments/admin-fragments :: admin-navbar('overview')}"></div>
 
-        <div class="dashboard-spacer"></div>
-        <button id="themeToggleBtn" onclick="toggleTheme()" class="theme-toggle-btn" title="Toggle Light / Dark Mode" aria-label="Toggle Theme">
-            <i id="themeToggleIcon" class="fas fa-moon"></i>
-        </button>
-        
-    </nav>
-
-    <div class="dashboard-container">
-        <div class="mobile-menu-overlay" onclick="document.querySelector('.sidebar').classList.remove('mobile-open'); this.classList.remove('active'); document.body.style.overflow = '';"></div>
-        <!-- Left Sidebar -->
-        <aside class="sidebar">
-            <a href="javascript:void(0)" class="sidebar-link active" onclick="toggleOverview()" style="display: flex; align-items: center; justify-content: space-between;">
-                <span><i class="fas fa-chart-line" style="color: inherit;"></i> Overview</span>
-                <i id="overview-arrow" class="fas fa-chevron-down" style="transition: transform 0.3s ease; width: auto; font-size: 14px;"></i>
-            </a>
-            
-            <div id="overview-subtabs" class="sidebar-subtabs" style="display: flex; flex-direction: column; margin-bottom: 8px; overflow: hidden; transition: max-height 0.3s ease, margin-bottom 0.3s ease, opacity 0.3s ease; max-height: 500px; opacity: 1;">
-                <a href="#users-section" onclick="document.getElementById('users-section').scrollIntoView({behavior: 'smooth'})" class="sidebar-subtab">
-                    <i class="fas fa-users"></i> Total Users <b th:text="${users.size()}">0</b>
-                </a>
-                <a href="#posts-section" onclick="document.getElementById('posts-section').scrollIntoView({behavior: 'smooth'})" class="sidebar-subtab">
-                    <i class="fas fa-shield-alt"></i> Moderate Content <b th:text="${posts.size()}">0</b>
-                </a>
-                <a th:href="@{/events/admin/manage}" class="sidebar-subtab">
-                    <i class="fas fa-calendar-check"></i> Total Events <b th:text="${totalEvents}">0</b>
-                </a>
-                <a th:href="@{/events/admin/manage(status='UPCOMING')}" class="sidebar-subtab">
-                    <i class="fas fa-hourglass-start"></i> Upcoming Events <b th:text="${upcomingEvents}">0</b>
-                </a>
-                <a th:href="@{/events/admin/manage(status='ONGOING')}" class="sidebar-subtab">
-                    <i class="fas fa-circle-notch"></i> Ongoing Events <b th:text="${ongoingEvents}">0</b>
-                </a>
-                <a th:href="@{/events/admin/manage(status='VOTING')}" class="sidebar-subtab">
-                    <i class="fas fa-vote-yea"></i> Active Polls <b th:text="${votingCount}">0</b>
-                </a>
-                <a th:href="@{/admin/battles}" class="sidebar-subtab">
-                    <i class="fas fa-fire"></i> Total Battles <b th:text="${totalBattles}">0</b>
-                </a>
-                <a th:href="@{/admin/battles}" class="sidebar-subtab">
-                    <i class="fas fa-play"></i> Running Battles <b th:text="${runningBattles}">0</b>
-                </a>
-                <a th:href="@{/admin/battles}" class="sidebar-subtab">
-                    <i class="fas fa-user-plus"></i> Battle Joins <b th:text="${totalJoinedUsers}">0</b>
-                </a>
-                <a href="#support-inquiries-section" onclick="document.getElementById('support-inquiries-section').scrollIntoView({behavior: 'smooth'})" class="sidebar-subtab">
-                    <i class="fas fa-headset"></i> Support Inquiries <b th:text="${contactMessages != null ? contactMessages.size() : 0}">0</b>
-                </a>
-            </div>
-
-                        <a th:href="@{/admin/advertisements}" class="sidebar-link"><i class="fas fa-ad" style="color: inherit;"></i> Manage Ads</a>
-            <a th:href="@{/events/admin/manage}" class="sidebar-link"><i class="fas fa-calendar-alt" style="color: inherit;"></i> Manage Events</a>
-            <a th:href="@{/admin/battles}" class="sidebar-link"><i class="fas fa-fire" style="color: inherit;"></i> Manage Battles</a>
-            <a th:href="@{/admin/tournaments}" class="sidebar-link"><i class="fas fa-trophy" style="color: inherit;"></i> Tournaments</a>
-            <a th:href="@{/events/admin/create}" class="sidebar-link"><i class="fas fa-plus-circle" style="color: inherit;"></i> Create Event</a>
-            
-            <div style="border-top: 1px solid rgba(0,0,0,0.08); margin: 15px 0;"></div>
-            
-            <a th:href="@{/dashboard}" class="sidebar-link"><i class="fas fa-arrow-left" style="color: inherit;"></i> Back to App</a>
-            <a th:href="@{/logout}" class="sidebar-link" style="color: #ff4444;"><i class="fas fa-sign-out-alt" style="color: inherit;"></i> Logout</a>
-        </aside>
+    <div class="admin-layout-container dashboard-container">
+        <div class="mobile-menu-overlay" onclick="toggleAdminMobileMenu()"></div>
+        <!-- Unified Left Sidebar -->
+        <aside th:replace="~{fragments/admin-fragments :: admin-sidebar('overview', 'none')}"></aside>
 
         <!-- Main Content -->
         <main class="social-feed" style="max-width: 100%; padding-bottom: 60px;">
 
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
                 <h1 style="margin: 0; color: var(--text-primary); font-weight: 900;">Platform Overview</h1>
-                <button onclick="document.getElementById('createTournamentModal').style.display='flex'" style="background: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                <button onclick="document.getElementById('createTournamentModal').classList.add('active')" style="background: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 8px;">
                     <i class="fas fa-trophy"></i> Create Tournament
                 </button>
             </div>
             
             <!-- Create Tournament Modal -->
-            <div class="mobile-menu-overlay" id="createTournamentModal" style="display: none; align-items: center; justify-content: center; z-index: 2000;">
-                <div style="background: white; padding: 30px; border-radius: 20px; width: 90%; max-width: 500px; position: relative;">
-                    <button onclick="document.getElementById('createTournamentModal').style.display='none'" style="position: absolute; top: 15px; right: 20px; background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
-                    <h2 style="margin-top: 0;"><i class="fas fa-trophy" style="color:var(--primary);"></i> Create Tournament</h2>
+            <div class="admin-modal-overlay" id="createTournamentModal">
+                <div style="background: var(--card-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); padding: 30px; border-radius: 20px; width: 90%; max-width: 500px; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.2);">
+                    <button onclick="document.getElementById('createTournamentModal').classList.remove('active')" style="position: absolute; top: 15px; right: 20px; background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-primary);">&times;</button>
+                    <h2 style="margin-top: 0; color: var(--text-primary);"><i class="fas fa-trophy" style="color:var(--primary);"></i> Create Tournament</h2>
                     <form action="/admin/tournaments/create" method="POST" style="display: flex; flex-direction: column; gap: 15px;">
                         <div>
-                            <label style="display: block; font-weight: bold; margin-bottom: 5px;">Tournament Name</label>
-                            <input type="text" name="name" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px;">
+                            <label style="display: block; font-weight: bold; margin-bottom: 5px; color: var(--text-secondary);">Tournament Name</label>
+                            <input type="text" name="name" required style="width: 100%; padding: 10px; border: 1px solid var(--glass-border); border-radius: 8px; background: white; color: var(--text-primary);">
                         </div>
                         <div>
-                            <label style="display: block; font-weight: bold; margin-bottom: 5px;">Description</label>
-                            <textarea name="description" rows="3" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px;"></textarea>
+                            <label style="display: block; font-weight: bold; margin-bottom: 5px; color: var(--text-secondary);">Description</label>
+                            <textarea name="description" rows="3" required style="width: 100%; padding: 10px; border: 1px solid var(--glass-border); border-radius: 8px; background: white; color: var(--text-primary);"></textarea>
                         </div>
                         <div>
-                            <label style="display: block; font-weight: bold; margin-bottom: 5px;">Max Participants</label>
-                            <select name="maxParticipants" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px;">
+                            <label style="display: block; font-weight: bold; margin-bottom: 5px; color: var(--text-secondary);">Max Participants</label>
+                            <select name="maxParticipants" required style="width: 100%; padding: 10px; border: 1px solid var(--glass-border); border-radius: 8px; background: white; color: var(--text-primary);">
                                 <option value="4">4 Players</option>
                                 <option value="8" selected>8 Players</option>
                                 <option value="16">16 Players</option>
@@ -1147,19 +1074,26 @@
                 </div>
             </div>
 
-        <!-- Stats -->
+        <!-- Live Operations Stats Banner -->
         <div class="admin-stats">
+            <div class="stat-card" style="border: 2px solid rgba(16, 185, 129, 0.4); background: rgba(16, 185, 129, 0.08);">
+                <div class="stat-icon" style="background: rgba(16, 185, 129, 0.2);"><i class="fas fa-tower-broadcast" style="color: #10b981;"></i></div>
+                <div>
+                    <h3 class="stat-num" id="live-active-online" style="font-size: 24px; font-weight: 800; color: #10b981;">1</h3>
+                    <span class="stat-lbl" style="color: var(--text-secondary); font-size: 14px; font-weight: 700;">Live Online Users</span>
+                </div>
+            </div>
             <div class="stat-card">
                 <div class="stat-icon"><i class="fas fa-users"></i></div>
                 <div>
-                    <h3 class="stat-num" style="font-size: 24px; font-weight: 800; color: var(--text-primary);" th:text="${users.size()}">0</h3>
+                    <h3 class="stat-num" id="live-total-users" style="font-size: 24px; font-weight: 800; color: var(--text-primary);" th:text="${users.size()}">0</h3>
                     <span class="stat-lbl" style="color: var(--text-secondary); font-size: 14px;">Total Users</span>
                 </div>
             </div>
             <div class="stat-card" style="cursor:pointer;" onclick="location.href='/events/admin/manage'">
                 <div class="stat-icon"><i class="fas fa-calendar-check"></i></div>
                 <div>
-                    <h3 class="stat-num" style="font-size: 24px; font-weight: 800; color: var(--text-primary);" th:text="${totalEvents}">0</h3>
+                    <h3 class="stat-num" id="live-total-events" style="font-size: 24px; font-weight: 800; color: var(--text-primary);" th:text="${totalEvents}">0</h3>
                     <span class="stat-lbl" style="color: var(--text-secondary); font-size: 14px;">Total Events</span>
                 </div>
             </div>
@@ -1168,7 +1102,7 @@
                 <div class="stat-icon" style="background: rgba(59,130,246,0.12);"><i class="fas fa-hourglass-start"
                         style="color:#3b82f6;"></i></div>
                 <div>
-                    <h3 class="stat-num" style="font-size: 24px; font-weight: 800; color: var(--text-primary);" th:text="${upcomingEvents}">0</h3>
+                    <h3 class="stat-num" id="live-upcoming-events" style="font-size: 24px; font-weight: 800; color: var(--text-primary);" th:text="${upcomingEvents}">0</h3>
                     <span class="stat-lbl" style="color: var(--text-secondary); font-size: 14px;">Upcoming Events</span>
                 </div>
             </div>
@@ -1177,7 +1111,7 @@
                 <div class="stat-icon" style="background: rgba(245,158,11,0.12);"><i class="fas fa-circle-notch"
                         style="color:#f59e0b;"></i></div>
                 <div>
-                    <h3 class="stat-num" style="font-size: 24px; font-weight: 800; color: var(--text-primary);" th:text="${ongoingEvents}">0</h3>
+                    <h3 class="stat-num" id="live-ongoing-events" style="font-size: 24px; font-weight: 800; color: var(--text-primary);" th:text="${ongoingEvents}">0</h3>
                     <span style="color: var(--text-secondary); font-size: 14px;">Ongoing Events</span>
                 </div>
             </div>
@@ -1185,7 +1119,7 @@
                 <div class="stat-icon" style="background: rgba(34, 211, 238, 0.12);"><i class="fas fa-vote-yea"
                         style="color:#0284c7;"></i></div>
                 <div>
-                    <h3 class="stat-num" style="font-size: 24px; font-weight: 800; color: var(--text-primary);" th:text="${votingCount}">0</h3>
+                    <h3 class="stat-num" id="live-voting-count" style="font-size: 24px; font-weight: 800; color: var(--text-primary);" th:text="${votingCount}">0</h3>
                     <span style="color: var(--text-secondary); font-size: 14px;">Active Polls</span>
                 </div>
             </div>
@@ -1193,36 +1127,36 @@
             <div class="stat-card" style="cursor:pointer;" onclick="location.href='/admin/battles'">
                 <div class="stat-icon" style="background: rgba(139, 92, 246, 0.15);"><i class="fas fa-fire" style="color: #8b5cf6;"></i></div>
                 <div>
-                    <h3 class="stat-num" style="font-size: 24px; font-weight: 800; color: var(--text-primary);" th:text="${totalBattles}">0</h3>
+                    <h3 class="stat-num" id="live-total-battles" style="font-size: 24px; font-weight: 800; color: var(--text-primary);" th:text="${totalBattles}">0</h3>
                     <span class="stat-lbl" style="color: var(--text-secondary); font-size: 14px;">Total Battles</span>
                 </div>
             </div>
             <div class="stat-card" style="cursor:pointer;" onclick="location.href='/admin/battles'">
                 <div class="stat-icon" style="background: rgba(16, 185, 129, 0.15);"><i class="fas fa-play" style="color: #10b981;"></i></div>
                 <div>
-                    <h3 class="stat-num" style="font-size: 24px; font-weight: 800; color: var(--text-primary);" th:text="${runningBattles}">0</h3>
+                    <h3 class="stat-num" id="live-running-battles" style="font-size: 24px; font-weight: 800; color: var(--text-primary);" th:text="${runningBattles}">0</h3>
                     <span class="stat-lbl" style="color: var(--text-secondary); font-size: 14px;">Running Battles</span>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon" style="background: rgba(236, 72, 153, 0.15);"><i class="fas fa-user-plus" style="color: #ec4899;"></i></div>
                 <div>
-                    <h3 class="stat-num" style="font-size: 24px; font-weight: 800; color: var(--text-primary);" th:text="${totalJoinedUsers}">0</h3>
+                    <h3 class="stat-num" id="live-total-joined" style="font-size: 24px; font-weight: 800; color: var(--text-primary);" th:text="${totalJoinedUsers}">0</h3>
                     <span class="stat-lbl" style="color: var(--text-secondary); font-size: 14px;">Battle Joins</span>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon" style="background: rgba(245, 158, 11, 0.15);"><i class="fas fa-hand-holding-usd" style="color: #f59e0b;"></i></div>
                 <div>
-                    <h3 class="stat-num" style="font-size: 24px; font-weight: 800; color: var(--text-primary);">&#8377;<span th:text="${#numbers.formatDecimal(totalAdminCommission, 1, 2)}">0.00</span></h3>
+                    <h3 class="stat-num" id="live-admin-commission" style="font-size: 24px; font-weight: 800; color: var(--text-primary);">&#8377;<span th:text="${#numbers.formatDecimal(totalAdminCommission, 1, 2)}">0.00</span></h3>
                     <span class="stat-lbl" style="color: var(--text-secondary); font-size: 14px;">Battle Revenue (7%)</span>
                 </div>
             </div>
             <div class="stat-card" style="cursor:pointer;" onclick="location.href='/admin/withdrawals'">
                 <div class="stat-icon" style="background: rgba(34, 197, 94, 0.15);"><i class="fas fa-money-bill-wave" style="color: #22c55e;"></i></div>
                 <div>
-                    <h3 class="stat-num" style="font-size: 24px; font-weight: 800; color: var(--text-primary);">W</h3>
-                    <span class="stat-lbl" style="color: var(--text-secondary); font-size: 14px;">Withdrawal Requests</span>
+                    <h3 class="stat-num" id="live-pending-withdrawals" style="font-size: 24px; font-weight: 800; color: var(--text-primary);">0</h3>
+                    <span class="stat-lbl" style="color: var(--text-secondary); font-size: 14px;">Pending Withdrawals</span>
                 </div>
             </div>
         </div>
@@ -1712,6 +1646,8 @@
         </div>
     </div>
 
+    <!-- Unified Admin Realtime Scripts -->
+    <div th:replace="~{fragments/admin-fragments :: admin-scripts}"></div>
 </body>
 
 </html>

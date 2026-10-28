@@ -12,6 +12,8 @@ public interface ReelRepository extends JpaRepository<Reel, Long> {
     // For regular users (only see approved reels)
     Page<Reel> findByIsApprovedTrue(Pageable pageable);
 
+    boolean existsByVideoUrl(String videoUrl);
+
     // For admin or specific user profile lists
     Page<Reel> findByUserId(Long userId, Pageable pageable);
 }

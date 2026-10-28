@@ -1,144 +1,83 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
+<head th:replace="~{fragments/admin-fragments :: admin-head('Tournament Check-in | Youthian Admin')}">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tournament Check-in | Admin</title>
-    <link rel="stylesheet" th:href="@{/css/style.css}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <!-- QR Code Scanner Library -->
-    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-    <style>
-        :root {
-            --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-            --card-bg: #ffffff;
-            --text-primary: #0f172a;
-            --text-muted: #64748b;
-        }
-        body { background: var(--bg-gradient) !important; font-family: 'Inter', sans-serif; }
-        .container { max-width: 900px; margin: 40px auto; padding: 0 20px; }
-        
-        .header-card {
-            background: var(--card-bg); border-radius: 20px; padding: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 25px; text-align: center;
-        }
-        .header-card h1 { margin: 0 0 10px 0; font-size: 24px; color: var(--text-primary); }
-        .stats-row { display: flex; justify-content: center; gap: 40px; margin-top: 20px; }
-        .stat-box { text-align: center; }
-        .stat-val { font-size: 32px; font-weight: 900; color: #3b82f6; }
-        .stat-label { font-size: 13px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
-
-        .scan-container {
-            background: var(--card-bg); border-radius: 20px; padding: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 25px;
-        }
-        #reader { width: 100%; max-width: 500px; margin: 0 auto; border-radius: 15px; overflow: hidden; border: 2px solid #e2e8f0; }
-
-        .manual-entry {
-            display: flex; gap: 10px; max-width: 500px; margin: 20px auto 0;
-        }
-        .manual-entry input {
-            flex: 1; padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 12px; font-size: 14px;
-        }
-        .manual-entry button {
-            background: #10B981; color: white; border: none; padding: 12px 20px; border-radius: 12px; font-weight: 700; cursor: pointer;
-        }
-
-        .alert { padding: 15px; border-radius: 12px; margin-bottom: 20px; font-weight: 700; }
-        .alert-success { background: #d1fae5; color: #065f46; border: 1px solid #34d399; }
-        .alert-error { background: #fee2e2; color: #991b1b; border: 1px solid #f87171; }
-
-        .participants-list {
-            background: var(--card-bg); border-radius: 20px; padding: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        }
-        .participant-item {
-            display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #f1f5f9;
-        }
-        .p-info h4 { margin: 0 0 5px 0; font-size: 16px; }
-        .p-info span { font-size: 13px; color: var(--text-muted); }
-        .status-badge {
-            padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 800;
-        }
-        .status-checkedin { background: #d1fae5; color: #059669; }
-        .status-pending { background: #f1f5f9; color: #64748b; }
-    </style>
+    <title>Tournament Check-in</title>
 </head>
 <body>
-    <div class="container">
-        <a th:href="@{'/admin/tournaments/' + ${tournament.id} + '/manage'}" style="display:inline-block; margin-bottom:20px; color:var(--text-muted); text-decoration:none; font-weight:700;"><i class="fas fa-arrow-left"></i> Back to Management</a>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
-        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
-        <div th:if="${errorMessage}" class="alert alert-error" th:text="${errorMessage}"></div>
+    <!-- Unified Admin Top Navbar -->
+    <div th:replace="~{fragments/admin-fragments :: admin-navbar('tournaments')}"></div>
 
-        <div class="header-card">
-            <h1 th:text="${tournament.name + ' - Check-In'}">Tournament Check-In</h1>
-            <p style="color:var(--text-muted); margin:0;">Scan participant QR passes to check them in</p>
-            
-            <div class="stats-row">
-                <div class="stat-box">
-                    <div class="stat-val" th:text="${registeredCount}">0</div>
-                    <div class="stat-label">Registered</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-val" style="color:#10B981;" th:text="${checkedInCount}">0</div>
-                    <div class="stat-label">Checked In</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-val" style="color:#ef4444;" th:text="${registeredCount - checkedInCount}">0</div>
-                    <div class="stat-label">Pending</div>
-                </div>
-            </div>
-        </div>
+    <div class="admin-layout-container dashboard-container">
+        <div class="mobile-menu-overlay" onclick="toggleAdminMobileMenu()"></div>
+        <!-- Unified Left Sidebar -->
+        <aside th:replace="~{fragments/admin-fragments :: admin-sidebar('tournaments', 'none')}"></aside>
 
-        <div class="scan-container">
-            <h3 style="text-align:center; margin-top:0;">Scan QR Code</h3>
-            <div id="reader"></div>
-            
-            <div style="text-align:center; margin: 20px 0; font-weight:bold; color:var(--text-muted);">OR</div>
-
-            <form th:action="@{'/admin/tournaments/' + ${tournament.id} + '/checkin/scan'}" method="POST" class="manual-entry">
-                <input type="text" name="qrPassCode" placeholder="Enter QR Pass Code manually" required />
-                <button type="submit">Check In</button>
-            </form>
-        </div>
-
-        <div class="participants-list">
-            <h3 style="margin-top:0;">Participant List</h3>
-            <div th:each="p : ${participants}" class="participant-item">
-                <div class="p-info">
-                    <h4 th:text="${p.user.username}">Username</h4>
-                    <span th:text="${'ID: ' + p.participantNumber}">ID: #01</span>
-                </div>
+        <!-- Main Content -->
+        <main class="social-feed" style="max-width: 100%; padding-bottom: 60px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px;">
                 <div>
-                    <span th:if="${p.checkedIn}" class="status-badge status-checkedin"><i class="fas fa-check-circle"></i> Checked In</span>
-                    <span th:if="${!p.checkedIn}" class="status-badge status-pending">Pending</span>
+                    <a th:href="@{/admin/tournaments/{id}/manage(id=${tournament.id})}" class="nav-btn" style="margin-bottom: 10px; display: inline-flex;">
+                        <i class="fas fa-arrow-left"></i> Back to Tournament
+                    </a>
+                    <h1 style="margin: 0; color: var(--text-primary); font-weight: 900; font-size: 26px;">
+                        <i class="fas fa-qrcode" style="color: #3b82f6; margin-right: 8px;"></i> Offline Tournament Check-in
+                    </h1>
+                    <p style="margin: 6px 0 0 0; color: var(--text-secondary); font-size: 14px;" th:text="${tournament.name + ' — ' + (tournament.venue != null ? tournament.venue : 'Venue Check-in')}"></p>
                 </div>
             </div>
-        </div>
+
+            <div th:if="${successMessage}" style="background: #d1fae5; color: #065f46; border: 1px solid #34d399; padding: 14px 20px; border-radius: 12px; margin-bottom: 20px; font-weight: 700;">
+                <i class="fas fa-check-circle"></i> <span th:text="${successMessage}"></span>
+            </div>
+            <div th:if="${errorMessage}" style="background: #fee2e2; color: #991b1b; border: 1px solid #f87171; padding: 14px 20px; border-radius: 12px; margin-bottom: 20px; font-weight: 700;">
+                <i class="fas fa-circle-exclamation"></i> <span th:text="${errorMessage}"></span>
+            </div>
+
+            <!-- Scanner Box -->
+            <div style="background: var(--card-bg); border: 1px solid var(--glass-border); border-radius: 20px; padding: 28px; margin-bottom: 24px; text-align: center; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);">
+                <h3 style="margin-top: 0; color: var(--text-primary);">Camera QR Pass Scanner</h3>
+                <div id="reader" style="width: 100%; max-width: 480px; margin: 0 auto; border-radius: 16px; overflow: hidden; border: 2px solid var(--glass-border);"></div>
+
+                <!-- Manual Entry Form -->
+                <form th:action="@{/admin/tournaments/{id}/checkin(id=${tournament.id})}" method="post" style="display: flex; gap: 10px; max-width: 480px; margin: 24px auto 0;">
+                    <input type="text" name="qrCode" id="qrCodeInput" placeholder="Enter User ID or Ticket Code manually" required style="flex: 1; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.8); font-size: 14px;" />
+                    <button type="submit" class="nav-btn" style="background: #10b981; color: white; border: none; font-weight: 800; padding: 12px 20px;">
+                        Check In
+                    </button>
+                </form>
+            </div>
+
+            <!-- Participants Status -->
+            <div style="background: var(--card-bg); border: 1px solid var(--glass-border); border-radius: 20px; padding: 28px; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);">
+                <h3 style="margin-top: 0; color: var(--text-primary); margin-bottom: 16px;"><i class="fas fa-users" style="color: #0284c7; margin-right: 6px;"></i> Attendee Roster</h3>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <div th:each="p : ${participants}" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-radius: 12px; background: rgba(255,255,255,0.5); border: 1px solid var(--glass-border);">
+                        <div>
+                            <strong style="color: var(--text-primary); font-size: 14px;" th:text="${p.user.username}"></strong>
+                            <span style="font-size: 12px; color: var(--text-secondary); margin-left: 8px;" th:text="${p.user.email}"></span>
+                        </div>
+                        <div>
+                            <span th:if="${p.checkedIn}" style="background: #d1fae5; color: #059669; font-weight: 800; padding: 4px 10px; border-radius: 8px; font-size: 11px;">VERIFIED</span>
+                            <span th:if="${!p.checkedIn}" style="background: #fef3c7; color: #d97706; font-weight: 800; padding: 4px 10px; border-radius: 8px; font-size: 11px;">PENDING</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
     </div>
 
-    <!-- Hidden form for QR scanner submission -->
-    <form id="qrForm" th:action="@{'/admin/tournaments/' + ${tournament.id} + '/checkin/scan'}" method="POST" style="display:none;">
-        <input type="hidden" name="qrPassCode" id="scannedCode" />
-    </form>
-
+    <!-- Unified Admin Realtime Scripts -->
+    <div th:replace="~{fragments/admin-fragments :: admin-scripts}"></div>
     <script>
         function onScanSuccess(decodedText, decodedResult) {
-            // Stop scanning to prevent multiple submissions
-            html5QrcodeScanner.clear();
-            
-            // Set the value and submit the form
-            document.getElementById('scannedCode').value = decodedText;
-            document.getElementById('qrForm').submit();
+            document.getElementById('qrCodeInput').value = decodedText;
+            document.getElementById('qrCodeInput').closest('form').submit();
         }
-
-        function onScanFailure(error) {
-            // handle scan failure, usually better to ignore and keep scanning.
-        }
-
-        let html5QrcodeScanner = new Html5QrcodeScanner(
-            "reader",
-            { fps: 10, qrbox: {width: 250, height: 250} },
-            /* verbose= */ false);
-        html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+        var html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
+        html5QrcodeScanner.render(onScanSuccess);
     </script>
 </body>
 </html>

@@ -26,16 +26,16 @@ public class AdminTournamentController {
     @Autowired private UserRepository userRepository;
 
     private boolean isAdmin(HttpSession session) {
+        if (session == null) return false;
         Object userAttr = session.getAttribute("user");
-        if ("admin".equals(userAttr)) {
-            return true;
-        }
-        return false;
+        if ("admin".equals(userAttr)) return true;
+        if (userAttr instanceof User && "admin".equalsIgnoreCase(((User) userAttr).getUsername())) return true;
+        return "admin".equals(session.getAttribute("admin"));
     }
 
     @GetMapping
     public String listTournaments(Model model, HttpSession session) {
-        if (!isAdmin(session)) return "redirect:/admin/login";
+        if (!isAdmin(session)) return "redirect:/login";
         List<Tournament> tournaments = tournamentRepository.findAllByOrderByTournamentStartDesc();
         model.addAttribute("tournaments", tournaments);
         return "admin-tournaments";
@@ -43,16 +43,17 @@ public class AdminTournamentController {
 
     @GetMapping("/create")
     public String createTournamentForm(@RequestParam(required = false, defaultValue = "ONLINE") String mode, Model model, HttpSession session) {
-        if (!isAdmin(session)) return "redirect:/admin/login";
+        if (!isAdmin(session)) return "redirect:/login";
         Tournament t = new Tournament();
         t.setMode(mode);
         model.addAttribute("tournament", t);
+        model.addAttribute("users", userRepository.findAll());
         return "admin-tournament-create";
     }
 
     @PostMapping("/create")
     public String createTournament(@ModelAttribute Tournament tournament, HttpSession session) {
-        if (!isAdmin(session)) return "redirect:/admin/login";
+        if (!isAdmin(session)) return "redirect:/login";
         tournament.setStatus("DRAFT");
         tournamentService.createTournament(tournament);
         return "redirect:/admin/tournaments";
@@ -60,7 +61,7 @@ public class AdminTournamentController {
 
     @GetMapping("/{id}/manage")
     public String manageTournament(@PathVariable Long id, Model model, HttpSession session) {
-        if (!isAdmin(session)) return "redirect:/admin/login";
+        if (!isAdmin(session)) return "redirect:/login";
         Tournament t = tournamentRepository.findById(id).orElse(null);
         if (t == null) return "redirect:/admin/tournaments";
 
@@ -75,7 +76,7 @@ public class AdminTournamentController {
 
     @PostMapping("/{id}/status")
     public String changeStatus(@PathVariable Long id, @RequestParam String status, HttpSession session) {
-        if (!isAdmin(session)) return "redirect:/admin/login";
+        if (!isAdmin(session)) return "redirect:/login";
         Tournament t = tournamentRepository.findById(id).orElse(null);
         if (t != null) {
             t.setStatus(status);
@@ -86,7 +87,7 @@ public class AdminTournamentController {
 
     @PostMapping("/{id}/start")
     public String startTournament(@PathVariable Long id, HttpSession session) {
-        if (!isAdmin(session)) return "redirect:/admin/login";
+        if (!isAdmin(session)) return "redirect:/login";
         try {
             tournamentService.startTournament(id);
         } catch (Exception e) {
@@ -97,7 +98,7 @@ public class AdminTournamentController {
 
     @GetMapping("/{id}/checkin")
     public String checkinTournament(@PathVariable Long id, Model model, HttpSession session) {
-        if (!isAdmin(session)) return "redirect:/admin/login";
+        if (!isAdmin(session)) return "redirect:/login";
         Tournament t = tournamentRepository.findById(id).orElse(null);
         if (t == null) return "redirect:/admin/tournaments";
 
@@ -114,7 +115,7 @@ public class AdminTournamentController {
 
     @PostMapping("/{id}/checkin/scan")
     public String scanCheckin(@PathVariable Long id, @RequestParam String qrPassCode, HttpSession session, org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
-        if (!isAdmin(session)) return "redirect:/admin/login";
+        if (!isAdmin(session)) return "redirect:/login";
         String finalCode = qrPassCode;
         if (finalCode != null && finalCode.contains("/")) {
             finalCode = finalCode.substring(finalCode.lastIndexOf("/") + 1);

@@ -54,6 +54,34 @@ public class MobileApiController {
     @Autowired private RewardService rewardService;
     @Autowired private FeedAlgorithmService feedAlgorithmService;
     @Autowired private HttpServletRequest httpServletRequest;
+    @Autowired private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+
+    @org.springframework.beans.factory.annotation.Value("${razorpay.key.id:rzp_test_youthiansMockKey}")
+    private String razorpayKeyId;
+
+    @org.springframework.beans.factory.annotation.Value("${razorpay.key.secret:youthiansMockSecretKey123}")
+    private String razorpayKeySecret;
+
+    private boolean verifyRazorpaySignature(String orderId, String paymentId, String signature, String secret) {
+        if (orderId == null || paymentId == null || signature == null || secret == null) {
+            return false;
+        }
+        try {
+            String payload = orderId + "|" + paymentId;
+            javax.crypto.Mac mac = javax.crypto.Mac.getInstance("HmacSHA256");
+            mac.init(new javax.crypto.spec.SecretKeySpec(secret.getBytes(java.nio.charset.StandardCharsets.UTF_8), "HmacSHA256"));
+            byte[] hash = mac.doFinal(payload.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hash) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) hexString.append('0');
+                hexString.append(hex);
+            }
+            return hexString.toString().equalsIgnoreCase(signature.trim());
+        } catch (Exception e) {
+            return false;
+        }
+    }
 
     private User currentUser(HttpSession session) {
         Object authUser = httpServletRequest.getAttribute("authenticatedUser");
@@ -433,15 +461,27 @@ public class MobileApiController {
             return ResponseEntity.status(403).body(Map.of("error", "Admin login is not available on mobile"));
         }
         User user = userRepository.findByUsername(username);
-        if (user == null || !password.equals(user.getPassword())) {
+        boolean passwordMatches = false;
+        if (user != null && user.getPassword() != null) {
+            if (user.getPassword().startsWith("$2a$") || user.getPassword().startsWith("$2b$") || user.getPassword().startsWith("$2y$")) {
+                passwordMatches = passwordEncoder.matches(password, user.getPassword());
+            } else if (user.getPassword().equals(password)) {
+                // Upgrade plaintext password to BCrypt hash (DEF-03)
+                passwordMatches = true;
+                user.setPassword(passwordEncoder.encode(password));
+                userRepository.save(user);
+            }
+        }
+        if (user == null || !passwordMatches) {
             return ResponseEntity.status(401).body(Map.of("error", "Invalid username or password"));
         }
         if ("BANNED".equals(user.getStatus()) || "SUSPENDED".equals(user.getStatus())) {
             return ResponseEntity.status(403).body(Map.of("error", "Account is " + user.getStatus().toLowerCase()));
         }
-        if (activeLoginRegistry.isUserAlreadyLoggedIn(username, null)) {
-            return ResponseEntity.status(409).body(Map.of("error", "Already logged in on another device"));
-        }
+        // Session takeover on successful credential validation (DEF-02):
+        // Replace previous active session safely
+        activeLoginRegistry.removeLogin(username);
+
         rewardService.awardDailyLogin(user);
         user = userRepository.findById(user.getId()).orElse(user);
         String token = jwtUtil.generateToken(username);
@@ -482,7 +522,7 @@ public class MobileApiController {
         User user = new User();
         user.setUsername(username);
         user.setEmail(email);
-        user.setPassword(password);
+        user.setPassword(passwordEncoder.encode(password));
         user.setGender(gender);
         if (collegeName != null && !collegeName.isBlank()) {
             user.setCollegeName(collegeName.trim());
@@ -522,7 +562,7 @@ public class MobileApiController {
         if (user == null || !email.equalsIgnoreCase(user.getEmail())) {
             return ResponseEntity.badRequest().body(Map.of("error", "User not found"));
         }
-        user.setPassword(newPassword);
+        user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
         return ResponseEntity.ok(Map.of("message", "Password updated"));
     }
@@ -1190,9 +1230,8 @@ public class MobileApiController {
         ));
     }
 
-    @PostMapping("/wallet/add")
-    @Transactional
-    public ResponseEntity<?> walletAdd(@RequestBody Map<String, Object> body, HttpSession session) {
+    @PostMapping("/wallet/create-order")
+    public ResponseEntity<?> walletCreateOrder(@RequestBody Map<String, Object> body, HttpSession session) {
         User user = currentUser(session);
         if (user == null) return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
         double amount;
@@ -1204,10 +1243,65 @@ public class MobileApiController {
         if (Double.isNaN(amount) || Double.isInfinite(amount) || amount < 10.0 || amount > 50000.0) {
             return ResponseEntity.badRequest().body(Map.of("error", "Deposit amount must be between Rs. 10 and Rs. 50,000 per transaction"));
         }
+        String orderId = "order_m_" + java.util.UUID.randomUUID().toString().replace("-", "").substring(0, 14);
+        session.setAttribute("mobile_order_" + orderId, amount);
+        return ResponseEntity.ok(Map.of(
+            "orderId", orderId,
+            "amount", amount,
+            "keyId", razorpayKeyId
+        ));
+    }
+
+    @PostMapping("/wallet/add")
+    @Transactional
+    public ResponseEntity<?> walletAdd(@RequestBody Map<String, Object> body, HttpSession session) {
+        User user = currentUser(session);
+        if (user == null) return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        
+        String paymentId = body.get("razorpay_payment_id") != null ? body.get("razorpay_payment_id").toString() : null;
+        String orderId = body.get("razorpay_order_id") != null ? body.get("razorpay_order_id").toString() : null;
+        String signature = body.get("razorpay_signature") != null ? body.get("razorpay_signature").toString() : null;
+        
+        if (paymentId == null || paymentId.isBlank() || orderId == null || orderId.isBlank() || signature == null || signature.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Payment verification requires razorpay_payment_id, razorpay_order_id, and razorpay_signature"));
+        }
+
+        // Replay / duplicate callback check (DEF-01)
+        String refId = "RZP-" + paymentId.trim();
+        if (walletTransactionRepository.existsByReferenceId(refId)) {
+            return ResponseEntity.status(409).body(Map.of("error", "Duplicate payment: This payment receipt has already been processed."));
+        }
+
+        // Server-side signature verification (DEF-01)
+        boolean isValidSignature = verifyRazorpaySignature(orderId, paymentId, signature, razorpayKeySecret);
+        if (!isValidSignature) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Payment verification failed: Invalid payment signature"));
+        }
+
+        double amount;
+        try {
+            amount = Double.parseDouble(body.get("amount").toString());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Invalid numerical amount"));
+        }
+        if (Double.isNaN(amount) || Double.isInfinite(amount) || amount < 10.0 || amount > 50000.0) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Deposit amount must be between Rs. 10 and Rs. 50,000 per transaction"));
+        }
+
         user.addWalletBalance(amount);
         userRepository.save(user);
-        walletTransactionRepository.save(new WalletTransaction(user, amount, "DEPOSIT", "Added funds via mobile"));
-        return ResponseEntity.ok(Map.of("balance", user.getWalletBalance()));
+
+        WalletTransaction tx = new WalletTransaction(user, amount, "DEPOSIT", "Verified Razorpay payment (Payment ID: " + paymentId + ", Order: " + orderId + ")");
+        tx.setStatus("COMPLETED");
+        tx.setReferenceId(refId);
+        walletTransactionRepository.save(tx);
+
+        return ResponseEntity.ok(Map.of(
+            "message", "Payment verified and funds added successfully",
+            "balance", user.getWalletBalance(),
+            "transactionId", tx.getId(),
+            "referenceId", refId
+        ));
     }
 
     @PostMapping("/wallet/withdraw")

@@ -106,6 +106,10 @@ public class MainController {
         if (sessionUser instanceof User) {
             return (User) sessionUser;
         }
+        if (sessionUser instanceof String) {
+            User u = userRepository.findByUsername((String) sessionUser);
+            if (u != null) return u;
+        }
         Object userIdObj = session.getAttribute("userId");
         if (userIdObj != null) {
             try {
@@ -225,7 +229,7 @@ public class MainController {
         com.example.demo.model.Post post = new com.example.demo.model.Post(
                 content, user, null, null, null, "THOUGHT", category);
         feedAlgorithmService.savePost(post);
-        return "redirect:/home?thoughtShared=true";
+        return "redirect:/home?thoughtShared=true#community-thoughts";
     }
 
     @GetMapping("/featured-events")
@@ -485,22 +489,33 @@ public class MainController {
         return "dashboard";
     }
 
+    private boolean isAdminSession(HttpSession session) {
+        if (session == null) return false;
+        Object u = session.getAttribute("user");
+        if ("admin".equals(u)) return true;
+        if (u instanceof User && "admin".equalsIgnoreCase(((User) u).getUsername())) return true;
+        return "admin".equals(session.getAttribute("admin"));
+    }
+
     @GetMapping("/admin")
     @Transactional
     public String admin(Model model, HttpSession session) {
-        // Only let admin session through
-        if (!"admin".equals(session.getAttribute("user")))
+        // Only let admin session through (DEF-08)
+        if (!isAdminSession(session))
             return "redirect:/login";
-        model.addAttribute("users", userRepository.findAll());
-        model.addAttribute("events", eventRepository.findAll());
+
+        // Paginated queries and aggregate counters to prevent unpaginated memory pressure (DEF-14)
+        model.addAttribute("users", userRepository.findAll(org.springframework.data.domain.PageRequest.of(0, 50, org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "id"))).getContent());
+        model.addAttribute("events", eventRepository.findAll(org.springframework.data.domain.PageRequest.of(0, 50, org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "id"))).getContent());
+        model.addAttribute("totalUsers", userRepository.count());
         model.addAttribute("totalEvents", eventRepository.count());
         model.addAttribute("upcomingEvents", eventRepository.countByStatus("UPCOMING"));
         model.addAttribute("ongoingEvents", eventRepository.countByStatus("ONGOING"));
         model.addAttribute("votingCount", eventRepository.countByStatus("VOTING"));
         model.addAttribute("completedCount", eventRepository.countByStatus("COMPLETED"));
         model.addAttribute("rewardConfig", rewardService.getConfig());
-        model.addAttribute("contactMessages", contactMessageRepository.findAllByOrderByCreatedAtDesc());
-        model.addAttribute("posts", postRepository.findAllByOrderByCreatedAtDesc());
+        model.addAttribute("contactMessages", contactMessageRepository.findAll(org.springframework.data.domain.PageRequest.of(0, 50, org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "createdAt"))).getContent());
+        model.addAttribute("posts", postRepository.findAll(org.springframework.data.domain.PageRequest.of(0, 50, org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "id"))).getContent());
         
         // Battle details for admin overview
         List<Battle> battles = battleRepository.findAllByOrderByCreatedAtDesc();

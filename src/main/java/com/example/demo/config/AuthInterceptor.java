@@ -35,7 +35,8 @@ public class AuthInterceptor implements HandlerInterceptor {
 
         
         // Skip public paths and game/socket endpoints
-        if (path.equals("/") || path.equals("/home") || path.equals("/login") || path.equals("/forgot-password") || 
+        if (path.equals("/") || path.equals("/home") || path.equals("/login") || path.equals("/admin/login") || path.equals("/forgot-password") || 
+            path.startsWith("/forgot-password") ||
             path.equals("/register") || path.equals("/about") || path.equals("/about-us") || path.equals("/careers") || path.equals("/privacy") || path.equals("/privacy-policy") || path.equals("/terms") || path.equals("/terms-of-service") || path.equals("/faq") || path.equals("/featured-events") || path.equals("/categories") || path.equals("/support") || path.equals("/contact") ||
             // Allow unauthenticated multiplayer room creation/join
             path.startsWith("/api/ludo/") ||
@@ -76,14 +77,10 @@ public class AuthInterceptor implements HandlerInterceptor {
             token = queryToken;
         }
 
-        StringBuilder debugLog = new StringBuilder();
-        debugLog.append("AuthInterceptor Debug Log\n");
+        boolean hadExpiredToken = false;
         if (token != null) {
-            debugLog.append("token found = ").append(token).append("\n");
             // ── Reject blacklisted (logged-out) tokens immediately ──
             if (tokenBlacklist.isBlacklisted(token)) {
-                debugLog.append("token is blacklisted!\n");
-                writeDebug(debugLog.toString());
                 if (isAjaxRequest(request)) {
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 } else {
@@ -95,7 +92,6 @@ public class AuthInterceptor implements HandlerInterceptor {
             request.setAttribute("urlToken", token); // Store for postHandle
             try {
                 String username = jwtUtil.extractUsername(token);
-                debugLog.append("extracted username = ").append(username).append("\n");
                 if (username != null) {
                     if ("admin".equals(username)) {
                         request.setAttribute("authenticatedUser", "admin");
@@ -104,11 +100,8 @@ public class AuthInterceptor implements HandlerInterceptor {
                         return true;
                     }
                     User user = userRepository.findByUsername(username);
-                    debugLog.append("user found = ").append(user != null).append("\n");
                     if (user != null && jwtUtil.validateToken(token, username)) {
                         if ("BANNED".equals(user.getStatus()) || "SUSPENDED".equals(user.getStatus())) {
-                            debugLog.append("user is banned or suspended!\n");
-                            writeDebug(debugLog.toString());
                             jakarta.servlet.http.Cookie badCookie = new jakarta.servlet.http.Cookie("jwtToken", null);
                             badCookie.setPath("/");
                             badCookie.setHttpOnly(true);
@@ -122,8 +115,6 @@ public class AuthInterceptor implements HandlerInterceptor {
                             return false;
                         }
                         if (activeLoginRegistry.isUserAlreadyLoggedIn(username, token)) {
-                            debugLog.append("user is already logged in on another device!\n");
-                            writeDebug(debugLog.toString());
                             jakarta.servlet.http.Cookie badCookie = new jakarta.servlet.http.Cookie("jwtToken", null);
                             badCookie.setPath("/");
                             badCookie.setHttpOnly(true);
@@ -133,7 +124,7 @@ public class AuthInterceptor implements HandlerInterceptor {
                             if (isAjaxRequest(request)) {
                                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                             } else {
-                                response.sendRedirect(request.getContextPath() + "/login?error=timeout");
+                                response.sendRedirect(request.getContextPath() + "/login?error=session_superseded");
                             }
                             return false;
                         }
@@ -149,12 +140,10 @@ public class AuthInterceptor implements HandlerInterceptor {
                         // Prevent browser from caching protected pages
                         setNoCacheHeaders(response);
                         return true;
-                    } else {
-                        debugLog.append("validateToken failed or user is null!\n");
                     }
                 }
             } catch (Exception e) {
-                debugLog.append("Exception caught: ").append(e.getMessage()).append("\n");
+                hadExpiredToken = true;
                 // Token invalid or expired, clear it
                 jakarta.servlet.http.Cookie badCookie = new jakarta.servlet.http.Cookie("jwtToken", null);
                 badCookie.setPath("/");
@@ -162,26 +151,24 @@ public class AuthInterceptor implements HandlerInterceptor {
                 badCookie.setMaxAge(0);
                 response.addCookie(badCookie);
             }
-        } else {
-            debugLog.append("token is NULL!\n");
         }
 
         // Not authenticated
-        debugLog.append("redirecting to /login?error=timeout\n");
-        writeDebug(debugLog.toString());
         if (isAjaxRequest(request)) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return false;
         }
 
-        response.sendRedirect(request.getContextPath() + "/login?error=timeout");
+        if (hadExpiredToken) {
+            response.sendRedirect(request.getContextPath() + "/login?error=timeout");
+        } else {
+            response.sendRedirect(request.getContextPath() + "/login");
+        }
         return false;
     }
 
     private void writeDebug(String msg) {
-        try {
-            java.nio.file.Files.write(java.nio.file.Paths.get("auth_debug.txt"), msg.getBytes(), java.nio.file.StandardOpenOption.CREATE, java.nio.file.StandardOpenOption.APPEND);
-        } catch(Exception e) {}
+        // Debug file writing removed to prevent security exposure of tokens (DEF-05)
     }
 
     /**

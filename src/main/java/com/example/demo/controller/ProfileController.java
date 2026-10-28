@@ -36,23 +36,34 @@ public class ProfileController {
             return (User) authUser;
         }
         
-        Object sessionUser = session.getAttribute("user");
+        Object sessionUser = session != null ? session.getAttribute("user") : null;
         if (sessionUser instanceof User) {
             return (User) sessionUser;
         }
-        Object userIdObj = session.getAttribute("userId");
-        if (userIdObj != null) {
-            try {
-                Long userId = null;
-                if (userIdObj instanceof Number) {
-                    userId = ((Number) userIdObj).longValue();
-                } else if (userIdObj instanceof String) {
-                    userId = Long.parseLong((String) userIdObj);
+        if (session != null) {
+            Object userIdObj = session.getAttribute("userId");
+            if (userIdObj != null) {
+                try {
+                    Long userId = null;
+                    if (userIdObj instanceof Number) {
+                        userId = ((Number) userIdObj).longValue();
+                    } else if (userIdObj instanceof String) {
+                        userId = Long.parseLong((String) userIdObj);
+                    }
+                    if (userId != null) {
+                        return userRepository.findById(userId).orElse(null);
+                    }
+                } catch (Exception e) {
                 }
-                if (userId != null) {
-                    return userRepository.findById(userId).orElse(null);
+            }
+            if ("admin".equals(sessionUser) || "admin".equals(session.getAttribute("admin")) || "admin".equals(authUser)) {
+                User admin = userRepository.findByUsername("admin");
+                if (admin == null) {
+                    admin = new User("admin", "admin@youthians.com", "$2a$10$7Z8bOQ7b0B2yvE1R3X9vxeL1YqP.LzPZ1fLzW5M5U9qD5f.7U3cWy", java.time.LocalDate.of(2000, 1, 1), "OTHER", null);
+                    admin = userRepository.save(admin);
                 }
-            } catch (Exception e) {
+                session.setAttribute("user", admin);
+                return admin;
             }
         }
         return null;
@@ -72,6 +83,9 @@ public class ProfileController {
 
     @Autowired
     private com.example.demo.repository.PostCollaborationRepository postCollaborationRepository;
+
+    @Autowired
+    private com.example.demo.repository.ReelRepository reelRepository;
 
     @Autowired
     private NotificationRepository notificationRepository;
@@ -101,7 +115,7 @@ public class ProfileController {
     @Transactional(readOnly = true)
     @RequestMapping(value = "/{username}", method = RequestMethod.GET)
     public String showPublicProfile(@PathVariable String username, HttpSession session, Model model) {
-        User currentUser = (User) session.getAttribute("user");
+        User currentUser = getUserFromSession(session);
         if (currentUser == null) {
             return "redirect:/login";
         }
@@ -440,6 +454,64 @@ public class ProfileController {
         }
     }
 
+    @PostMapping("/upload-photo")
+    @ResponseBody
+    public org.springframework.http.ResponseEntity<?> uploadProfilePhoto(
+            @RequestParam("profilePhotoFile") org.springframework.web.multipart.MultipartFile profilePhotoFile,
+            HttpSession session) {
+        Object sessionUser = session.getAttribute("user");
+        User user = null;
+        if (sessionUser instanceof User) {
+            user = (User) sessionUser;
+        } else if (sessionUser instanceof String) {
+            user = userRepository.findByUsername((String) sessionUser);
+        }
+        if (user == null) {
+            return org.springframework.http.ResponseEntity.status(401).body(Map.of("success", false, "message", "Please login to update photo"));
+        }
+
+        if (profilePhotoFile == null || profilePhotoFile.isEmpty()) {
+            return org.springframework.http.ResponseEntity.badRequest().body(Map.of("success", false, "message", "No file selected"));
+        }
+
+        String contentType = profilePhotoFile.getContentType();
+        if (contentType == null || !contentType.startsWith("image")) {
+            return org.springframework.http.ResponseEntity.badRequest().body(Map.of("success", false, "message", "Only image files are allowed"));
+        }
+
+        try {
+            String fileName = java.util.UUID.randomUUID().toString() + "_" + profilePhotoFile.getOriginalFilename();
+            String uploadDir = "src/main/resources/static/uploads/";
+            java.nio.file.Path uploadPath = java.nio.file.Paths.get(uploadDir);
+            if (!java.nio.file.Files.exists(uploadPath)) {
+                java.nio.file.Files.createDirectories(uploadPath);
+            }
+            String targetUploadDir = "target/classes/static/uploads/";
+            java.nio.file.Path targetUploadPath = java.nio.file.Paths.get(targetUploadDir);
+            if (!java.nio.file.Files.exists(targetUploadPath)) {
+                java.nio.file.Files.createDirectories(targetUploadPath);
+            }
+            java.nio.file.Files.copy(profilePhotoFile.getInputStream(), uploadPath.resolve(fileName),
+                    java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            java.nio.file.Files.copy(profilePhotoFile.getInputStream(), targetUploadPath.resolve(fileName),
+                    java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+
+            String photoUrl = "/uploads/" + fileName;
+            User dbUser = userRepository.findById(user.getId()).orElse(user);
+            dbUser.setProfilePhotoUrl(photoUrl);
+            userRepository.save(dbUser);
+            session.setAttribute("user", dbUser);
+
+            return org.springframework.http.ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "profilePhotoUrl", photoUrl
+            ));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return org.springframework.http.ResponseEntity.internalServerError().body(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
     @RequestMapping(value = "/reset-password", method = RequestMethod.POST)
     public String resetPassword(@RequestParam String oldPassword, @RequestParam String newPassword, HttpSession session) {
         Object sessionUser = session.getAttribute("user");
@@ -538,6 +610,19 @@ public class ProfileController {
         Post post = new Post(content, user, mediaUrl, mediaType, hashtags, postType, category);
         feedAlgorithmService.savePost(post);
 
+        // Synchronize with Reel table for Mobile visibility (DEF-04)
+        if ("REEL".equalsIgnoreCase(postType) && mediaUrl != null) {
+            try {
+                com.example.demo.model.Reel reel = new com.example.demo.model.Reel();
+                reel.setUser(user);
+                reel.setVideoUrl(mediaUrl);
+                reel.setCaption(content);
+                reel.setApproved(true);
+                reel.setCategory(com.example.demo.model.ReelCategory.LIFESTYLE);
+                reelRepository.save(reel);
+            } catch (Exception e) {}
+        }
+
         // Handle collaborators (both mentions and explicit tags)
         Set<User> collaboratorSet = new HashSet<>();
 
@@ -569,13 +654,16 @@ public class ProfileController {
             postCollaborationRepository.save(collaboration);
         }
         rewardService.awardTalentPost(user, post.getId(), postType); // Coins for Posting/Reels 🎨 with deduplication & limit
+        if ("THOUGHT".equalsIgnoreCase(postType)) {
+            return "redirect:/home?thoughtShared=true#community-thoughts";
+        }
         return "redirect:/profile";
     }
 
     @RequestMapping(value = "/post/delete/{id}", method = RequestMethod.POST)
     @ResponseBody
     public org.springframework.http.ResponseEntity<?> deletePost(@PathVariable Long id, HttpSession session) {
-        User user = (User) session.getAttribute("user");
+        User user = getUserFromSession(session);
         if (user == null) {
             return org.springframework.http.ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED)
                     .build();
@@ -600,7 +688,7 @@ public class ProfileController {
     @RequestMapping(value = "/{id}/follow", method = RequestMethod.POST)
     public String followUser(@PathVariable Long id, HttpSession session,
             @RequestHeader(value = "Referer", required = false) String referer) {
-        User currentUser = (User) session.getAttribute("user");
+        User currentUser = getUserFromSession(session);
         if (currentUser == null)
             return "redirect:/login";
 
@@ -645,7 +733,7 @@ public class ProfileController {
     @RequestMapping(value = "/{id}/follow/ajax", method = RequestMethod.POST)
     @ResponseBody
     public org.springframework.http.ResponseEntity<?> followUserAjax(@PathVariable Long id, HttpSession session) {
-        User currentUser = (User) session.getAttribute("user");
+        User currentUser = getUserFromSession(session);
         if (currentUser == null) {
             return org.springframework.http.ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED)
                     .build();
@@ -721,7 +809,7 @@ public class ProfileController {
     @RequestMapping(value = "/{id}/cancel-follow/ajax", method = RequestMethod.POST)
     @ResponseBody
     public org.springframework.http.ResponseEntity<?> cancelFollowAjax(@PathVariable Long id, HttpSession session) {
-        User currentUser = (User) session.getAttribute("user");
+        User currentUser = getUserFromSession(session);
         if (currentUser == null)
             return org.springframework.http.ResponseEntity.status(401).build();
 
@@ -743,7 +831,7 @@ public class ProfileController {
     @RequestMapping(value = "/{id}/unfollow", method = RequestMethod.POST)
     public String unfollowUser(@PathVariable Long id, HttpSession session,
             @RequestHeader(value = "Referer", required = false) String referer) {
-        User currentUser = (User) session.getAttribute("user");
+        User currentUser = getUserFromSession(session);
         if (currentUser == null)
             return "redirect:/login";
 
@@ -764,7 +852,7 @@ public class ProfileController {
     @RequestMapping(value = "/{id}/unfollow/ajax", method = RequestMethod.POST)
     @ResponseBody
     public org.springframework.http.ResponseEntity<?> unfollowUserAjax(@PathVariable Long id, HttpSession session) {
-        User currentUser = (User) session.getAttribute("user");
+        User currentUser = getUserFromSession(session);
         if (currentUser == null) {
             return org.springframework.http.ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
         }
@@ -806,7 +894,7 @@ public class ProfileController {
 
     @RequestMapping(value = "/collaboration/{id}/accept", method = RequestMethod.POST)
     public String acceptCollaboration(@PathVariable Long id, HttpSession session) {
-        User user = (User) session.getAttribute("user");
+        User user = getUserFromSession(session);
         if (user == null) {
             return "redirect:/login";
         }
@@ -821,7 +909,7 @@ public class ProfileController {
 
     @RequestMapping(value = "/collaboration/{id}/reject", method = RequestMethod.POST)
     public String rejectCollaboration(@PathVariable Long id, HttpSession session) {
-        User user = (User) session.getAttribute("user");
+        User user = getUserFromSession(session);
         if (user == null) {
             return "redirect:/login";
         }
@@ -838,7 +926,7 @@ public class ProfileController {
     @RequestMapping(value = "/notifications/mark-all-read", method = RequestMethod.POST)
     @ResponseBody
     public org.springframework.http.ResponseEntity<?> markAllNotificationsRead(HttpSession session) {
-        User user = (User) session.getAttribute("user");
+        User user = getUserFromSession(session);
         if (user == null) {
             return org.springframework.http.ResponseEntity.status(401).build();
         }
@@ -857,7 +945,7 @@ public class ProfileController {
     @RequestMapping(value = "/follow-request/{id}/accept/ajax", method = RequestMethod.POST)
     @ResponseBody
     public org.springframework.http.ResponseEntity<?> acceptFollowAjax(@PathVariable Long id, HttpSession session) {
-        User user = (User) session.getAttribute("user");
+        User user = getUserFromSession(session);
         if (user == null)
             return org.springframework.http.ResponseEntity.status(401).build();
 
@@ -923,7 +1011,7 @@ public class ProfileController {
     @RequestMapping(value = "/follow-request/{id}/reject/ajax", method = RequestMethod.POST)
     @ResponseBody
     public org.springframework.http.ResponseEntity<?> rejectFollowAjax(@PathVariable Long id, HttpSession session) {
-        User user = (User) session.getAttribute("user");
+        User user = getUserFromSession(session);
         if (user == null)
             return org.springframework.http.ResponseEntity.status(401).build();
 

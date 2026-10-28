@@ -27,10 +27,18 @@ public class AdminBattleActionController {
     @Autowired
     private UserRepository userRepository;
 
+    private boolean isAdminSession(HttpSession session) {
+        if (session == null) return false;
+        Object u = session.getAttribute("user");
+        if ("admin".equals(u)) return true;
+        if (u instanceof com.example.demo.model.User && "admin".equalsIgnoreCase(((com.example.demo.model.User) u).getUsername())) return true;
+        return "admin".equals(session.getAttribute("admin"));
+    }
+
     @PostMapping("/admin/battles/{id}/commission")
     @Transactional
     public String updateCommission(@PathVariable Long id, @RequestParam Double adminCommissionPct, HttpSession session) {
-        if (!"admin".equals(session.getAttribute("user"))) return "redirect:/login";
+        if (!isAdminSession(session)) return "redirect:/login";
         Battle battle = battleRepository.findById(id).orElse(null);
         if (battle != null && !Boolean.TRUE.equals(battle.getPayoutReleased())) {
             battle.setAdminCommissionPct(adminCommissionPct);
@@ -42,7 +50,7 @@ public class AdminBattleActionController {
     @PostMapping("/admin/battles/{id}/release")
     @Transactional
     public String releasePayout(@PathVariable Long id, HttpSession session) {
-        if (!"admin".equals(session.getAttribute("user"))) return "redirect:/login";
+        if (!isAdminSession(session)) return "redirect:/login";
         Battle battle = battleRepository.findById(id).orElse(null);
         if (battle == null || !"COMPLETED".equals(battle.getStatus()) || Boolean.TRUE.equals(battle.getPayoutReleased())) {
             return "redirect:/admin/battles";

@@ -26,7 +26,7 @@
     --gradient-1: linear-gradient(135deg, #3B82F6 0%, #93C5FD 55%, #22D3EE 100%);
     --bg-gradient: linear-gradient(180deg, #E0F2FE 0%, #FFFFFF 100%);
     /* Total fixed header height = top-bar (30) + navbar (56) */
-    --nav-height: 86px;
+    --nav-height: 56px;
     --dashboard-nav-height: 64px;
 }
 

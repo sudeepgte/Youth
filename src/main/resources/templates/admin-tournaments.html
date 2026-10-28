@@ -1,134 +1,125 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
+<head th:replace="~{fragments/admin-fragments :: admin-head('Manage Tournaments | Youthian Admin')}">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Tournaments | Youthian Admin</title>
-    <link rel="stylesheet" th:href="@{/css/style.css}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        :root {
-            --bg-gradient: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
-            --text-primary: #0f172a;
-            --text-secondary: #334155;
-        }
-        body { background: var(--bg-gradient) !important; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
-        .main-container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
-        
-        .btn-back {
-            display: inline-flex; align-items: center; gap: 8px; color: #475569; text-decoration: none; font-weight: 700; margin-bottom: 25px; background: white; padding: 10px 20px; border-radius: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: 0.2s;
-        }
-        .btn-back:hover { transform: translateX(-3px); color: #0f172a; box-shadow: 0 6px 12px rgba(0,0,0,0.08); }
-        
-        .table-card {
-            background: #ffffff; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        }
-        table { width: 100%; border-collapse: collapse; }
-        th { background: #f8fafc; padding: 15px 20px; text-align: left; font-weight: 700; color: #475569; font-size: 13px; text-transform: uppercase; border-bottom: 2px solid #e2e8f0; }
-        td { padding: 15px 20px; border-bottom: 1px solid #f1f5f9; color: #334155; font-size: 14px; }
-        tr:hover { background: #f8fafc; }
-        
-        .status-badge { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; display: inline-block; }
-        .status-DRAFT { background: #f1f5f9; color: #64748b; }
-        .status-REGISTRATION_OPEN { background: #dcfce7; color: #16a34a; }
-        .status-IN_PROGRESS { background: #fee2e2; color: #dc2626; }
-        .status-COMPLETED { background: #fef9c3; color: #ca8a04; }
-        
-        .btn-action { padding: 8px 15px; border-radius: 10px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; font-size: 13px; transition: 0.2s; }
-        .btn-edit { background: white; color: #3b82f6; border: 1px solid #3b82f6; }
-        .btn-edit:hover { background: #3b82f6; color: white; }
-        
-        .header-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
-        .btn-create { background: white; color: #10B981; border: 2px solid #10B981; padding: 12px 24px; border-radius: 12px; font-weight: bold; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; }
-        .btn-create:hover { background: #10B981; color: white; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(16,185,129,0.3); }
-        /* Modal Styles */
-        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); z-index: 1000; justify-content: center; align-items: center; }
-        .modal-overlay.active { display: flex; }
-        .mode-modal { background: white; padding: 40px; border-radius: 20px; text-align: center; max-width: 500px; width: 90%; }
-        .mode-modal h2 { margin-top: 0; color: #0f172a; font-weight: 900; }
-        .mode-modal p { color: #64748b; margin-bottom: 30px; }
-        .mode-options { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .mode-card { border: 2px solid #e2e8f0; border-radius: 15px; padding: 30px 20px; cursor: pointer; transition: 0.2s; text-decoration: none; color: inherit; display: block; }
-        .mode-card:hover { border-color: #3b82f6; transform: translateY(-5px); box-shadow: 0 10px 20px rgba(59, 130, 246, 0.1); }
-        .mode-card.offline:hover { border-color: #f84464; box-shadow: 0 10px 20px rgba(248, 68, 100, 0.1); }
-        .mode-card i { font-size: 40px; margin-bottom: 15px; color: #94a3b8; transition: 0.2s; }
-        .mode-card:hover i { color: #3b82f6; }
-        .mode-card.offline:hover i { color: #f84464; }
-        .mode-card h3 { margin: 0 0 10px 0; font-weight: 800; }
-        .mode-card p { margin: 0; font-size: 13px; color: #94a3b8; }
-        .btn-close-modal { margin-top: 25px; background: none; border: none; color: #94a3b8; font-weight: bold; cursor: pointer; }
-        .btn-close-modal:hover { color: #0f172a; text-decoration: underline; }
-    </style>
-    <script defer th:src="@{/js/game-rewards.js}"></script>
+    <title>Manage Tournaments</title>
 </head>
 <body>
-    <div class="main-container">
-        
-        <a th:href="@{/admin}" class="btn-back"><i class="fas fa-arrow-left"></i> Back to Admin Dashboard</a>
-        
-        <div class="header-actions">
-            <h1 style="margin: 0; color: var(--text-primary); font-weight: 900;">Manage Tournaments</h1>
-            <button onclick="document.getElementById('modeModal').classList.add('active')" class="btn-create" style="cursor: pointer;"><i class="fas fa-plus"></i> Create Tournament</button>
-        </div>
 
-        <div class="table-card">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Status</th>
-                        <th>Participants</th>
-                        <th>Winner</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr th:each="t : ${tournaments}">
-                        <td>
-                            <strong th:text="${t.name}"></strong><br>
-                            <small style="color: #64748b;" th:text="${t.type}"></small>
-                        </td>
-                        <td><span th:class="'status-badge status-' + ${t.status}" th:text="${t.status}"></span></td>
-                        <td th:text="${t.participants.size() + ' / ' + t.maxParticipants}"></td>
-                        <td><span th:if="${t.winner != null}" th:text="${t.winner.username}"></span><span th:if="${t.winner == null}">-</span></td>
-                        <td>
-                            <a th:href="@{/admin/tournaments/{id}/manage(id=${t.id})}" class="btn-action btn-edit"><i class="fas fa-cog"></i> Manage</a>
-                        </td>
-                    </tr>
-                    <tr th:if="${tournaments.isEmpty()}">
-                        <td colspan="5" style="text-align: center; padding: 40px; color: #94a3b8;">
-                            <i class="fas fa-box-open" style="font-size: 30px; margin-bottom: 10px; display: block;"></i>
-                            No tournaments created yet.
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+    <!-- Unified Admin Top Navbar -->
+    <div th:replace="~{fragments/admin-fragments :: admin-navbar('tournaments')}"></div>
+
+    <div class="admin-layout-container dashboard-container">
+        <div class="mobile-menu-overlay" onclick="toggleAdminMobileMenu()"></div>
+        <!-- Unified Left Sidebar -->
+        <aside th:replace="~{fragments/admin-fragments :: admin-sidebar('tournaments', 'none')}"></aside>
+
+        <!-- Main Content -->
+        <main class="social-feed" style="max-width: 100%; padding-bottom: 60px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px;">
+                <div>
+                    <h1 style="margin: 0; color: var(--text-primary); font-weight: 900; font-size: 26px;">
+                        <i class="fas fa-trophy" style="color: #f59e0b; margin-right: 8px;"></i> Tournaments Management
+                    </h1>
+                    <p style="margin: 6px 0 0 0; color: var(--text-secondary); font-size: 14px;">
+                        Create, monitor bracket rounds, manage participants, and award winners.
+                    </p>
+                </div>
+                <button onclick="document.getElementById('modeModal').classList.add('active')" class="nav-btn" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 12px 22px; font-size: 14px; cursor: pointer; border-radius: 12px; box-shadow: 0 4px 12px rgba(16,185,129,0.3);">
+                    <i class="fas fa-plus"></i> Create Tournament
+                </button>
+            </div>
+
+            <!-- Table Card -->
+            <div style="background: var(--card-bg); border: 1px solid var(--glass-border); border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);">
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                        <thead>
+                            <tr style="background: rgba(255, 255, 255, 0.4); border-bottom: 1px solid var(--glass-border);">
+                                <th style="padding: 16px 20px; font-size: 12px; font-weight: 800; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.5px;">Tournament Name</th>
+                                <th style="padding: 16px 20px; font-size: 12px; font-weight: 800; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.5px;">Mode</th>
+                                <th style="padding: 16px 20px; font-size: 12px; font-weight: 800; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.5px;">Status</th>
+                                <th style="padding: 16px 20px; font-size: 12px; font-weight: 800; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.5px;">Participants</th>
+                                <th style="padding: 16px 20px; font-size: 12px; font-weight: 800; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.5px;">Winner</th>
+                                <th style="padding: 16px 20px; font-size: 12px; font-weight: 800; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.5px; text-align: right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="t : ${tournaments}" style="border-bottom: 1px solid var(--glass-border); transition: background 0.15s;">
+                                <td style="padding: 16px 20px;">
+                                    <strong style="color: var(--text-primary); font-size: 15px;" th:text="${t.name}"></strong><br>
+                                    <small style="color: var(--text-secondary); font-size: 12px;" th:text="${t.type != null ? t.type : 'KNOCKOUT'}"></small>
+                                </td>
+                                <td style="padding: 16px 20px;">
+                                    <span style="font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 8px; background: rgba(59,130,246,0.1); color: #0284c7;" th:text="${t.mode != null ? t.mode : 'ONLINE'}">ONLINE</span>
+                                </td>
+                                <td style="padding: 16px 20px;">
+                                    <span style="padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 800; text-transform: uppercase;"
+                                          th:style="${t.status == 'REGISTRATION_OPEN' ? 'background: #dcfce7; color: #166534;' : (t.status == 'IN_PROGRESS' ? 'background: #fee2e2; color: #991b1b;' : (t.status == 'COMPLETED' ? 'background: #fef9c3; color: #854d0e;' : 'background: #f1f5f9; color: #475569;'))}"
+                                          th:text="${t.status}"></span>
+                                </td>
+                                <td style="padding: 16px 20px; font-weight: 700; color: var(--text-primary);" th:text="${(t.participants != null ? t.participants.size() : 0) + ' / ' + t.maxParticipants}"></td>
+                                <td style="padding: 16px 20px;">
+                                    <span th:if="${t.winner != null}" style="color: #10b981; font-weight: 800;" th:text="'🏆 @' + ${t.winner.username}"></span>
+                                    <span th:if="${t.winner == null}" style="color: var(--text-secondary);">-</span>
+                                </td>
+                                <td style="padding: 16px 20px; text-align: right;">
+                                    <a th:href="@{/admin/tournaments/{id}/manage(id=${t.id})}" class="nav-btn" style="padding: 6px 14px; font-size: 13px; color: #0284c7; border-color: rgba(2,132,199,0.3);">
+                                        <i class="fas fa-cog"></i> Manage
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr th:if="${tournaments.isEmpty()}">
+                                <td colspan="6" style="text-align: center; padding: 50px 20px; color: var(--text-secondary);">
+                                    <i class="fas fa-trophy" style="font-size: 40px; margin-bottom: 12px; display: block; opacity: 0.3;"></i>
+                                    <strong>No tournaments found.</strong> Click "Create Tournament" to launch one now.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
     </div>
+
     <!-- MODE MODAL -->
-    <div class="modal-overlay" id="modeModal">
-        <div class="mode-modal">
-            <h2>Select Tournament Mode</h2>
-            <p>What kind of tournament are you hosting?</p>
+    <div class="admin-modal-overlay" id="modeModal">
+        <div style="background: var(--card-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); padding: 36px; border-radius: 24px; text-align: center; max-width: 520px; width: 90%; box-shadow: 0 20px 50px rgba(0,0,0,0.2);">
+            <h2 style="margin-top: 0; color: var(--text-primary); font-weight: 900; font-size: 22px;">Select Tournament Mode</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 24px; font-size: 14px;">Choose whether this is an online digital clash or physical venue tournament:</p>
             
-            <div class="mode-options">
-                <a th:href="@{/admin/tournaments/create(mode='ONLINE')}" class="mode-card">
-                    <i class="fas fa-globe"></i>
-                    <h3>Online Battle</h3>
-                    <p>Virtual event on the platform</p>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <a th:href="@{/admin/tournaments/create(mode='ONLINE')}" style="border: 2px solid rgba(59,130,246,0.3); background: rgba(59,130,246,0.05); border-radius: 16px; padding: 24px 16px; cursor: pointer; text-decoration: none; color: inherit; display: block; transition: all 0.2s;">
+                    <i class="fas fa-globe" style="font-size: 36px; color: #0284c7; margin-bottom: 12px; display: block;"></i>
+                    <h3 style="margin: 0 0 6px 0; font-weight: 800; font-size: 16px; color: var(--text-primary);">Online Battle</h3>
+                    <p style="margin: 0; font-size: 12px; color: var(--text-secondary);">Virtual event on the platform</p>
                 </a>
                 
-                <a th:href="@{/admin/tournaments/create(mode='OFFLINE')}" class="mode-card offline">
-                    <i class="fas fa-map-marker-alt"></i>
-                    <h3>Offline Event</h3>
-                    <p>Physical venue with QR tickets</p>
+                <a th:href="@{/admin/tournaments/create(mode='OFFLINE')}" style="border: 2px solid rgba(248,68,100,0.3); background: rgba(248,68,100,0.05); border-radius: 16px; padding: 24px 16px; cursor: pointer; text-decoration: none; color: inherit; display: block; transition: all 0.2s;">
+                    <i class="fas fa-map-marker-alt" style="font-size: 36px; color: #f84464; margin-bottom: 12px; display: block;"></i>
+                    <h3 style="margin: 0 0 6px 0; font-weight: 800; font-size: 16px; color: var(--text-primary);">Offline Event</h3>
+                    <p style="margin: 0; font-size: 12px; color: var(--text-secondary);">Physical venue with QR tickets</p>
                 </a>
             </div>
             
-            <button class="btn-close-modal" onclick="document.getElementById('modeModal').classList.remove('active')">Cancel</button>
+            <button onclick="document.getElementById('modeModal').classList.remove('active');" style="margin-top: 24px; background: none; border: none; color: var(--text-secondary); font-weight: bold; cursor: pointer; font-size: 14px;">Cancel</button>
         </div>
     </div>
 
+    <!-- Unified Admin Realtime Scripts -->
+    <div th:replace="~{fragments/admin-fragments :: admin-scripts}"></div>
+    <script>
+        var modal = document.getElementById('modeModal');
+        var origAdd = modal.classList.add;
+        // Ensure flex display when active
+        var observer = new MutationObserver(function() {
+            if (modal.classList.contains('active')) {
+                modal.style.display = 'flex';
+            } else {
+                modal.style.display = 'none';
+            }
+        });
+        observer.observe(modal, { attributes: true, attributeFilter: ['class'] });
+    </script>
 </body>
 </html>
-

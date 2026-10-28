@@ -34,7 +34,11 @@ public class AdminAdvertisementController {
     private UserRepository userRepository;
 
     private boolean isAdmin(HttpSession session) {
-        return "admin".equals(session.getAttribute("user"));
+        if (session == null) return false;
+        Object u = session.getAttribute("user");
+        if ("admin".equals(u)) return true;
+        if (u instanceof com.example.demo.model.User && "admin".equalsIgnoreCase(((com.example.demo.model.User) u).getUsername())) return true;
+        return "admin".equals(session.getAttribute("admin"));
     }
 
     @GetMapping
