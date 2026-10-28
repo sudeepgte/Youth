@@ -74,7 +74,8 @@ public class AuthController {
         if (pwd == null || pwd.length() < 8 || !pwd.matches(".*[A-Z].*") || !pwd.matches(".*[a-z].*") || !pwd.matches(".*\\d.*") || !pwd.matches(".*[@$!%*?&].*")) {
             return "redirect:/register?error=weak_password";
         }
-        if (user.getEmail() == null || !user.getEmail().trim().matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
+
+        if (user.getEmail() == null || !user.getEmail().trim().matches("^[a-zA-Z0-9][a-zA-Z0-9._%+-]*@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")) {
             return "redirect:/register?error=invalid_email_domain";
         }
         userRepository.save(user);

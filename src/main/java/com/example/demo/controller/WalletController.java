@@ -356,6 +356,7 @@ public class WalletController {
 
         Double currentBalance = user.getWalletBalance() != null ? user.getWalletBalance() : 0.0;
         if (currentBalance < amount) {
+            redirectAttributes.addFlashAttribute("error", "Insufficient balance. Your available balance is \u20B9" + String.format("%.2f", currentBalance));
             redirectAttributes.addFlashAttribute("error", "Insufficient balance. Your available balance is Rs. " + String.format("%.2f", currentBalance));
             return "redirect:/wallet";
         }
@@ -387,6 +388,7 @@ public class WalletController {
         tx.setNetAmount(netPayout);
         walletTransactionRepository.save(tx);
 
+        redirectAttributes.addFlashAttribute("success", "Withdrawal of \u20B9" + String.format("%.2f", amount) + " to " + accountClean + " processed successfully. Ref: " + refId);
         notificationRepository.save(new Notification(user, null, 
             "Withdrawal request of Rs. " + String.format("%.2f", amount) + " submitted. Platform charge (5%): Rs. " 
             + String.format("%.2f", fee) + ". Net payout of Rs. " + String.format("%.2f", netPayout) 

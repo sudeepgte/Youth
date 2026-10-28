@@ -292,6 +292,9 @@
             return false;
         }
 
+        // 5. Email Validation: Valid email format allowing standard domains (.com, .org, .edu, .in, etc.)
+        const email = form.email.value.trim();
+        const emailRegex = /^[a-zA-Z0-9][a-zA-Z0-9._%+-]*@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
         // 5. Email Validation: Accepts all valid domains (.com, .org, .edu, .in, .net, etc.)
         const email = form.email.value.trim();
         const emailRegex = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;

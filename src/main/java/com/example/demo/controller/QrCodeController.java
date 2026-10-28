@@ -13,8 +13,11 @@ import java.nio.charset.StandardCharsets;
 public class QrCodeController {
 
     @GetMapping("/generate")
-    public String generateQrCode(@RequestParam("text") String text) {
-        String encoded = URLEncoder.encode(text != null ? text : "", StandardCharsets.UTF_8);
-        return "redirect:https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + encoded;
+    public String generateQrCode(@RequestParam(value = "text", required = false) String text) {
+        if (text == null || text.trim().isEmpty()) {
+            text = "INVALID";
+        }
+        String encodedText = URLEncoder.encode(text.trim(), StandardCharsets.UTF_8);
+        return "redirect:https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + encodedText;
     }
 }

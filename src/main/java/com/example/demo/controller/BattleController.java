@@ -207,6 +207,11 @@ public class BattleController {
             effectiveMaxParticipants = Math.min(Math.max(effectiveMaxParticipants, 2), 100);
         }
 
+        // Enforce no 3rd prize for 2-player (1v1) battles
+        if (effectiveMaxParticipants <= 2) {
+            safePrize3 = 0.0;
+        }
+
         double totalPrizePool = safePrize1 + safePrize2 + safePrize3;
         double maxAllowedPrizePool = safeEntryFee * effectiveMaxParticipants;
 

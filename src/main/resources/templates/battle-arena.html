@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
@@ -941,7 +941,7 @@
                         <span th:if="${battle.entryFee != null and battle.entryFee > 0}" style="color:#10B981; font-weight:700;"><i class="fas fa-ticket-alt"></i> &#8377;<span th:text="${battle.entryFee}">50</span> Entry Fee</span>
                         <span th:if="${battle.prize1 != null and battle.prize1 > 0}"><i class="fas fa-trophy" style="color:#FFD700;"></i> 1st Prize: &#8377;<span th:text="${battle.prize1}">100</span></span>
                         <span th:if="${battle.prize2 != null and battle.prize2 > 0}"><i class="fas fa-trophy" style="color:#C0C0C0;"></i> 2nd Prize: &#8377;<span th:text="${battle.prize2}">50</span></span>
-                        <span th:if="${battle.prize3 != null and battle.prize3 > 0}"><i class="fas fa-trophy" style="color:#cd7f32;"></i> 3rd Prize: &#8377;<span th:text="${battle.prize3}">25</span></span>
+                        <span th:if="${(battle.maxParticipants == null or battle.maxParticipants > 2) and battle.prize3 != null and battle.prize3 > 0}"><i class="fas fa-trophy" style="color:#cd7f32;"></i> 3rd Prize: &#8377;<span th:text="${battle.prize3}">25</span></span>
                     </div>
 
                     <!-- Offline Event Details Block -->
@@ -1439,7 +1439,7 @@
                     </div>
 
                     <!-- 3rd Place -->
-                    <div th:if="${battle.winner3 != null}" style="background: rgba(255,255,255,0.6); border: 1px solid rgba(15,23,42,0.1); border-radius: 12px; padding: 15px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
+                    <div th:if="${battle.winner3 != null and (battle.maxParticipants == null or battle.maxParticipants > 2)}" style="background: rgba(255,255,255,0.6); border: 1px solid rgba(15,23,42,0.1); border-radius: 12px; padding: 15px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
                         <div style="display: flex; align-items: center; gap: 15px;">
 
                             <div style="font-size: 24px;"><i class="fas fa-medal" style="color: #CD7F32;"></i></div>
@@ -1533,19 +1533,36 @@
 
                         </div>
                         <div style="display:flex; flex-wrap:wrap; gap:6px;">
-                            <span style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(59,130,246,0.1); color:#3B82F6; border:1px solid rgba(59,130,246,0.15);">Coding</span>
-                            <span style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(139,92,246,0.1); color:#8B5CF6; border:1px solid rgba(139,92,246,0.15);">Music</span>
-                            <span style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(236,72,153,0.1); color:#EC4899; border:1px solid rgba(236,72,153,0.15);">Dance</span>
-                            <span style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(34,211,238,0.1); color:#22D3EE; border:1px solid rgba(34,211,238,0.15);">Photography</span>
-                            <span style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(249,115,22,0.1); color:#F97316; border:1px solid rgba(249,115,22,0.15);">Singing</span>
-                            <span style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(248,68,100,0.1); color:#F84464; border:1px solid rgba(248,68,100,0.15);">Video</span>
-                            <span style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(16,185,129,0.1); color:#10B981; border:1px solid rgba(16,185,129,0.15);">Drawing</span>
-                            <span style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(245,158,11,0.1); color:#F59E0B; border:1px solid rgba(245,158,11,0.15);">Fitness</span>
-                            <span style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(99,102,241,0.1); color:#6366F1; border:1px solid rgba(99,102,241,0.15);">Gaming</span>
-                            <span style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(252,211,77,0.1); color:#D97706; border:1px solid rgba(252,211,77,0.15);">Meme</span>
-                            <span style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(167,139,250,0.1); color:#7C3AED; border:1px solid rgba(167,139,250,0.15);">AI Prompt</span>
+                            <button type="button" class="cat-widget-chip" onclick="filterByCategory('ALL', this)" style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(99,102,241,0.1); color:#6366F1; border:1px solid rgba(99,102,241,0.2); cursor:pointer; transition:all 0.2s;">All</button>
+                            <button type="button" class="cat-widget-chip" onclick="filterByCategory('Coding', this)" style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(59,130,246,0.1); color:#3B82F6; border:1px solid rgba(59,130,246,0.15); cursor:pointer; transition:all 0.2s;">Coding</button>
+                            <button type="button" class="cat-widget-chip" onclick="filterByCategory('Music', this)" style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(139,92,246,0.1); color:#8B5CF6; border:1px solid rgba(139,92,246,0.15); cursor:pointer; transition:all 0.2s;">Music</button>
+                            <button type="button" class="cat-widget-chip" onclick="filterByCategory('Dance', this)" style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(236,72,153,0.1); color:#EC4899; border:1px solid rgba(236,72,153,0.15); cursor:pointer; transition:all 0.2s;">Dance</button>
+                            <button type="button" class="cat-widget-chip" onclick="filterByCategory('Photography', this)" style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(34,211,238,0.1); color:#22D3EE; border:1px solid rgba(34,211,238,0.15); cursor:pointer; transition:all 0.2s;">Photography</button>
+                            <button type="button" class="cat-widget-chip" onclick="filterByCategory('Singing', this)" style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(249,115,22,0.1); color:#F97316; border:1px solid rgba(249,115,22,0.15); cursor:pointer; transition:all 0.2s;">Singing</button>
+                            <button type="button" class="cat-widget-chip" onclick="filterByCategory('Video Editing', this)" style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(248,68,100,0.1); color:#F84464; border:1px solid rgba(248,68,100,0.15); cursor:pointer; transition:all 0.2s;">Video</button>
+                            <button type="button" class="cat-widget-chip" onclick="filterByCategory('Drawing', this)" style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(16,185,129,0.1); color:#10B981; border:1px solid rgba(16,185,129,0.15); cursor:pointer; transition:all 0.2s;">Drawing</button>
+                            <button type="button" class="cat-widget-chip" onclick="filterByCategory('Fitness', this)" style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(245,158,11,0.1); color:#F59E0B; border:1px solid rgba(245,158,11,0.15); cursor:pointer; transition:all 0.2s;">Fitness</button>
+                            <button type="button" class="cat-widget-chip" onclick="filterByCategory('Gaming', this)" style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(99,102,241,0.1); color:#6366F1; border:1px solid rgba(99,102,241,0.15); cursor:pointer; transition:all 0.2s;">Gaming</button>
+                            <button type="button" class="cat-widget-chip" onclick="filterByCategory('Meme', this)" style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(252,211,77,0.1); color:#D97706; border:1px solid rgba(252,211,77,0.15); cursor:pointer; transition:all 0.2s;">Meme</button>
+                            <button type="button" class="cat-widget-chip" onclick="filterByCategory('AI Prompt', this)" style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(167,139,250,0.1); color:#7C3AED; border:1px solid rgba(167,139,250,0.15); cursor:pointer; transition:all 0.2s;">AI Prompt</button>
                         </div>
                     </div>
+                </div>
+
+                <!-- Category Filter Pills Bar -->
+                <div class="category-filter-bar" style="display:flex; align-items:center; gap:8px; overflow-x:auto; padding-bottom:12px; margin-bottom:15px; scrollbar-width:thin;">
+                    <button type="button" class="cat-filter-btn active" onclick="filterByCategory('ALL', this)" style="padding:7px 15px; border-radius:20px; font-size:12px; font-weight:700; border:1px solid var(--arena-primary); background:var(--arena-primary); color:#fff; cursor:pointer; white-space:nowrap; transition:all 0.2s;">All Battles</button>
+                    <button type="button" class="cat-filter-btn" onclick="filterByCategory('Coding', this)" style="padding:7px 15px; border-radius:20px; font-size:12px; font-weight:700; border:1px solid var(--arena-border); background:rgba(59,130,246,0.08); color:#3B82F6; cursor:pointer; white-space:nowrap; transition:all 0.2s;"><i class="fas fa-code"></i> Coding</button>
+                    <button type="button" class="cat-filter-btn" onclick="filterByCategory('Music', this)" style="padding:7px 15px; border-radius:20px; font-size:12px; font-weight:700; border:1px solid var(--arena-border); background:rgba(139,92,246,0.08); color:#8B5CF6; cursor:pointer; white-space:nowrap; transition:all 0.2s;"><i class="fas fa-music"></i> Music</button>
+                    <button type="button" class="cat-filter-btn" onclick="filterByCategory('Dance', this)" style="padding:7px 15px; border-radius:20px; font-size:12px; font-weight:700; border:1px solid var(--arena-border); background:rgba(236,72,153,0.08); color:#EC4899; cursor:pointer; white-space:nowrap; transition:all 0.2s;"><i class="fas fa-shoe-prints"></i> Dance</button>
+                    <button type="button" class="cat-filter-btn" onclick="filterByCategory('Photography', this)" style="padding:7px 15px; border-radius:20px; font-size:12px; font-weight:700; border:1px solid var(--arena-border); background:rgba(34,211,238,0.08); color:#22D3EE; cursor:pointer; white-space:nowrap; transition:all 0.2s;"><i class="fas fa-camera"></i> Photography</button>
+                    <button type="button" class="cat-filter-btn" onclick="filterByCategory('Singing', this)" style="padding:7px 15px; border-radius:20px; font-size:12px; font-weight:700; border:1px solid var(--arena-border); background:rgba(249,115,22,0.08); color:#F97316; cursor:pointer; white-space:nowrap; transition:all 0.2s;"><i class="fas fa-microphone"></i> Singing</button>
+                    <button type="button" class="cat-filter-btn" onclick="filterByCategory('Video Editing', this)" style="padding:7px 15px; border-radius:20px; font-size:12px; font-weight:700; border:1px solid var(--arena-border); background:rgba(248,68,100,0.08); color:#F84464; cursor:pointer; white-space:nowrap; transition:all 0.2s;"><i class="fas fa-video"></i> Video Editing</button>
+                    <button type="button" class="cat-filter-btn" onclick="filterByCategory('Drawing', this)" style="padding:7px 15px; border-radius:20px; font-size:12px; font-weight:700; border:1px solid var(--arena-border); background:rgba(16,185,129,0.08); color:#10B981; cursor:pointer; white-space:nowrap; transition:all 0.2s;"><i class="fas fa-paint-brush"></i> Drawing</button>
+                    <button type="button" class="cat-filter-btn" onclick="filterByCategory('Fitness', this)" style="padding:7px 15px; border-radius:20px; font-size:12px; font-weight:700; border:1px solid var(--arena-border); background:rgba(245,158,11,0.08); color:#F59E0B; cursor:pointer; white-space:nowrap; transition:all 0.2s;"><i class="fas fa-dumbbell"></i> Fitness</button>
+                    <button type="button" class="cat-filter-btn" onclick="filterByCategory('Gaming', this)" style="padding:7px 15px; border-radius:20px; font-size:12px; font-weight:700; border:1px solid var(--arena-border); background:rgba(99,102,241,0.08); color:#6366F1; cursor:pointer; white-space:nowrap; transition:all 0.2s;"><i class="fas fa-gamepad"></i> Gaming</button>
+                    <button type="button" class="cat-filter-btn" onclick="filterByCategory('Meme', this)" style="padding:7px 15px; border-radius:20px; font-size:12px; font-weight:700; border:1px solid var(--arena-border); background:rgba(251,191,36,0.08); color:#FBBF24; cursor:pointer; white-space:nowrap; transition:all 0.2s;"><i class="fas fa-laugh-squint"></i> Meme</button>
+                    <button type="button" class="cat-filter-btn" onclick="filterByCategory('AI Prompt', this)" style="padding:7px 15px; border-radius:20px; font-size:12px; font-weight:700; border:1px solid var(--arena-border); background:rgba(168,85,247,0.08); color:#A855F7; cursor:pointer; white-space:nowrap; transition:all 0.2s;"><i class="fas fa-robot"></i> AI Prompt</button>
                 </div>
 
                 <!-- Tabs -->
@@ -1557,7 +1574,7 @@
                 <!-- Active Battles -->
                 <div id="tab-active">
                     <div class="battles-grid">
-                        <a th:each="b : ${activeBattles}" th:href="@{'/battles/' + ${b.id}}" class="battle-card" style="text-decoration:none;">
+                        <a th:each="b : ${activeBattles}" th:href="@{'/battles/' + ${b.id}}" class="battle-card" style="text-decoration:none;" th:attr="data-category=${b.category != null ? b.category : ''}">
                             <div class="battle-card-header">
                                 <span class="battle-category-badge"
                                     th:classappend="'badge-' + ${b.category != null ? b.category.toLowerCase().replaceAll('[^a-z]', '') : 'default'}"
@@ -1585,12 +1602,17 @@
                             </div>
                         </a>
                     </div>
+                    <div class="category-empty-state" style="display:none; text-align:center; padding:40px 15px; color:var(--text-muted); background:#F8FAFC; border-radius:14px; border:1px dashed var(--arena-border); margin:20px 0;">
+                        <i class="fas fa-filter" style="font-size:32px; opacity:0.35; margin-bottom:12px; display:block;"></i>
+                        <h4 style="font-size:15px; font-weight:700; margin-bottom:4px; color:var(--text-primary);">No Active Battles in this Category</h4>
+                        <p style="font-size:12px; margin:0;">Select another category or click "All Battles".</p>
+                    </div>
                 </div>
 
                 <!-- Completed Battles -->
                 <div id="tab-completed" style="display:none;">
                     <div th:if="${completedBattles != null and !completedBattles.isEmpty()}" class="battles-grid">
-                        <a th:each="b : ${completedBattles}" th:href="@{'/battles/' + ${b.id}}" class="battle-card" style="text-decoration:none; opacity:0.8;">
+                        <a th:each="b : ${completedBattles}" th:href="@{'/battles/' + ${b.id}}" class="battle-card" style="text-decoration:none; opacity:0.8;" th:attr="data-category=${b.category != null ? b.category : ''}">
                             <div class="battle-card-header">
                                 <span class="battle-category-badge"
                                     th:classappend="'badge-' + ${b.category != null ? b.category.toLowerCase().replaceAll('[^a-z]', '') : 'default'}"
@@ -1613,6 +1635,11 @@
                                 <span class="room-code-tag" th:text="${b.roomCode}">ABC123</span>
                             </div>
                         </a>
+                    </div>
+                    <div class="category-empty-state" style="display:none; text-align:center; padding:40px 15px; color:var(--text-muted); background:#F8FAFC; border-radius:14px; border:1px dashed var(--arena-border); margin:20px 0;">
+                        <i class="fas fa-filter" style="font-size:32px; opacity:0.35; margin-bottom:12px; display:block;"></i>
+                        <h4 style="font-size:15px; font-weight:700; margin-bottom:4px; color:var(--text-primary);">No Completed Battles in this Category</h4>
+                        <p style="font-size:12px; margin:0;">Select another category or click "All Battles".</p>
                     </div>
                     <div th:if="${completedBattles == null or completedBattles.isEmpty()}" class="arena-empty">
                         <i class="fas fa-flag-checkered"></i>
@@ -1698,17 +1725,18 @@
 
                 </div>
                 <div style="display:flex; flex-wrap:wrap; gap:6px;">
-                    <span style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(59,130,246,0.1); color:#3B82F6; border:1px solid rgba(59,130,246,0.15);">Coding</span>
-                    <span style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(139,92,246,0.1); color:#8B5CF6; border:1px solid rgba(139,92,246,0.15);">Music</span>
-                    <span style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(236,72,153,0.1); color:#EC4899; border:1px solid rgba(236,72,153,0.15);">Dance</span>
-                    <span style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(34,211,238,0.1); color:#22D3EE; border:1px solid rgba(34,211,238,0.15);">Photography</span>
-                    <span style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(249,115,22,0.1); color:#F97316; border:1px solid rgba(249,115,22,0.15);">Singing</span>
-                    <span style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(248,68,100,0.1); color:#F84464; border:1px solid rgba(248,68,100,0.15);">Video</span>
-                    <span style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(16,185,129,0.1); color:#10B981; border:1px solid rgba(16,185,129,0.15);">Drawing</span>
-                    <span style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(245,158,11,0.1); color:#F59E0B; border:1px solid rgba(245,158,11,0.15);">Fitness</span>
-                    <span style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(99,102,241,0.1); color:#6366F1; border:1px solid rgba(99,102,241,0.15);">Gaming</span>
-                    <span style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(251,191,36,0.1); color:#FBBF24; border:1px solid rgba(251,191,36,0.15);">Meme</span>
-                    <span style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(168,85,247,0.1); color:#A855F7; border:1px solid rgba(168,85,247,0.15);">AI Prompt</span>
+                    <button type="button" class="cat-widget-chip" onclick="filterByCategory('ALL', this)" style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(99,102,241,0.1); color:#6366F1; border:1px solid rgba(99,102,241,0.2); cursor:pointer; transition:all 0.2s;">All</button>
+                    <button type="button" class="cat-widget-chip" onclick="filterByCategory('Coding', this)" style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(59,130,246,0.1); color:#3B82F6; border:1px solid rgba(59,130,246,0.15); cursor:pointer; transition:all 0.2s;">Coding</button>
+                    <button type="button" class="cat-widget-chip" onclick="filterByCategory('Music', this)" style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(139,92,246,0.1); color:#8B5CF6; border:1px solid rgba(139,92,246,0.15); cursor:pointer; transition:all 0.2s;">Music</button>
+                    <button type="button" class="cat-widget-chip" onclick="filterByCategory('Dance', this)" style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(236,72,153,0.1); color:#EC4899; border:1px solid rgba(236,72,153,0.15); cursor:pointer; transition:all 0.2s;">Dance</button>
+                    <button type="button" class="cat-widget-chip" onclick="filterByCategory('Photography', this)" style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(34,211,238,0.1); color:#22D3EE; border:1px solid rgba(34,211,238,0.15); cursor:pointer; transition:all 0.2s;">Photography</button>
+                    <button type="button" class="cat-widget-chip" onclick="filterByCategory('Singing', this)" style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(249,115,22,0.1); color:#F97316; border:1px solid rgba(249,115,22,0.15); cursor:pointer; transition:all 0.2s;">Singing</button>
+                    <button type="button" class="cat-widget-chip" onclick="filterByCategory('Video Editing', this)" style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(248,68,100,0.1); color:#F84464; border:1px solid rgba(248,68,100,0.15); cursor:pointer; transition:all 0.2s;">Video</button>
+                    <button type="button" class="cat-widget-chip" onclick="filterByCategory('Drawing', this)" style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(16,185,129,0.1); color:#10B981; border:1px solid rgba(16,185,129,0.15); cursor:pointer; transition:all 0.2s;">Drawing</button>
+                    <button type="button" class="cat-widget-chip" onclick="filterByCategory('Fitness', this)" style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(245,158,11,0.1); color:#F59E0B; border:1px solid rgba(245,158,11,0.15); cursor:pointer; transition:all 0.2s;">Fitness</button>
+                    <button type="button" class="cat-widget-chip" onclick="filterByCategory('Gaming', this)" style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(99,102,241,0.1); color:#6366F1; border:1px solid rgba(99,102,241,0.15); cursor:pointer; transition:all 0.2s;">Gaming</button>
+                    <button type="button" class="cat-widget-chip" onclick="filterByCategory('Meme', this)" style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(251,191,36,0.1); color:#FBBF24; border:1px solid rgba(251,191,36,0.15); cursor:pointer; transition:all 0.2s;">Meme</button>
+                    <button type="button" class="cat-widget-chip" onclick="filterByCategory('AI Prompt', this)" style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(168,85,247,0.1); color:#A855F7; border:1px solid rgba(168,85,247,0.15); cursor:pointer; transition:all 0.2s;">AI Prompt</button>
                 </div>
             </div>
         </aside>
@@ -2017,12 +2045,91 @@
 
     <script>
         // â”€â”€â”€ Tab Switching â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        let activeCategoryFilter = 'ALL';
+
         function showTab(tab, btn) {
             document.getElementById('tab-active').style.display = tab === 'active' ? 'block' : 'none';
             document.getElementById('tab-completed').style.display = tab === 'completed' ? 'block' : 'none';
             document.querySelectorAll('.arena-tab').forEach(t => t.classList.remove('active'));
             btn.classList.add('active');
+            applyCategoryFilter();
         }
+
+        function filterByCategory(cat, btn) {
+            activeCategoryFilter = cat || 'ALL';
+
+            // Update top filter buttons
+            document.querySelectorAll('.cat-filter-btn').forEach(b => {
+                const isAll = (activeCategoryFilter === 'ALL' && b.innerText.includes('All'));
+                const isMatch = b.innerText.trim().toLowerCase().includes(activeCategoryFilter.toLowerCase());
+                if (isAll || (activeCategoryFilter !== 'ALL' && isMatch)) {
+                    b.classList.add('active');
+                    b.style.background = 'var(--arena-primary)';
+                    b.style.color = '#fff';
+                    b.style.borderColor = 'var(--arena-primary)';
+                } else {
+                    b.classList.remove('active');
+                    b.style.background = '';
+                    b.style.color = '';
+                    b.style.borderColor = 'var(--arena-border)';
+                }
+            });
+
+            // Update sidebar & mobile chips
+            document.querySelectorAll('.cat-widget-chip').forEach(chip => {
+                const text = chip.innerText.trim();
+                const isAll = (activeCategoryFilter === 'ALL' && text === 'All');
+                const isMatch = (activeCategoryFilter !== 'ALL' && (text.toLowerCase() === activeCategoryFilter.toLowerCase() || (activeCategoryFilter === 'Video' && text.toLowerCase().includes('video')) || (activeCategoryFilter === 'Video Editing' && text.toLowerCase().includes('video'))));
+                if (isAll || isMatch) {
+                    chip.style.transform = 'scale(1.08)';
+                    chip.style.boxShadow = '0 0 0 2px var(--arena-primary)';
+                    chip.style.fontWeight = '900';
+                } else {
+                    chip.style.transform = '';
+                    chip.style.boxShadow = '';
+                    chip.style.fontWeight = '800';
+                }
+            });
+
+            applyCategoryFilter();
+        }
+
+        function applyCategoryFilter() {
+            ['tab-active', 'tab-completed'].forEach(tabId => {
+                const tabEl = document.getElementById(tabId);
+                if (!tabEl) return;
+                const grid = tabEl.querySelector('.battles-grid');
+                const empty = tabEl.querySelector('.category-empty-state');
+                if (!grid) return;
+
+                const cards = grid.querySelectorAll('.battle-card');
+                let count = 0;
+                cards.forEach(card => {
+                    const cardCat = (card.getAttribute('data-category') || '').trim().toLowerCase();
+                    const target = activeCategoryFilter.toLowerCase();
+                    const matches = (target === 'all') || 
+                                    (cardCat === target) || 
+                                    (target === 'video' && cardCat.includes('video')) || 
+                                    (target === 'video editing' && cardCat.includes('video'));
+                    if (matches) {
+                        card.style.display = '';
+                        count++;
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+
+                if (empty) {
+                    empty.style.display = (count === 0 && cards.length > 0) ? 'block' : 'none';
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const params = new URLSearchParams(window.location.search);
+            const c = params.get('category');
+            if (c) filterByCategory(c);
+        });
 
         // â”€â”€â”€ Offline Mode Settings Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         function toggleBattleMode(val) {

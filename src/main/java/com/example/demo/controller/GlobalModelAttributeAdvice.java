@@ -45,15 +45,22 @@ public class GlobalModelAttributeAdvice {
     @ModelAttribute
     public void addGlobalAttributes(HttpSession session, Model model) {
         // Dynamic baseUrl for QR codes, links, and callbacks
-        String scheme = httpServletRequest.getScheme();
-        String serverName = httpServletRequest.getServerName();
-        int serverPort = httpServletRequest.getServerPort();
-        String contextPath = httpServletRequest.getContextPath();
-        String portPart = (("http".equalsIgnoreCase(scheme) && serverPort == 80) || 
-                           ("https".equalsIgnoreCase(scheme) && serverPort == 443)) ? "" : (":" + serverPort);
-        String baseUrl = scheme + "://" + serverName + portPart + contextPath;
+        try {
+            String scheme = httpServletRequest != null ? httpServletRequest.getScheme() : "http";
+            String serverName = httpServletRequest != null ? httpServletRequest.getServerName() : "localhost";
+            int serverPort = httpServletRequest != null ? httpServletRequest.getServerPort() : 8009;
+            String contextPath = httpServletRequest != null ? httpServletRequest.getContextPath() : "";
+            String portPart = (("http".equalsIgnoreCase(scheme) && serverPort == 80) || 
+                               ("https".equalsIgnoreCase(scheme) && serverPort == 443)) ? "" : (":" + serverPort);
+            String baseUrl = scheme + "://" + serverName + portPart + (contextPath != null ? contextPath : "");
 
-        model.addAttribute("baseUrl", baseUrl);
+            model.addAttribute("baseUrl", baseUrl);
+            model.addAttribute("serverPort", serverPort);
+        } catch (Exception ignored) {
+            model.addAttribute("baseUrl", "http://localhost:8009");
+            model.addAttribute("serverPort", 8009);
+        }
+
         model.addAttribute("promoBannerEnabled", promoBannerEnabled);
         model.addAttribute("promoBannerText", promoBannerText);
         model.addAttribute("promoBannerLink", promoBannerLink);
@@ -73,7 +80,7 @@ public class GlobalModelAttributeAdvice {
             model.addAttribute("currentUser", user); 
         }
 
-        Object token = httpServletRequest.getAttribute("urlToken");
+        Object token = httpServletRequest != null ? httpServletRequest.getAttribute("urlToken") : null;
         if (token instanceof String && !((String) token).isBlank()) {
             model.addAttribute("auth", token);
         }
