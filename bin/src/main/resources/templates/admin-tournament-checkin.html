@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/admin-fragments :: admin-head('Tournament Check-in | Youthian Admin')}">
+    <meta charset="UTF-8">
+    <title>Tournament Check-in</title>
+</head>
+<body>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
+    <!-- Unified Admin Top Navbar -->
+    <div th:replace="~{fragments/admin-fragments :: admin-navbar('tournaments')}"></div>
+
+    <div class="admin-layout-container dashboard-container">
+        <div class="mobile-menu-overlay" onclick="toggleAdminMobileMenu()"></div>
+        <!-- Unified Left Sidebar -->
+        <aside th:replace="~{fragments/admin-fragments :: admin-sidebar('tournaments', 'none')}"></aside>
+
+        <!-- Main Content -->
+        <main class="social-feed" style="max-width: 100%; padding-bottom: 60px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px;">
+                <div>
+                    <a th:href="@{/admin/tournaments/{id}/manage(id=${tournament.id})}" class="nav-btn" style="margin-bottom: 10px; display: inline-flex;">
+                        <i class="fas fa-arrow-left"></i> Back to Tournament
+                    </a>
+                    <h1 style="margin: 0; color: var(--text-primary); font-weight: 900; font-size: 26px;">
+                        <i class="fas fa-qrcode" style="color: #3b82f6; margin-right: 8px;"></i> Offline Tournament Check-in
+                    </h1>
+                    <p style="margin: 6px 0 0 0; color: var(--text-secondary); font-size: 14px;" th:text="${tournament.name + ' — ' + (tournament.venue != null ? tournament.venue : 'Venue Check-in')}"></p>
+                </div>
+            </div>
+
+            <div th:if="${successMessage}" style="background: #d1fae5; color: #065f46; border: 1px solid #34d399; padding: 14px 20px; border-radius: 12px; margin-bottom: 20px; font-weight: 700;">
+                <i class="fas fa-check-circle"></i> <span th:text="${successMessage}"></span>
+            </div>
+            <div th:if="${errorMessage}" style="background: #fee2e2; color: #991b1b; border: 1px solid #f87171; padding: 14px 20px; border-radius: 12px; margin-bottom: 20px; font-weight: 700;">
+                <i class="fas fa-circle-exclamation"></i> <span th:text="${errorMessage}"></span>
+            </div>
+
+            <!-- Scanner Box -->
+            <div style="background: var(--card-bg); border: 1px solid var(--glass-border); border-radius: 20px; padding: 28px; margin-bottom: 24px; text-align: center; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);">
+                <h3 style="margin-top: 0; color: var(--text-primary);">Camera QR Pass Scanner</h3>
+                <div id="reader" style="width: 100%; max-width: 480px; margin: 0 auto; border-radius: 16px; overflow: hidden; border: 2px solid var(--glass-border);"></div>
+
+                <!-- Manual Entry Form -->
+                <form th:action="@{/admin/tournaments/{id}/checkin(id=${tournament.id})}" method="post" style="display: flex; gap: 10px; max-width: 480px; margin: 24px auto 0;">
+                    <input type="text" name="qrCode" id="qrCodeInput" placeholder="Enter User ID or Ticket Code manually" required style="flex: 1; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.8); font-size: 14px;" />
+                    <button type="submit" class="nav-btn" style="background: #10b981; color: white; border: none; font-weight: 800; padding: 12px 20px;">
+                        Check In
+                    </button>
+                </form>
+            </div>
+
+            <!-- Participants Status -->
+            <div style="background: var(--card-bg); border: 1px solid var(--glass-border); border-radius: 20px; padding: 28px; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);">
+                <h3 style="margin-top: 0; color: var(--text-primary); margin-bottom: 16px;"><i class="fas fa-users" style="color: #0284c7; margin-right: 6px;"></i> Attendee Roster</h3>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <div th:each="p : ${participants}" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-radius: 12px; background: rgba(255,255,255,0.5); border: 1px solid var(--glass-border);">
+                        <div>
+                            <strong style="color: var(--text-primary); font-size: 14px;" th:text="${p.user.username}"></strong>
+                            <span style="font-size: 12px; color: var(--text-secondary); margin-left: 8px;" th:text="${p.user.email}"></span>
+                        </div>
+                        <div>
+                            <span th:if="${p.checkedIn}" style="background: #d1fae5; color: #059669; font-weight: 800; padding: 4px 10px; border-radius: 8px; font-size: 11px;">VERIFIED</span>
+                            <span th:if="${!p.checkedIn}" style="background: #fef3c7; color: #d97706; font-weight: 800; padding: 4px 10px; border-radius: 8px; font-size: 11px;">PENDING</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Unified Admin Realtime Scripts -->
+    <div th:replace="~{fragments/admin-fragments :: admin-scripts}"></div>
+    <script>
+        function onScanSuccess(decodedText, decodedResult) {
+            document.getElementById('qrCodeInput').value = decodedText;
+            document.getElementById('qrCodeInput').closest('form').submit();
+        }
+        var html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
+        html5QrcodeScanner.render(onScanSuccess);
+    </script>
+</body>
+</html>

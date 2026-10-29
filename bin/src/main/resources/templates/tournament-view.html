@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tournament Bracket | Youthians</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f8fafc;
+            margin: 0;
+            padding: 0;
+        }
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #475569;
+            text-decoration: none;
+            font-weight: 700;
+            margin-bottom: 25px;
+            background: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: 0.2s;
+        }
+        .btn-back:hover {
+            transform: translateX(-3px);
+            color: #0f172a;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+        }
+        .tournament-header {
+            background: #FFFFFF;
+            border: 1px solid rgba(15, 23, 42, 0.08);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+            position: relative;
+        }
+        .btn-join {
+            background: linear-gradient(135deg, #10B981, #059669);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 800;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.3s;
+        }
+        .btn-join:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(16,185,129,0.3); }
+
+        .btn-battle {
+            background: linear-gradient(135deg, #F84464, #E11D48);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 15px;
+            font-weight: 800;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 16px;
+            animation: pulse-red 2s infinite;
+        }
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(248, 68, 100, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(248, 68, 100, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(248, 68, 100, 0); }
+        }
+
+        .bracket-container {
+            display: flex;
+            gap: 40px;
+            overflow-x: auto;
+            padding: 20px 0;
+            align-items: center;
+        }
+        
+        .bracket-round {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            min-width: 250px;
+        }
+
+        .match-card {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            position: relative;
+        }
+        .match-card.active { border-color: #F84464; }
+        .match-card.completed { border-color: #cbd5e1; }
+        
+        .match-player {
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .match-player:first-child { border-bottom: 1px solid #f1f5f9; }
+        .match-player.winner { background: rgba(16, 185, 129, 0.05); color: #059669; }
+        .match-player.loser { color: #94a3b8; text-decoration: line-through; }
+        .match-player.tbd { color: #94a3b8; font-style: italic; }
+
+        .round-title {
+            font-weight: 800;
+            color: #475569;
+            text-transform: uppercase;
+            font-size: 13px;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+            .tab-nav {
+            display: flex; gap: 20px; margin-bottom: 25px; border-bottom: 2px solid #e2e8f0;
+        }
+        .tab-nav button {
+            background: none; border: none; padding: 10px 20px; font-weight: 800; font-size: 16px; color: #64748b; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; transition: 0.2s;
+        }
+        .tab-nav button:hover { color: #0f172a; }
+        .tab-nav button.active { color: #F84464; border-bottom-color: #F84464; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        .grid-dashboard { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+        .info-card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); margin-bottom: 20px; border: 1px solid #e2e8f0; }
+        .info-card h3 { margin-top: 0; color: #0f172a; font-weight: 800; }
+        .stat-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed #e2e8f0; font-weight: 600; font-size: 14px; }
+        .stat-row:last-child { border-bottom: none; }
+
+        .advanced-bracket {
+            display: flex; gap: 50px; overflow-x: auto; padding: 20px; align-items: center;
+        }
+        .bracket-col { display: flex; flex-direction: column; gap: 30px; justify-content: space-around; position: relative; }
+        .match-wrap { position: relative; }
+        /* Connectors */
+        .bracket-col:not(:last-child) .match-wrap::after {
+            content: ''; position: absolute; right: -25px; top: 50%; width: 25px; height: 2px; background: #cbd5e1;
+        }
+        .bracket-col:not(:first-child) .match-wrap::before {
+            content: ''; position: absolute; left: -25px; top: 50%; width: 25px; height: 2px; background: #cbd5e1;
+        }
+        
+        .participant-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }
+        .p-card { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; text-align: center; font-weight: 700; color: #0f172a; }
+        .p-card img { width: 50px; height: 50px; border-radius: 50%; margin-bottom: 10px; background: #f1f5f9; }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        
+        <a th:href="@{/tournaments}" class="btn-back"><i class="fas fa-arrow-left"></i> Back to Tournaments</a>
+
+        <div class="tournament-header">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 20px;">
+                <div>
+                    <h1 style="margin: 0 0 10px 0; font-size: 28px; font-weight: 900; color: #0f172a;" th:text="${tournament.name}">Tournament Name</h1>
+                    <p style="margin: 0 0 15px 0; color: #475569; max-width: 600px; line-height: 1.6;" th:text="${tournament.description}"></p>
+                    <div style="display: flex; gap: 15px; font-size: 13px; font-weight: 700; color: #64748b;">
+                        <span><i class="fas fa-users"></i> <span th:text="${participantCount}"></span> / <span th:text="${tournament.maxParticipants}"></span> Registered</span>
+                        <span><i class="fas fa-clock"></i> Status: <span th:text="${tournament.status}" style="color: #F84464;"></span></span>
+                    </div>
+                </div>
+                
+                <div>
+                    <form th:if="${!isRegistered and tournament.status == 'REGISTRATION_OPEN'}" th:action="@{/tournaments/{id}/join(id=${tournament.id})}" method="post">
+                        <button type="submit" class="btn-join"><i class="fas fa-ticket-alt"></i> Join Tournament</button>
+                    </form>
+                    
+                    <div th:if="${isRegistered}" style="background: rgba(16, 185, 129, 0.1); color: #059669; padding: 12px 20px; border-radius: 12px; font-weight: 800; display: inline-flex; align-items: center; gap: 8px; margin-bottom: 15px;">
+                        <i class="fas fa-check-circle"></i> You are registered!
+                    </div>
+                    
+                    <div th:if="${isRegistered and tournament.mode == 'OFFLINE' and myParticipant != null}" style="background: white; border: 2px dashed #cbd5e1; border-radius: 15px; padding: 20px; text-align: center; max-width: 300px;">
+                        <h4 style="margin: 0 0 10px 0; color: #334155;">🎫 OFFLINE BATTLE PASS</h4>
+                        <div style="background: #f1f5f9; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                            <img id="qrPassImg" alt="QR Code" style="width: 150px; height: 150px; border-radius: 10px;">
+                            <script th:inline="javascript">
+                                /*<![CDATA[*/
+                                var qrCodeStr = /*[[${myParticipant.qrPassCode}]]*/ 'default';
+                                var passUrl = window.location.origin + '/tournaments/pass/' + qrCodeStr;
+                                document.getElementById('qrPassImg').src = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' + encodeURIComponent(passUrl);
+                                /*]]>*/
+                            </script>
+                        </div>
+                        <p style="margin: 0 0 5px 0; font-weight: 700; color: #0f172a;" th:text="${myParticipant.user.username}"></p>
+                        <p style="margin: 0; font-size: 13px; color: #64748b;" th:text="'Participant ID: ' + ${myParticipant.participantNumber}"></p>
+                        <div style="margin-top: 15px;">
+                            <span th:if="${myParticipant.checkedIn}" style="background: #d1fae5; color: #059669; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 800;"><i class="fas fa-check-double"></i> Checked In</span>
+                            <span th:if="${!myParticipant.checkedIn}" style="background: #f1f5f9; color: #64748b; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 800;">Pending Check-in</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div th:if="${tournament.judges.contains(user)}" style="margin-top: 15px;">
+                <a th:href="@{'/tournaments/' + ${tournament.id} + '/judge'}" class="btn-action" style="background:#8b5cf6; color:white; text-decoration:none; display:block; text-align:center; padding:12px; border-radius:12px; font-weight:bold;">
+                    <i class="fas fa-gavel"></i> Go to Judge Portal
+                </a>
+            </div>
+
+            <!-- Call to Action for Active Match -->
+            <div th:if="${currentMatch != null}" style="margin-top: 25px; padding-top: 25px; border-top: 1px solid #f1f5f9; text-align: center;">
+                <h3 style="margin: 0 0 15px 0; color: #0f172a;">🔥 Your Next Match is Ready!</h3>
+                <p style="margin: 0 0 20px 0; color: #64748b;">
+                    <strong th:text="${currentMatch.player1.username}"></strong> vs <strong th:text="${currentMatch.player2.username}"></strong><br>
+                    (<span th:text="${currentMatch.round.name}"></span>)
+                </p>
+                <a th:href="@{/battles/{id}(id=${currentMatch.battle.id})}" class="btn-battle"><i class="fas fa-fire"></i> Enter Battle Room</a>
+            </div>
+        </div>
+
+        <!-- TABS NAV -->
+        <div class="tab-nav">
+            <button class="active" onclick="showTab('overview')">Overview</button>
+            <button onclick="showTab('bracket')">Bracket</button>
+            <button onclick="showTab('participants')">Participants</button>
+        </div>
+
+        <!-- OVERVIEW TAB -->
+        <div id="tab-overview" class="tab-content active">
+            <div class="grid-dashboard">
+                <div>
+                    <div class="info-card">
+                        <h3><i class="fas fa-info-circle"></i> Tournament Details</h3>
+                        <div class="stat-row"><span>Category</span> <span th:text="${tournament.type}"></span></div>
+                        <div class="stat-row"><span>Team Type</span> <span th:text="${tournament.teamType}"></span></div>
+                        <div class="stat-row"><span>Max Participants</span> <span th:text="${tournament.maxParticipants}"></span></div>
+                        <div class="stat-row"><span>Battle Duration</span> <span th:text="${tournament.battleDurationMinutes} + ' Min'"></span></div>
+                    </div>
+                    
+                    <div class="info-card" th:if="${tournament.mode == 'OFFLINE'}">
+                        <h3><i class="fas fa-map-marker-alt"></i> Venue Details</h3>
+                        <div class="stat-row"><span>Venue</span> <span th:text="${tournament.venue}"></span></div>
+                        <div class="stat-row"><span>Date & Time</span> <span th:text="${tournament.tournamentStart != null ? #temporals.format(tournament.tournamentStart, 'dd-MMM-yyyy hh:mm a') : 'TBD'}"></span></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="info-card" style="border-color:#F84464;">
+                        <h3><i class="fas fa-gift" style="color:#F84464;"></i> Prize Pool</h3>
+                        <div class="stat-row"><span>Entry Fee</span> <span th:text="'₹' + ${tournament.entryFee}"></span></div>
+                        <div class="stat-row"><span>1st Place</span> <span th:text="${tournament.prize1Percent} + '%'"></span></div>
+                        <div class="stat-row"><span>2nd Place</span> <span th:text="${tournament.prize2Percent} + '%'"></span></div>
+                        <div class="stat-row"><span>3rd Place</span> <span th:text="${tournament.prize3Percent} + '%'"></span></div>
+                        <div class="stat-row" th:if="${tournament.customPrizes != null}">
+                            <span>Other</span> <span th:text="${tournament.customPrizes}"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PARTICIPANTS TAB -->
+        <div id="tab-participants" class="tab-content">
+            <div class="info-card">
+                <h3><i class="fas fa-users"></i> Registered Participants (<span th:text="${participantCount}"></span>)</h3>
+                <div th:if="${participantCount == 0}" style="text-align:center; padding: 20px; color:#94a3b8;">No participants registered yet.</div>
+                <div class="participant-grid">
+                    <div th:each="p : ${tournament.participants}" class="p-card">
+                        <img th:src="@{/img/default-avatar.png}" alt="User">
+                        <div th:text="${p.user.username}"></div>
+                        <div style="font-size:11px; color:#64748b;" th:if="${tournament.mode == 'OFFLINE'}">
+                            <i class="fas fa-ticket-alt"></i> <span th:text="${p.participantNumber}"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BRACKET TAB -->
+        <div id="tab-bracket" class="tab-content">
+            <div class="info-card" style="padding:0; overflow:hidden;">
+                <div style="padding:25px; border-bottom:1px solid #e2e8f0;">
+                    <h3 style="margin:0;"><i class="fas fa-sitemap" style="color: #F84464;"></i> Official Tournament Bracket</h3>
+                </div>
+                
+                <div th:if="${rounds.isEmpty()}" style="text-align: center; color: #94a3b8; padding: 50px 0;">
+                    <i class="fas fa-project-diagram" style="font-size: 40px; margin-bottom: 10px; opacity: 0.5;"></i>
+                    <p>Bracket will be generated once registration closes.</p>
+                </div>
+
+                <div class="advanced-bracket" th:if="${!rounds.isEmpty()}">
+                    <div class="bracket-col" th:each="round : ${rounds}">
+                        <div class="round-title" th:text="${round.name}">Round</div>
+                        
+                        <div th:each="battle : ${round.battles}" class="match-wrap">
+                            <div th:class="'match-card ' + ${battle.status == 'COMPLETED' ? 'completed' : (battle.status == 'READY' or battle.status == 'LIVE' ? 'active' : '')}">
+                                <!-- Player 1 -->
+                                <div th:class="'match-player ' + ${battle.player1 == null ? 'tbd' : (battle.winner != null ? (battle.winner.id == battle.player1.id ? 'winner' : 'loser') : '')}">
+                                    <span th:text="${battle.player1 != null ? battle.player1.username : 'TBD / BYE'}"></span>
+                                    <i th:if="${battle.winner != null and battle.player1 != null and battle.winner.id == battle.player1.id}" class="fas fa-check"></i>
+                                </div>
+                                <!-- Player 2 -->
+                                <div th:class="'match-player ' + ${battle.player2 == null ? 'tbd' : (battle.winner != null ? (battle.winner.id == battle.player2.id ? 'winner' : 'loser') : '')}">
+                                    <span th:text="${battle.player2 != null ? battle.player2.username : 'TBD / BYE'}"></span>
+                                    <i th:if="${battle.winner != null and battle.player2 != null and battle.winner.id == battle.player2.id}" class="fas fa-check"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Grand Winner Column -->
+                    <div class="bracket-col" th:if="${tournament.winner != null}">
+                        <div class="round-title"><i class="fas fa-crown" style="color: #FFD700;"></i> Champion</div>
+                        <div class="match-wrap">
+                            <div class="match-card" style="border-color: #FFD700; background: rgba(255, 215, 0, 0.05);">
+                                <div class="match-player winner" style="justify-content: center; padding: 20px;">
+                                    <div style="text-align: center;">
+                                        <i class="fas fa-trophy" style="font-size: 24px; color: #FFD700; margin-bottom: 10px;"></i>
+                                        <div style="font-size: 18px; font-weight: 900;" th:text="${tournament.winner.username}"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-nav button').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById('tab-' + tabId).classList.add('active');
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>
+
+
+

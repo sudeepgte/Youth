@@ -2054,12 +2054,12 @@
                         <div class="field-group">
                             <label>Total Rows (A, B, C...)</label>
                             <input type="number" name="totalRows" id="rowsInput" th:value="${event.totalRows}" placeholder="e.g. 5"
-                                min="0" max="26" required onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();" oninput="calculateMaxParticipants()">
+                                min="0" max="26" onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();" oninput="calculateMaxParticipants()">
                         </div>
                         <div class="field-group">
                             <label>Seats Per Row</label>
                             <input type="number" name="seatsPerRow" id="seatsPerRowInput" th:value="${event.seatsPerRow}" placeholder="e.g. 5"
-                                min="0" max="50" required onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();" oninput="calculateMaxParticipants()">
+                                min="0" max="50" onkeydown="if(['-','+','e','E'].includes(event.key)) event.preventDefault();" oninput="calculateMaxParticipants()">
                         </div>
                     </div>
 
@@ -2219,24 +2219,23 @@
                     <div class="field-group">
                         <label>Poster Image Upload</label>
                         <div style="position:relative;">
-                            <input type="file" name="imageFile" id="imageFileInput" accept="image/png, image/jpeg"
+                            <input type="file" name="imageFile" id="imageFileInput" accept="image/png, image/jpeg, image/webp, image/jpg"
+                                multiple
                                 onchange="previewImageFile(this)"
                                 style="width:100%; padding:12px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1); border-radius:10px; color:#fff;">
                         </div>
                         <p style="font-size:12px; color:#334155; margin-top:6px;">
                             <i class="fas fa-info-circle" style="color:#f84464;"></i>
-                            Upload a direct image (JPG, PNG). If left blank, a default image based on the
-                            category will be used.
+                            Upload direct images (JPG, PNG, WEBP). Multiple images can be selected. If left blank, a default image based on the category will be used.
                         </p>
                     </div>
 
                     <!-- Live Preview -->
                     <div id="posterPreview"
-                        th:style="${event.imageUrl != null and !event.imageUrl.isEmpty()} ? 'display:flex; margin-top:16px; border-radius:14px; overflow:hidden;' : 'display:none; margin-top:16px; border-radius:14px; overflow:hidden;'">
+                        th:style="${event.imageUrl != null and !event.imageUrl.isEmpty()} ? 'display:flex; flex-wrap:wrap; gap:12px; margin-top:16px; border-radius:14px;' : 'display:none; flex-wrap:wrap; gap:12px; margin-top:16px; border-radius:14px;'">
                         <img id="posterImg" th:src="${event.imageUrl}"
-                            style="width:100%; height:100%; object-fit:contain; border-radius:14px;" alt="Preview"
+                            style="width:100%; max-height:220px; object-fit:contain; border-radius:14px;" alt="Preview"
                             onerror="this.parentElement.style.display='none'">
-                        <p style="font-size:12px; color:#64748b; margin-top:8px; text-align:center;">Image preview</p>
                     </div>
                 </div>
 
@@ -2446,6 +2445,16 @@
                         toggleModeFields();
                     }
                 }
+
+                // Enable/disable inputs based on visibility to prevent form submission blocks
+                [lpFields, advFields, trekFields, bikeFields, bmosGrid].forEach(sec => {
+                    if (sec) {
+                        const isHidden = (sec.style.display === 'none');
+                        sec.querySelectorAll('input, select, textarea').forEach(el => {
+                            el.disabled = isHidden;
+                        });
+                    }
+                });
             }
             
             catRadios.forEach(r => {
@@ -2476,9 +2485,11 @@
                     maxInput.readOnly = true;
                     maxInput.style.background = 'rgba(255,255,255,0.02)';
                 } else {
-                    maxInput.value = 0;
                     maxInput.readOnly = false;
                     maxInput.style.background = 'rgba(255,255,255,0.05)';
+                    if (!maxInput.value || parseInt(maxInput.value) <= 0) {
+                        maxInput.value = 100;
+                    }
                 }
             }
         }
@@ -2486,15 +2497,35 @@
         // â”€â”€ Poster file live preview â”€â”€
         function previewImageFile(input) {
             const preview = document.getElementById('posterPreview');
-            const img = document.getElementById('posterImg');
+            preview.innerHTML = '';
             
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    img.src = e.target.result;
-                    preview.style.display = 'flex';
-                };
-                reader.readAsDataURL(input.files[0]);
+            if (input.files && input.files.length > 0) {
+                preview.style.display = 'flex';
+                preview.style.flexWrap = 'wrap';
+                preview.style.gap = '12px';
+                
+                Array.from(input.files).forEach((file, idx) => {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const imgWrapper = document.createElement('div');
+                        imgWrapper.style.position = 'relative';
+                        imgWrapper.style.display = 'inline-block';
+                        imgWrapper.style.borderRadius = '10px';
+                        imgWrapper.style.overflow = 'hidden';
+                        imgWrapper.style.border = '1px solid rgba(255,255,255,0.2)';
+
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.style.width = input.files.length === 1 ? '100%' : '140px';
+                        img.style.height = input.files.length === 1 ? '220px' : '100px';
+                        img.style.objectFit = 'cover';
+                        img.style.display = 'block';
+
+                        imgWrapper.appendChild(img);
+                        preview.appendChild(imgWrapper);
+                    };
+                    reader.readAsDataURL(file);
+                });
             } else {
                 preview.style.display = 'none';
             }
@@ -2529,11 +2560,16 @@
 
 
         // â”€â”€ Publish button animation â”€â”€
-        document.querySelector('form').addEventListener('submit', function () {
-            if (!validateForm()) return false;
+        document.querySelector('form').addEventListener('submit', function (e) {
+            if (!validateForm()) {
+                e.preventDefault();
+                return false;
+            }
             const btn = document.getElementById('publishBtn');
-            btn.style.opacity = '0.7';
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Publishing...';
+            if (btn) {
+                btn.style.opacity = '0.7';
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Publishing...';
+            }
         });
         
         // Secret Rewards Logic
@@ -2543,6 +2579,7 @@
             const isEnabled = document.getElementById('enableSecretRewards').checked;
             const container = document.getElementById('secretRewardsContainer');
             container.style.display = isEnabled ? 'block' : 'none';
+            container.querySelectorAll('input, select, textarea').forEach(el => el.disabled = !isEnabled);
             
             if (isEnabled && rewardIndex === 0) {
                 addRewardPartner(); // Add first one automatically
@@ -2682,7 +2719,9 @@
             while(parts.length > 0) {
                 let query = parts.join(', ');
                 try {
-                    let r = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(query));
+                    let r = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&accept-language=en&q=' + encodeURIComponent(query), {
+                        headers: { 'Accept-Language': 'en-US,en;q=0.9' }
+                    });
                     let data = await r.json();
                     if (data && data.length > 0) {
                         document.getElementById('latitudeInput').value = data[0].lat;
@@ -2706,8 +2745,8 @@
         function useCurrentLocation() {
             if ("geolocation" in navigator) {
                 const btn = document.querySelector('button[onclick="useCurrentLocation()"]');
-                const orig = btn.innerHTML;
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Locating...';
+                const orig = btn ? btn.innerHTML : '';
+                if (btn) btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Locating...';
                 
                 navigator.geolocation.getCurrentPosition(function(position) {
                     const lat = position.coords.latitude;
@@ -2715,30 +2754,34 @@
                     document.getElementById('latitudeInput').value = lat;
                     document.getElementById('longitudeInput').value = lon;
                     
-                    fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lon)
+                    fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lon + '&accept-language=en', {
+                        headers: {
+                            'Accept-Language': 'en-US,en;q=0.9'
+                        }
+                    })
                         .then(r => r.json())
                         .then(data => {
                             if (data && data.display_name) {
                                 let vInput = document.getElementById('venueInput');
-                                if (!vInput.value.trim()) {
-                                    vInput.value = data.display_name;
-                                }
+                                vInput.value = data.display_name;
                             }
-                            btn.innerHTML = orig;
+                            if (btn) btn.innerHTML = orig;
                             const statusEl = document.getElementById('locationStatus');
-                            statusEl.style.display = 'block';
-                            statusEl.innerHTML = '<i class="fas fa-check-circle"></i> Precise current location acquired';
-                            statusEl.style.color = '#10b981';
+                            if (statusEl) {
+                                statusEl.style.display = 'block';
+                                statusEl.innerHTML = '<i class="fas fa-check-circle"></i> Precise current location acquired';
+                                statusEl.style.color = '#10b981';
+                            }
                         })
                         .catch(e => {
-                            btn.innerHTML = orig;
+                            if (btn) btn.innerHTML = orig;
                             let vInput = document.getElementById('venueInput');
                             if (!vInput.value.trim()) {
                                 vInput.value = "Current Location";
                             }
                         });
                 }, function(error) {
-                    btn.innerHTML = orig;
+                    if (btn) btn.innerHTML = orig;
                     alert("Please allow location access to use this feature.");
                 });
             } else {

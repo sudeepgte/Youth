@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Youth (Zentrix) - Brand Guidelines</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap');
+        
+        :root {
+            --bg-color: #E0F2FE;
+            --primary: #3B82F6;
+            --secondary: #93C5FD;
+            --accent: #22D3EE;
+            --text-primary: #0F172A;
+            --text-secondary: #334155;
+            --gradient-1: linear-gradient(135deg, #3B82F6 0%, #93C5FD 55%, #22D3EE 100%);
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            color: var(--text-primary);
+            background: #ffffff;
+            line-height: 1.6;
+            margin: 0;
+            padding: 40px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            padding: 40px 0;
+            border-bottom: 2px solid var(--bg-color);
+            margin-bottom: 40px;
+        }
+
+        .logo {
+            max-width: 250px;
+            margin-bottom: 20px;
+            background: #000; /* Dark background to show neon logo */
+            padding: 20px;
+            border-radius: 12px;
+        }
+
+        h1 {
+            font-weight: 800;
+            font-size: 2.5rem;
+            margin: 0;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        h2 {
+            font-weight: 800;
+            font-size: 1.8rem;
+            margin-top: 40px;
+            color: var(--primary);
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        p {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+        }
+
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .color-card {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border: 1px solid #eee;
+        }
+
+        .color-swatch {
+            height: 100px;
+            width: 100%;
+        }
+
+        .color-info {
+            padding: 15px;
+            background: #fff;
+        }
+
+        .color-name {
+            font-weight: 800;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        .color-hex {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            font-family: monospace;
+        }
+
+        .typography-example {
+            background: var(--bg-color);
+            padding: 30px;
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+
+        .typography-example h1 {
+            -webkit-text-fill-color: var(--text-primary);
+            background: none;
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .typography-example .glow-text {
+            color: white;
+            text-shadow: 0 0 15px rgba(34, 211, 238, 0.8);
+            background: #0F172A;
+            padding: 20px;
+            border-radius: 8px;
+            display: inline-block;
+            margin-top: 15px;
+        }
+
+        .image-showcase {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .image-showcase img {
+            max-width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 20px 50px -12px rgba(15, 23, 42, 0.2);
+            margin-bottom: 20px;
+        }
+
+        .image-caption {
+            font-size: 0.9rem;
+            font-style: italic;
+            color: var(--text-secondary);
+            margin-bottom: 40px;
+        }
+
+        /* Print optimization */
+        @media print {
+            body { padding: 0; }
+            .container { max-width: 100%; }
+            .color-grid { grid-template-columns: repeat(3, 1fr); }
+            .color-swatch { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="src/main/resources/static/images/zentrix_neon_logo.png" alt="Zentrix Logo" class="logo">
+            <h1>Brand Guidelines</h1>
+            <p>Design System & Identity for the Youth (Zentrix) Project</p>
+        </div>
+
+        <h2>1. Core Theme & Concept</h2>
+        <p>The visual identity revolves around a <strong>"Cool Blue / Ice Blue / Cyan Glow"</strong> aesthetic. It embraces modern glassmorphism (frosted glass effects), floating elements, and vibrant glowing accents against deep, high-contrast backgrounds to establish a premium and dynamic feel.</p>
+
+        <h2>2. Color Palette</h2>
+        <div class="color-grid">
+            <div class="color-card">
+                <div class="color-swatch" style="background-color: #3B82F6;"></div>
+                <div class="color-info">
+                    <div class="color-name">Primary (Cool Blue)</div>
+                    <div class="color-hex">#3B82F6</div>
+                </div>
+            </div>
+            <div class="color-card">
+                <div class="color-swatch" style="background-color: #93C5FD;"></div>
+                <div class="color-info">
+                    <div class="color-name">Secondary (Neon)</div>
+                    <div class="color-hex">#93C5FD</div>
+                </div>
+            </div>
+            <div class="color-card">
+                <div class="color-swatch" style="background-color: #22D3EE;"></div>
+                <div class="color-info">
+                    <div class="color-name">Accent (Cyan Glow)</div>
+                    <div class="color-hex">#22D3EE</div>
+                </div>
+            </div>
+            <div class="color-card">
+                <div class="color-swatch" style="background-color: #E0F2FE;"></div>
+                <div class="color-info">
+                    <div class="color-name">Ice Background</div>
+                    <div class="color-hex">#E0F2FE</div>
+                </div>
+            </div>
+            <div class="color-card">
+                <div class="color-swatch" style="background-color: #0F172A;"></div>
+                <div class="color-info">
+                    <div class="color-name">Primary Text</div>
+                    <div class="color-hex">#0F172A</div>
+                </div>
+            </div>
+            <div class="color-card">
+                <div class="color-swatch" style="background-color: #334155;"></div>
+                <div class="color-info">
+                    <div class="color-name">Secondary Text</div>
+                    <div class="color-hex">#334155</div>
+                </div>
+            </div>
+        </div>
+
+        <h2>3. Typography</h2>
+        <p>The primary font family is <strong>Outfit</strong>, chosen for its clean, geometric, and modern feel.</p>
+        <div class="typography-example">
+            <h1>Outfit Bold (800)</h1>
+            <p>Outfit Regular (400) - Used for body text and paragraphs. It provides excellent readability while maintaining the modern aesthetic of the brand.</p>
+            <div class="glow-text">
+                <h2>Glowing Text Effect</h2>
+                <p>Used for emphasis on dark backgrounds</p>
+            </div>
+        </div>
+
+        <h2>4. Imagery & Backgrounds</h2>
+        <p>Backgrounds utilize deep blues and fluid wave structures to add depth and motion to the interface without distracting from the core content.</p>
+        
+        <div class="image-showcase">
+            <img src="src/main/resources/static/images/hero-blue-wave-bg.png" alt="Hero Wave Background">
+            <div class="image-caption">Example: Hero Blue Wave Background</div>
+        </div>
+        
+        <div class="image-showcase">
+            <img src="src/main/resources/static/images/chat-pattern.png" alt="Chat Pattern Background">
+            <div class="image-caption">Example: Secondary Pattern/Background</div>
+        </div>
+    </div>
+</body>
+</html>

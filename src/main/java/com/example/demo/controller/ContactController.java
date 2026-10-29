@@ -86,7 +86,11 @@ public class ContactController {
             @RequestParam("replyMessage") String replyMessage,
             HttpSession session
     ) {
-        if (!"admin".equals(session.getAttribute("user"))) {
+        Object u = session.getAttribute("user");
+        boolean isAdmin = "admin".equals(u)
+                || (u instanceof com.example.demo.model.User && "admin".equalsIgnoreCase(((com.example.demo.model.User) u).getUsername()))
+                || "admin".equals(session.getAttribute("admin"));
+        if (!isAdmin) {
             return "redirect:/login";
         }
 

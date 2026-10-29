@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Judge Portal | Youthians</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --text-primary: #0f172a;
+        }
+        body { background: var(--bg-gradient) !important; font-family: 'Inter', sans-serif; min-height: 100vh; }
+        .container { max-width: 800px; margin: 40px auto; padding: 0 20px; }
+        
+        .header { text-align: center; color: white; margin-bottom: 40px; }
+        .header h1 { font-size: 32px; font-weight: 900; margin: 0 0 10px 0; }
+        .header p { opacity: 0.8; margin: 0; }
+
+        .battle-card {
+            background: var(--card-bg); border-radius: 20px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); margin-bottom: 30px;
+        }
+        .vs-header { text-align: center; font-weight: 900; font-size: 24px; color: #F84464; margin-bottom: 25px; }
+
+        .player-score-section {
+            background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 15px; padding: 20px; margin-bottom: 20px;
+        }
+        .player-name { font-size: 18px; font-weight: 800; color: #0f172a; margin: 0 0 15px 0; display: flex; align-items: center; justify-content: space-between; }
+        
+        .score-slider { margin-bottom: 15px; }
+        .score-slider label { display: flex; justify-content: space-between; font-weight: 700; font-size: 13px; color: #475569; margin-bottom: 5px; }
+        .score-slider input[type=range] { width: 100%; cursor: pointer; accent-color: #3b82f6; }
+
+        .btn-submit { background: #10B981; color: white; border: none; padding: 12px 20px; border-radius: 10px; font-weight: 800; cursor: pointer; width: 100%; margin-top: 10px; }
+        .btn-submit:hover { background: #059669; }
+
+        .alert-success { background: #d1fae5; color: #065f46; padding: 15px; border-radius: 12px; margin-bottom: 20px; font-weight: bold; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a th:href="@{'/tournaments/' + ${tournament.id}}" style="color:white; text-decoration:none; display:inline-block; margin-bottom:20px; font-weight:bold;"><i class="fas fa-arrow-left"></i> Back to Bracket</a>
+
+        <div th:if="${param.success}" class="alert-success">
+            <i class="fas fa-check-circle"></i> Scores submitted successfully!
+        </div>
+
+        <div class="header">
+            <h1><i class="fas fa-gavel"></i> Judge Portal</h1>
+            <p th:text="${tournament.name}"></p>
+        </div>
+
+        <div th:if="${liveBattles.isEmpty()}" style="text-align:center; color:white; background:rgba(0,0,0,0.2); padding:40px; border-radius:20px;">
+            <i class="fas fa-clock" style="font-size: 40px; margin-bottom: 15px; opacity:0.5;"></i>
+            <h3>No Live Battles to Judge</h3>
+            <p>Wait for the admin to start the next match.</p>
+        </div>
+
+        <div th:each="b : ${liveBattles}" class="battle-card">
+            <div class="vs-header">
+                <span th:text="${b.player1.user.username}"></span> <span style="color:#94a3b8; font-size:16px;">VS</span> <span th:text="${b.player2.user.username}"></span>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <!-- Player 1 Form -->
+                <form th:action="@{'/tournaments/' + ${tournament.id} + '/judge/' + ${b.id} + '/score'}" method="post" class="player-score-section">
+                    <input type="hidden" name="participantId" th:value="${b.player1.id}">
+                    <h3 class="player-name" th:text="${b.player1.user.username}"></h3>
+                    
+                    <div class="score-slider">
+                        <label>Technique <span class="val-t1">0</span></label>
+                        <input type="range" name="techniqueScore" min="1" max="10" value="5" oninput="this.previousElementSibling.querySelector('.val-t1').textContent = this.value">
+                    </div>
+                    <div class="score-slider">
+                        <label>Creativity <span class="val-c1">0</span></label>
+                        <input type="range" name="creativityScore" min="1" max="10" value="5" oninput="this.previousElementSibling.querySelector('.val-c1').textContent = this.value">
+                    </div>
+                    <div class="score-slider">
+                        <label>Performance <span class="val-p1">0</span></label>
+                        <input type="range" name="performanceScore" min="1" max="10" value="5" oninput="this.previousElementSibling.querySelector('.val-p1').textContent = this.value">
+                    </div>
+                    <div class="score-slider">
+                        <label>Execution <span class="val-e1">0</span></label>
+                        <input type="range" name="executionScore" min="1" max="10" value="5" oninput="this.previousElementSibling.querySelector('.val-e1').textContent = this.value">
+                    </div>
+                    <div class="score-slider">
+                        <label>Audience Impact <span class="val-a1">0</span></label>
+                        <input type="range" name="audienceImpactScore" min="1" max="10" value="5" oninput="this.previousElementSibling.querySelector('.val-a1').textContent = this.value">
+                    </div>
+                    
+                    <button type="submit" class="btn-submit">Submit Score</button>
+                </form>
+
+                <!-- Player 2 Form -->
+                <form th:action="@{'/tournaments/' + ${tournament.id} + '/judge/' + ${b.id} + '/score'}" method="post" class="player-score-section">
+                    <input type="hidden" name="participantId" th:value="${b.player2.id}">
+                    <h3 class="player-name" th:text="${b.player2.user.username}"></h3>
+                    
+                    <div class="score-slider">
+                        <label>Technique <span class="val-t2">0</span></label>
+                        <input type="range" name="techniqueScore" min="1" max="10" value="5" oninput="this.previousElementSibling.querySelector('.val-t2').textContent = this.value">
+                    </div>
+                    <div class="score-slider">
+                        <label>Creativity <span class="val-c2">0</span></label>
+                        <input type="range" name="creativityScore" min="1" max="10" value="5" oninput="this.previousElementSibling.querySelector('.val-c2').textContent = this.value">
+                    </div>
+                    <div class="score-slider">
+                        <label>Performance <span class="val-p2">0</span></label>
+                        <input type="range" name="performanceScore" min="1" max="10" value="5" oninput="this.previousElementSibling.querySelector('.val-p2').textContent = this.value">
+                    </div>
+                    <div class="score-slider">
+                        <label>Execution <span class="val-e2">0</span></label>
+                        <input type="range" name="executionScore" min="1" max="10" value="5" oninput="this.previousElementSibling.querySelector('.val-e2').textContent = this.value">
+                    </div>
+                    <div class="score-slider">
+                        <label>Audience Impact <span class="val-a2">0</span></label>
+                        <input type="range" name="audienceImpactScore" min="1" max="10" value="5" oninput="this.previousElementSibling.querySelector('.val-a2').textContent = this.value">
+                    </div>
+                    
+                    <button type="submit" class="btn-submit">Submit Score</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+        <script>
+        // Init all sliders to 5 text value
+        document.querySelectorAll('input[type=range]').forEach(el => {
+            el.previousElementSibling.querySelector('span').textContent = el.value;
+        });
+
+        // Add confirmation modal to forms
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                if (!confirm("Are you sure you want to submit this score? This action cannot be undone.")) {
+                    e.preventDefault();
+                }
+            });
+        });
+
+        // Auto-refresh polling every 10 seconds if no live battles
+        const hasLiveBattles = document.querySelectorAll('.battle-card').length > 0;
+        if (!hasLiveBattles) {
+            setInterval(() => {
+                window.location.reload();
+            }, 10000);
+        }
+    </script>
+</body>
+</html>
+

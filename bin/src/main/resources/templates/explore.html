@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <script>if(localStorage.getItem('youthian_theme')==='dark') document.documentElement.classList.add('dark-theme');</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explore People | Youthians</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .explore-container {
+            flex: 1;
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* â”€â”€ Search Panel â”€â”€ */
+        .explore-search-panel {
+            background: rgba(255,255,255,0.88);
+            border: 1px solid var(--glass-border);
+            border-radius: 18px;
+            padding: 20px 22px;
+            margin-bottom: 28px;
+            box-shadow: 0 4px 20px rgba(59,130,246,0.07);
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .explore-search-field {
+            flex: 1;
+            min-width: 200px;
+            position: relative;
+        }
+
+        .explore-search-field i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary);
+            font-size: 14px;
+            pointer-events: none;
+        }
+
+        .explore-search-field input {
+            width: 100%;
+            padding: 11px 14px 11px 38px;
+            border-radius: 12px;
+            background: #f1f5f9;
+            border: 1.5px solid var(--glass-border);
+            color: var(--text-primary);
+            font-size: 14px;
+            font-family: 'Outfit', sans-serif;
+            outline: none;
+            box-sizing: border-box;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .explore-search-field input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+        }
+
+        .explore-search-field input::placeholder { color: var(--text-muted); }
+
+        .explore-search-btn {
+            padding: 11px 22px;
+            background: var(--gradient-1);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            font-family: 'Outfit', sans-serif;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: opacity 0.2s;
+            white-space: nowrap;
+        }
+
+        .explore-search-btn:hover { opacity: 0.88; }
+
+        .explore-clear-btn {
+            padding: 11px 16px;
+            background: transparent;
+            border: 1.5px solid var(--glass-border);
+            border-radius: 12px;
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 600;
+            font-family: 'Outfit', sans-serif;
+            cursor: pointer;
+            transition: 0.2s;
+            white-space: nowrap;
+        }
+
+        .explore-clear-btn:hover { border-color: #ef4444; color: #ef4444; }
+
+        /* â”€â”€ Results summary â”€â”€ */
+        .explore-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 22px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .explore-header h1 {
+            font-size: 24px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #f84464, #ff8c69);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .explore-count-badge {
+            font-size: 13px;
+            color: var(--text-secondary);
+            background: rgba(59,130,246,0.07);
+            padding: 5px 14px;
+            border-radius: 99px;
+            border: 1px solid rgba(59,130,246,0.12);
+        }
+
+        /* â”€â”€ People Grid â”€â”€ */
+        .people-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+            gap: 18px;
+        }
+
+        .person-card {
+            background: rgba(255,255,255,0.88);
+            border: 1px solid var(--glass-border);
+            border-radius: 18px;
+            padding: 26px 18px 20px;
+            text-align: center;
+            transition: transform 0.22s, border-color 0.22s, box-shadow 0.22s;
+            animation: fadeInScale 0.4s ease both;
+        }
+
+        .person-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(248, 68, 100, 0.3);
+            box-shadow: 0 14px 32px rgba(248,68,100,0.09);
+        }
+
+        .person-avatar {
+            width: 68px;
+            height: 68px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            font-weight: 800;
+            color: white;
+            background: linear-gradient(135deg, #f84464, #ff8c69);
+            margin: 0 auto 14px;
+            letter-spacing: 1px;
+            overflow: hidden;
+        }
+
+        .person-avatar img {
+            width: 100%; height: 100%;
+            object-fit: cover; border-radius: 50%;
+        }
+
+        .person-name {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .person-name a { color: inherit; text-decoration: none; }
+        .person-name a:hover { color: #f84464; }
+
+        .person-college {
+            font-size: 12px;
+            color: var(--primary);
+            font-weight: 600;
+            margin-bottom: 3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .person-college i { margin-right: 4px; font-size: 10px; }
+
+        .person-meta {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 14px;
+        }
+
+        .person-follow-btn {
+            width: 100%;
+            padding: 8px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            transition: 0.2s;
+        }
+
+        .person-follow-btn.follow    { background: var(--accent); color: white; }
+        .person-follow-btn.follow:hover { opacity: 0.88; }
+        .person-follow-btn.requested { background: var(--card-bg); border: 1px solid var(--glass-border); color: var(--text-secondary); }
+        .person-follow-btn.following { background: transparent; border: 1px solid rgba(248,68,100,0.3); color: #f84464; }
+
+        .no-results {
+            grid-column: 1 / -1;
+            text-align: center;
+            color: var(--text-secondary);
+            padding: 70px 20px;
+        }
+
+        .no-results i { font-size: 44px; margin-bottom: 14px; opacity: 0.25; display: block; }
+
+        /* Loading skeleton */
+        .skeleton { background: linear-gradient(90deg, #f0f4f8 25%, #e2e8f0 50%, #f0f4f8 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 12px; }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+        @media (max-width: 640px) {
+            .explore-search-panel { flex-direction: column; align-items: stretch; }
+            .explore-search-field { min-width: 100%; width: 100%; }
+            .explore-search-btn, .explore-clear-btn { width: 100%; justify-content: center; }
+            .people-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+            .fr-grid { grid-template-columns: 1fr; }
+            .person-card { padding: 20px 12px 16px; }
+            .explore-header h1 { font-size: 20px; }
+        }
+
+        /* â”€â”€ Follow Requests Section â”€â”€ */
+        .follow-requests-section {
+            background: rgba(255, 255, 255, 0.95);
+            border: 1.5px solid var(--accent);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 30px;
+            box-shadow: 0 12px 40px rgba(248, 68, 100, 0.12);
+        }
+
+        .fr-title {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .fr-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+        }
+
+        .fr-card {
+            background: #fff;
+            border: 1px solid var(--glass-border);
+            border-radius: 15px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.2s;
+        }
+
+        .fr-card:hover { transform: scale(1.02); box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+
+        .fr-user-info { display: flex; align-items: center; gap: 12px; text-decoration: none; color: inherit; }
+        .fr-avatar { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; border: 2px solid var(--glass-border); }
+        .fr-username { font-weight: 700; font-size: 14px; }
+        .fr-college { font-size: 11px; color: var(--primary); }
+
+        .fr-actions { display: flex; gap: 8px; }
+        .fr-btn {
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            transition: 0.2s;
+        }
+        .fr-btn-accept { background: var(--accent); color: #fff; }
+        .fr-btn-reject { background: #f1f5f9; color: var(--text-secondary); }
+        .fr-btn:hover { opacity: 0.8; }
+
+        /* â”€â”€ Profile Preview Modal â”€â”€ */
+        .preview-modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(8px);
+            display: none; align-items: center; justify-content: center; z-index: 1000;
+            opacity: 0; transition: opacity 0.3s ease;
+        }
+        .preview-modal-overlay.active { display: flex; opacity: 1; }
+        .preview-modal {
+            background: #fff; border-radius: 24px; padding: 30px;
+            width: 90%; max-width: 400px; text-align: center;
+            transform: scale(0.9); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative; box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        .preview-modal-overlay.active .preview-modal { transform: scale(1); }
+        .preview-modal-close {
+            position: absolute; top: 15px; right: 15px; background: none; border: none;
+            font-size: 20px; color: var(--text-muted); cursor: pointer; transition: 0.2s;
+        }
+        .preview-modal-close:hover { color: #f84464; }
+        .preview-avatar {
+            width: 90px; height: 90px; border-radius: 50%; margin: 0 auto 15px;
+            object-fit: cover; border: 3px solid #f0f4f8; display: flex;
+            align-items: center; justify-content: center; font-size: 32px;
+            font-weight: bold; color: #fff; background: linear-gradient(135deg, #f84464, #ff8c69);
+        }
+        .preview-stats {
+            display: flex; justify-content: space-around; margin: 20px 0; padding-top: 20px;
+            border-top: 1px solid var(--glass-border);
+        }
+        .preview-stat { display: flex; flex-direction: column; gap: 4px; }
+        .preview-stat span:first-child { font-weight: 800; font-size: 18px; color: var(--text-primary); }
+        .preview-stat span:last-child { font-size: 12px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+        .preview-private-lock { margin: 30px 0 10px; color: var(--text-muted); }
+    </style>
+    <script defer th:src="@{/js/tab-support.js}"></script>
+    <script th:inline="javascript">
+        var ctxPath = /*[[@{/}]]*/ '/';
+        if(ctxPath.endsWith('/')) ctxPath = ctxPath.slice(0, -1);
+    </script>
+    <script defer th:src="@{/js/game-rewards.js}"></script>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <!-- Mobile Sidebar Overlay -->
+    <div class="mobile-menu-overlay" onclick="document.querySelector('.sidebar').classList.remove('mobile-open'); this.classList.remove('active');"></div>
+
+    <nav class="dashboard-navbar">
+
+        <button class="mobile-menu-btn" onclick="const s=document.querySelector('.sidebar');if(s)s.classList.toggle('mobile-open'); const o=document.querySelector('.mobile-menu-overlay');if(o)o.classList.toggle('active');" style="display:none; background:none; border:none; color:var(--text-primary); font-size:20px; cursor:pointer; margin-right:15px; margin-left: 5px; padding: 0;">
+            <i class="fas fa-bars"></i>
+        </button>
+        <a class="dashboard-logo" th:href="@{/home}" style="display: inline-flex; flex-direction: column; align-items: center; text-decoration: none; line-height: 1.1; margin-right: 15px;">
+    <svg width="28" height="28" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <linearGradient id="yg" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#6b21a8" />
+                <stop offset="50%" stop-color="#2563eb" />
+                <stop offset="100%" stop-color="#0ea5e9" />
+            </linearGradient>
+        </defs>
+        <circle cx="50" cy="22" r="12" fill="url(#yg)" />
+        <path d="M 25 25 Q 40 50 45 65 L 45 90 Q 55 90 55 65 Q 60 50 80 25 Q 65 45 55 55 L 45 55 Q 35 45 25 25 Z" fill="url(#yg)" />
+        <path d="M 15 60 Q 50 90 90 40 Q 80 50 50 80 Q 25 70 15 60 Z" fill="url(#yg)" />
+        <polygon points="75,10 80,15 85,10 80,5" fill="#0ea5e9" />
+    </svg>
+    <span style="font-size: 11px; font-weight: 800; color: #1e3a8a; letter-spacing: 1px; margin-top: 2px;">YOUTHIANS</span>
+</a>
+
+        <div class="dashboard-spacer"></div>
+        <div class="dashboard-nav-links">
+            <a th:href="@{/dashboard}"><i class="fas fa-home"></i></a>
+            <a th:href="@{/messages}"><i class="fas fa-comment-dots"></i></a>
+            <a th:href="@{/explore}" class="active"><i class="fas fa-compass"></i></a>
+            <div class="profile-dropdown">
+                <a th:href="@{/profile}">
+                    <img th:src="${currentUser != null and currentUser.profilePhotoUrl != null ? currentUser.profilePhotoUrl : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=1780&auto=format&fit=crop'}"
+                        class="user-avatar" style="width:32px; height:32px; border:none;">
+                </a>
+
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <!-- Left Sidebar -->
+        <aside class="sidebar">
+            <a th:href="@{/dashboard}" class="sidebar-link"><i class="fas fa-home"></i> Home</a>
+            <a th:href="@{/explore}" class="sidebar-link active"><i class="fas fa-compass"></i> Explore</a>
+            <a th:href="@{/events}" class="sidebar-link"><i class="fas fa-calendar-alt"></i> Events</a>
+            <a th:href="@{/battles}" class="sidebar-link"><i class="fas fa-fire"></i> Battle Arena</a>
+            <a th:href="@{/achievements}" class="sidebar-link"><i class="fas fa-trophy"></i> Achievements</a>
+            <a th:href="@{/messages}" class="sidebar-link"><i class="fas fa-comment-dots"></i> Chat</a>
+            <a th:href="@{/reels}" class="sidebar-link"><i class="fas fa-film"></i> Reels</a>
+            <a th:href="@{/profile}" class="sidebar-link"><i class="fas fa-user"></i> Profile</a>
+            
+            <a th:href="@{/wallet}" class="sidebar-link"><i class="fas fa-wallet"></i> Wallet</a>
+            <a th:href="@{/user/my-bookings}" class="sidebar-link"><i class="fas fa-ticket-alt"></i> My Bookings</a>
+            <a href="javascript:void(0)" class="sidebar-link" onclick="openCreateModal()"><i class="fas fa-plus-circle" style="color: var(--accent);"></i> Create Post</a>
+            <a th:href="@{/settings}" class="sidebar-link"><i class="fas fa-cog"></i> Settings</a>
+            <a th:href="@{/logout}" class="sidebar-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </aside>
+
+        <main class="explore-container">
+        
+        <!-- â•â• Pending Follow Requests â•â• -->
+        <div th:if="${not #lists.isEmpty(followRequests)}" class="follow-requests-section">
+            <div class="fr-title">
+                <i class="fas fa-user-clock" style="color: var(--accent);"></i>
+                Follow Requests
+                <span class="explore-count-badge" style="background: var(--accent); color: #fff; border: none;" th:text="${#lists.size(followRequests)}">0</span>
+            </div>
+            <div class="fr-grid">
+                <div th:each="fr : ${followRequests}" class="fr-card" th:id="'fr-row-' + ${fr.id}">
+                    <a th:href="@{'/profile/' + ${fr.sender.username}}" class="fr-user-info">
+                        <img th:src="${fr.sender.profilePhotoUrl != null and !fr.sender.profilePhotoUrl.isEmpty() ? fr.sender.profilePhotoUrl : 'https://ui-avatars.com/api/?name=' + fr.sender.username + '&background=f84464&color=fff'}" class="fr-avatar">
+                        <div>
+                            <div class="fr-username" th:text="${fr.sender.username}">Username</div>
+                            <div class="fr-college" th:if="${fr.sender.collegeName != null}" th:text="${fr.sender.collegeName}">College</div>
+                        </div>
+                    </a>
+                    <div class="fr-actions">
+                        <button class="fr-btn fr-btn-accept" th:onclick="'respondToRequest(' + ${fr.id} + ', true)'">Accept</button>
+                        <button class="fr-btn fr-btn-reject" th:onclick="'respondToRequest(' + ${fr.id} + ', false)'">Reject</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- â•â• Search Panel â•â• -->
+        <div class="explore-search-panel">
+            <div class="explore-search-field">
+                <i class="fas fa-user"></i>
+                <input type="text" id="nameInput" placeholder="Search by name..." autocomplete="off">
+            </div>
+            <div class="explore-search-field">
+                <i class="fas fa-university"></i>
+                <input type="text" id="collegeInput" placeholder="Filter by college / institution..." autocomplete="off">
+            </div>
+            <button class="explore-search-btn" onclick="runSearch()">
+                <i class="fas fa-search"></i> Search
+            </button>
+            <button class="explore-clear-btn" onclick="clearSearch()">
+                <i class="fas fa-times"></i> Clear
+            </button>
+        </div>
+
+        <!-- â•â• Header â•â• -->
+        <div class="explore-header">
+            <h1>
+                <i class="fas fa-users" style="-webkit-text-fill-color: var(--accent); font-size:20px;"></i>
+                Discover People
+            </h1>
+            <span class="explore-count-badge" id="resultCount">
+                <span th:text="${totalPeopleCount}">0</span> people on Youthians
+            </span>
+        </div>
+
+        <!-- â•â• People Grid â•â• -->
+        <div class="people-grid" id="peopleGrid">
+
+            <!-- Server-rendered initial cards (all users) -->
+            <div th:each="u : ${allUsers}"
+                 class="person-card" style="cursor: pointer;"
+                 th:onclick="'openProfilePreview(' + ${u.id} + ')'"
+                 th:attr="data-username=${u.username}, data-college=${u.collegeName != null ? u.collegeName : ''}">
+
+                <div class="person-avatar">
+                    <img th:if="${u.profilePhotoUrl != null and !u.profilePhotoUrl.isEmpty()}"
+                         th:src="${u.profilePhotoUrl}" alt="avatar">
+                    <span th:if="${u.profilePhotoUrl == null or u.profilePhotoUrl.isEmpty()}"
+                          th:text="${#strings.toUpperCase(#strings.substring(u.username, 0, T(java.lang.Math).min(2, u.username.length())))}">??</span>
+                </div>
+
+                <div class="person-name">
+                    <a th:href="@{'/profile/' + ${u.username}}" th:text="${u.username}" onclick="event.stopPropagation()">Username</a>
+                </div>
+
+                <div class="person-college" th:if="${u.collegeName != null and !u.collegeName.isEmpty()}">
+                    <i class="fas fa-university"></i>
+                    <span th:text="${u.collegeName}">College</span>
+                </div>
+
+                <div class="person-meta">
+                    <span th:text="${u.level != null ? u.level : 'Novice'}">Novice</span>
+                    &bull;
+                    <span th:id="'followers-count-' + ${u.id}" th:text="${followersCount.get(u.id) != null ? followersCount.get(u.id) : 0}">0</span> followers
+                </div>
+
+                <div th:id="'fw-' + ${u.id}" onclick="event.stopPropagation()">
+                    <button th:if="${followingUserIds != null and followingUserIds.contains(u.id)}"
+                        class="person-follow-btn following" th:onclick="'followUserAjax(' + ${u.id} + ', this)'">
+                        <i class="fas fa-user-check"></i> Following
+                    </button>
+                    <button th:if="${followingUserIds != null and !followingUserIds.contains(u.id) and requestedUserIds != null and requestedUserIds.contains(u.id)}"
+                        class="person-follow-btn requested"
+                        th:onclick="'followUserAjax(' + ${u.id} + ', this)'">
+                        Requested
+                    </button>
+                    <button th:if="${followingUserIds == null or (!followingUserIds.contains(u.id) and (requestedUserIds == null or !requestedUserIds.contains(u.id)))}"
+                        class="person-follow-btn follow"
+                        th:onclick="'followUserAjax(' + ${u.id} + ', this)'">
+                        <i class="fas fa-user-plus"></i> Follow
+                    </button>
+                </div>
+            </div>
+
+            <div class="no-results" id="noResults" style="display:none;">
+                <i class="fas fa-search"></i>
+                <p style="font-weight:700; margin-bottom:6px;">No people found</p>
+                <p style="font-size:13px;">Try a different name or college name.</p>
+            </div>
+        </div>
+
+        </main>
+    </div>
+    <script>
+        /* â”€â”€â”€ Live client-side filter on initial server-rendered cards â”€â”€â”€ */
+        function filterCards() {
+            const name    = document.getElementById('nameInput').value.trim().toLowerCase();
+            const college = document.getElementById('collegeInput').value.trim().toLowerCase();
+            const cards   = document.querySelectorAll('.person-card');
+            let visible   = 0;
+
+            cards.forEach(card => {
+                const uname = (card.getAttribute('data-username') || '').toLowerCase();
+                const ucol  = (card.getAttribute('data-college')  || '').toLowerCase();
+                const nameOk    = !name    || uname.includes(name);
+                const collegeOk = !college || ucol.includes(college);
+                const show = nameOk && collegeOk;
+                card.style.display = show ? '' : 'none';
+                if (show) visible++;
+            });
+
+            document.getElementById('noResults').style.display = visible === 0 ? 'block' : 'none';
+            document.getElementById('resultCount').textContent = visible + ' people on Youthians';
+        }
+
+        /* Debounce live filter while typing */
+        let debounceTimer;
+        ['nameInput', 'collegeInput'].forEach(id => {
+            document.getElementById(id).addEventListener('input', () => {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(filterCards, 220);
+            });
+            document.getElementById(id).addEventListener('keydown', e => {
+                if (e.key === 'Enter') runSearch();
+            });
+        });
+
+        function runSearch()  { filterCards(); }
+
+        function clearSearch() {
+            document.getElementById('nameInput').value    = '';
+            document.getElementById('collegeInput').value = '';
+            filterCards();
+        }
+
+        /* â”€â”€â”€ Follow / Unfollow AJAX â”€â”€â”€ */
+        async function followUserAjax(userId, btn) {
+            const wrapper = document.getElementById('fw-' + userId);
+            if (!wrapper) return;
+            const btnEl       = wrapper.querySelector('button');
+            const isRequested = btnEl && btnEl.innerText.trim().includes('Requested');
+            const isFollowing = btnEl && btnEl.innerText.trim().includes('Following');
+
+            let endpoint = ctxPath + `/profile/${userId}/follow/ajax`;
+            if (isRequested) {
+                endpoint = ctxPath + `/profile/${userId}/cancel-follow/ajax`;
+            } else if (isFollowing) {
+                if (!confirm("Are you sure you want to unfollow this user?")) {
+                    return;
+                }
+                endpoint = ctxPath + `/profile/${userId}/unfollow/ajax`;
+            }
+
+            const original = wrapper.innerHTML;
+
+            // Optimistic update / Disable button
+            if (isRequested) {
+                wrapper.innerHTML = `<button class="person-follow-btn follow" disabled><i class="fas fa-user-plus"></i> Follow</button>`;
+            } else if (isFollowing) {
+                wrapper.innerHTML = `<button class="person-follow-btn following" disabled><i class="fas fa-user-check"></i> Following</button>`;
+            } else {
+                wrapper.innerHTML = `<button class="person-follow-btn requested" disabled>...</button>`;
+            }
+
+            try {
+                const res  = await fetch(endpoint, { method: 'POST' });
+                if (res.status === 401) {
+                    window.location.href = ctxPath + '/login?expired=true';
+                    return;
+                }
+                if (!res.ok) throw new Error(await res.text() || 'Failed');
+                const data = await res.json();
+                
+                if (data.status === 'FOLLOWING') {
+                    wrapper.innerHTML = `<button class="person-follow-btn following" onclick="followUserAjax(${userId},this)"><i class="fas fa-user-check"></i> Following</button>`;
+                    // Update follower count
+                    const countEl = document.getElementById('followers-count-' + userId);
+                    if (countEl) {
+                        let current = parseInt(countEl.innerText) || 0;
+                        countEl.innerText = current + 1;
+                    }
+                } else if (data.status === 'REQUESTED') {
+                    wrapper.innerHTML = `<button class="person-follow-btn requested" onclick="followUserAjax(${userId},this)">Requested</button>`;
+                } else {
+                    // Canceled/Unfollowed status: 'FOLLOW'
+                    wrapper.innerHTML = `<button class="person-follow-btn follow" onclick="followUserAjax(${userId},this)"><i class="fas fa-user-plus"></i> Follow</button>`;
+                    // Decrement follower count if it was unfollowed
+                    if (isFollowing) {
+                        const countEl = document.getElementById('followers-count-' + userId);
+                        if (countEl) {
+                            let current = parseInt(countEl.innerText) || 0;
+                            countEl.innerText = Math.max(0, current - 1);
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error(err);
+                wrapper.innerHTML = original;
+                alert('Action failed: ' + err.message);
+            }
+        }
+
+        /* â”€â”€â”€ Accept / Reject Follow Request AJAX â”€â”€â”€ */
+        async function respondToRequest(requestId, accept) {
+            const row = document.getElementById('fr-row-' + requestId);
+            const endpoint = ctxPath + `/profile/follow-request/${requestId}/${accept ? 'accept' : 'reject'}/ajax`;
+            
+            try {
+                const res = await fetch(endpoint, { method: 'POST' });
+                if (res.ok) {
+                    row.style.opacity = '0';
+                    setTimeout(() => {
+                        row.remove();
+                        // Hide section if empty
+                        const grid = document.querySelector('.fr-grid');
+                        if (grid && grid.children.length === 0) {
+                            document.querySelector('.follow-requests-section').style.display = 'none';
+                        }
+                    }, 300);
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        /* â”€â”€â”€ Profile Preview Modal Logic â”€â”€â”€ */
+        async function openProfilePreview(userId) {
+            const overlay = document.getElementById('profilePreviewOverlay');
+            overlay.classList.add('active');
+            const content = document.getElementById('previewContent');
+            
+            // Show loading skeleton
+            content.innerHTML = `
+                <div class="skeleton" style="width:90px; height:90px; border-radius:50%; margin:0 auto 15px;"></div>
+                <div class="skeleton" style="width:150px; height:20px; margin:0 auto 10px;"></div>
+                <div class="skeleton" style="width:100px; height:15px; margin:0 auto 20px;"></div>
+                <div class="skeleton" style="width:100%; height:60px;"></div>
+            `;
+            
+            try {
+                const res = await fetch(ctxPath + '/api/users/preview/' + userId);
+                if (res.ok) {
+                    const data = await res.json();
+                    
+                    let avatarHtml = '';
+                    if (data.profilePhotoUrl) {
+                        avatarHtml = `<img src="${data.profilePhotoUrl}" class="preview-avatar" alt="Avatar">`;
+                    } else {
+                        avatarHtml = `<div class="preview-avatar">${data.username.substring(0, 2).toUpperCase()}</div>`;
+                    }
+                    
+                    let statsHtml = '';
+                    if (data.isPrivateAndNotFollowing) {
+                        statsHtml = `
+                            <div class="preview-private-lock">
+                                <i class="fas fa-lock" style="font-size: 40px; margin-bottom:15px;"></i>
+                                <h3 style="margin:0; font-size:16px;">This Account is Private</h3>
+                                <p style="font-size:13px; margin-top:5px;">Follow to see their posts and reels.</p>
+                            </div>
+                        `;
+                    } else {
+                        statsHtml = `
+                            <div class="preview-stats">
+                                <div class="preview-stat">
+                                    <span>${data.postsCount || 0}</span>
+                                    <span>Posts</span>
+                                </div>
+                                <div class="preview-stat">
+                                    <span>${data.reelsCount || 0}</span>
+                                    <span>Reels</span>
+                                </div>
+                                <div class="preview-stat">
+                                    <span>${data.followersCount || 0}</span>
+                                    <span>Followers</span>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    
+                    content.innerHTML = `
+                        ${avatarHtml}
+                        <h2 style="margin:0 0 5px; font-size:20px;">
+                            <a href="${ctxPath}/profile/${data.username}" style="color:var(--text-primary); text-decoration:none;">${data.username}</a>
+                        </h2>
+                        ${data.collegeName ? `<p style="margin:0; color:var(--primary); font-size:13px;"><i class="fas fa-university"></i> ${data.collegeName}</p>` : ''}
+                        <div style="margin-top:15px; margin-bottom: 5px;">
+                            <a href="${ctxPath}/profile/${data.username}" style="display:inline-block; padding:8px 20px; background:var(--gradient-1); color:white; text-decoration:none; border-radius:99px; font-weight:bold; font-size:13px; transition: 0.2s;">View Full Profile</a>
+                        </div>
+                        ${statsHtml}
+                    `;
+                } else {
+                    content.innerHTML = `<p style="color:red; padding: 30px 0;">Could not load profile preview.</p>`;
+                }
+            } catch (err) {
+                console.error(err);
+                content.innerHTML = `<p style="color:red; padding: 30px 0;">Error loading profile preview.</p>`;
+            }
+        }
+        
+        function closeProfilePreview(event) {
+            if (event) {
+                if (event.target === document.getElementById('profilePreviewOverlay') || event.target.closest('.preview-modal-close')) {
+                    document.getElementById('profilePreviewOverlay').classList.remove('active');
+                }
+            } else {
+                document.getElementById('profilePreviewOverlay').classList.remove('active');
+            }
+        }
+    </script>
+
+    <!-- Profile Preview Modal HTML -->
+    <div class="preview-modal-overlay" id="profilePreviewOverlay" onclick="closeProfilePreview(event)">
+        <div class="preview-modal" onclick="event.stopPropagation()">
+            <button class="preview-modal-close" onclick="closeProfilePreview(event)"><i class="fas fa-times"></i></button>
+            <div id="previewContent">
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/modals :: createPostModal}"></div>
+</body>
+</html>
+
+
+
+
+

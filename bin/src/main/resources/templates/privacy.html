@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/template :: head('Privacy Policy | Youthians')}">
+    <meta charset="UTF-8">
+    <script defer th:src="@{/js/game-rewards.js}"></script>
+</head>
+
+<body>
+
+    <div th:replace="~{fragments/template :: navbar('privacy')}"></div>
+
+    <section class="container" style="padding-top: 100px; padding-bottom: 80px;">
+        <h1 style="font-size: 42px; font-weight: 900; margin-bottom: 24px; color: #111;">Privacy <span style="color: var(--primary);">Policy</span></h1>
+        
+        <div class="surface" style="padding: 40px; border-radius: 24px; border: 1px solid rgba(0,0,0,0.05); color: var(--text-secondary); line-height: 1.8;">
+            <p style="margin-bottom: 20px;">Your privacy is important to us. This policy explains how we collect, use, and protect your personal information.</p>
+            
+            <h3 style="color: #111; margin-top: 30px; margin-bottom: 15px; font-weight: 800;">1. Information Collection</h3>
+            <p>We collect information you provide directly to us, such as when you create an account, register for an event, or communicate with other users.</p>
+            
+            <h3 style="color: #111; margin-top: 30px; margin-bottom: 15px; font-weight: 800;">2. Use of Information</h3>
+            <p>We use your information to provide, maintain, and improve our services, including personalize your feed and process event registrations.</p>
+            
+            <h3 style="color: #111; margin-top: 30px; margin-bottom: 15px; font-weight: 800;">3. Data Security</h3>
+            <p>We implement industry-standard security measures to protect your data from unauthorized access, disclosure, or destruction.</p>
+            
+            <h3 style="color: #111; margin-top: 30px; margin-bottom: 15px; font-weight: 800;">4. Your Rights</h3>
+            <p>You have the right to access, update, or delete your personal information at any time through your profile settings.</p>
+        </div>
+    </section>
+
+    <footer th:replace="~{fragments/template :: footer}"></footer>
+
+</body>
+
+</html>
+

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/admin-fragments :: admin-head('Manage Withdrawals | Youthian Admin')}">
+    <meta charset="UTF-8">
+    <title>Manage Withdrawals</title>
+</head>
+<body>
+
+    <!-- Unified Admin Top Navbar -->
+    <div th:replace="~{fragments/admin-fragments :: admin-navbar('withdrawals')}"></div>
+
+    <div class="admin-layout-container dashboard-container">
+        <div class="mobile-menu-overlay" onclick="toggleAdminMobileMenu()"></div>
+        <!-- Unified Left Sidebar -->
+        <aside th:replace="~{fragments/admin-fragments :: admin-sidebar('withdrawals', 'none')}"></aside>
+
+        <!-- Main Content -->
+        <main class="social-feed" style="max-width: 100%; padding-bottom: 60px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px;">
+                <div>
+                    <h1 style="margin: 0; color: var(--text-primary); font-weight: 900; font-size: 26px;">
+                        <i class="fas fa-wallet" style="color: #22c55e; margin-right: 8px;"></i> Wallet &amp; Payout Approvals
+                    </h1>
+                    <p style="margin: 6px 0 0 0; color: var(--text-secondary); font-size: 14px;">
+                        Review user coin cashouts, verify destination accounts, and approve payouts.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Flash Message Alerts -->
+            <div th:if="${success}" style="background: rgba(16, 185, 129, 0.12); border: 1.5px solid #10b981; color: #065f46; padding: 14px 18px; border-radius: 12px; margin-bottom: 20px; font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-check-circle" style="font-size: 20px; color: #10b981;"></i>
+                <span th:text="${success}"></span>
+            </div>
+            <div th:if="${error}" style="background: rgba(239, 68, 68, 0.12); border: 1.5px solid #ef4444; color: #991b1b; padding: 14px 18px; border-radius: 12px; margin-bottom: 20px; font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-exclamation-triangle" style="font-size: 20px; color: #ef4444;"></i>
+                <span th:text="${error}"></span>
+            </div>
+
+            <!-- Pending Withdrawals Card -->
+            <div style="background: var(--card-bg); border: 1px solid var(--glass-border); border-radius: 20px; overflow: hidden; margin-bottom: 30px; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);">
+                <div style="padding: 20px 24px; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center;">
+                    <h2 style="margin: 0; font-size: 17px; color: var(--text-primary); font-weight: 800;">
+                        <i class="fas fa-clock" style="color: #f59e0b; margin-right: 8px;"></i> Pending Withdrawal Queue
+                    </h2>
+                    <span class="sidebar-badge sidebar-badge-alert" th:text="${pendingWithdrawals != null ? pendingWithdrawals.size() : 0} + ' Pending'">0 Pending</span>
+                </div>
+
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                        <thead>
+                            <tr style="background: rgba(255, 255, 255, 0.4); border-bottom: 1px solid var(--glass-border);">
+                                <th style="padding: 14px 20px; font-size: 12px; font-weight: 800; text-transform: uppercase; color: var(--text-secondary);">User</th>
+                                <th style="padding: 14px 20px; font-size: 12px; font-weight: 800; text-transform: uppercase; color: var(--text-secondary);">Gross Requested</th>
+                                <th style="padding: 14px 20px; font-size: 12px; font-weight: 800; text-transform: uppercase; color: var(--text-secondary);">Fee (5%)</th>
+                                <th style="padding: 14px 20px; font-size: 12px; font-weight: 800; text-transform: uppercase; color: var(--text-secondary);">Net Payout</th>
+                                <th style="padding: 14px 20px; font-size: 12px; font-weight: 800; text-transform: uppercase; color: var(--text-secondary);">UPI / Bank Destination</th>
+                                <th style="padding: 14px 20px; font-size: 12px; font-weight: 800; text-transform: uppercase; color: var(--text-secondary);">Request Time</th>
+                                <th style="padding: 14px 20px; font-size: 12px; font-weight: 800; text-transform: uppercase; color: var(--text-secondary); text-align: right;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="tx : ${pendingWithdrawals}" style="border-bottom: 1px solid var(--glass-border);">
+                                <td style="padding: 14px 20px; font-weight: 700; color: var(--text-primary);" th:text="'@' + ${tx.user.username}"></td>
+                                <td style="padding: 14px 20px; font-weight: 700; color: var(--text-primary);" th:text="'₹' + ${#numbers.formatDecimal(tx.amount, 1, 2)}"></td>
+                                <td style="padding: 14px 20px; font-weight: 700; color: #ea580c;" th:text="'-₹' + ${#numbers.formatDecimal(tx.fee != null ? tx.fee : (tx.amount * 0.05), 1, 2)}"></td>
+                                <td style="padding: 14px 20px; font-weight: 900; color: #16a34a; font-size: 15px;" th:text="'₹' + ${#numbers.formatDecimal(tx.netAmount != null ? tx.netAmount : (tx.amount * 0.95), 1, 2)}"></td>
+                                <td style="padding: 14px 20px; font-size: 13px; color: var(--text-primary); max-width: 250px; word-break: break-all;" th:text="${tx.description}"></td>
+                                <td style="padding: 14px 20px; font-size: 13px; color: var(--text-secondary);" th:text="${#temporals.format(tx.timestamp, 'MMM dd, HH:mm')}"></td>
+                                <td style="padding: 14px 20px; text-align: right;">
+                                    <div style="display: flex; flex-direction: column; gap: 6px; align-items: flex-end;">
+                                        <!-- Automated Razorpay Payout -->
+                                        <form th:action="@{/admin/withdrawals/{id}/approve(id=${tx.id})}" method="post">
+                                            <button type="submit" class="nav-btn" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 7px 14px; font-size: 12px; font-weight: 800; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(16,185,129,0.3);" onclick="return confirm('Execute automated direct payout to recipient via Razorpay?');">
+                                                <i class="fas fa-bolt"></i> Auto Payout &amp; Approve
+                                            </button>
+                                        </form>
+
+                                        <div style="display: inline-flex; gap: 6px;">
+                                            <!-- Manual Confirm -->
+                                            <form th:action="@{/admin/withdrawals/{id}/approve(id=${tx.id})}" method="post">
+                                                <input type="hidden" name="manual" value="true">
+                                                <button type="submit" class="nav-btn" style="background: #e2e8f0; color: #334155; border: 1px solid #cbd5e1; padding: 5px 10px; font-size: 11px; font-weight: 700; border-radius: 6px; cursor: pointer;" onclick="return confirm('Confirm that you have already transferred the money via PhonePe/GPay?');">
+                                                    Manual Paid
+                                                </button>
+                                            </form>
+                                            <!-- Reject -->
+                                            <form th:action="@{/admin/withdrawals/{id}/reject(id=${tx.id})}" method="post">
+                                                <button type="submit" class="nav-btn" style="background: rgba(239, 68, 68, 0.1); color: #dc2626; border: 1px solid rgba(239, 68, 68, 0.3); padding: 5px 10px; font-size: 11px; font-weight: 700; border-radius: 6px; cursor: pointer;" onclick="return confirm('Reject request and refund coins to user?');">
+                                                    Reject
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(pendingWithdrawals)}">
+                                <td colspan="7" style="text-align: center; color: var(--text-secondary); padding: 40px;">
+                                    <i class="fas fa-check-circle" style="font-size: 32px; color: #10b981; margin-bottom: 8px; display: block;"></i>
+                                    All clear! No pending withdrawal requests awaiting review.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Withdrawal History Card -->
+            <div style="background: var(--card-bg); border: 1px solid var(--glass-border); border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);">
+                <div style="padding: 20px 24px; border-bottom: 1px solid var(--glass-border);">
+                    <h2 style="margin: 0; font-size: 17px; color: var(--text-primary); font-weight: 800;">
+                        <i class="fas fa-history" style="color: #64748b; margin-right: 8px;"></i> Processed History
+                    </h2>
+                </div>
+
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                        <thead>
+                            <tr style="background: rgba(255, 255, 255, 0.4); border-bottom: 1px solid var(--glass-border);">
+                                <th style="padding: 14px 20px; font-size: 12px; font-weight: 800; text-transform: uppercase; color: var(--text-secondary);">User</th>
+                                <th style="padding: 14px 20px; font-size: 12px; font-weight: 800; text-transform: uppercase; color: var(--text-secondary);">Amount</th>
+                                <th style="padding: 14px 20px; font-size: 12px; font-weight: 800; text-transform: uppercase; color: var(--text-secondary);">Status</th>
+                                <th style="padding: 14px 20px; font-size: 12px; font-weight: 800; text-transform: uppercase; color: var(--text-secondary);">Processed At</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="tx : ${history}" style="border-bottom: 1px solid var(--glass-border);">
+                                <td style="padding: 14px 20px; font-weight: 600; color: var(--text-primary);" th:text="'@' + ${tx.user.username}"></td>
+                                <td style="padding: 14px 20px; font-weight: 800; color: var(--text-primary);" th:text="'₹' + ${#numbers.formatDecimal(tx.amount, 1, 2)}"></td>
+                                <td style="padding: 14px 20px;">
+                                    <span style="padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 800;"
+                                          th:style="${tx.status == 'APPROVED' ? 'background: #dcfce7; color: #166534;' : 'background: #fee2e2; color: #991b1b;'}"
+                                          th:text="${tx.status}"></span>
+                                </td>
+                                <td style="padding: 14px 20px; font-size: 13px; color: var(--text-secondary);" th:text="${#temporals.format(tx.timestamp, 'MMM dd, yyyy HH:mm')}"></td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(history)}">
+                                <td colspan="4" style="text-align: center; color: var(--text-secondary); padding: 30px;">No historical records yet.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Unified Admin Realtime Scripts -->
+    <div th:replace="~{fragments/admin-fragments :: admin-scripts}"></div>
+</body>
+</html>

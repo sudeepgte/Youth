@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/template :: head('Support | Youthians')}">
+    <meta charset="UTF-8">
+    <script defer th:src="@{/js/game-rewards.js}"></script>
+</head>
+
+<body>
+
+    <div th:replace="~{fragments/template :: navbar('support')}"></div>
+
+    <style>
+        .split-layout {
+            display: grid; 
+            grid-template-columns: 1.2fr 0.8fr; 
+            gap: 40px; 
+            align-items: start;
+        }
+        .form-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        @media (max-width: 768px) {
+            .split-layout {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+            .form-grid-2 {
+                grid-template-columns: 1fr;
+            }
+            .contact-image-side {
+                margin-top: 20px;
+            }
+            .contact-image-side img {
+                height: 250px !important;
+            }
+            section.container {
+                padding-top: 40px !important;
+                padding-bottom: 40px !important;
+                padding-left: 20px !important;
+                padding-right: 20px !important;
+            }
+        }
+    </style>
+
+    <!-- Unified Support Layout -->
+    <section class="container" style="padding-top: 100px; padding-bottom: 80px; opacity: 1 !important; visibility: visible !important;">
+        <div class="split-layout">
+            
+            <!-- Left: Form and Info -->
+            <div class="contact-form-side">
+                <div class="pill pill-purple" style="margin-bottom: 16px;"><i class="fa-solid fa-headset"></i> Support Center</div>
+                <h2 style="font-size: 38px; font-weight: 900; margin-bottom: 12px; color: #111;">Get in touch <span style="color: var(--primary);">with us</span></h2>
+                <p style="color: var(--text-secondary); margin-bottom: 30px; font-size: 15px; line-height: 1.6;">
+                    Have a question or just want to say hi? Reach out through any of our channels or send us a direct message.
+                </p>
+
+                <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 30px;">
+                    <a th:href="'mailto:' + ${supportEmail != null ? supportEmail : 'support@youthians.com'}" class="surface hover-lift" style="padding: 18px; border-radius: 16px; border: 1px solid rgba(0,0,0,0.04); text-decoration: none; color: inherit; display: block;">
+                        <div class="pill pill-blue" style="margin-bottom: 10px; font-size: 11px;"><i class="fa-solid fa-envelope"></i> Email</div>
+                        <div style="font-weight: 800; font-size: 13px; color: var(--primary);" th:text="${supportEmail != null ? supportEmail : 'support@youthians.com'}">support@youthians.com</div>
+                    </a>
+                    <a href="tel:+919876543210" class="surface hover-lift" style="padding: 18px; border-radius: 16px; border: 1px solid rgba(0,0,0,0.04); text-decoration: none; color: inherit; display: block;">
+                        <div class="pill pill-cyan" style="margin-bottom: 10px; font-size: 11px; background: rgba(34, 211, 238, 0.1); color: #0891b2;"><i class="fa-solid fa-phone"></i> Phone</div>
+                        <div style="font-weight: 800; font-size: 13px;">+91 98765 43210</div>
+                    </a>
+                </div>
+
+                <div class="surface" style="padding: 30px; border-radius: 20px; border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 15px 40px rgba(0,0,0,0.03);">
+                    <h3 style="margin-bottom: 20px; font-weight: 800; font-size: 20px;">Send us a message</h3>
+                    <div th:if="${param.success != null}" style="background: #dcfce7; color: #166534; padding: 16px; border-radius: 12px; margin-bottom: 20px; font-weight: 700; text-align: center;">
+                        <i class="fa-solid fa-check-circle"></i> Message sent successfully! Our support team will get back to you shortly.
+                    </div>
+                    <div th:if="${param.error != null}" style="background: #fee2e2; color: #991b1b; padding: 16px; border-radius: 12px; margin-bottom: 20px; font-weight: 700; text-align: center;">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                        <span th:text="${param.error[0] == 'invalid_email' ? 'Please provide a valid email address.' : 'Failed to send message. Please fill out all required fields.'}">Failed to send inquiry. Please try again.</span>
+                    </div>
+                    <form th:action="@{/contact}" method="POST">
+                        <div class="form-grid-2">
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label style="display: block; margin-bottom: 6px; font-size: 11px; font-weight: 800; color: #666; text-transform: uppercase;">Full Name</label>
+                                <input type="text" name="name" required class="form-input" placeholder="Your name" style="background: #f8fafc; border-color: #e2e8f0; height: 45px; width: 100%; box-sizing: border-box;">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label style="display: block; margin-bottom: 6px; font-size: 11px; font-weight: 800; color: #666; text-transform: uppercase;">Email</label>
+                                <input type="email" name="email" required class="form-input" placeholder="your@email.com" style="background: #f8fafc; border-color: #e2e8f0; height: 45px; width: 100%; box-sizing: border-box;">
+                            </div>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 16px;">
+                            <label style="display: block; margin-bottom: 6px; font-size: 11px; font-weight: 800; color: #666; text-transform: uppercase;">Subject</label>
+                            <select name="subject" required class="form-input" style="background: #f8fafc; border-color: #e2e8f0; height: 45px; width: 100%; box-sizing: border-box;">
+                                <option value="General Inquiry">General Inquiry</option>
+                                <option value="Feedback">Feedback</option>
+                                <option value="Support Request">Support Request</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 24px;">
+                            <label style="display: block; margin-bottom: 6px; font-size: 11px; font-weight: 800; color: #666; text-transform: uppercase;">Message</label>
+                            <textarea name="message" required class="form-input" rows="4" placeholder="How can we help you?" style="background: #f8fafc; border-color: #e2e8f0; resize: none; width: 100%; box-sizing: border-box;"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 14px; font-weight: 800; border-radius: 12px; box-sizing: border-box;">Submit Inquiry</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Right: Image -->
+            <div class="contact-image-side">
+                <div style="border-radius: 24px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.1); border: 1px solid rgba(0,0,0,0.05);">
+                    <img src=https://i.pinimg.com/1200x/33/c1/1d/33c11db810e9b795c6b7858a168de478.jpg
+
+                         alt="Contact Support" style="width: 100%; height: 550px; object-fit: cover;">
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <footer th:replace="~{fragments/template :: footer}"></footer>
+
+</body>
+
+</html>

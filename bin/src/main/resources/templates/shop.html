@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Youthians Reward Shop</title>
+    <script>if(localStorage.getItem('youthian_theme')==='dark') document.documentElement.classList.add('dark-theme');</script>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            /* Inherit from style.css */
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* ── Navbar ── */
+        nav {
+            padding: 20px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--card-bg, rgba(13, 13, 18, 0.8));
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid var(--glass-border, rgba(255, 255, 255, 0.05));
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #f84464, #ff6b9d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-decoration: none;
+        }
+
+        .coin-balance {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 215, 0, 0.1);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-weight: 700;
+            color: #ffd700;
+        }
+
+        /* ── Hero ── */
+        .shop-hero {
+            text-align: center;
+            padding: 60px 20px;
+            background: radial-gradient(circle at center, rgba(248, 68, 100, 0.1) 0%, transparent 70%);
+        }
+
+        .shop-hero h1 {
+            font-size: 3rem;
+            font-weight: 900;
+            margin-bottom: 15px;
+        }
+
+        .shop-hero p {
+            color: var(--text-secondary, rgba(255, 255, 255, 0.6));
+            font-size: 1.1rem;
+        }
+
+        /* ── Shop Grid ── */
+        .shop-container {
+            max-width: 1200px;
+            margin: 0 auto 60px;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            width: 100%;
+        }
+
+        .shop-card {
+            background: var(--card-bg, rgba(255, 255, 255, 0.03));
+            border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.06));
+            border-radius: 24px;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-premium, none);
+        }
+
+        .shop-card:hover {
+            transform: translateY(-10px);
+            background: var(--glass-bg, rgba(255, 255, 255, 0.05));
+            border-color: var(--accent, rgba(248, 68, 100, 0.4));
+            box-shadow: var(--shadow-hover, 0 20px 40px rgba(0, 0, 0, 0.4));
+        }
+
+        .shop-card i {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #f84464, #ff6b9d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .shop-card h3 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        .shop-card p {
+            color: var(--text-secondary, rgba(255, 255, 255, 0.5));
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 25px;
+            flex-grow: 1;
+        }
+
+        .price-tag {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+            color: #ffd700;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+        }
+
+        .buy-btn {
+            width: 100%;
+            padding: 14px;
+            border-radius: 14px;
+            border: none;
+            background: var(--text-primary, #ffffff);
+            color: var(--bg-color, #000000);
+            font-weight: 800;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .buy-btn:hover {
+            background: var(--accent, #f84464);
+            color: #ffffff;
+        }
+
+        .buy-btn:disabled {
+            background: var(--glass-bg, rgba(255, 255, 255, 0.1));
+            color: var(--text-muted, rgba(255, 255, 255, 0.3));
+            cursor: not-allowed;
+        }
+
+        /* ── Alerts ── */
+        .alert {
+            padding: 15px 25px;
+            border-radius: 12px;
+            margin: 20px auto;
+            max-width: 600px;
+            text-align: center;
+            font-weight: 600;
+            animation: slideDown 0.5s ease;
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid #10b981;
+            color: #10b981;
+        }
+
+        .alert-error {
+            background: rgba(248, 68, 100, 0.1);
+            border: 1px solid #f84464;
+            color: #f84464;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .owned-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #10b981;
+            color: #fff;
+            font-size: 10px;
+            font-weight: 800;
+            padding: 4px 10px;
+            border-radius: 50px;
+            text-transform: uppercase;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: rgba(255, 255, 255, 0.4);
+            text-decoration: none;
+            margin-bottom: 20px;
+            transition: 0.2s;
+        }
+
+        .back-link:hover {
+            color: #f84464;
+        }
+    </style>
+    <script defer th:src="@{/js/game-rewards.js}"></script>
+    <style>
+        .recent-activity-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 15px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .recent-activity-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #f84464;
+        }
+    </style>
+</head>
+
+<body>
+    <nav>
+        <a th:href="@{/dashboard}" class="logo">YOUTHIANS</a>
+        <div class="coin-balance" onclick="GameRewards.showHistory()" style="cursor: pointer;">
+            <i class="fas fa-coins text-warning"></i>
+            <span th:text="${user.coins}">0</span> Coins
+        </div>
+    </nav>
+
+    <div class="shop-hero">
+        <div style="max-width: 800px; margin: 0 auto; text-align: left; padding: 0 20px;">
+            <a th:href="@{/dashboard}" class="back-link"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+        </div>
+        <h1>Reward Shop</h1>
+        <p>Spend your Youthians Coins to unlock exclusive benefits and premium features.</p>
+        
+        <button class="recent-activity-btn" onclick="GameRewards.showHistory()">
+            <i class="fas fa-history"></i> View Game Earning History
+        </button>
+
+        <!-- Alerts -->
+        <div th:if="${param.success != null}" class="alert alert-success">
+            <i class="fas fa-check-circle"></i>
+            <span th:if="${param.success[0] == 'discount'}">50% Event Discount purchased successfully!</span>
+            <span th:if="${param.success[0] == 'boost'}">Profile Boost (3 Days) activated!</span>
+            <span th:if="${param.success[0] == 'badge'}">Premium Badge unlocked! Visit your profile to see it.</span>
+            <span th:if="${param.success[0] == 'free_entry'}">Free Event Entry ticket added to your account!</span>
+        </div>
+        <div th:if="${param.error == 'insufficient_coins'}" class="alert alert-error">
+            <i class="fas fa-times-circle"></i> Insufficient coins! Keep participating to earn more.
+        </div>
+    </div>
+
+    <div class="shop-grid">
+        <div class="shop-container">
+
+            <!-- Discount -->
+            <div class="shop-card">
+                <span class="owned-badge" th:if="${user.hasDiscount}">Already Owned</span>
+                <i class="fas fa-percentage"></i>
+                <h3>Event Discount</h3>
+                <p>Get a massive 50% discount on your next paid event registration. One-time use.</p>
+                <div class="price-tag"><i class="fas fa-coins"></i> 100</div>
+                <form th:action="@{/shop/buy-discount}" method="POST">
+                    <button type="submit" class="buy-btn" th:disabled="${user.coins < 100 || user.hasDiscount}">
+                        Buy Discount
+                    </button>
+                </form>
+            </div>
+
+            <!-- Profile Boost -->
+            <div class="shop-card">
+                <span class="owned-badge" th:if="${user.isProfileBoosted()}">Active</span>
+                <i class="fas fa-rocket"></i>
+                <h3>Profile Boost</h3>
+                <p>Get featured the top of user searches and listings for 3 full days. Gain more followers!</p>
+                <div class="price-tag"><i class="fas fa-coins"></i> 200</div>
+                <form th:action="@{/shop/buy-boost}" method="POST">
+                    <button type="submit" class="buy-btn" th:disabled="${user.coins < 200}">
+                        Boost Profile
+                    </button>
+                </form>
+            </div>
+
+            <!-- Free Entry -->
+            <div class="shop-card">
+                <span class="owned-badge" th:if="${user.hasFreeEntry}">Ticket Available</span>
+                <i class="fas fa-ticket-alt"></i>
+                <h3>Free Event Entry</h3>
+                <p>Register for ANY paid event for absolutely free. Premium and VIP tiers included!</p>
+                <div class="price-tag"><i class="fas fa-coins"></i> 300</div>
+                <form th:action="@{/shop/buy-free-entry}" method="POST">
+                    <button type="submit" class="buy-btn" th:disabled="${user.coins < 300 || user.hasFreeEntry}">
+                        Buy Ticket
+                    </button>
+                </form>
+            </div>
+
+            <!-- Premium Badge -->
+            <div class="shop-card">
+                <span class="owned-badge" th:if="${user.premium}">Premium Member</span>
+                <i class="fas fa-crown"></i>
+                <h3>Premium Badge</h3>
+                <p>Unlock a permanent golden 'Crown' badge next to your name and unlock exclusive colors.</p>
+                <div class="price-tag"><i class="fas fa-coins"></i> 500</div>
+                <form th:action="@{/shop/buy-badge}" method="POST">
+                    <button type="submit" class="buy-btn" th:disabled="${user.coins < 500 || user.premium}">
+                        Unlock Badge
+                    </button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+
+    <div
+        style="text-align: center; color: rgba(255,255,255,0.3); padding: 40px; font-size: 0.9rem; border-top: 1px solid rgba(255,255,255,0.05); margin-top: auto;">
+        Earn coins by daily login, voting, and participating in events.
+    </div>
+
+</body>
+
+</html>
+

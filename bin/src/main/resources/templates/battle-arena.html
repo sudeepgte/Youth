@@ -1,0 +1,2682 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Battle Arena | Youthians</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --arena-bg: #E0F2FE;
+            --arena-card: #FFFFFF;
+            --arena-border: rgba(15, 23, 42, 0.08);
+            --arena-primary: #F84464;
+            --arena-accent: #8B5CF6;
+            --arena-gold: #FFD700;
+            --arena-green: #10B981;
+            --arena-blue: #3B82F6;
+        }
+
+        .battle-arena-page {
+            font-family: 'Inter', sans-serif;
+            color: var(--text-primary);
+        }
+
+        /* â”€â”€â”€ Hero Banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        .arena-hero {
+            background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 50%, #020617 100%);
+            border-radius: 24px;
+            padding: 40px 36px;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(139,92,246,0.15);
+        }
+        .arena-hero::before {
+            content: '';
+            position: absolute;
+            top: -60%;
+            right: -15%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(248,68,100,0.2) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .arena-hero::after {
+            content: '';
+            position: absolute;
+            bottom: -40%;
+            left: -10%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(139,92,246,0.15) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .arena-hero h1 {
+            font-size: 32px;
+            font-weight: 900;
+            color: #fff !important;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: relative;
+            z-index: 1;
+        }
+        .arena-hero p {
+            font-size: 14px;
+            color: rgba(255,255,255,0.7) !important;
+            max-width: 500px;
+            line-height: 1.7;
+            position: relative;
+            z-index: 1;
+        }
+        .arena-hero-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 22px;
+            position: relative;
+            z-index: 1;
+            flex-wrap: wrap;
+        }
+
+        /* â”€â”€â”€ Buttons â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        .btn-arena {
+            padding: 12px 24px;
+            border-radius: 14px;
+            font-weight: 800;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            border: none;
+        }
+        .btn-arena:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+        }
+        .btn-arena-primary {
+            background: linear-gradient(135deg, #F84464, #E02D5A);
+            color: #fff !important;
+        }
+        .btn-arena-secondary {
+            background: #E2E8F0;
+            border: 1px solid rgba(15, 23, 42, 0.12);
+            color: var(--text-primary) !important;
+        }
+        .btn-arena-green {
+            background: linear-gradient(135deg, #10B981, #059669);
+            color: #fff !important;
+        }
+        .btn-arena-purple {
+            background: linear-gradient(135deg, #8B5CF6, #7C3AED);
+            color: #fff !important;
+        }
+        .btn-arena-gold {
+            background: linear-gradient(135deg, #F59E0B, #D97706);
+            color: #fff !important;
+        }
+        .btn-arena-sm {
+            padding: 8px 16px;
+            font-size: 12px;
+            border-radius: 10px;
+        }
+
+        /* â”€â”€â”€ Tabs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        .arena-tabs {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 24px;
+            background: rgba(15, 23, 42, 0.03);
+            border-radius: 16px;
+            padding: 5px;
+            border: 1px solid var(--arena-border);
+        }
+        .arena-tab {
+            padding: 10px 22px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: 0.2s;
+            border: none;
+            background: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .arena-tab:hover {
+            color: var(--text-primary);
+        }
+        .arena-tab.active {
+            background: rgba(248,68,100,0.1);
+            color: var(--arena-primary);
+            border: 1.5px solid rgba(248,68,100,0.18);
+        }
+
+        /* â”€â”€â”€ Battle Cards Grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        .battles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+            gap: 18px;
+            margin-bottom: 30px;
+        }
+        .battle-card {
+            background: var(--arena-card);
+            border: 1px solid var(--arena-border);
+            border-radius: 20px;
+            padding: 22px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(15, 23, 42, 0.03);
+        }
+        .battle-card:hover {
+            border-color: rgba(139,92,246,0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(15, 23, 42, 0.08);
+        }
+        .battle-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 14px;
+        }
+        .battle-category-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .badge-coding { background: rgba(59,130,246,0.12); color: #2563EB; border: 1px solid rgba(59,130,246,0.2); }
+        .badge-music { background: rgba(139,92,246,0.12); color: #7C3AED; border: 1px solid rgba(139,92,246,0.2); }
+        .badge-dance { background: rgba(236,72,153,0.12); color: #DB2777; border: 1px solid rgba(236,72,153,0.2); }
+        .badge-photography { background: rgba(8,145,178,0.12); color: #0891B2; border: 1px solid rgba(8,145,178,0.2); }
+        .badge-singing { background: rgba(234,88,12,0.12); color: #EA580C; border: 1px solid rgba(234,88,12,0.2); }
+        .badge-video { background: rgba(248,68,100,0.12); color: #E02D5A; border: 1px solid rgba(248,68,100,0.2); }
+        .badge-drawing { background: rgba(5,150,105,0.12); color: #059669; border: 1px solid rgba(5,150,105,0.2); }
+        .badge-fitness { background: rgba(217,119,6,0.12); color: #D97706; border: 1px solid rgba(217,119,6,0.2); }
+        .badge-gaming { background: rgba(79,70,229,0.12); color: #4F46E5; border: 1px solid rgba(79,70,229,0.2); }
+        .badge-meme { background: rgba(217,119,6,0.12); color: #B45309; border: 1px solid rgba(217,119,6,0.2); }
+        .badge-ai { background: rgba(147,51,234,0.12); color: #9333EA; border: 1px solid rgba(147,51,234,0.2); }
+        .badge-default { background: rgba(15,23,42,0.06); color: var(--text-secondary); border: 1px solid rgba(15,23,42,0.1); }
+
+        .battle-status-badge {
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .status-waiting { background: rgba(217,119,6,0.12); color: #D97706; border: 1px solid rgba(217,119,6,0.2); }
+        .status-active { background: rgba(5,150,105,0.12); color: #059669; border: 1px solid rgba(5,150,105,0.2); }
+        .status-voting { background: rgba(37,99,235,0.12); color: #2563EB; border: 1px solid rgba(37,99,235,0.2); }
+        .status-completed { background: rgba(124,58,237,0.12); color: #7C3AED; border: 1px solid rgba(124,58,237,0.2); }
+
+        .battle-card h3 {
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+        .battle-card-meta {
+            display: flex;
+            gap: 16px;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+        }
+        .battle-card-meta span {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .battle-card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 14px;
+            border-top: 1px solid var(--arena-border);
+        }
+        .battle-creator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        .battle-creator img {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            border: 1.5px solid var(--arena-border);
+        }
+        .room-code-tag {
+            background: rgba(217,119,6,0.08);
+            border: 1px dashed rgba(217,119,6,0.3);
+            border-radius: 8px;
+            padding: 4px 10px;
+            font-size: 12px;
+            font-weight: 800;
+            color: #B45309;
+            letter-spacing: 1.5px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .room-code-tag:hover {
+            background: rgba(217,119,6,0.15);
+            border-color: rgba(217,119,6,0.5);
+        }
+
+        /* â”€â”€â”€ Detail View â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        .battle-detail {
+            background: var(--arena-card);
+            border: 1px solid var(--arena-border);
+            border-radius: 24px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(15, 23, 42, 0.03);
+        }
+        .battle-detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .battle-detail h2 {
+            font-size: 24px;
+            font-weight: 900;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+        }
+        .battle-detail-info {
+            display: flex;
+            gap: 20px;
+            font-size: 13px;
+            color: var(--text-muted);
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .battle-detail-info span {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* â”€â”€â”€ Participants List â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        .participants-grid {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .participant-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(15, 23, 42, 0.04);
+            border: 1px solid var(--arena-border);
+            border-radius: 12px;
+            padding: 8px 14px;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        .participant-chip img {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+        }
+
+        /* â”€â”€â”€ Submission Cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        .submissions-list {
+            display: grid;
+            gap: 16px;
+            margin: 20px 0;
+        }
+        .submission-card {
+            background: #FFFFFF;
+            border: 1px solid var(--arena-border);
+            border-radius: 18px;
+            padding: 22px;
+            transition: 0.3s;
+            box-shadow: 0 4px 15px rgba(15, 23, 42, 0.02);
+        }
+        .submission-card:hover {
+            border-color: rgba(139,92,246,0.35);
+        }
+        .submission-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .submission-user {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .submission-user img {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 2px solid var(--arena-border);
+        }
+        .submission-user-info h4 {
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+        .submission-user-info span {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+        .submission-links {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        .submission-links a {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            background: rgba(59,130,246,0.08);
+            border: 1px solid rgba(59,130,246,0.15);
+            border-radius: 10px;
+            color: #2563EB;
+            font-size: 12px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: 0.2s;
+        }
+        .submission-links a:hover {
+            background: rgba(59,130,246,0.15);
+        }
+        .vote-count-display {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 18px;
+            font-weight: 900;
+            color: #D97706;
+        }
+
+        /* â”€â”€â”€ Leaderboard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        .leaderboard-section {
+            background: linear-gradient(135deg, rgba(59,130,246,0.05) 0%, rgba(248,68,100,0.05) 100%);
+            border: 1px solid rgba(59,130,246,0.12);
+            border-radius: 20px;
+            padding: 24px;
+            margin: 20px 0;
+        }
+        .leaderboard-section h3 {
+            font-size: 16px;
+            font-weight: 900;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .leaderboard-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 16px;
+            border-radius: 14px;
+            margin-bottom: 8px;
+            transition: 0.2s;
+        }
+        .leaderboard-row:hover {
+            background: rgba(15, 23, 42, 0.04);
+        }
+        .leaderboard-rank {
+            font-size: 20px;
+            font-weight: 900;
+            width: 36px;
+            height: 36px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .rank-1 { background: linear-gradient(135deg, rgba(217,119,6,0.2), rgba(217,119,6,0.05)); color: #D97706; border: 1px solid rgba(217,119,6,0.3); }
+        .rank-2 { background: linear-gradient(135deg, rgba(100,116,139,0.2), rgba(100,116,139,0.05)); color: #64748B; border: 1px solid rgba(100,116,139,0.3); }
+        .rank-3 { background: linear-gradient(135deg, rgba(180,83,9,0.2), rgba(180,83,9,0.05)); color: #B45309; border: 1px solid rgba(180,83,9,0.3); }
+        .rank-default { background: rgba(15,23,42,0.04); color: var(--text-secondary); border: 1px solid var(--arena-border); }
+        .leaderboard-user {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+        }
+        .leaderboard-user img {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+        }
+        .leaderboard-votes {
+            font-size: 16px;
+            font-weight: 900;
+            color: #D97706;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* â”€â”€â”€ Winner Section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        .winner-section {
+            background: linear-gradient(135deg, rgba(217,119,6,0.06) 0%, rgba(248,68,100,0.06) 100%);
+            border: 1px solid rgba(217,119,6,0.15);
+            border-radius: 24px;
+            padding: 40px;
+            text-align: center;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        .winner-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(217,119,6,0.1) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .winner-trophy {
+            font-size: 64px;
+            margin-bottom: 16px;
+            animation: trophyBounce 2s ease-in-out infinite;
+        }
+        @keyframes trophyBounce {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        .winner-name {
+            font-size: 28px;
+            font-weight: 900;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+        .winner-reward {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 20px;
+            background: rgba(217,119,6,0.1);
+            border: 1px solid rgba(217,119,6,0.2);
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 800;
+            color: #B45309;
+            margin-top: 12px;
+        }
+
+        /* â”€â”€â”€ Modals â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        .arena-modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .arena-modal-overlay.show {
+            display: flex;
+        }
+        .arena-modal {
+            background: #FFFFFF;
+            border: 1px solid rgba(15, 23, 42, 0.1);
+            border-radius: 24px;
+            padding: 36px;
+            width: 90%;
+            max-width: 520px;
+            max-height: 85vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 20px 50px rgba(15, 23, 42, 0.15);
+        }
+        .arena-modal h2 {
+            font-size: 22px;
+            font-weight: 900;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+        }
+        .arena-modal p.subtitle {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+        }
+        .arena-modal-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            background: rgba(15, 23, 42, 0.05);
+            border: 1px solid rgba(15, 23, 42, 0.08);
+            color: var(--text-secondary);
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+        .arena-modal-close:hover {
+            background: rgba(248,68,100,0.1);
+            color: var(--arena-primary);
+        }
+
+        /* â”€â”€â”€ Form Fields â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        .arena-field {
+            margin-bottom: 20px;
+        }
+        .arena-field label {
+            display: block;
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .arena-field input,
+        .arena-field select,
+        .arena-field textarea {
+            width: 100%;
+            padding: 12px 16px;
+            background: #F8FAFC;
+            border: 1.5px solid rgba(15, 23, 42, 0.12);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 14px;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            transition: 0.2s;
+            box-sizing: border-box;
+        }
+        .arena-field input:focus,
+        .arena-field select:focus,
+        .arena-field textarea:focus {
+            border-color: var(--arena-primary);
+            background: #FFFFFF;
+            box-shadow: 0 0 0 3px rgba(248,68,100,0.1);
+        }
+        .arena-field input::placeholder,
+        .arena-field textarea::placeholder {
+            color: var(--text-muted);
+            opacity: 0.7;
+        }
+        .arena-field select option {
+            background: #FFFFFF;
+            color: var(--text-primary);
+        }
+
+        /* â”€â”€â”€ Category Grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+        .category-option {
+            padding: 10px 8px;
+            border-radius: 12px;
+            background: #F8FAFC;
+            border: 1.5px solid rgba(15, 23, 42, 0.08);
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-secondary);
+        }
+        .category-option:hover {
+            border-color: rgba(139,92,246,0.3);
+            background: rgba(139,92,246,0.05);
+        }
+        .category-option.selected {
+            border-color: var(--arena-primary);
+            background: rgba(248,68,100,0.08);
+            color: var(--arena-primary);
+        }
+        .category-option i {
+            display: block;
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+
+        /* â”€â”€â”€ Steps Indicator â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        .steps-indicator {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+        .step-dot {
+            flex: 1;
+            height: 4px;
+            border-radius: 4px;
+            background: rgba(15, 23, 42, 0.08);
+            transition: 0.3s;
+        }
+        .step-dot.active {
+            background: var(--arena-primary);
+        }
+        .step-dot.done {
+            background: var(--arena-green);
+        }
+
+        /* â”€â”€â”€ Empty State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        .arena-empty {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+        .arena-empty i {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.3;
+        }
+        .arena-empty h3 {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+        .arena-empty p {
+            font-size: 13px;
+        }
+
+        /* â”€â”€â”€ Alert Messages â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        .arena-alert {
+            padding: 14px 18px;
+            border-radius: 14px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .arena-alert-success {
+            background: rgba(16,185,129,0.1);
+            border: 1px solid rgba(16,185,129,0.2);
+            color: #10B981;
+        }
+        .arena-alert-error {
+            background: rgba(239,68,68,0.1);
+            border: 1px solid rgba(239,68,68,0.2);
+            color: #EF4444;
+        }
+        .arena-alert-info {
+            background: rgba(59,130,246,0.1);
+            border: 1px solid rgba(59,130,246,0.2);
+            color: #3B82F6;
+        }
+
+        /* â”€â”€â”€ Join via Code â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        .join-form-inline {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .join-form-inline input {
+            flex: 1;
+            padding: 12px 16px;
+            background: #F8FAFC;
+            border: 1.5px solid rgba(15, 23, 42, 0.12);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 15px;
+            font-weight: 800;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            text-align: center;
+            outline: none;
+            font-family: 'Inter', monospace;
+        }
+        .join-form-inline input:focus {
+            border-color: var(--arena-primary);
+            background: #FFFFFF;
+        }
+        .join-form-inline input::placeholder {
+            letter-spacing: 1px;
+            text-transform: none;
+            font-weight: 600;
+        }
+
+        /* â”€â”€â”€ Confetti Animation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        .confetti-container {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 999;
+            overflow: hidden;
+        }
+        .confetti-piece {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 2px;
+            animation: confettiFall 3s ease-in-out forwards;
+            opacity: 0;
+        }
+        @keyframes confettiFall {
+            0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+
+        /* â”€â”€â”€ Responsive â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        @media (max-width: 768px) {
+            .battles-grid { grid-template-columns: 1fr; }
+            .category-grid { grid-template-columns: repeat(2, 1fr); }
+            .arena-hero { padding: 24px 20px; }
+            .arena-hero h1 { font-size: 22px; }
+            .battle-detail { padding: 20px; }
+            .arena-modal { padding: 20px; width: 95%; max-height: 90vh; }
+            /* Force inline grids in modal to stack */
+            .arena-modal form div[style*="grid-template-columns"], 
+            #prizesGrid { grid-template-columns: 1fr !important; }
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script defer th:src="@{/js/game-rewards.js}"></script>
+</head>
+<body class="battle-arena-page">
+    <!-- Navbar -->
+    <!-- Mobile Sidebar Overlay -->
+    <div class="mobile-menu-overlay" onclick="document.querySelector('.sidebar').classList.remove('mobile-open'); this.classList.remove('active');"></div>
+
+    <nav class="dashboard-navbar">
+
+        <button class="mobile-menu-btn" onclick="const s=document.querySelector('.sidebar');if(s)s.classList.toggle('mobile-open'); const o=document.querySelector('.mobile-menu-overlay');if(o)o.classList.toggle('active');" style="display:none; background:none; border:none; color:var(--text-primary); font-size:20px; cursor:pointer; margin-right:15px; margin-left: 5px; padding: 0;">
+            <i class="fas fa-bars"></i>
+        </button>
+        <a class="dashboard-logo" th:href="@{/home}" style="display: inline-flex; flex-direction: column; align-items: center; text-decoration: none; line-height: 1.1; margin-right: 15px;">
+    <svg width="28" height="28" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <linearGradient id="yg" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#6b21a8" />
+                <stop offset="50%" stop-color="#2563eb" />
+                <stop offset="100%" stop-color="#0ea5e9" />
+            </linearGradient>
+        </defs>
+        <circle cx="50" cy="22" r="12" fill="url(#yg)" />
+        <path d="M 25 25 Q 40 50 45 65 L 45 90 Q 55 90 55 65 Q 60 50 80 25 Q 65 45 55 55 L 45 55 Q 35 45 25 25 Z" fill="url(#yg)" />
+        <path d="M 15 60 Q 50 90 90 40 Q 80 50 50 80 Q 25 70 15 60 Z" fill="url(#yg)" />
+        <polygon points="75,10 80,15 85,10 80,5" fill="#0ea5e9" />
+    </svg>
+    <span style="font-size: 11px; font-weight: 800; color: #1e3a8a; letter-spacing: 1px; margin-top: 2px;">YOUTHIANS</span>
+</a>
+
+        <div class="dashboard-spacer"></div>
+        <div class="dashboard-nav-links">
+            <a href="javascript:void(0)" onclick="GameRewards.showHistory()" class="coin-nav"
+                style="background: rgba(255, 215, 0, 0.1); border: 1px solid rgba(255, 215, 0, 0.2); border-radius: 20px; padding: 5px 12px; display: flex; align-items: center; gap: 8px; text-decoration: none; color: #ffd700; font-weight: 800; font-size: 13px;">
+                <i class="fas fa-coins" style="font-size: 14px;"></i>
+                <span th:text="${user.coins}">0</span>
+            </a>
+            <a th:href="@{/dashboard}"><i class="fas fa-home"></i></a>
+            <a th:href="@{/messages}"><i class="fas fa-comment-dots"></i></a>
+            <a th:href="@{/profile}">
+                <img th:src="${user.profilePhotoUrl != null and !user.profilePhotoUrl.isEmpty()} ? ${user.profilePhotoUrl} : 'https://ui-avatars.com/api/?name=' + ${user.username} + '&background=F84464&color=fff&size=80'"
+                    class="user-avatar" style="width: 32px; height: 32px; border: none;">
+            </a>
+        </div>
+    </nav>
+
+
+    <div class="dashboard-container">
+        <!-- Left Sidebar -->
+        <aside class="sidebar">
+            <a th:href="@{/dashboard}" class="sidebar-link"><i class="fas fa-home"></i> Home</a>
+            <a th:href="@{/explore}" class="sidebar-link"><i class="fas fa-compass"></i> Explore</a>
+            <a th:href="@{/events}" class="sidebar-link"><i class="fas fa-calendar-alt"></i> Events</a>
+            <a th:href="@{/battles}" class="sidebar-link active"><i class="fas fa-fire"></i> Battle Arena</a>
+            <a th:href="@{/achievements}" class="sidebar-link"><i class="fas fa-trophy"></i> Achievements</a>
+            <a th:href="@{/messages}" class="sidebar-link"><i class="fas fa-comment-dots"></i> Chat</a>
+            <a th:href="@{/reels}" class="sidebar-link"><i class="fas fa-film"></i> Reels</a>
+            <a th:href="@{/profile}" class="sidebar-link"><i class="fas fa-user"></i> Profile</a>
+            
+            <a th:href="@{/wallet}" class="sidebar-link"><i class="fas fa-wallet"></i> Wallet</a>
+            <a th:href="@{/user/my-bookings}" class="sidebar-link"><i class="fas fa-ticket-alt"></i> My Bookings</a>
+            <a href="javascript:void(0)" class="sidebar-link" onclick="openCreateModal()"><i class="fas fa-plus-circle" style="color: var(--accent);"></i> Create Post</a>
+            <a th:href="@{/settings}" class="sidebar-link"><i class="fas fa-cog"></i> Settings</a>
+            <a th:href="@{/logout}" class="sidebar-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="social-feed" style="max-width: 100%; padding-bottom: 60px;">
+            <!-- Alerts -->
+            <div th:if="${param.deleted}" class="arena-alert arena-alert-success" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #EF4444;">
+                <i class="fas fa-trash-alt"></i> Battle has been deleted successfully! ðŸ—‘ï¸ 
+            </div>
+            <div th:if="${param.submitted}" class="arena-alert arena-alert-success">
+                <i class="fas fa-check-circle"></i> Your submission has been uploaded! ðŸŽ‰
+            </div>
+            <div th:if="${param.voted}" class="arena-alert arena-alert-success">
+                <i class="fas fa-check-circle"></i> Your vote has been recorded! ðŸ—³ï¸ 
+            </div>
+            <div th:if="${param.error}" class="arena-alert arena-alert-error">
+                <i class="fas fa-exclamation-circle"></i>
+                <span th:if="${param.error[0] == 'not_found'}">Battle not found. Check your room code.</span>
+                <span th:if="${param.error[0] == 'full'}">This battle is full!</span>
+                <span th:if="${param.error[0] == 'ended'}">This battle has ended.</span>
+                <span th:if="${param.error[0] == 'already_started'}">Joining is closed ï¿½ this battle has already started.</span>
+                <span th:if="${param.error[0] == 'already_voted'}">You've already voted in this battle.</span>
+                <span th:if="${param.error[0] == 'already_submitted'}">You've already submitted your entry.</span>
+                <span th:if="${param.error[0] == 'not_active'}">This battle isn't accepting submissions right now.</span>
+                <span th:if="${param.error[0] == 'not_participant'}">You need to join this battle first.</span>
+                <span th:if="${param.error[0] == 'unauthorized'}">You are not authorized to perform this action.</span>
+                <span th:if="${param.error[0] == 'empty_submission'}">Please upload a file or provide a valid URL for your submission.</span>
+                <span th:if="${param.error[0] == 'insufficient_funds'}">Insufficient funds in your wallet to pay the entry fee!</span>
+                <span th:if="${param.error[0] == 'invalid_prizes'}">Invalid Prize Amounts! Total prize pool cannot exceed the combined entry fee pool.</span>
+            </div>
+
+            <!-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+            <!-- SINGLE BATTLE VIEW (when battle is in model) -->
+            <!-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+            <div th:if="${battle != null}">
+                <!-- Back Button -->
+                <a th:href="@{/battles}" style="display:inline-flex; align-items:center; gap:6px; color:var(--text-muted); font-size:13px; font-weight:700; text-decoration:none; margin-bottom:16px; transition:0.2s;"
+                   onmouseover="this.style.color='var(--text-primary)'" onmouseout="this.style.color='var(--text-muted)'">
+                    <i class="fas fa-arrow-left"></i> Back to Arena
+                </a>
+
+                <!-- Battle Detail Card -->
+                <div class="battle-detail">
+                    <div class="battle-detail-header">
+                        <div>
+                            <div style="display:flex; gap:10px; align-items:center; margin-bottom:10px;">
+                                <span class="battle-category-badge"
+                                    th:classappend="'badge-' + ${battle.category != null ? battle.category.toLowerCase().replaceAll('[^a-z]', '') : 'default'}"
+                                    th:text="${battle.category}">Category</span>
+                                <span class="battle-status-badge"
+                                    th:classappend="'status-' + ${battle.status.toLowerCase()}"
+                                    th:text="${battle.status}">STATUS</span>
+                            </div>
+                            <h2 th:text="${battle.title}">Battle Title</h2>
+                        </div>
+                        <div class="room-code-tag" th:text="${battle.roomCode}" title="Click to copy"
+                             th:attr="onclick='copyCode(\'' + ${battle.roomCode} + '\')'">ABC123</div>
+                    </div>
+                    <div class="battle-detail-info">
+                        <span><i class="fas fa-clock"></i> <span th:if="${battle.durationMinutes != null}" th:text="${battle.durationMinutes} + 'm'"></span><span th:if="${battle.durationMinutes == null}" th:text="${battle.durationHours} + 'h'"></span> Duration</span>
+                        <span id="countdownContainer" th:if="${(battle.status == 'ACTIVE' and battle.endsAt != null) or (battle.status == 'VOTING' and battle.votingEndsAt != null)}"
+                              th:attr="data-endtime=${battle.status == 'ACTIVE' ? battle.endsAt : battle.votingEndsAt}">
+                            <i class="fas fa-stopwatch" style="color:var(--arena-primary);"></i>
+                            <span th:text="${battle.status == 'ACTIVE' ? 'Time Left: ' : 'Voting Ends: '}">Time Left:</span>
+                            <strong id="countdownTimer" style="color:var(--arena-primary);">Calculating...</strong>
+                        </span>
+                        <span><i class="fas fa-users"></i> <span th:text="${participantCount}">0</span> / <span th:text="${battle.maxParticipants}">10</span> Participants</span>
+                        <span><i class="fas fa-vote-yea"></i> <span th:text="${battle.votingType}">PUBLIC</span> Voting</span>
+                        <span><i class="fas fa-trophy"></i> <span th:text="${battle.winnerXp}">500</span> XP Reward</span>
+                        
+                        <span th:if="${battle.entryFee != null and battle.entryFee > 0}" style="color:#10B981; font-weight:700;"><i class="fas fa-ticket-alt"></i> &#8377;<span th:text="${battle.entryFee}">50</span> Entry Fee</span>
+                        <span th:if="${battle.prize1 != null and battle.prize1 > 0}"><i class="fas fa-trophy" style="color:#FFD700;"></i> 1st Prize: &#8377;<span th:text="${battle.prize1}">100</span></span>
+                        <span th:if="${battle.prize2 != null and battle.prize2 > 0}"><i class="fas fa-trophy" style="color:#C0C0C0;"></i> 2nd Prize: &#8377;<span th:text="${battle.prize2}">50</span></span>
+                        <span th:if="${(battle.maxParticipants == null or battle.maxParticipants > 2) and battle.prize3 != null and battle.prize3 > 0}"><i class="fas fa-trophy" style="color:#cd7f32;"></i> 3rd Prize: &#8377;<span th:text="${battle.prize3}">25</span></span>
+                    </div>
+
+                    <!-- Offline Event Details Block -->
+                    <div th:if="${battle.mode == 'OFFLINE'}" style="background:#F8FAFC; border:1px solid var(--arena-border); border-radius:14px; padding:16px; margin-bottom:16px; display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:12px;">
+                        <div>
+                            <span style="font-size:11px; color:var(--text-muted); font-weight:700; text-transform:uppercase; display:block; margin-bottom:2px;"><i class="fas fa-map-marker-alt" style="color:#EF4444;"></i> Venue</span>
+                            <span style="font-size:14px; font-weight:800; color:var(--text-primary);" th:text="${battle.venue}">Tech Hub, Bengaluru</span>
+                        </div>
+                        <div>
+                            <span style="font-size:11px; color:var(--text-muted); font-weight:700; text-transform:uppercase; display:block; margin-bottom:2px;"><i class="fas fa-calendar-day" style="color:#3B82F6;"></i> Date &amp; Time</span>
+                            <span style="font-size:14px; font-weight:800; color:var(--text-primary);" th:text="${battle.eventDate + ' @ ' + battle.eventTime}">20 July 2026 @ 10:00 AM</span>
+                        </div>
+                        <div>
+                            <span style="font-size:11px; color:var(--text-muted); font-weight:700; text-transform:uppercase; display:block; margin-bottom:2px;"><i class="fas fa-ticket-alt" style="color:#10B981;"></i> Entry Fee</span>
+                            <span style="font-size:14px; font-weight:800; color:var(--text-primary);" th:text="${battle.entryFee > 0 ? '$' + battle.entryFee : 'Free Entry'}">Free Entry</span>
+                        </div>
+                        <div>
+                            <span style="font-size:11px; color:var(--text-muted); font-weight:700; text-transform:uppercase; display:block; margin-bottom:2px;"><i class="fas fa-balance-scale" style="color:#8B5CF6;"></i> Weight Settings</span>
+                            <span style="font-size:13px; font-weight:800; color:var(--text-primary);" th:text="${'Judges ' + battle.judgeWeight + '% / Audience ' + battle.audienceWeight + '%'}">Judges 70% / Audience 30%</span>
+                        </div>
+                    </div>
+
+                    <!-- â”€â”€â”€ OFFLINE PARTICIPANT TICKET PASS â”€â”€â”€ -->
+                    <div th:if="${battle.mode == 'OFFLINE' and isParticipant and !participants.isEmpty() and #lists.size(participants.?[user.id == #vars.user.id]) > 0}" class="battle-detail" style="border:2px dashed var(--arena-primary); background:linear-gradient(135deg, rgba(248,68,100,0.02), rgba(255,255,255,1)); margin-bottom:20px; padding:16px; border-radius:14px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+                            <div>
+                                <h3 style="font-size:16px; font-weight:900; color:var(--text-primary); margin:0 0 4px 0;"><i class="fas fa-id-badge" style="color:var(--arena-primary);"></i> Your QR Entry Pass</h3>
+                                <p style="font-size:12px; color:var(--text-muted); margin:0 0 12px 0;">Present this QR code at the check-in desk upon arrival.</p>
+                                
+                                <!-- Details Grid -->
+                                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; width:220px; margin-top:8px;">
+                                    <div style="background:#F8FAFC; padding:6px 10px; border-radius:10px; border:1px solid var(--arena-border);">
+                                        <span style="font-size:8px; color:var(--text-muted); display:block; font-weight:700;">PARTICIPANT ID</span>
+                                        <strong style="font-size:13px; color:var(--text-primary);" 
+                                                th:text="${participants.?[user.id == #vars.user.id][0].participantNumber}">#07</strong>
+                                    </div>
+                                    <div style="background:#F8FAFC; padding:6px 10px; border-radius:10px; border:1px solid var(--arena-border);">
+                                        <span style="font-size:8px; color:var(--text-muted); display:block; font-weight:700;">ASSIGNED SEAT</span>
+                                        <strong style="font-size:13px; color:var(--text-primary);"
+                                                th:text="${participants.?[user.id == #vars.user.id][0].seatNumber}">Seat A7</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Mock QR Code SVG -->
+                            <div style="background:#fff; border:1px solid var(--arena-border); padding:8px; border-radius:12px; text-align:center;">
+                                <svg width="70" height="70" viewBox="0 0 100 100" style="display:block;">
+                                    <rect width="100" height="100" fill="#fff"/>
+                                    <rect x="0" y="0" width="30" height="30" fill="#0F172A"/>
+                                    <rect x="5" y="5" width="20" height="20" fill="#fff"/>
+                                    <rect x="10" y="10" width="10" height="10" fill="#0F172A"/>
+                                    
+                                    <rect x="70" y="0" width="30" height="30" fill="#0F172A"/>
+                                    <rect x="75" y="5" width="20" height="20" fill="#fff"/>
+                                    <rect x="80" y="10" width="10" height="10" fill="#0F172A"/>
+                                    
+                                    <rect x="0" y="70" width="30" height="30" fill="#0F172A"/>
+                                    <rect x="5" y="75" width="20" height="20" fill="#fff"/>
+                                    <rect x="10" y="80" width="10" height="10" fill="#0F172A"/>
+                                    
+                                    <rect x="40" y="10" width="15" height="15" fill="#0F172A"/>
+                                    <rect x="45" y="35" width="10" height="20" fill="#0F172A"/>
+                                    <rect x="60" y="50" width="25" height="10" fill="#0F172A"/>
+                                    <rect x="35" y="65" width="15" height="15" fill="#0F172A"/>
+                                    <rect x="75" y="75" width="10" height="10" fill="#0F172A"/>
+                                </svg>
+                                <span style="font-size:8px; font-weight:800; color:var(--text-muted); display:block; margin-top:4px; letter-spacing:1px;" 
+                                      th:text="${#strings.substring(participants.?[user.id == #vars.user.id][0].qrPassCode, 0, 8).toUpperCase()}">PASSCODE</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Live Arena Button -->
+                    <div th:if="${battle.status == 'ACTIVE' and battle.durationMinutes != null}" style="margin-bottom: 16px;">
+                        <a th:href="@{'/battles/' + ${battle.id} + '/live'}" 
+                           style="display:inline-flex; align-items:center; gap:8px; padding:12px 24px; background:linear-gradient(135deg, #ef4444, #dc2626); color:white; border-radius:12px; font-weight:700; text-decoration:none; font-size:14px; box-shadow: 0 0 20px rgba(239,68,68,0.4); animation: pulse-live 2s infinite;">
+                            <i class="fas fa-broadcast-tower"></i>
+                            <span th:if="${isCreator || isParticipant}">ðŸ”´ Go Live</span>
+                            <span th:if="${!isCreator and !isParticipant}">ðŸ‘ï¸ Watch Live</span>
+                        </a>
+                    </div>
+
+                    <!-- Creator Actions -->
+                    <div th:if="${isCreator}" style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;">
+                        <form th:if="${(battle.status == 'WAITING' or battle.status == 'LOBBY') and participants.size() >= 2}" th:action="@{'/battles/' + ${battle.id} + '/start'}" method="POST"
+                              th:onsubmit="${participants.size() < battle.maxParticipants} ? 'return confirm(\'Only ' + ${participants.size()} + ' of ' + ${battle.maxParticipants} + ' spots are filled. Starting now will close joining for everyone else. Start anyway?\');' : null">
+                            <button type="submit" class="btn-arena btn-arena-green btn-arena-sm"><i class="fas fa-play"></i> Start Battle</button>
+                        </form>
+                        <form th:if="${battle.status == 'ACTIVE'}" th:action="@{'/battles/' + ${battle.id} + '/start-voting'}" method="POST">
+                            <button type="submit" class="btn-arena btn-arena-purple btn-arena-sm"><i class="fas fa-vote-yea"></i> Open Voting</button>
+                        </form>
+                        <form th:if="${battle.status == 'VOTING'}" th:action="@{'/battles/' + ${battle.id} + '/end'}" method="POST">
+                            <button type="submit" class="btn-arena btn-arena-gold btn-arena-sm"><i class="fas fa-flag-checkered"></i> End &amp; Declare Winner</button>
+                        </form>
+                        <form th:action="@{'/battles/' + ${battle.id} + '/delete'}" method="POST" onsubmit="return confirm('Are you sure you want to delete this battle? This action cannot be undone and will delete all participants, submissions, and votes.');">
+                            <button type="submit" class="btn-arena btn-arena-sm" style="background: linear-gradient(135deg, #EF4444, #DC2626); color: #fff !important; border: none;">
+                                <i class="fas fa-trash-alt"></i> Delete Battle
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Non-Participant Actions (Register / Join) -->
+                    <div th:if="${!isParticipant and !isCreator and (battle.status == 'WAITING' or battle.status == 'LOBBY')}" style="margin-bottom:16px;">
+                        <!-- Online Battle: Join with Room Code -->
+                        <form th:if="${battle.mode != 'OFFLINE'}" th:action="@{/battles/join}" method="POST">
+                            <input type="hidden" name="roomCode" th:value="${battle.roomCode}" />
+                            <button type="submit" class="btn-arena btn-arena-primary" style="width:100%; justify-content:center;">
+                                <i class="fas fa-sign-in-alt"></i> Join Battle
+                            </button>
+                        </form>
+                        
+                        <!-- Offline Battle: Register for Offline Pass -->
+                        <form th:if="${battle.mode == 'OFFLINE'}" th:action="@{'/battles/' + ${battle.id} + '/register'}" method="POST">
+                            <button type="submit" class="btn-arena btn-arena-green" style="width:100%; justify-content:center;">
+                                <i class="fas fa-id-card"></i> Register &amp; Get QR Pass
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Non-Participant: Battle already progressed past WAITING, joining closed -->
+                    <div th:if="${!isParticipant and !isCreator and battle.status != 'WAITING' and battle.status != 'LOBBY' and battle.status != 'COMPLETED'}"
+                         style="display:flex; align-items:center; gap:10px; background:rgba(148,163,184,0.12); border:1px solid rgba(148,163,184,0.3); border-radius:12px; padding:12px 16px; margin-bottom:16px; color:var(--text-secondary); font-size:13px; font-weight:600;">
+                        <i class="fas fa-lock" style="color:var(--text-muted);"></i>
+                        <span>Joining is closed &mdash; this battle has already started.</span>
+                    </div>
+
+                    <!-- Participants -->
+                    <h3 style="font-size:14px; font-weight:800; color:var(--text-primary); margin-bottom:12px;">
+                        <i class="fas fa-users" style="color:#8B5CF6;"></i> Participants
+                    </h3>
+                    
+                    <!-- Offline Registration Summary Statistics -->
+                    <div th:if="${battle.mode == 'OFFLINE'}" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:16px; text-align:center;">
+                        <div style="background:#F8FAFC; border:1px solid var(--arena-border); border-radius:10px; padding:8px 4px;">
+                            <div style="font-size:10px; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Registered</div>
+                            <div style="font-size:16px; font-weight:900; color:var(--text-primary);" th:text="${participantCount}">0</div>
+                        </div>
+                        <div style="background:rgba(16,185,129,0.05); border:1px solid rgba(16,185,129,0.15); border-radius:10px; padding:8px 4px;">
+                            <div style="font-size:10px; color:#10B981; font-weight:700; text-transform:uppercase;">Checked In</div>
+                            <div style="font-size:16px; font-weight:900; color:#10B981;" 
+                                 th:text="${#lists.size(participants.?[checkedIn == true])}">0</div>
+                        </div>
+                        <div style="background:rgba(239,68,68,0.05); border:1px solid rgba(239,68,68,0.15); border-radius:10px; padding:8px 4px;">
+                            <div style="font-size:10px; color:#EF4444; font-weight:700; text-transform:uppercase;">Absent</div>
+                            <div style="font-size:16px; font-weight:900; color:#EF4444;" 
+                                 th:text="${#lists.size(participants.?[checkedIn == false])}">0</div>
+                        </div>
+                    </div>
+
+                    <div class="participants-grid" style="display:grid; grid-template-columns:1fr; gap:8px;">
+                        <div th:each="p : ${participants}" class="participant-chip" style="display:flex; justify-content:space-between; align-items:center; width:100%; padding:10px 14px; background:rgba(15,23,42,0.02); border:1px solid var(--arena-border); border-radius:12px;">
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <img th:src="${p.user.profilePhotoUrl != null and !p.user.profilePhotoUrl.isEmpty()} ? ${p.user.profilePhotoUrl} : 'https://ui-avatars.com/api/?name=' + ${p.user.username} + '&background=F84464&color=fff&size=60'" alt="" style="width:30px; height:30px; border-radius:50%;">
+                                <span th:text="${p.user.username}" style="font-weight:800; color:var(--text-primary);">User</span>
+                                <span th:if="${battle.creator != null and p.user.id == battle.creator.id}" style="font-size:9px; background:rgba(255,215,0,0.15); color:#FFD700; padding:2px 6px; border-radius:6px; font-weight:800;">HOST</span>
+                                <span th:if="${battle.mode == 'OFFLINE' and p.participantNumber != null}" style="font-size:10px; background:#E2E8F0; padding:2px 6px; border-radius:6px; font-weight:700; color:var(--text-secondary);" th:text="${p.participantNumber}">#01</span>
+                                <span th:if="${battle.mode == 'OFFLINE' and p.seatNumber != null}" style="font-size:10px; background:#E2E8F0; padding:2px 6px; border-radius:6px; font-weight:700; color:var(--text-secondary);" th:text="${'Seat ' + p.seatNumber}">Seat A1</span>
+                            </div>
+                            <!-- Offline Check-in Action -->
+                            <div th:if="${battle.mode == 'OFFLINE'}" style="display:flex; align-items:center; gap:8px;">
+                                <span th:if="${p.checkedIn}" style="font-size:10px; background:rgba(16,185,129,0.12); color:#10B981; padding:3px 8px; border-radius:6px; font-weight:800;"><i class="fas fa-check-circle"></i> Checked In</span>
+                                <span th:if="${!p.checkedIn and !isCreator}" style="font-size:10px; background:rgba(239,68,68,0.12); color:#EF4444; padding:3px 8px; border-radius:6px; font-weight:800;"><i class="fas fa-times-circle"></i> Absent</span>
+                                
+                                <form th:if="${!p.checkedIn and isCreator}" th:action="@{'/battles/' + ${battle.id} + '/checkin/' + ${p.id}}" method="POST" style="margin:0;">
+                                    <button type="submit" class="btn-arena btn-arena-secondary btn-arena-sm" style="padding:4px 8px; font-size:10px;"><i class="fas fa-qrcode"></i> Check In</button>
+                                </form>
+                            </div>
+
+                            <!-- Direct Vote Button (ACTIVE or VOTING phase) -->
+                            <div th:if="${battle.status == 'VOTING'}" style="display:flex; align-items:center; margin-left: auto; gap: 8px;">
+                                <form th:if="${!hasVoted}" th:action="@{'/battles/' + ${battle.id} + '/vote-participant/' + ${p.id}}" method="POST" style="margin:0;">
+                                    <button type="submit" class="btn-arena btn-arena-primary btn-arena-sm" style="padding:4px 8px; font-size:10px;">
+                                        <i class="fas fa-thumbs-up"></i> Vote
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        <div th:if="${participants.isEmpty()}" style="color:var(--text-muted); font-size:13px; text-align:center; padding:10px;">No participants yet</div>
+                    </div>
+                </div>
+
+                <!-- â”€â”€â”€ SUBMISSION FORM (ACTIVE battles only, if participant & not submitted) â”€â”€â”€ -->
+
+                <div th:if="${battle.status == 'ACTIVE' and isParticipant and !hasSubmitted and battle.durationMinutes == null}" class="battle-detail" id="submit-section">
+
+                    <h3 style="font-size:18px; font-weight:900; color:#fff; margin-bottom:6px;">
+                        <i class="fas fa-upload" style="color:#10B981;"></i> Upload Your Submission
+                    </h3>
+                    <p style="font-size:12px; color:var(--text-muted); margin-bottom:20px;">Submit your entry for this <span th:text="${battle.category}" style="color:var(--arena-primary); font-weight:800;">Category</span> battle</p>
+
+                    <form th:action="@{'/battles/' + ${battle.id} + '/submit'}" method="POST" onsubmit="return validateSubmissionForm()">
+
+
+                        <!-- ï¿½&bull;ï¿½ï¿½&bull;ï¿½ CATEGORY-SPECIFIC UPLOAD ZONE ï¿½&bull;ï¿½ï¿½&bull;ï¿½ -->
+
+                        <!-- â•â• CATEGORY-SPECIFIC UPLOAD ZONE â•â• -->
+
+                        <div class="arena-field">
+                            <!-- Category-specific label with icon -->
+                            <label style="display:flex; align-items:center; gap:6px;">
+                                <span th:if="${battle.category == 'Coding'}"><i class="fas fa-code" style="color:#3B82F6;"></i> Upload Source Code / ZIP</span>
+                                <span th:if="${battle.category == 'Music'}"><i class="fas fa-music" style="color:#8B5CF6;"></i> Upload Audio (MP3 / WAV)</span>
+                                <span th:if="${battle.category == 'Dance'}"><i class="fas fa-shoe-prints" style="color:#EC4899;"></i> Upload Dance Video</span>
+                                <span th:if="${battle.category == 'Photography'}"><i class="fas fa-camera" style="color:#22D3EE;"></i> Upload Photo</span>
+                                <span th:if="${battle.category == 'Singing'}"><i class="fas fa-microphone" style="color:#F97316;"></i> Upload Singing Audio (MP3 / WAV)</span>
+                                <span th:if="${battle.category == 'Video Editing'}"><i class="fas fa-video" style="color:#F84464;"></i> Upload Edited Video</span>
+                                <span th:if="${battle.category == 'Drawing'}"><i class="fas fa-paint-brush" style="color:#10B981;"></i> Upload Drawing Image</span>
+                                <span th:if="${battle.category == 'Fitness'}"><i class="fas fa-dumbbell" style="color:#F59E0B;"></i> Upload Workout Video / Photo</span>
+                                <span th:if="${battle.category == 'Gaming'}"><i class="fas fa-gamepad" style="color:#6366F1;"></i> Upload Gameplay Recording</span>
+                                <span th:if="${battle.category == 'Meme'}"><i class="fas fa-laugh-squint" style="color:#FBBF24;"></i> Upload Meme Image</span>
+                                <span th:if="${battle.category == 'AI Prompt'}"><i class="fas fa-robot" style="color:#A855F7;"></i> Upload AI Generated Image</span>
+                                <span th:if="${battle.category == 'Art'}"><i class="fas fa-palette" style="color:#10B981;"></i> Upload Artwork Image</span>
+                                <span th:if="${battle.category == 'Acting'}"><i class="fas fa-theater-masks" style="color:#EC4899;"></i> Upload Acting Video</span>
+                                <span th:if="${battle.category == 'Fashion'}"><i class="fas fa-tshirt" style="color:#F84464;"></i> Upload Fashion Look Photo</span>
+                                <span th:if="${battle.category == 'Cooking'}"><i class="fas fa-utensils" style="color:#F97316;"></i> Upload Food Photo</span>
+                                <span th:if="${battle.category == 'Writing' or battle.category == 'Poetry' or battle.category == 'Story Teller'}"><i class="fas fa-pen-fancy" style="color:#3B82F6;"></i> Upload Document (PDF / DOC)</span>
+                                <span th:if="${battle.category == 'Comedy'}"><i class="fas fa-grin-tears" style="color:#FBBF24;"></i> Upload Comedy Video</span>
+
+                            </label>
+
+                            <!-- Upload Zone Box -->
+                            <div id="uploadZone" onclick="document.getElementById('submissionFile').click()" 
+                                 style="border:2px dashed rgba(139,92,246,0.3); border-radius:16px; padding:30px 20px; text-align:center; cursor:pointer; background:rgba(139,92,246,0.03); transition:all 0.3s; margin-top:8px;"
+                                 onmouseover="this.style.borderColor='rgba(139,92,246,0.6)'; this.style.background='rgba(139,92,246,0.06)';"
+                                 onmouseout="this.style.borderColor='rgba(139,92,246,0.3)'; this.style.background='rgba(139,92,246,0.03)';">
+
+                                <!-- Category-specific icon in upload zone -->
+                                <div id="uploadZoneIcon" style="font-size:36px; margin-bottom:10px;">
+                                    <span th:if="${battle.category == 'Coding'}"><i class="fas fa-file-code" style="color:#3B82F6;"></i></span>
+                                    <span th:if="${battle.category == 'Music' or battle.category == 'Singing'}"><i class="fas fa-file-audio" style="color:#8B5CF6;"></i></span>
+                                    <span th:if="${battle.category == 'Dance' or battle.category == 'Acting' or battle.category == 'Comedy' or battle.category == 'Video Editing' or battle.category == 'Gaming'}"><i class="fas fa-file-video" style="color:#EC4899;"></i></span>
+                                    <span th:if="${battle.category == 'Photography' or battle.category == 'Drawing' or battle.category == 'Art' or battle.category == 'Meme' or battle.category == 'AI Prompt' or battle.category == 'Fashion' or battle.category == 'Cooking'}"><i class="fas fa-file-image" style="color:#22D3EE;"></i></span>
+                                    <span th:if="${battle.category == 'Fitness'}"><i class="fas fa-file-video" style="color:#F59E0B;"></i></span>
+                                    <span th:if="${battle.category == 'Writing' or battle.category == 'Poetry' or battle.category == 'Story Teller'}"><i class="fas fa-file-pdf" style="color:#EF4444;"></i></span>
+                                </div>
+
+                                <div style="font-size:13px; font-weight:800; color:var(--text-primary); margin-bottom:4px;">
+                                    Click to choose file
+                                </div>
+                                <div style="font-size:11px; color:var(--text-muted); font-weight:600;">
+                                    <span th:if="${battle.category == 'Coding'}">Accepts: .zip, .rar, .js, .py, .java, .html, .css, .pdf</span>
+                                    <span th:if="${battle.category == 'Music' or battle.category == 'Singing'}">Accepts: .mp3, .wav, .ogg, .m4a, .aac</span>
+                                    <span th:if="${battle.category == 'Dance' or battle.category == 'Acting' or battle.category == 'Comedy' or battle.category == 'Video Editing'}">Accepts: .mp4, .mov, .avi, .webm, .mkv</span>
+                                    <span th:if="${battle.category == 'Photography' or battle.category == 'Drawing' or battle.category == 'Art' or battle.category == 'Meme' or battle.category == 'AI Prompt' or battle.category == 'Fashion' or battle.category == 'Cooking'}">Accepts: .jpg, .png, .webp, .gif, .heic</span>
+                                    <span th:if="${battle.category == 'Gaming' or battle.category == 'Fitness'}">Accepts: .mp4, .mov, .avi, .webm, .jpg, .png</span>
+                                    <span th:if="${battle.category == 'Writing' or battle.category == 'Poetry' or battle.category == 'Story Teller'}">Accepts: .pdf, .doc, .docx, .txt, .mp4, .mp3</span>
+                                </div>
+
+                                <!-- Upload status shown inside zone -->
+                                <div id="uploadStatusPrimary" style="font-size:12px; color:var(--text-muted); margin-top:10px;"></div>
+                            </div>
+
+                            <!-- Hidden file input with category-specific accept -->
+                            <input type="file" id="submissionFile" style="display:none;" 
+                                   th:attr="accept=${
+                                       (battle.category == 'Music' or battle.category == 'Singing') ? 'audio/mpeg,audio/wav,audio/ogg,audio/mp4,audio/aac,audio/*' : 
+                                       ((battle.category == 'Dance' or battle.category == 'Acting' or battle.category == 'Comedy' or battle.category == 'Video Editing') ? 'video/mp4,video/quicktime,video/x-msvideo,video/webm,video/*' : 
+                                       ((battle.category == 'Photography' or battle.category == 'Drawing' or battle.category == 'Art' or battle.category == 'Meme' or battle.category == 'AI Prompt' or battle.category == 'Fashion' or battle.category == 'Cooking') ? 'image/jpeg,image/png,image/webp,image/gif,image/*' : 
+                                       ((battle.category == 'Coding') ? 'application/zip,application/x-rar-compressed,application/pdf,text/plain,text/javascript,text/html,text/css,.py,.java,.js,.html,.css,.zip,.rar' : 
+                                       ((battle.category == 'Writing' or battle.category == 'Poetry' or battle.category == 'Story Teller') ? 'application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,.pdf,.doc,.docx,.txt,video/mp4,audio/mpeg,audio/wav,.mp4,.mp3' : 
+                                       ((battle.category == 'Gaming' or battle.category == 'Fitness') ? 'video/*,image/*' : 
+                                       'image/*,video/*,audio/*,application/pdf,application/zip')))))}"
+                                   onchange="uploadLocalFile('submissionFile', 'submissionUrlInput', 'uploadStatusPrimary')" />
+
+                            <!-- Hidden URL input (auto-filled by upload function) -->
+                            <input type="hidden" id="submissionUrlInput" name="submissionUrl" required />
+                        </div>
+
+                        <!-- OR: Paste a link -->
+                        <div style="display:flex; align-items:center; gap:10px; margin:16px 0;">
+                            <div style="flex:1; height:1px; background:var(--arena-border);"></div>
+                            <span style="font-size:11px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">or paste a link</span>
+                            <div style="flex:1; height:1px; background:var(--arena-border);"></div>
+                        </div>
+
+                        <div class="arena-field">
+                            <label style="display:flex; align-items:center; gap:6px;">
+                                <i class="fas fa-link" style="color:var(--text-muted);"></i>
+                                <span th:if="${battle.category == 'Coding'}">GitHub / Repository URL</span>
+                                <span th:if="${battle.category == 'Music' or battle.category == 'Singing'}">YouTube / SoundCloud Link</span>
+                                <span th:if="${battle.category == 'Dance' or battle.category == 'Acting' or battle.category == 'Comedy' or battle.category == 'Video Editing'}">YouTube / Drive Video Link</span>
+                                <span th:if="${battle.category == 'Photography' or battle.category == 'Drawing' or battle.category == 'Art' or battle.category == 'Meme' or battle.category == 'AI Prompt' or battle.category == 'Fashion' or battle.category == 'Cooking'}">Image URL (Imgur / Drive)</span>
+                                <span th:if="${battle.category == 'Gaming'}">Gameplay Recording URL</span>
+                                <span th:if="${battle.category == 'Fitness'}">Workout Video / Photo Link</span>
+                                <span th:if="${battle.category == 'Writing' or battle.category == 'Poetry' or battle.category == 'Story Teller'}">Google Docs / Drive Link</span>
+                            </label>
+                            <input type="text" id="submissionLinkInput" placeholder="https://..." 
+                                   oninput="if(this.value.trim()) document.getElementById('submissionUrlInput').value = this.value.trim();" />
+                        </div>
+
+                        <!-- Secondary Upload (optional) -->
+                        <div class="arena-field" style="margin-top:12px;">
+                            <label style="display:flex; align-items:center; gap:6px;">
+                                <i class="fas fa-paperclip" style="color:var(--text-muted);"></i>
+                                <span th:if="${battle.category == 'Coding'}">Demo URL / Live Preview (optional)</span>
+                                <span th:if="${battle.category == 'AI Prompt'}">Your Prompt Text (optional)</span>
+                                <span th:if="${battle.category == 'Drawing' or battle.category == 'Art'}">Time-lapse / Process Video (optional)</span>
+                                <span th:unless="${battle.category == 'Coding' or battle.category == 'AI Prompt' or battle.category == 'Drawing' or battle.category == 'Art'}">Additional Link / File (optional)</span>
+                            </label>
+                            <div style="display:flex; gap:8px; align-items:center;">
+                                <input type="text" id="secondaryUrlInput" name="secondaryUrl" placeholder="https://... (optional)" style="flex:1;" />
+                                <input type="file" id="secondaryFile" style="display:none;" 
+                                       accept="image/*,video/*,audio/*,application/pdf,application/zip"
+                                       onchange="uploadLocalFile('secondaryFile', 'secondaryUrlInput', 'uploadStatusSecondary')" />
+                                <button type="button" class="btn-arena btn-arena-secondary btn-arena-sm" style="white-space:nowrap;" onclick="document.getElementById('secondaryFile').click()">
+                                    <i class="fas fa-file-upload"></i> Upload
+                                </button>
+                            </div>
+                            <span id="uploadStatusSecondary" style="font-size:11px; color:var(--text-muted); margin-top:4px; display:block;"></span>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="arena-field" style="margin-top:12px;">
+                            <label><i class="fas fa-align-left" style="color:var(--text-muted); margin-right:4px;"></i> Description / Caption</label>
+                            <textarea name="description" rows="3" placeholder="Describe your submission..." style="resize:vertical;"></textarea>
+                        </div>
+
+                        <button type="submit" class="btn-arena btn-arena-green" style="width:100%; justify-content:center; margin-top:8px;">
+                            <i class="fas fa-paper-plane"></i> Submit Entry
+                        </button>
+                    </form>
+                </div>
+
+                <!-- â”€â”€â”€ SUBMISSIONS & VOTING â”€â”€â”€ -->
+
+                <div th:if="${!submissions.isEmpty() and battle.durationMinutes == null}" class="battle-detail">
+
+                    <h3 style="font-size:18px; font-weight:900; color:#fff; margin-bottom:16px;">
+                        <i class="fas fa-th-list" style="color:#3B82F6;"></i> Submissions
+                        <span th:if="${battle.status == 'VOTING'}" style="font-size:12px; color:#3B82F6; font-weight:700; margin-left:8px;">â€” Vote for your favourite!</span>
+                    </h3>
+                    <div class="submissions-list">
+                        <div th:each="sub,iter : ${submissions}" class="submission-card">
+                            <div class="submission-header">
+                                <div class="submission-user">
+                                    <img th:src="${sub.user.profilePhotoUrl != null and !sub.user.profilePhotoUrl.isEmpty()} ? ${sub.user.profilePhotoUrl} : 'https://ui-avatars.com/api/?name=' + ${sub.user.username} + '&background=F84464&color=fff&size=60'" alt="">
+                                    <div class="submission-user-info">
+                                        <h4 th:text="${sub.user.username}">Username</h4>
+                                        <span th:text="${#temporals.format(sub.submittedAt, 'dd MMM yyyy, HH:mm')}">Date</span>
+                                    </div>
+                                </div>
+                                <div class="vote-count-display">
+                                    <i class="fas fa-star"></i>
+                                    <span th:text="${sub.voteCount}">0</span>
+                                </div>
+                            </div>
+                            <p th:if="${sub.description != null and !sub.description.isEmpty()}"
+                               style="font-size:13px; color:var(--text-secondary); margin:10px 0; line-height:1.6;"
+                               th:text="${sub.description}">Description</p>
+                            <div class="submission-links">
+                                <a th:href="${sub.submissionUrl}" target="_blank"><i class="fas fa-external-link-alt"></i> View Submission</a>
+                                <a th:if="${sub.secondaryUrl != null and !sub.secondaryUrl.isEmpty()}" th:href="${sub.secondaryUrl}" target="_blank"><i class="fas fa-link"></i> Secondary Link</a>
+                            </div>
+
+                            <!-- Offline Judge Score Display & Input -->
+                            <div th:if="${battle.mode == 'OFFLINE'}" style="margin-top:14px; padding:12px; background:#F8FAFC; border:1px solid var(--arena-border); border-radius:10px;">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                    <span style="font-size:12px; font-weight:800; color:var(--text-primary);"><i class="fas fa-gavel" style="color:var(--arena-primary);"></i> Judge Evaluation</span>
+                                    <span style="font-size:13px; font-weight:900; color:var(--arena-primary);" th:text="${sub.judgeTotalScore + ' / 100 Pts'}">0 / 100 Pts</span>
+                                </div>
+                                <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:6px; font-size:10px; text-align:center; color:var(--text-secondary);">
+                                    <div style="background:#fff; border:1px solid var(--arena-border); padding:4px; border-radius:6px;">
+                                        <span style="display:block; font-size:8px; color:var(--text-muted);">Creativity</span>
+                                        <strong th:text="${sub.judgeCreativity + '/25'}">0/25</strong>
+                                    </div>
+                                    <div style="background:#fff; border:1px solid var(--arena-border); padding:4px; border-radius:6px;">
+                                        <span style="display:block; font-size:8px; color:var(--text-muted);">Quality</span>
+                                        <strong th:text="${sub.judgeQuality + '/25'}">0/25</strong>
+                                    </div>
+                                    <div style="background:#fff; border:1px solid var(--arena-border); padding:4px; border-radius:6px;">
+                                        <span style="display:block; font-size:8px; color:var(--text-muted);">Speed</span>
+                                        <strong th:text="${sub.judgeSpeed + '/20'}">0/20</strong>
+                                    </div>
+                                    <div style="background:#fff; border:1px solid var(--arena-border); padding:4px; border-radius:6px;">
+                                        <span style="display:block; font-size:8px; color:var(--text-muted);">Presentation</span>
+                                        <strong th:text="${sub.judgePresentation + '/15'}">0/15</strong>
+                                    </div>
+                                    <div style="background:#fff; border:1px solid var(--arena-border); padding:4px; border-radius:6px;">
+                                        <span style="display:block; font-size:8px; color:var(--text-muted);">Accuracy</span>
+                                        <strong th:text="${sub.judgeAccuracy + '/15'}">0/15</strong>
+                                    </div>
+                                </div>
+
+                                <!-- Host/Organizer Judge Score Input Form -->
+                                <form th:if="${isCreator}" th:action="@{'/battles/' + ${battle.id} + '/submission/' + ${sub.id} + '/score'}" method="POST" style="margin-top:10px; border-top:1px dashed var(--arena-border); padding-top:10px;">
+                                    <span style="font-size:10px; font-weight:800; color:var(--text-secondary); display:block; margin-bottom:6px;">Enter / Edit Judge Scores:</span>
+                                    <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:6px; margin-bottom:8px;">
+                                        <input type="number" name="creativity" min="0" max="25" th:value="${sub.judgeCreativity}" required placeholder="Creativity" style="padding:6px; font-size:11px;" title="Creativity (max 25)" />
+                                        <input type="number" name="quality" min="0" max="25" th:value="${sub.judgeQuality}" required placeholder="Quality" style="padding:6px; font-size:11px;" title="Quality (max 25)" />
+                                        <input type="number" name="speed" min="0" max="20" th:value="${sub.judgeSpeed}" required placeholder="Speed" style="padding:6px; font-size:11px;" title="Speed (max 20)" />
+                                        <input type="number" name="presentation" min="0" max="15" th:value="${sub.judgePresentation}" required placeholder="Presentation" style="padding:6px; font-size:11px;" title="Presentation (max 15)" />
+                                        <input type="number" name="accuracy" min="0" max="15" th:value="${sub.judgeAccuracy}" required placeholder="Accuracy" style="padding:6px; font-size:11px;" title="Accuracy (max 15)" />
+                                    </div>
+                                    <button type="submit" class="btn-arena btn-arena-secondary btn-arena-sm" style="width:100%; justify-content:center; padding:6px 12px; font-size:11px;"><i class="fas fa-save"></i> Save Judge Scores</button>
+                                </form>
+                            </div>
+
+                            <!-- Vote Button (during ACTIVE or VOTING phase) -->
+                            <div th:if="${battle.status == 'VOTING' and !hasVoted}" style="margin-top:14px;">
+                                <form th:action="@{'/battles/' + ${battle.id} + '/vote/' + ${sub.id}}" method="POST">
+                                    <button type="submit" class="btn-arena btn-arena-primary btn-arena-sm" style="width:100%; justify-content:center;">
+                                        <i class="fas fa-thumbs-up"></i> Vote for <span th:text="${sub.user.username}">User</span>
+                                    </button>
+                                </form>
+                            </div>
+                            <div th:if="${battle.status == 'VOTING' and hasVoted}" style="margin-top:14px; text-align:center;">
+                                <span style="font-size:12px; color:var(--text-muted); font-weight:700;"><i class="fas fa-check"></i> You've voted</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- â”€â”€â”€ LEADERBOARD â”€â”€â”€ -->
+                <div th:if="${submissions != null and !submissions.isEmpty() and battle != null and (battle.status == 'VOTING' or battle.status == 'COMPLETED' or battle.status == 'TIE')}" class="leaderboard-section">
+                    <h3><i class="fas fa-chart-bar"></i> Live Leaderboard</h3>
+                    <div th:each="sub,iter : ${submissions}" class="leaderboard-row" style="display:flex; justify-content:space-between; align-items:center; padding:10px 16px; margin-bottom:8px; background:#fff; border:1px solid var(--arena-border); border-radius:12px;">
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <div class="leaderboard-rank"
+                                 th:classappend="${iter.index == 0} ? 'rank-1' : (${iter.index == 1} ? 'rank-2' : (${iter.index == 2} ? 'rank-3' : 'rank-default'))"
+                                 th:text="${iter.index + 1}">1</div>
+                            <div class="leaderboard-user" style="display:flex; align-items:center; gap:8px;">
+                                <img th:src="${sub.user.profilePhotoUrl != null and !sub.user.profilePhotoUrl.isEmpty()} ? ${sub.user.profilePhotoUrl} : 'https://ui-avatars.com/api/?name=' + ${sub.user.username} + '&background=F84464&color=fff&size=60'" alt="" style="width:34px; height:34px; border-radius:50%;">
+                                <span style="font-weight:800; color:var(--text-primary); font-size:14px;" th:text="${sub.user.username}">User</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Leaderboard Scores & Stats -->
+                        <div class="leaderboard-votes" style="text-align:right;">
+                            <!-- Online Mode -->
+                            <div th:if="${battle.mode != 'OFFLINE'}">
+                                <i class="fas fa-star" style="font-size:14px; color:#FFD700;"></i>
+                                <span style="font-weight:900; font-size:15px; color:var(--text-primary);" th:text="${sub.voteCount}">0</span>
+                                <span style="font-size:11px; color:var(--text-muted); font-weight:600; margin-left:2px;">votes</span>
+                            </div>
+                            
+                            <!-- Offline Mode -->
+                            <div th:if="${battle.mode == 'OFFLINE'}">
+                                <div style="font-size:14px; font-weight:900; color:var(--arena-primary);">
+                                    <i class="fas fa-trophy" style="color:#FFD700; font-size:12px;"></i>
+                                    <span th:text="${#numbers.formatDecimal((sub.judgeTotalScore * (battle.judgeWeight != null ? battle.judgeWeight : 70.0) / 100.0) + (sub.voteCount * (battle.audienceWeight != null ? battle.audienceWeight : 30.0) / 100.0), 1, 1)}">0.0</span>
+                                    <span style="font-size:10px; color:var(--text-muted); font-weight:700;">Pts</span>
+                                </div>
+                                <div style="font-size:9px; color:var(--text-muted); font-weight:700; margin-top:2px;">
+                                    <span th:text="${'Judge: ' + sub.judgeTotalScore + ' (' + (battle.judgeWeight != null ? battle.judgeWeight : 70.0) + '%)'}">Judge: 90 (70%)</span>
+                                    <span style="margin:0 4px;">|</span>
+                                    <span th:text="${'Audience: ' + sub.voteCount + ' (' + (battle.audienceWeight != null ? battle.audienceWeight : 30.0) + '%)'}">Audience: 430 (30%)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- â”€â”€â”€ WINNER ANNOUNCEMENT â”€â”€â”€ -->
+                <div th:if="${(battle.status == 'COMPLETED' or battle.status == 'TIE') and battle.winner != null}" class="winner-section" id="winner-display" style="padding: 20px;">
+
+                    <div class="winner-trophy" style="font-size: 64px; margin-bottom: 15px;"><i class="fas fa-trophy" style="color: #FFD700;"></i></div>
+
+                    <div style="font-size:18px; color:var(--text-primary); font-weight:900; margin-bottom:20px; text-transform: uppercase;">
+                        <span th:if="${battle.status == 'TIE'}">It's a Tie!</span>
+                        <span th:if="${battle.status != 'TIE'}">Battle Winners</span>
+                    </div>
+
+                    <!-- 1st Place -->
+                    <div style="background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.2); border-radius: 12px; padding: 15px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
+                        <div style="display: flex; align-items: center; gap: 15px;">
+
+                            <div style="font-size: 24px;"><i class="fas fa-medal" style="color: #FFD700;"></i></div>
+
+                            <div style="text-align: left;">
+                                <div style="font-size: 12px; color: var(--text-muted); font-weight: 700;">1ST PLACE</div>
+                                <div style="font-size: 20px; font-weight: 900; color: var(--text-primary);" th:text="${battle.winner.username}">Winner</div>
+                            </div>
+                        </div>
+                        <div th:if="${battle.prize1 != null}" style="text-align: right; color: #10B981;">
+                            <div style="font-size: 12px; font-weight: 700;">PRIZE</div>
+                            <div style="font-size: 20px; font-weight: 900;"><i class="fas fa-rupee-sign"></i> <span th:text="${battle.prize1}">0</span></div>
+                        </div>
+                    </div>
+
+                    <!-- 2nd Place -->
+                    <div th:if="${battle.winner2 != null}" style="background: rgba(255,255,255,0.6); border: 1px solid rgba(15,23,42,0.1); border-radius: 12px; padding: 15px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
+                        <div style="display: flex; align-items: center; gap: 15px;">
+
+                            <div style="font-size: 24px;"><i class="fas fa-medal" style="color: #C0C0C0;"></i></div>
+
+                            <div style="text-align: left;">
+                                <div style="font-size: 12px; color: var(--text-muted); font-weight: 700;" th:text="${battle.status == 'TIE' ? 'TIED WINNER' : '2ND PLACE'}">2ND PLACE</div>
+                                <div style="font-size: 18px; font-weight: 800; color: var(--text-primary);" th:text="${battle.winner2.username}">User 2</div>
+                            </div>
+                        </div>
+                        <div th:if="${(battle.status == 'TIE' ? battle.prize1 : battle.prize2) != null}" style="text-align: right; color: #10B981;">
+                            <div style="font-size: 12px; font-weight: 700;">PRIZE</div>
+                            <div style="font-size: 18px; font-weight: 800;"><i class="fas fa-rupee-sign"></i> <span th:text="${battle.status == 'TIE' ? battle.prize1 : battle.prize2}">0</span></div>
+                        </div>
+                    </div>
+
+                    <!-- 3rd Place -->
+                    <div th:if="${battle.winner3 != null and (battle.maxParticipants == null or battle.maxParticipants > 2)}" style="background: rgba(255,255,255,0.6); border: 1px solid rgba(15,23,42,0.1); border-radius: 12px; padding: 15px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
+                        <div style="display: flex; align-items: center; gap: 15px;">
+
+                            <div style="font-size: 24px;"><i class="fas fa-medal" style="color: #CD7F32;"></i></div>
+
+                            <div style="text-align: left;">
+                                <div style="font-size: 12px; color: var(--text-muted); font-weight: 700;">3RD PLACE</div>
+                                <div style="font-size: 18px; font-weight: 800; color: var(--text-primary);" th:text="${battle.winner3.username}">User 3</div>
+                            </div>
+                        </div>
+                        <div th:if="${battle.prize3 != null}" style="text-align: right; color: #10B981;">
+                            <div style="font-size: 12px; font-weight: 700;">PRIZE</div>
+                            <div style="font-size: 18px; font-weight: 800;"><i class="fas fa-rupee-sign"></i> <span th:text="${battle.prize3}">0</span></div>
+                        </div>
+                    </div>
+
+                    <!-- General Rewards (XP / Coins for winning) -->
+                    <div class="winner-reward" style="font-size: 14px; color: var(--text-muted); font-weight: 600; margin-top: 15px;">
+                        <i class="fas fa-bolt" style="color: #F59E0B;"></i> +<span th:text="${battle.winnerXp}">500</span> XP
+                        <span style="margin:0 12px; opacity:0.3;">|</span>
+                        <i class="fas fa-coins" style="color: #EAB308;"></i> +100 Coins
+                    </div>
+                </div>
+            </div>
+
+            <!-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+            <!-- BATTLES LIST VIEW (when no single battle selected) -->
+            <!-- ---------------------------------------- -->
+            <div th:if="${battle == null}">
+                <!-- Hero Banner -->
+                <div class="arena-hero">
+
+                    <h1>⚔️ Battle Arena</h1>
+
+                    <p>Challenge your friends in creative battles across Coding, Music, Dance, Photography, and more. Submit your work, let the community vote, and climb the leaderboard!</p>
+                    <div class="arena-hero-actions">
+                        <button class="btn-arena btn-arena-primary" onclick="openCreateBattle()">
+                            <i class="fas fa-plus"></i> Create Battle
+                        </button>
+                        <button class="btn-arena btn-arena-secondary" onclick="openJoinBattle()">
+                            <i class="fas fa-door-open"></i> Join via Code
+                        </button>
+                        <button class="btn-arena" onclick="openQuickBattle()" style="background:linear-gradient(135deg,#F59E0B,#EF4444); color:#fff; border:none;">
+                            <i class="fas fa-bolt"></i> Quick Battle
+                        </button>
+                        <a th:href="@{/tournaments}" class="btn-arena" style="background:linear-gradient(135deg,#8B5CF6,#6b21a8); color:#fff; border:none; padding: 12px 24px; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; height: auto;">
+                            <i class="fas fa-trophy"></i> Tournaments
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Mobile widgets (visible only on mobile/tablet below Battle Arena banner) -->
+                <div class="mobile-widgets" style="margin-top: 20px; margin-bottom: 20px; display: none;">
+                    <!-- Colleges in Battle Widget -->
+                    <div class="widget-card">
+                        <div class="widget-header">
+
+                            <h3 th:if="${battle == null}"><i class="fas fa-university" style="margin-right: 6px;"></i> Colleges in Battle</h3>
+                            <h3 th:if="${battle != null and isCreator}"><i class="fas fa-university" style="margin-right: 6px;"></i> Students by College</h3>
+                            <h3 th:if="${battle != null and !isCreator}"><i class="fas fa-university" style="margin-right: 6px;"></i> Colleges Competing</h3>
+
+                        </div>
+                        <!-- College list when data exists -->
+                        <div th:if="${battleColleges != null and !battleColleges.isEmpty()}" style="display:flex; flex-direction:column; gap:10px;">
+                            <div th:each="entry : ${battleColleges}" style="display:flex; align-items:center; gap:10px; padding:8px 12px; background:rgba(139,92,246,0.04); border:1px solid rgba(139,92,246,0.1); border-radius:12px; transition:all 0.2s;">
+                                <div style="width:34px; height:34px; border-radius:10px; background:linear-gradient(135deg,#8B5CF6,#6366F1); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                                    <i class="fas fa-university" style="color:#fff; font-size:14px;"></i>
+                                </div>
+                                <div style="flex:1; min-width:0;">
+                                    <div style="font-size:12px; font-weight:800; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" th:text="${entry.key}">College Name</div>
+                                    <div style="font-size:10px; color:var(--text-muted); font-weight:700;">
+                                        <span th:text="${entry.value}">0</span> 
+                                        <span th:text="${entry.value == 1} ? 'student' : 'students'">students</span>
+                                    </div>
+                                </div>
+                                <div style="background:linear-gradient(135deg,#8B5CF6,#6366F1); color:#fff; font-size:11px; font-weight:900; padding:3px 10px; border-radius:20px; flex-shrink:0;" th:text="${entry.value}">0</div>
+                            </div>
+                        </div>
+                        <!-- Empty state -->
+                        <div th:if="${battleColleges == null or battleColleges.isEmpty()}" style="text-align:center; padding:16px 8px;">
+                            <i class="fas fa-university" style="font-size:28px; color:rgba(139,92,246,0.25); margin-bottom:8px; display:block;"></i>
+                            <div style="font-size:12px; color:var(--text-muted); font-weight:700;">No college data yet</div>
+                            <div style="font-size:10px; color:var(--text-muted); margin-top:4px;">College names appear when users with a college in their profile join battles</div>
+                        </div>
+                    </div>
+
+                    <!-- Categories Widget -->
+                    <div class="widget-card">
+                        <div class="widget-header">
+
+                            <h3><i class="fas fa-bullseye" style="margin-right: 6px;"></i> Categories</h3>
+
+                        </div>
+                        <div style="display:flex; flex-wrap:wrap; gap:6px;">
+                            <button type="button" class="cat-widget-chip" onclick="filterByCategory('ALL', this)" style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(99,102,241,0.1); color:#6366F1; border:1px solid rgba(99,102,241,0.2); cursor:pointer; transition:all 0.2s;">All</button>
+                            <button type="button" class="cat-widget-chip" onclick="filterByCategory('Coding', this)" style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(59,130,246,0.1); color:#3B82F6; border:1px solid rgba(59,130,246,0.15); cursor:pointer; transition:all 0.2s;">Coding</button>
+                            <button type="button" class="cat-widget-chip" onclick="filterByCategory('Music', this)" style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(139,92,246,0.1); color:#8B5CF6; border:1px solid rgba(139,92,246,0.15); cursor:pointer; transition:all 0.2s;">Music</button>
+                            <button type="button" class="cat-widget-chip" onclick="filterByCategory('Dance', this)" style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(236,72,153,0.1); color:#EC4899; border:1px solid rgba(236,72,153,0.15); cursor:pointer; transition:all 0.2s;">Dance</button>
+                            <button type="button" class="cat-widget-chip" onclick="filterByCategory('Photography', this)" style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(34,211,238,0.1); color:#22D3EE; border:1px solid rgba(34,211,238,0.15); cursor:pointer; transition:all 0.2s;">Photography</button>
+                            <button type="button" class="cat-widget-chip" onclick="filterByCategory('Singing', this)" style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(249,115,22,0.1); color:#F97316; border:1px solid rgba(249,115,22,0.15); cursor:pointer; transition:all 0.2s;">Singing</button>
+                            <button type="button" class="cat-widget-chip" onclick="filterByCategory('Video Editing', this)" style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(248,68,100,0.1); color:#F84464; border:1px solid rgba(248,68,100,0.15); cursor:pointer; transition:all 0.2s;">Video</button>
+                            <button type="button" class="cat-widget-chip" onclick="filterByCategory('Drawing', this)" style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(16,185,129,0.1); color:#10B981; border:1px solid rgba(16,185,129,0.15); cursor:pointer; transition:all 0.2s;">Drawing</button>
+                            <button type="button" class="cat-widget-chip" onclick="filterByCategory('Fitness', this)" style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(245,158,11,0.1); color:#F59E0B; border:1px solid rgba(245,158,11,0.15); cursor:pointer; transition:all 0.2s;">Fitness</button>
+                            <button type="button" class="cat-widget-chip" onclick="filterByCategory('Gaming', this)" style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(99,102,241,0.1); color:#6366F1; border:1px solid rgba(99,102,241,0.15); cursor:pointer; transition:all 0.2s;">Gaming</button>
+                            <button type="button" class="cat-widget-chip" onclick="filterByCategory('Meme', this)" style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(252,211,77,0.1); color:#D97706; border:1px solid rgba(252,211,77,0.15); cursor:pointer; transition:all 0.2s;">Meme</button>
+                            <button type="button" class="cat-widget-chip" onclick="filterByCategory('AI Prompt', this)" style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(167,139,250,0.1); color:#7C3AED; border:1px solid rgba(167,139,250,0.15); cursor:pointer; transition:all 0.2s;">AI Prompt</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Category Filter Pills Bar -->
+                <div class="category-filter-bar" style="display:flex; align-items:center; gap:8px; overflow-x:auto; padding-bottom:12px; margin-bottom:15px; scrollbar-width:thin;">
+                    <button type="button" class="cat-filter-btn active" onclick="filterByCategory('ALL', this)" style="padding:7px 15px; border-radius:20px; font-size:12px; font-weight:700; border:1px solid var(--arena-primary); background:var(--arena-primary); color:#fff; cursor:pointer; white-space:nowrap; transition:all 0.2s;">All Battles</button>
+                    <button type="button" class="cat-filter-btn" onclick="filterByCategory('Coding', this)" style="padding:7px 15px; border-radius:20px; font-size:12px; font-weight:700; border:1px solid var(--arena-border); background:rgba(59,130,246,0.08); color:#3B82F6; cursor:pointer; white-space:nowrap; transition:all 0.2s;"><i class="fas fa-code"></i> Coding</button>
+                    <button type="button" class="cat-filter-btn" onclick="filterByCategory('Music', this)" style="padding:7px 15px; border-radius:20px; font-size:12px; font-weight:700; border:1px solid var(--arena-border); background:rgba(139,92,246,0.08); color:#8B5CF6; cursor:pointer; white-space:nowrap; transition:all 0.2s;"><i class="fas fa-music"></i> Music</button>
+                    <button type="button" class="cat-filter-btn" onclick="filterByCategory('Dance', this)" style="padding:7px 15px; border-radius:20px; font-size:12px; font-weight:700; border:1px solid var(--arena-border); background:rgba(236,72,153,0.08); color:#EC4899; cursor:pointer; white-space:nowrap; transition:all 0.2s;"><i class="fas fa-shoe-prints"></i> Dance</button>
+                    <button type="button" class="cat-filter-btn" onclick="filterByCategory('Photography', this)" style="padding:7px 15px; border-radius:20px; font-size:12px; font-weight:700; border:1px solid var(--arena-border); background:rgba(34,211,238,0.08); color:#22D3EE; cursor:pointer; white-space:nowrap; transition:all 0.2s;"><i class="fas fa-camera"></i> Photography</button>
+                    <button type="button" class="cat-filter-btn" onclick="filterByCategory('Singing', this)" style="padding:7px 15px; border-radius:20px; font-size:12px; font-weight:700; border:1px solid var(--arena-border); background:rgba(249,115,22,0.08); color:#F97316; cursor:pointer; white-space:nowrap; transition:all 0.2s;"><i class="fas fa-microphone"></i> Singing</button>
+                    <button type="button" class="cat-filter-btn" onclick="filterByCategory('Video Editing', this)" style="padding:7px 15px; border-radius:20px; font-size:12px; font-weight:700; border:1px solid var(--arena-border); background:rgba(248,68,100,0.08); color:#F84464; cursor:pointer; white-space:nowrap; transition:all 0.2s;"><i class="fas fa-video"></i> Video Editing</button>
+                    <button type="button" class="cat-filter-btn" onclick="filterByCategory('Drawing', this)" style="padding:7px 15px; border-radius:20px; font-size:12px; font-weight:700; border:1px solid var(--arena-border); background:rgba(16,185,129,0.08); color:#10B981; cursor:pointer; white-space:nowrap; transition:all 0.2s;"><i class="fas fa-paint-brush"></i> Drawing</button>
+                    <button type="button" class="cat-filter-btn" onclick="filterByCategory('Fitness', this)" style="padding:7px 15px; border-radius:20px; font-size:12px; font-weight:700; border:1px solid var(--arena-border); background:rgba(245,158,11,0.08); color:#F59E0B; cursor:pointer; white-space:nowrap; transition:all 0.2s;"><i class="fas fa-dumbbell"></i> Fitness</button>
+                    <button type="button" class="cat-filter-btn" onclick="filterByCategory('Gaming', this)" style="padding:7px 15px; border-radius:20px; font-size:12px; font-weight:700; border:1px solid var(--arena-border); background:rgba(99,102,241,0.08); color:#6366F1; cursor:pointer; white-space:nowrap; transition:all 0.2s;"><i class="fas fa-gamepad"></i> Gaming</button>
+                    <button type="button" class="cat-filter-btn" onclick="filterByCategory('Meme', this)" style="padding:7px 15px; border-radius:20px; font-size:12px; font-weight:700; border:1px solid var(--arena-border); background:rgba(251,191,36,0.08); color:#FBBF24; cursor:pointer; white-space:nowrap; transition:all 0.2s;"><i class="fas fa-laugh-squint"></i> Meme</button>
+                    <button type="button" class="cat-filter-btn" onclick="filterByCategory('AI Prompt', this)" style="padding:7px 15px; border-radius:20px; font-size:12px; font-weight:700; border:1px solid var(--arena-border); background:rgba(168,85,247,0.08); color:#A855F7; cursor:pointer; white-space:nowrap; transition:all 0.2s;"><i class="fas fa-robot"></i> AI Prompt</button>
+                </div>
+
+                <!-- Tabs -->
+                <div class="arena-tabs">
+                    <button class="arena-tab active" onclick="showTab('active', this)"><i class="fas fa-fire"></i> Active Battles</button>
+                    <button class="arena-tab" onclick="showTab('completed', this)"><i class="fas fa-flag-checkered"></i> Completed</button>
+                </div>
+
+                <!-- Active Battles -->
+                <div id="tab-active">
+                    <div class="battles-grid">
+                        <a th:each="b : ${activeBattles}" th:href="@{'/battles/' + ${b.id}}" class="battle-card" style="text-decoration:none;" th:attr="data-category=${b.category != null ? b.category : ''}">
+                            <div class="battle-card-header">
+                                <span class="battle-category-badge"
+                                    th:classappend="'badge-' + ${b.category != null ? b.category.toLowerCase().replaceAll('[^a-z]', '') : 'default'}"
+                                    th:text="${b.category}">Category</span>
+                                <span class="battle-status-badge"
+                                    th:classappend="'status-' + ${b.status.toLowerCase()}"
+                                    th:text="${b.status}">STATUS</span>
+                            </div>
+                            <h3 th:text="${b.title}">Battle Title</h3>
+                            <div th:if="${b.mode == 'OFFLINE'}" style="font-size:12px; color:var(--text-secondary); margin-bottom:8px;">
+                                <i class="fas fa-map-marker-alt" style="color:var(--arena-primary);"></i> <span th:text="${b.venue}">Tech Hub, Bengaluru</span>
+                            </div>
+                            <div class="battle-card-meta">
+                                <span th:if="${b.mode == 'OFFLINE'}"><i class="fas fa-calendar-alt"></i> <span th:text="${b.eventDate}">Date</span></span>
+                                <span th:if="${b.mode != 'OFFLINE'}"><i class="fas fa-clock"></i> <span th:if="${b.durationMinutes != null}" th:text="${b.durationMinutes} + 'm'"></span><span th:if="${b.durationMinutes == null}" th:text="${b.durationHours} + 'h'"></span></span>
+                                <span><i class="fas fa-users"></i> <span th:text="${b.participants != null ? b.participants.size() : 0}">0</span>/<span th:text="${b.maxParticipants}">10</span></span>
+                                <span><i class="fas fa-trophy"></i> <span th:text="${b.winnerXp}">500</span> XP</span>
+                            </div>
+                            <div class="battle-card-footer">
+                                <div class="battle-creator">
+                                    <img th:src="${b.creator != null and b.creator.profilePhotoUrl != null and !b.creator.profilePhotoUrl.isEmpty()} ? ${b.creator.profilePhotoUrl} : 'https://ui-avatars.com/api/?name=' + (${b.creator != null} ? ${b.creator.username} : 'System') + '&background=F84464&color=fff&size=50'" alt="">
+                                    <span th:text="${b.creator != null ? b.creator.username : 'System'}">Creator</span>
+                                </div>
+                                <span class="room-code-tag" th:text="${b.roomCode}">ABC123</span>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="category-empty-state" style="display:none; text-align:center; padding:40px 15px; color:var(--text-muted); background:#F8FAFC; border-radius:14px; border:1px dashed var(--arena-border); margin:20px 0;">
+                        <i class="fas fa-filter" style="font-size:32px; opacity:0.35; margin-bottom:12px; display:block;"></i>
+                        <h4 style="font-size:15px; font-weight:700; margin-bottom:4px; color:var(--text-primary);">No Active Battles in this Category</h4>
+                        <p style="font-size:12px; margin:0;">Select another category or click "All Battles".</p>
+                    </div>
+                </div>
+
+                <!-- Completed Battles -->
+                <div id="tab-completed" style="display:none;">
+                    <div th:if="${completedBattles != null and !completedBattles.isEmpty()}" class="battles-grid">
+                        <a th:each="b : ${completedBattles}" th:href="@{'/battles/' + ${b.id}}" class="battle-card" style="text-decoration:none; opacity:0.8;" th:attr="data-category=${b.category != null ? b.category : ''}">
+                            <div class="battle-card-header">
+                                <span class="battle-category-badge"
+                                    th:classappend="'badge-' + ${b.category != null ? b.category.toLowerCase().replaceAll('[^a-z]', '') : 'default'}"
+                                    th:text="${b.category}">Category</span>
+                                <span class="battle-status-badge status-completed">COMPLETED</span>
+                            </div>
+                            <h3 th:text="${b.title}">Battle Title</h3>
+                            <div class="battle-card-meta">
+                                <span th:if="${b.winner != null}">
+                                    <i class="fas fa-crown" style="color:#FFD700;"></i> <span th:text="${b.winner.username}">Winner</span>
+                                    <span th:if="${b.prize1 != null}" style="color:#10B981; font-weight:700; margin-left:4px;">(<i class="fas fa-rupee-sign" style="font-size:10px;"></i><span th:text="${b.prize1}">0</span>)</span>
+                                </span>
+                                <span><i class="fas fa-users"></i> <span th:text="${b.participants != null ? b.participants.size() : 0}">0</span> participants</span>
+                            </div>
+                            <div class="battle-card-footer">
+                                <div class="battle-creator">
+                                    <img th:src="${b.creator != null and b.creator.profilePhotoUrl != null and !b.creator.profilePhotoUrl.isEmpty()} ? ${b.creator.profilePhotoUrl} : 'https://ui-avatars.com/api/?name=' + (${b.creator != null} ? ${b.creator.username} : 'System') + '&background=F84464&color=fff&size=50'" alt="">
+                                    <span th:text="${b.creator != null ? b.creator.username : 'System'}">Creator</span>
+                                </div>
+                                <span class="room-code-tag" th:text="${b.roomCode}">ABC123</span>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="category-empty-state" style="display:none; text-align:center; padding:40px 15px; color:var(--text-muted); background:#F8FAFC; border-radius:14px; border:1px dashed var(--arena-border); margin:20px 0;">
+                        <i class="fas fa-filter" style="font-size:32px; opacity:0.35; margin-bottom:12px; display:block;"></i>
+                        <h4 style="font-size:15px; font-weight:700; margin-bottom:4px; color:var(--text-primary);">No Completed Battles in this Category</h4>
+                        <p style="font-size:12px; margin:0;">Select another category or click "All Battles".</p>
+                    </div>
+                    <div th:if="${completedBattles == null or completedBattles.isEmpty()}" class="arena-empty">
+                        <i class="fas fa-flag-checkered"></i>
+                        <h3>No Completed Battles</h3>
+                        <p>Completed battles will appear here.</p>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Right Sidebar -->
+        <aside class="widgets">
+            <!-- Global Leaderboard (visible on /battles) -->
+            <div th:if="${battle == null}" class="widget-card" id="global-leaderboard-widget">
+                <div class="widget-header" style="justify-content: space-between;">
+                    <h3><i class="fas fa-trophy" style="color: #FFD700; margin-right: 6px;"></i> Leaderboard</h3>
+                    <select id="leaderboardCategoryFilter" onchange="loadGlobalLeaderboard()" style="padding: 4px; font-size: 11px; border-radius: 6px; border: 1px solid var(--arena-border); background: var(--bg-primary);">
+                        <option value="global">All Categories</option>
+                        <option value="Coding">Coding</option>
+                        <option value="Music">Music</option>
+                        <option value="Dance">Dance</option>
+                        <option value="Photography">Photography</option>
+                        <option value="Singing">Singing</option>
+                        <option value="Video">Video</option>
+                    </select>
+                </div>
+                <div id="global-leaderboard-list" style="display:flex; flex-direction:column; gap:8px;">
+                    <div style="text-align:center; padding:20px; color:var(--text-muted);"><i class="fas fa-spinner fa-spin"></i> Loading...</div>
+                </div>
+            </div>
+
+            <div class="widget-card">
+                <div class="widget-header">
+                    <!-- Title changes based on context -->
+
+                    <h3 th:if="${battle == null}"><i class="fas fa-university" style="margin-right: 6px;"></i> Colleges in Battle</h3>
+                    <h3 th:if="${battle != null and isCreator}"><i class="fas fa-university" style="margin-right: 6px;"></i> Students by College</h3>
+                    <h3 th:if="${battle != null and !isCreator}"><i class="fas fa-university" style="margin-right: 6px;"></i> Colleges Competing</h3>
+
+                </div>
+
+                <!-- College list when data exists -->
+                <div th:if="${battleColleges != null and !battleColleges.isEmpty()}" style="display:flex; flex-direction:column; gap:10px;">
+                    <div th:each="entry : ${battleColleges}" style="background:rgba(139,92,246,0.04); border:1px solid rgba(139,92,246,0.1); border-radius:12px; transition:all 0.2s; overflow:hidden; cursor:pointer;" onclick="this.querySelector('.student-list').style.display = this.querySelector('.student-list').style.display === 'none' ? 'block' : 'none'">
+                        <div style="display:flex; align-items:center; gap:10px; padding:8px 12px;">
+                            <!-- College icon -->
+                            <div style="width:34px; height:34px; border-radius:10px; background:linear-gradient(135deg,#8B5CF6,#6366F1); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                                <i class="fas fa-university" style="color:#fff; font-size:14px;"></i>
+                            </div>
+                            <!-- College name + count -->
+                            <div style="flex:1; min-width:0;">
+                                <div style="font-size:12px; font-weight:800; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" th:text="${entry.key}">College Name</div>
+                                <div style="font-size:10px; color:var(--text-muted); font-weight:700;">
+                                    <span th:text="${entry.value.size()}">0</span> 
+                                    <span th:text="${entry.value.size() == 1} ? 'student' : 'students'">students</span>
+                                </div>
+                            </div>
+                            <!-- Count badge -->
+                            <div style="background:linear-gradient(135deg,#8B5CF6,#6366F1); color:#fff; font-size:11px; font-weight:900; padding:3px 10px; border-radius:20px; flex-shrink:0;" th:text="${entry.value.size()}">0</div>
+                        </div>
+                        <div class="student-list" style="display:none; padding: 0 12px 12px 12px;">
+                            <hr style="border:none; border-top:1px solid rgba(255,255,255,0.05); margin:0 0 8px 0;">
+                            <ul style="margin:0; padding-left:20px; font-size:11px; color:var(--text-muted); font-weight:600;">
+                                <li th:each="student : ${entry.value}" th:text="${student}">Student</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Empty state -->
+                <div th:if="${battleColleges == null or battleColleges.isEmpty()}" style="text-align:center; padding:16px 8px;">
+                    <i class="fas fa-university" style="font-size:28px; color:rgba(139,92,246,0.25); margin-bottom:8px; display:block;"></i>
+                    <div style="font-size:12px; color:var(--text-muted); font-weight:700;">No college data yet</div>
+                    <div style="font-size:10px; color:var(--text-muted); margin-top:4px;">College names appear when users with a college in their profile join battles</div>
+                </div>
+            </div>
+
+            <div class="widget-card">
+                <div class="widget-header">
+
+                    <h3><i class="fas fa-bullseye" style="margin-right: 6px;"></i> Categories</h3>
+
+                </div>
+                <div style="display:flex; flex-wrap:wrap; gap:6px;">
+                    <button type="button" class="cat-widget-chip" onclick="filterByCategory('ALL', this)" style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(99,102,241,0.1); color:#6366F1; border:1px solid rgba(99,102,241,0.2); cursor:pointer; transition:all 0.2s;">All</button>
+                    <button type="button" class="cat-widget-chip" onclick="filterByCategory('Coding', this)" style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(59,130,246,0.1); color:#3B82F6; border:1px solid rgba(59,130,246,0.15); cursor:pointer; transition:all 0.2s;">Coding</button>
+                    <button type="button" class="cat-widget-chip" onclick="filterByCategory('Music', this)" style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(139,92,246,0.1); color:#8B5CF6; border:1px solid rgba(139,92,246,0.15); cursor:pointer; transition:all 0.2s;">Music</button>
+                    <button type="button" class="cat-widget-chip" onclick="filterByCategory('Dance', this)" style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(236,72,153,0.1); color:#EC4899; border:1px solid rgba(236,72,153,0.15); cursor:pointer; transition:all 0.2s;">Dance</button>
+                    <button type="button" class="cat-widget-chip" onclick="filterByCategory('Photography', this)" style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(34,211,238,0.1); color:#22D3EE; border:1px solid rgba(34,211,238,0.15); cursor:pointer; transition:all 0.2s;">Photography</button>
+                    <button type="button" class="cat-widget-chip" onclick="filterByCategory('Singing', this)" style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(249,115,22,0.1); color:#F97316; border:1px solid rgba(249,115,22,0.15); cursor:pointer; transition:all 0.2s;">Singing</button>
+                    <button type="button" class="cat-widget-chip" onclick="filterByCategory('Video Editing', this)" style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(248,68,100,0.1); color:#F84464; border:1px solid rgba(248,68,100,0.15); cursor:pointer; transition:all 0.2s;">Video</button>
+                    <button type="button" class="cat-widget-chip" onclick="filterByCategory('Drawing', this)" style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(16,185,129,0.1); color:#10B981; border:1px solid rgba(16,185,129,0.15); cursor:pointer; transition:all 0.2s;">Drawing</button>
+                    <button type="button" class="cat-widget-chip" onclick="filterByCategory('Fitness', this)" style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(245,158,11,0.1); color:#F59E0B; border:1px solid rgba(245,158,11,0.15); cursor:pointer; transition:all 0.2s;">Fitness</button>
+                    <button type="button" class="cat-widget-chip" onclick="filterByCategory('Gaming', this)" style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(99,102,241,0.1); color:#6366F1; border:1px solid rgba(99,102,241,0.15); cursor:pointer; transition:all 0.2s;">Gaming</button>
+                    <button type="button" class="cat-widget-chip" onclick="filterByCategory('Meme', this)" style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(251,191,36,0.1); color:#FBBF24; border:1px solid rgba(251,191,36,0.15); cursor:pointer; transition:all 0.2s;">Meme</button>
+                    <button type="button" class="cat-widget-chip" onclick="filterByCategory('AI Prompt', this)" style="padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; background:rgba(168,85,247,0.1); color:#A855F7; border:1px solid rgba(168,85,247,0.15); cursor:pointer; transition:all 0.2s;">AI Prompt</button>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- ──────────────────────────────────────── -->
+    <!-- CREATE BATTLE MODAL -->
+    <!-- ──────────────────────────────────────── -->
+    <div class="arena-modal-overlay" id="createBattleModal">
+        <div class="arena-modal">
+            <button class="arena-modal-close" onclick="closeCreateBattle()">&times;</button>
+            
+            <!-- Step Indicator -->
+            <div class="steps-indicator">
+                <div class="step-dot active" id="step-dot-1"></div>
+                <div class="step-dot" id="step-dot-2"></div>
+            </div>
+
+            <!-- Step 1: Title & Category -->
+            <div id="create-step-1">
+
+                <h2>⚔️ Create Battle</h2>
+
+                <p class="subtitle">Set up a creative challenge for your friends</p>
+                <form id="createBattleForm" th:action="@{/battles/create}" method="POST">
+                    <div class="arena-field">
+                        <label>Battle Title</label>
+                        <input type="text" name="title" id="battleTitle" required placeholder="e.g. Best React Landing Page" maxlength="100" />
+                    </div>
+                    <div class="arena-field">
+                        <label>Category</label>
+                        <input type="hidden" name="category" id="selectedCategory" required />
+                        <div class="category-grid">
+                            <div class="category-option" onclick="selectBattleCategory(this, 'Coding')"><i class="fas fa-code"></i> Coding</div>
+                            <div class="category-option" onclick="selectBattleCategory(this, 'Music')"><i class="fas fa-music"></i> Music</div>
+                            <div class="category-option" onclick="selectBattleCategory(this, 'Dance')"><i class="fas fa-shoe-prints"></i> Dance</div>
+                            <div class="category-option" onclick="selectBattleCategory(this, 'Photography')"><i class="fas fa-camera"></i> Photo</div>
+                            <div class="category-option" onclick="selectBattleCategory(this, 'Singing')"><i class="fas fa-microphone"></i> Singing</div>
+                            <div class="category-option" onclick="selectBattleCategory(this, 'Video Editing')"><i class="fas fa-video"></i> Video</div>
+                            <div class="category-option" onclick="selectBattleCategory(this, 'Drawing')"><i class="fas fa-paint-brush"></i> Drawing</div>
+                            <div class="category-option" onclick="selectBattleCategory(this, 'Fitness')"><i class="fas fa-dumbbell"></i> Fitness</div>
+                            <div class="category-option" onclick="selectBattleCategory(this, 'Gaming')"><i class="fas fa-gamepad"></i> Gaming</div>
+                            <div class="category-option" onclick="selectBattleCategory(this, 'Meme')"><i class="fas fa-laugh-squint"></i> Meme</div>
+                            <div class="category-option" onclick="selectBattleCategory(this, 'AI Prompt')"><i class="fas fa-robot"></i> AI Prompt</div>
+                            <div class="category-option" onclick="selectBattleCategory(this, 'Art')"><i class="fas fa-palette"></i> Art</div>
+                            <div class="category-option" onclick="selectBattleCategory(this, 'Acting')"><i class="fas fa-theater-masks"></i> Acting</div>
+                            <div class="category-option" onclick="selectBattleCategory(this, 'Fashion')"><i class="fas fa-tshirt"></i> Fashion</div>
+                            <div class="category-option" onclick="selectBattleCategory(this, 'Cooking')"><i class="fas fa-utensils"></i> Cooking</div>
+                            <div class="category-option" onclick="selectBattleCategory(this, 'Writing')"><i class="fas fa-pen-fancy"></i> Writing</div>
+                            <div class="category-option" onclick="selectBattleCategory(this, 'Comedy')"><i class="fas fa-grin-tears"></i> Comedy</div>
+                            <div class="category-option" onclick="selectBattleCategory(this, 'Story Teller')"><i class="fas fa-book-reader"></i> Story Teller</div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-arena btn-arena-primary" style="width:100%; justify-content:center; margin-top:6px;" onclick="goToStep2()">
+                        Next: Set Rules <i class="fas fa-arrow-right"></i>
+                    </button>
+
+                    <!-- Step 2: Rules (hidden initially) -->
+                    <div id="create-step-2" style="display:none;">
+                        <!-- Mode Selector -->
+                        <div class="arena-field">
+                            <label>Battle Mode</label>
+                            <select id="modeSelect" name="mode" onchange="toggleBattleMode(this.value)" style="padding:12px; font-size:14px; font-weight:700;">
+                                <option value="ONLINE" selected>🌐 Online (Default Web Submission)</option>
+                                <option value="OFFLINE">🏢 Offline (Venue &amp; Seat Check-in)</option>
+                            </select>
+                        </div>
+
+                        <!-- Offline Specific Fields (Hidden by default) -->
+                        <div id="offlineFieldsContainer" style="display:none; border:1px dashed var(--arena-border); padding:14px; border-radius:14px; margin-bottom:16px; background:rgba(15,23,42,0.02);">
+                            <div class="arena-field">
+                                <label>Venue / Location</label>
+                                <input type="text" name="venue" placeholder="e.g. Tech Hub, Bengaluru" />
+                            </div>
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                                <div class="arena-field">
+                                    <label>Event Date</label>
+                                    <input type="text" name="eventDate" placeholder="e.g. 20 July 2026" />
+                                </div>
+                                <div class="arena-field">
+                                    <label>Event Time</label>
+                                    <input type="text" name="eventTime" placeholder="e.g. 10:00 AM â€“ 1:00 PM" />
+                                </div>
+                            </div>
+
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                                <div class="arena-field">
+                                    <label>Judge Weight (%)</label>
+                                    <input type="number" id="judgeWeightInput" name="judgeWeight" value="70" min="0" max="100" oninput="updateWeights('judge')" />
+                                </div>
+                                <div class="arena-field">
+                                    <label>Audience Weight (%)</label>
+                                    <input type="number" id="audienceWeightInput" name="audienceWeight" value="30" min="0" max="100" oninput="updateWeights('audience')" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="arena-field">
+
+                            <label>Entry Fee (&#8377;)</label>
+
+                            <input type="number" step="0.01" name="entryFee" min="0" placeholder="e.g. 50.00" oninput="updatePrizePool()" required />
+                        </div>
+                        <div id="prizesGrid" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom: 20px;">
+                            <div class="arena-field" style="margin-bottom:0;">
+                                <label><i class="fas fa-trophy" style="color:#FFD700;"></i> 1st Prize (&#8377;)</label>
+                                <input type="number" step="0.01" name="prize1" min="0" placeholder="0" oninput="onPrize1Input()" required />
+                            </div>
+                            <div class="arena-field" style="margin-bottom:0;">
+                                <label><i class="fas fa-trophy" style="color:#C0C0C0;"></i> 2nd Prize (&#8377;)</label>
+                                <input type="number" step="0.01" name="prize2" min="0" placeholder="0" oninput="onPrize2Input()" required />
+                            </div>
+                            <div id="prize3Container" class="arena-field" style="margin-bottom:0;">
+                                <label><i class="fas fa-trophy" style="color:#cd7f32;"></i> 3rd Prize (&#8377;)</label>
+                                <input type="number" step="0.01" name="prize3" min="0" placeholder="0" required />
+                            </div>
+                        </div>
+
+                        <div class="arena-field">
+                            <label>Duration</label>
+                            <div style="display:flex; gap: 10px; margin-bottom: 10px;">
+                                <label style="display:flex; align-items:center; gap: 5px;"><input type="radio" name="durationType" value="hours" checked onchange="toggleDurationType()"> Hours</label>
+                                <label style="display:flex; align-items:center; gap: 5px;"><input type="radio" name="durationType" value="minutes" onchange="toggleDurationType()"> Minutes (Live)</label>
+                            </div>
+                            <div id="durationHoursWrapper">
+                                <select id="durationSelect" name="durationHours" onchange="toggleCustomDuration(this.value)">
+                                    <option value="1">1 Hour &ndash; Speed Round &#9889;</option>
+                                    <option value="6">6 Hours</option>
+                                    <option value="12">12 Hours</option>
+                                    <option value="24" selected>24 Hours</option>
+                                    <option value="48">48 Hours</option>
+                                    <option value="72">72 Hours</option>
+                                    <option value="custom">Custom...</option>
+                                </select>
+                                <div id="customDurationContainer" style="display:none; margin-top:10px;">
+                                    <input type="number" id="customDurationInput" placeholder="Enter custom hours..." min="1" max="720" />
+                                </div>
+                            </div>
+                            <div id="durationMinutesWrapper" style="display:none;">
+                                <select id="durationMinutesSelect">
+                                    <option value="1">1 Minute</option>
+                                    <option value="3">3 Minutes</option>
+                                    <option value="5" selected>5 Minutes</option>
+                                    <option value="10">10 Minutes</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="arena-field">
+                            <label>Max Participants</label>
+                            <select id="participantsSelect" name="maxParticipants" onchange="toggleCustomParticipants(this.value); updatePrizePool();">
+                                <option value="2">2 Participants (1v1)</option>
+                                <option value="4" selected>4 Participants</option>
+                                <option value="6">6 Participants</option>
+                                <option value="8">8 Participants</option>
+                                <option value="10">10 Participants</option>
+                                <option value="custom">Custom...</option>
+                            </select>
+                            <div id="customParticipantsContainer" style="display:none; margin-top:10px;">
+                                <input type="number" id="customParticipantsInput" placeholder="Enter custom count (2-100)..." min="2" max="100" oninput="updatePrizePool()" />
+                            </div>
+                        </div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px;">
+                            <div style="background:#F8FAFC; border:1px solid var(--arena-border); border-radius:14px; padding:14px; text-align:center;">
+                                <i class="fas fa-vote-yea" style="color:#3B82F6; font-size:20px; margin-bottom:6px;"></i>
+                                <div style="font-size:11px; color:var(--text-muted); font-weight:700;">Voting</div>
+                                <div style="font-size:14px; color:var(--text-primary); font-weight:900;">Public &amp; Weighted</div>
+                            </div>
+                            <div style="background:#F8FAFC; border:1px solid var(--arena-border); border-radius:14px; padding:14px; text-align:center;">
+                                <i class="fas fa-trophy" style="color:#FFD700; font-size:20px; margin-bottom:6px;"></i>
+                                <div style="font-size:11px; color:var(--text-muted); font-weight:700;">Winner</div>
+                                <div style="font-size:14px; color:var(--text-primary); font-weight:900;">Highest Combined</div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-arena btn-arena-green" style="width:100%; justify-content:center;">
+                            <i class="fas fa-rocket"></i> Create Battle
+                        </button>
+                        <button type="button" class="btn-arena btn-arena-secondary" style="width:100%; justify-content:center; margin-top:8px;" onclick="goToStep1()">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ -->
+    <!-- JOIN BATTLE MODAL -->
+    <!-- ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ -->
+
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+    <!-- JOIN BATTLE MODAL -->
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+
+    <div class="arena-modal-overlay" id="joinBattleModal">
+        <div class="arena-modal">
+            <button class="arena-modal-close" onclick="closeJoinBattle()">&times;</button>
+            <h2>ðŸšª Join Battle</h2>
+            <p class="subtitle">Enter the 6-character room code to join a battle</p>
+            <form th:action="@{/battles/join}" method="POST">
+                <div class="arena-field">
+                    <label>Room Code</label>
+                    <div class="join-form-inline">
+                        <input type="text" name="roomCode" required maxlength="6" placeholder="ABC123" style="font-size:20px;" />
+                        <button type="submit" class="btn-arena btn-arena-green">
+                            <i class="fas fa-sign-in-alt"></i> Join
+                        </button>
+                    </div>
+                    <p style="font-size:11px; color:#D97706; margin-top:8px;"><i class="fas fa-info-circle"></i> Note: Joining a battle may require an entry fee set by the creator.</p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Quick Battle Modal -->
+    <div class="arena-modal-overlay" id="quickBattleModal">
+        <div class="arena-modal" style="max-width:440px;">
+            <button class="arena-modal-close" onclick="closeQuickBattle()">&times;</button>
+
+            <!-- Step 1: Settings -->
+            <div id="qb-settings">
+                <h2><i class="fas fa-bolt" style="color:#F59E0B;"></i> Quick Battle</h2>
+                <p class="subtitle">Get matched with an opponent instantly</p>
+
+                <div class="arena-field">
+                    <label>Category</label>
+                    <select id="qbCategory" style="padding:12px; font-size:14px; font-weight:700; width:100%; border-radius:12px; border:1px solid var(--arena-border);">
+                        <option value="Coding">Coding</option>
+                        <option value="Music">Music</option>
+                        <option value="Dance">Dance</option>
+                        <option value="Photography">Photography</option>
+                        <option value="Singing">Singing</option>
+                        <option value="Video Editing">Video Editing</option>
+                        <option value="Story Teller">Story Teller</option>
+                        <option value="Drawing">Drawing</option>
+                        <option value="Meme">Meme</option>
+                        <option value="AI Prompt">AI Prompt</option>
+                        <option value="Art">Art</option>
+                        <option value="Writing">Writing</option>
+                        <option value="Story Teller">Story Teller</option>
+                    </select>
+                </div>
+
+                <div class="arena-field">
+                    <label>Skill Level</label>
+                    <select id="qbSkill" style="padding:12px; font-size:14px; font-weight:700; width:100%; border-radius:12px; border:1px solid var(--arena-border);">
+                        <option value="Beginner">Beginner</option>
+                        <option value="Intermediate" selected>Intermediate</option>
+                        <option value="Advanced">Advanced</option>
+                    </select>
+                </div>
+
+                <div class="arena-field">
+                    <label>Duration</label>
+                    <select id="qbDuration" style="padding:12px; font-size:14px; font-weight:700; width:100%; border-radius:12px; border:1px solid var(--arena-border);">
+                        <option value="3" selected>3 Minutes</option>
+                        <option value="5">5 Minutes</option>
+                        <option value="10">10 Minutes</option>
+                    </select>
+                </div>
+
+                <button class="btn-arena btn-arena-primary" onclick="startMatchmaking()" style="width:100%; justify-content:center; margin-top:10px; background:linear-gradient(135deg,#F59E0B,#EF4444); border:none;">
+                    <i class="fas fa-search"></i> Find Opponent
+                </button>
+            </div>
+
+            <!-- Step 2: Searching -->
+            <div id="qb-searching" style="display:none; text-align:center; padding:30px 0;">
+                <div style="font-size:48px; margin-bottom:20px; animation: pulse-live 1.5s infinite;"><i class="fas fa-crosshairs" style="color:#F59E0B;"></i></div>
+                <h3 style="font-weight:900; margin-bottom:8px;">Searching for opponent...</h3>
+                <p style="color:var(--text-muted); font-size:13px;" id="qbSearchTime">0s elapsed</p>
+                <div style="margin-top:20px;">
+                    <button class="btn-arena btn-arena-secondary" onclick="cancelMatchmaking()" style="width:100%; justify-content:center;">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 3: Match Found -->
+            <div id="qb-matched" style="display:none; text-align:center; padding:20px 0;">
+                <div style="font-size:36px; margin-bottom:15px;"><i class="fas fa-handshake" style="color:#10B981;"></i></div>
+                <h3 style="font-weight:900; margin-bottom:5px; color:#10B981;">Opponent Found!</h3>
+                <div style="display:flex; align-items:center; justify-content:center; gap:15px; margin:20px 0; padding:15px; background:rgba(16,185,129,0.05); border-radius:16px; border:1px solid rgba(16,185,129,0.15);">
+                    <img id="qbOpponentPhoto" src="" style="width:50px; height:50px; border-radius:50%; border:2px solid #10B981; object-fit:cover;">
+                    <div style="text-align:left;">
+                        <div id="qbOpponentName" style="font-weight:900; font-size:16px;"></div>
+                        <div id="qbOpponentRating" style="font-size:12px; color:var(--text-muted);"></div>
+                    </div>
+                </div>
+                <a id="qbBattleLink" href="#" class="btn-arena btn-arena-green" style="width:100%; justify-content:center; text-decoration:none; display:inline-flex;">
+                    <i class="fas fa-fire"></i> Enter Battle
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ -->
+    <!-- CONFETTI (for winner page) -->
+    <!-- ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ï¿½&bull;ï¿½ -->
+
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+    <!-- CONFETTI (for winner page) -->
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+
+    <div class="confetti-container" id="confettiContainer"></div>
+
+    <script>
+        // â”€â”€â”€ Tab Switching â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        let activeCategoryFilter = 'ALL';
+
+        function showTab(tab, btn) {
+            document.getElementById('tab-active').style.display = tab === 'active' ? 'block' : 'none';
+            document.getElementById('tab-completed').style.display = tab === 'completed' ? 'block' : 'none';
+            document.querySelectorAll('.arena-tab').forEach(t => t.classList.remove('active'));
+            btn.classList.add('active');
+            applyCategoryFilter();
+        }
+
+        function filterByCategory(cat, btn) {
+            activeCategoryFilter = cat || 'ALL';
+
+            // Update top filter buttons
+            document.querySelectorAll('.cat-filter-btn').forEach(b => {
+                const isAll = (activeCategoryFilter === 'ALL' && b.innerText.includes('All'));
+                const isMatch = b.innerText.trim().toLowerCase().includes(activeCategoryFilter.toLowerCase());
+                if (isAll || (activeCategoryFilter !== 'ALL' && isMatch)) {
+                    b.classList.add('active');
+                    b.style.background = 'var(--arena-primary)';
+                    b.style.color = '#fff';
+                    b.style.borderColor = 'var(--arena-primary)';
+                } else {
+                    b.classList.remove('active');
+                    b.style.background = '';
+                    b.style.color = '';
+                    b.style.borderColor = 'var(--arena-border)';
+                }
+            });
+
+            // Update sidebar & mobile chips
+            document.querySelectorAll('.cat-widget-chip').forEach(chip => {
+                const text = chip.innerText.trim();
+                const isAll = (activeCategoryFilter === 'ALL' && text === 'All');
+                const isMatch = (activeCategoryFilter !== 'ALL' && (text.toLowerCase() === activeCategoryFilter.toLowerCase() || (activeCategoryFilter === 'Video' && text.toLowerCase().includes('video')) || (activeCategoryFilter === 'Video Editing' && text.toLowerCase().includes('video'))));
+                if (isAll || isMatch) {
+                    chip.style.transform = 'scale(1.08)';
+                    chip.style.boxShadow = '0 0 0 2px var(--arena-primary)';
+                    chip.style.fontWeight = '900';
+                } else {
+                    chip.style.transform = '';
+                    chip.style.boxShadow = '';
+                    chip.style.fontWeight = '800';
+                }
+            });
+
+            applyCategoryFilter();
+        }
+
+        function applyCategoryFilter() {
+            ['tab-active', 'tab-completed'].forEach(tabId => {
+                const tabEl = document.getElementById(tabId);
+                if (!tabEl) return;
+                const grid = tabEl.querySelector('.battles-grid');
+                const empty = tabEl.querySelector('.category-empty-state');
+                if (!grid) return;
+
+                const cards = grid.querySelectorAll('.battle-card');
+                let count = 0;
+                cards.forEach(card => {
+                    const cardCat = (card.getAttribute('data-category') || '').trim().toLowerCase();
+                    const target = activeCategoryFilter.toLowerCase();
+                    const matches = (target === 'all') || 
+                                    (cardCat === target) || 
+                                    (target === 'video' && cardCat.includes('video')) || 
+                                    (target === 'video editing' && cardCat.includes('video'));
+                    if (matches) {
+                        card.style.display = '';
+                        count++;
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+
+                if (empty) {
+                    empty.style.display = (count === 0 && cards.length > 0) ? 'block' : 'none';
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const params = new URLSearchParams(window.location.search);
+            const c = params.get('category');
+            if (c) filterByCategory(c);
+        });
+
+        // â”€â”€â”€ Offline Mode Settings Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        function toggleBattleMode(val) {
+            document.getElementById('offlineFieldsContainer').style.display = val === 'OFFLINE' ? 'block' : 'none';
+        }
+        function updateWeights(changed) {
+            const judge = document.getElementById('judgeWeightInput');
+            const aud = document.getElementById('audienceWeightInput');
+            if (changed === 'judge') {
+                let v = parseInt(judge.value) || 0;
+                if (v > 100) v = 100;
+                if (v < 0) v = 0;
+                judge.value = v;
+                aud.value = 100 - v;
+            } else {
+                let v = parseInt(aud.value) || 0;
+                if (v > 100) v = 100;
+                if (v < 0) v = 0;
+                aud.value = v;
+                judge.value = 100 - v;
+            }
+        }
+
+        // â”€â”€â”€ Modals â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        function openCreateBattle() { document.getElementById('createBattleModal').classList.add('show'); }
+        function closeCreateBattle() { document.getElementById('createBattleModal').classList.remove('show'); goToStep1(); }
+        function openJoinBattle() { document.getElementById('joinBattleModal').classList.add('show'); }
+        function closeJoinBattle() { document.getElementById('joinBattleModal').classList.remove('show'); }
+        function openQuickBattle() {
+            document.getElementById('quickBattleModal').classList.add('show');
+            document.getElementById('qb-settings').style.display = 'block';
+            document.getElementById('qb-searching').style.display = 'none';
+            document.getElementById('qb-matched').style.display = 'none';
+        }
+        function closeQuickBattle() {
+            document.getElementById('quickBattleModal').classList.remove('show');
+            cancelMatchmaking();
+        }
+
+        // Quick Battle Matchmaking
+        var qbStompClient = null;
+        var qbSearchTimer = null;
+        var qbSearchSeconds = 0;
+
+        function startMatchmaking() {
+            var category = document.getElementById('qbCategory').value;
+            var skill = document.getElementById('qbSkill').value;
+            var duration = document.getElementById('qbDuration').value;
+
+            document.getElementById('qb-settings').style.display = 'none';
+            document.getElementById('qb-searching').style.display = 'block';
+            document.getElementById('qb-matched').style.display = 'none';
+
+            qbSearchSeconds = 0;
+            document.getElementById('qbSearchTime').textContent = '0s elapsed';
+            qbSearchTimer = setInterval(function() {
+                qbSearchSeconds++;
+                document.getElementById('qbSearchTime').textContent = qbSearchSeconds + 's elapsed';
+            }, 1000);
+
+            // Connect via SockJS + STOMP
+            var socket = new SockJS('/ws');
+            qbStompClient = Stomp.over(socket);
+            qbStompClient.debug = null; // suppress logs
+            qbStompClient.connect({}, function(frame) {
+                // Subscribe for match results
+                qbStompClient.subscribe('/user/queue/matchmaking', function(message) {
+                    var data = JSON.parse(message.body);
+                    if (data.type === 'MATCH_FOUND') {
+                        clearInterval(qbSearchTimer);
+                        document.getElementById('qb-searching').style.display = 'none';
+                        document.getElementById('qb-matched').style.display = 'block';
+
+                        var opp = data.opponent;
+                        document.getElementById('qbOpponentName').textContent = opp.username;
+                        document.getElementById('qbOpponentRating').textContent = 'Rating: ' + (opp.rating || 1000);
+                        document.getElementById('qbOpponentPhoto').src = opp.photo || ('https://ui-avatars.com/api/?name=' + opp.username + '&background=F84464&color=fff&size=60');
+                        document.getElementById('qbBattleLink').href = '/battles/' + data.battleId;
+                    }
+                });
+
+                // Send join queue message
+                qbStompClient.send('/app/matchmaking/join', {}, JSON.stringify({
+                    category: category,
+                    skill: skill,
+                    duration: duration
+                }));
+            });
+        }
+
+        function cancelMatchmaking() {
+            if (qbSearchTimer) { clearInterval(qbSearchTimer); qbSearchTimer = null; }
+            if (qbStompClient && qbStompClient.connected) {
+                qbStompClient.send('/app/matchmaking/leave', {}, '{}');
+                qbStompClient.disconnect();
+                qbStompClient = null;
+            }
+            document.getElementById('qb-settings').style.display = 'block';
+            document.getElementById('qb-searching').style.display = 'none';
+            document.getElementById('qb-matched').style.display = 'none';
+        }
+
+        // Close on overlay click
+        document.querySelectorAll('.arena-modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', e => {
+                if (e.target === overlay) overlay.classList.remove('show');
+            });
+        });
+
+        // â”€â”€â”€ Create Steps â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        function goToStep2() {
+            const title = document.getElementById('battleTitle').value.trim();
+            const category = document.getElementById('selectedCategory').value;
+            if (!title) { alert('Please enter a battle title'); return; }
+            if (!category) { alert('Please select a category'); return; }
+            document.getElementById('create-step-1').querySelector('.arena-field:first-child').style.display = 'none';
+            document.getElementById('create-step-1').querySelector('.arena-field:nth-child(2)').style.display = 'none';
+            document.getElementById('create-step-1').querySelector('.btn-arena-primary').style.display = 'none';
+            document.getElementById('create-step-2').style.display = 'block';
+            document.getElementById('step-dot-1').classList.remove('active');
+            document.getElementById('step-dot-1').classList.add('done');
+            document.getElementById('step-dot-2').classList.add('active');
+        }
+        function goToStep1() {
+            document.getElementById('create-step-1').querySelector('.arena-field:first-child').style.display = 'block';
+            document.getElementById('create-step-1').querySelector('.arena-field:nth-child(2)').style.display = 'block';
+            document.getElementById('create-step-1').querySelector('.btn-arena-primary').style.display = 'flex';
+            document.getElementById('create-step-2').style.display = 'none';
+            document.getElementById('step-dot-2').classList.remove('active');
+            document.getElementById('step-dot-1').classList.remove('done');
+            document.getElementById('step-dot-1').classList.add('active');
+        }
+
+        // â”€â”€â”€ Category Selection â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        function selectBattleCategory(el, category) {
+            document.querySelectorAll('.category-option').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+            document.getElementById('selectedCategory').value = category;
+        }
+
+        // â”€â”€â”€ Copy Room Code â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        function copyCode(code) {
+            navigator.clipboard.writeText(code).then(() => {
+                const tooltip = document.createElement('div');
+                tooltip.innerText = 'Copied!';
+                tooltip.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#10B981;color:#fff;padding:8px 18px;border-radius:10px;font-size:13px;font-weight:800;z-index:9999;animation:fadeInOut 1.5s ease forwards;';
+                document.body.appendChild(tooltip);
+                setTimeout(() => tooltip.remove(), 1500);
+            });
+        }
+
+        // â”€â”€â”€ Confetti for Winner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        if (document.getElementById('winner-display')) {
+            launchConfetti();
+        }
+        function launchConfetti() {
+            const container = document.getElementById('confettiContainer');
+            const colors = ['#FFD700', '#F84464', '#8B5CF6', '#3B82F6', '#10B981', '#F59E0B', '#EC4899'];
+            for (let i = 0; i < 80; i++) {
+                const piece = document.createElement('div');
+                piece.className = 'confetti-piece';
+                piece.style.left = Math.random() * 100 + '%';
+                piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+                piece.style.animationDelay = Math.random() * 2 + 's';
+                piece.style.animationDuration = (2 + Math.random() * 2) + 's';
+                piece.style.width = (6 + Math.random() * 8) + 'px';
+                piece.style.height = (6 + Math.random() * 8) + 'px';
+                container.appendChild(piece);
+            }
+            setTimeout(() => container.innerHTML = '', 5000);
+        }
+
+        // â”€â”€â”€ Custom Option Toggles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        function toggleCustomDuration(val) {
+            document.getElementById('customDurationContainer').style.display = val === 'custom' ? 'block' : 'none';
+        }
+        function toggleCustomParticipants(val) {
+            document.getElementById('customParticipantsContainer').style.display = val === 'custom' ? 'block' : 'none';
+        }
+
+         // Adjust form input names dynamically on submission
+        document.getElementById('createBattleForm').addEventListener('submit', function(e) {
+            const mode = document.getElementById('modeSelect').value;
+            if (mode === 'OFFLINE') {
+                const venue = document.querySelector('input[name="venue"]').value.trim();
+                const eventDate = document.querySelector('input[name="eventDate"]').value.trim();
+                const eventTime = document.querySelector('input[name="eventTime"]').value.trim();
+                if (!venue || !eventDate || !eventTime) {
+                    e.preventDefault();
+                    alert('Please fill out Venue, Event Date, and Event Time for offline battles.');
+                    return;
+                }
+            }
+
+            const durationType = document.querySelector('input[name="durationType"]:checked')?.value || 'hours';
+            const mSelect = document.getElementById('durationMinutesSelect');
+            if (durationType === 'hours') {
+                if (mSelect) mSelect.removeAttribute('name');
+            } else {
+                if (mSelect) mSelect.setAttribute('name', 'durationMinutes');
+            }
+
+            const durSelect = document.getElementById('durationSelect');
+            const customDur = document.getElementById('customDurationInput');
+            if (durationType === 'minutes') {
+                if (durSelect) durSelect.removeAttribute('name');
+                if (customDur) customDur.removeAttribute('name');
+            } else if (durSelect.value === 'custom') {
+                durSelect.removeAttribute('name');
+                customDur.setAttribute('name', 'durationHours');
+                if (!customDur.value) {
+                    e.preventDefault();
+                    alert('Please enter a custom duration in hours.');
+                    return;
+                }
+            } else {
+                durSelect.setAttribute('name', 'durationHours');
+                customDur.removeAttribute('name');
+            }
+
+            const partSelect = document.getElementById('participantsSelect');
+            const customPart = document.getElementById('customParticipantsInput');
+            let participantCount = 2;
+            if (partSelect.value === 'custom') {
+                partSelect.removeAttribute('name');
+                customPart.setAttribute('name', 'maxParticipants');
+                if (!customPart.value) {
+                    e.preventDefault();
+                    alert('Please enter custom max participants.');
+                    return;
+                }
+                participantCount = parseFloat(customPart.value) || 2;
+            } else {
+                partSelect.setAttribute('name', 'maxParticipants');
+                customPart.removeAttribute('name');
+                participantCount = parseFloat(partSelect.value) || 2;
+            }
+
+            // Validation: Total prize pool cannot exceed total entry fees (Entry Fee * Max Participants)
+            const entryFee = parseFloat(document.querySelector('input[name="entryFee"]')?.value || '0') || 0;
+            const prize1 = parseFloat(document.querySelector('input[name="prize1"]')?.value || '0') || 0;
+            const prize2 = parseFloat(document.querySelector('input[name="prize2"]')?.value || '0') || 0;
+            const prize3Container = document.getElementById('prize3Container');
+            const prize3Input = document.querySelector('input[name="prize3"]');
+            const prize3 = (prize3Container && prize3Container.style.display !== 'none' && prize3Input && !prize3Input.disabled) ? (parseFloat(prize3Input.value || '0') || 0) : 0;
+
+            const totalPrizePool = prize1 + prize2 + prize3;
+            const maxAllowedPrizePool = entryFee * participantCount;
+
+            if (totalPrizePool > (maxAllowedPrizePool + 0.01)) {
+                e.preventDefault();
+                alert(`Invalid Prize Amounts! The total prize pool (&#8377;${totalPrizePool.toFixed(2)}) cannot exceed the total collected entry fee pool (&#8377;${entryFee.toFixed(2)} Ã— ${participantCount} participants = &#8377;${maxAllowedPrizePool.toFixed(2)}).`);
+                return;
+            }
+        });
+
+        // â”€â”€â”€ Live Countdown Timer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                function loadGlobalLeaderboard() {
+            const cat = document.getElementById('leaderboardCategoryFilter').value;
+            fetch('/api/leaderboards?time=alltime&category=' + cat)
+                .then(res => {
+                    if (!res.ok) throw new Error('Network response was not ok');
+                    return res.json();
+                })
+                .then(data => {
+                    const list = document.getElementById('global-leaderboard-list');
+                    if(!list) return;
+                    list.innerHTML = '';
+                    if (!data || data.length === 0) {
+                        list.innerHTML = '<div style="text-align:center; font-size:12px; color:var(--text-muted); padding:10px;">No rankings yet</div>';
+                        return;
+                    }
+                    data.slice(0, 10).forEach(u => {
+                        let rankClass = u.rank === 1 ? 'rank-1' : (u.rank === 2 ? 'rank-2' : (u.rank === 3 ? 'rank-3' : 'rank-default'));
+                        list.innerHTML += `
+                        <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:rgba(255,255,255,0.6); border:1px solid rgba(15,23,42,0.05); border-radius:10px;">
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <div class="leaderboard-rank ${rankClass}">${u.rank}</div>
+                                <div style="display:flex; align-items:center; gap:6px;">
+                                    <img src="${u.avatar}" style="width:28px; height:28px; border-radius:50%; border:1px solid var(--arena-border); object-fit:cover;">
+                                    <span style="font-weight:800; font-size:13px; color:var(--text-primary);">${u.username}</span>
+                                </div>
+                            </div>
+                            <div style="text-align:right;">
+                                <div style="font-weight:900; font-size:13px; color:var(--arena-primary);"><i class="fas fa-bolt" style="color:#F59E0B; font-size:10px;"></i> ${u.rating}</div>
+                            </div>
+                        </div>`;
+                    });
+                }).catch(err => {
+                    console.error(err);
+                    const list = document.getElementById('global-leaderboard-list');
+                    if(list) list.innerHTML = '<div style="text-align:center; font-size:12px; color:#EF4444; padding:10px;">Failed to load</div>';
+                });
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+            if (document.getElementById('global-leaderboard-widget')) {
+                loadGlobalLeaderboard();
+            }
+        });
+
+        function initCountdown() {
+            const container = document.getElementById('countdownContainer');
+            const timerEl = document.getElementById('countdownTimer');
+            if (!container || !timerEl) return;
+
+            const endTimeStr = container.getAttribute('data-endtime');
+            if (!endTimeStr) return;
+
+            const endTime = new Date(endTimeStr).getTime();
+
+            function updateTimer() {
+                const now = new Date().getTime();
+                const diff = endTime - now;
+
+                if (diff <= 0) {
+                    timerEl.innerText = '00h 00m 00s';
+                    setTimeout(() => window.location.reload(), 1500);
+                    return;
+                }
+
+                const hours = Math.floor(diff / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+                const hStr = hours.toString().padStart(2, '0');
+                const mStr = minutes.toString().padStart(2, '0');
+                const sStr = seconds.toString().padStart(2, '0');
+
+                timerEl.innerText = `${hStr}h ${mStr}m ${sStr}s`;
+            }
+
+        updateTimer();
+            setInterval(updateTimer, 1000);
+        }
+        document.addEventListener('DOMContentLoaded', initCountdown);
+
+        // â”€â”€â”€ Local File Uploading â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        async function uploadLocalFile(fileInputId, targetInputId, statusSpanId) {
+            const fileInput = document.getElementById(fileInputId);
+            const targetInput = document.getElementById(targetInputId);
+            const statusSpan = document.getElementById(statusSpanId);
+
+            if (!fileInput || fileInput.files.length === 0) return;
+
+            const file = fileInput.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+
+            statusSpan.style.color = 'var(--text-secondary)';
+            statusSpan.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Uploading...`;
+
+            try {
+                const response = await fetch('/api/chat/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Upload failed');
+                }
+
+                const data = await response.json();
+                if (data && data.url) {
+                    targetInput.value = window.location.origin + data.url;
+                    statusSpan.style.color = 'var(--arena-green)';
+                    statusSpan.innerHTML = `<i class="fas fa-check-circle"></i> Uploaded!`;
+                } else {
+                    throw new Error('No URL returned');
+                }
+            } catch (err) {
+                console.error(err);
+                statusSpan.style.color = '#EF4444';
+                statusSpan.innerHTML = `<i class="fas fa-exclamation-circle"></i> Failed to upload.`;
+            }
+        }
+
+        function validateSubmissionForm() {
+            var urlInput = document.getElementById('submissionUrlInput').value;
+            if (!urlInput || urlInput.trim() === "") {
+                alert("Please upload a file or provide a valid URL for your submission.");
+                return false;
+            }
+            return true;
+        }
+        function toggleDurationType() {
+            const type = document.querySelector('input[name="durationType"]:checked').value;
+            const hWrap = document.getElementById('durationHoursWrapper');
+            const mWrap = document.getElementById('durationMinutesWrapper');
+            const hSelect = document.getElementById('durationSelect');
+            const mSelect = document.getElementById('durationMinutesSelect');
+            
+            const pSelect = document.getElementById('participantsSelect');
+            const customPartInput = document.getElementById('customParticipantsInput');
+            const prize3Input = document.querySelector('input[name="prize3"]');
+
+            if(type === 'hours') {
+                hWrap.style.display = 'block';
+                mWrap.style.display = 'none';
+                hSelect.setAttribute('name', 'durationHours');
+                mSelect.removeAttribute('name');
+                
+                // Restore settings
+                pSelect.disabled = false;
+                customPartInput.disabled = false;
+            } else {
+                hWrap.style.display = 'none';
+                mWrap.style.display = 'block';
+                mSelect.setAttribute('name', 'durationMinutes');
+                hSelect.removeAttribute('name');
+                
+                // Enforce Live Battle rules (1v1, No 3rd Prize)
+                pSelect.value = "2";
+                pSelect.disabled = true;
+                customPartInput.disabled = true;
+                
+                toggleCustomParticipants("2");
+            }
+            updatePrizePool();
+        }
+
+        function updatePrizePool() {
+            const type = document.querySelector('input[name="durationType"]:checked')?.value || 'hours';
+            const entryFeeInput = document.querySelector('input[name="entryFee"]');
+            const prize1Input = document.querySelector('input[name="prize1"]');
+            const prize2Input = document.querySelector('input[name="prize2"]');
+            const prize3Input = document.querySelector('input[name="prize3"]');
+            const prize3Container = document.getElementById('prize3Container');
+            const prizesGrid = document.getElementById('prizesGrid');
+
+            if (!entryFeeInput || !prize1Input || !prize2Input) return;
+
+            const entryFee = parseFloat(entryFeeInput.value || '0') || 0;
+            
+            let participantCount = 2;
+            if (type !== 'minutes') {
+                const partSelect = document.getElementById('participantsSelect');
+                const customPart = document.getElementById('customParticipantsInput');
+                participantCount = 4;
+                if (partSelect && partSelect.value === 'custom' && customPart && customPart.value) {
+                    participantCount = parseFloat(customPart.value) || 2;
+                } else if (partSelect) {
+                    participantCount = parseFloat(partSelect.value) || 4;
+                }
+            }
+
+            const totalPool = entryFee * participantCount;
+
+            if (participantCount <= 2) {
+                // 1st Prize = 80%, 2nd Prize = 20%
+                const prize1 = Math.round((totalPool * 0.80) * 100) / 100;
+                const prize2 = Math.round((totalPool * 0.20) * 100) / 100;
+
+                prize1Input.value = prize1 > 0 ? prize1 : 0;
+                prize2Input.value = prize2 > 0 ? prize2 : 0;
+                
+                if (prizesGrid) prizesGrid.style.gridTemplateColumns = '1fr 1fr';
+                if (prize3Container) prize3Container.style.display = 'none';
+                if (prize3Input) {
+                    prize3Input.value = 0;
+                    prize3Input.disabled = true;
+                }
+            } else {
+                // 1st Prize = 60%, 2nd Prize = 30%, 3rd Prize = 10%
+                const prize1 = Math.round((totalPool * 0.60) * 100) / 100;
+                const prize2 = Math.round((totalPool * 0.30) * 100) / 100;
+                const prize3 = Math.round((totalPool * 0.10) * 100) / 100;
+
+                prize1Input.value = prize1 > 0 ? prize1 : 0;
+                prize2Input.value = prize2 > 0 ? prize2 : 0;
+                
+                if (prizesGrid) prizesGrid.style.gridTemplateColumns = '1fr 1fr 1fr';
+                if (prize3Container) prize3Container.style.display = 'block';
+                if (prize3Input) {
+                    prize3Input.disabled = false;
+                    prize3Input.value = prize3 > 0 ? prize3 : 0;
+                }
+            }
+        }
+
+        function onPrize1Input() {
+            const type = document.querySelector('input[name="durationType"]:checked')?.value;
+            if (type === 'minutes') {
+                const entryFee = parseFloat(document.querySelector('input[name="entryFee"]')?.value || '0') || 0;
+                const totalPool = entryFee * 2;
+                const prize1 = parseFloat(document.querySelector('input[name="prize1"]')?.value || '0') || 0;
+                const prize2Input = document.querySelector('input[name="prize2"]');
+                if (prize2Input && prize1 <= totalPool) {
+                    const remaining = Math.max(0, totalPool - prize1);
+                    prize2Input.value = Math.round(remaining * 100) / 100;
+                }
+            }
+        }
+
+        function onPrize2Input() {
+            const type = document.querySelector('input[name="durationType"]:checked')?.value;
+            if (type === 'minutes') {
+                const entryFee = parseFloat(document.querySelector('input[name="entryFee"]')?.value || '0') || 0;
+                const totalPool = entryFee * 2;
+                const prize2 = parseFloat(document.querySelector('input[name="prize2"]')?.value || '0') || 0;
+                const prize1Input = document.querySelector('input[name="prize1"]');
+                if (prize1Input && prize2 <= totalPool) {
+                    const remaining = Math.max(0, totalPool - prize2);
+                    prize1Input.value = Math.round(remaining * 100) / 100;
+                }
+            }
+        }
+    </script>
+    <style>
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+            20% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            80% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+        @keyframes pulse-live {
+            0%, 100% { box-shadow: 0 0 20px rgba(239,68,68,0.4); }
+            50% { box-shadow: 0 0 30px rgba(239,68,68,0.7); }
+        }
+    </style>
+    <div th:replace="~{fragments/modals :: createPostModal}"></div>
+    <div class="overlay" id="overlay" onclick="closeAllModals()"></div>
+
+    <script>
+        function closeAllModals() {
+            document.querySelectorAll('.modal').forEach(m => {
+                m.classList.remove('open');
+                m.style.display = 'none';
+            });
+            document.querySelectorAll('.overlay').forEach(o => {
+                o.classList.remove('open');
+                o.style.display = 'none';
+            });
+        }
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/template :: head('Terms of Service | Youthians')}">
+    <meta charset="UTF-8">
+    <script defer th:src="@{/js/game-rewards.js}"></script>
+</head>
+
+<body>
+
+    <div th:replace="~{fragments/template :: navbar('terms')}"></div>
+
+    <section class="container" style="padding-top: 100px; padding-bottom: 80px;">
+        <h1 style="font-size: 42px; font-weight: 900; margin-bottom: 24px; color: #111;">Terms of <span style="color: var(--primary);">Service</span></h1>
+        
+        <div class="surface" style="padding: 40px; border-radius: 24px; border: 1px solid rgba(0,0,0,0.05); color: var(--text-secondary); line-height: 1.8;">
+            <p style="margin-bottom: 20px;">Welcome to Youthians. By accessing or using our platform, you agree to comply with and be bound by the following terms and conditions.</p>
+            
+            <h3 style="color: #111; margin-top: 30px; margin-bottom: 15px; font-weight: 800;">1. Acceptance of Terms</h3>
+            <p>By using Youthians, you signify your agreement to these terms. If you do not agree, please do not use our services.</p>
+            
+            <h3 style="color: #111; margin-top: 30px; margin-bottom: 15px; font-weight: 800;">2. User Conduct</h3>
+            <p>Users are expected to interact respectfully within the community. Any form of harassment, hate speech, or illegal activity will result in immediate account termination.</p>
+            
+            <h3 style="color: #111; margin-top: 30px; margin-bottom: 15px; font-weight: 800;">3. Account Security</h3>
+            <p>You are responsible for maintaining the confidentiality of your account credentials. Youthians is not liable for any loss resulting from unauthorized access to your account.</p>
+            
+            <h3 style="color: #111; margin-top: 30px; margin-bottom: 15px; font-weight: 800;">4. Modifications to Service</h3>
+            <p>We reserve the right to modify or discontinue any part of our service at any time without prior notice.</p>
+        </div>
+    </section>
+
+    <footer th:replace="~{fragments/template :: footer}"></footer>
+
+</body>
+
+</html>
+
