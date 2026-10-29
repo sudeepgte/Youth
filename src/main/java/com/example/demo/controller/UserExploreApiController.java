@@ -39,7 +39,7 @@ public class UserExploreApiController {
         } else {
             users = userRepository.findAll();
         }
-        users.removeIf(u -> "BANNED".equals(u.getStatus()) || "SUSPENDED".equals(u.getStatus()));
+        users.removeIf(u -> "admin".equalsIgnoreCase(u.getUsername()) || "BANNED".equals(u.getStatus()) || "SUSPENDED".equals(u.getStatus()));
 
         // Boosted profiles first, then premium, then others
         users.sort((a, b) -> {

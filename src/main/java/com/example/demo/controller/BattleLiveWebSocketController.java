@@ -46,6 +46,8 @@ public class BattleLiveWebSocketController {
     private com.example.demo.service.NotificationService notificationService;
     @Autowired
     private com.example.demo.service.AuditLogService auditLogService;
+    @Autowired
+    private com.example.demo.service.BattleTimerService battleTimerService;
 
     // Track online viewers
     private final ConcurrentHashMap<Long, Set<Long>> battleViewers = new ConcurrentHashMap<>();
@@ -472,6 +474,33 @@ public class BattleLiveWebSocketController {
                 viewers.remove(userId);
                 broadcastViewerCount(battleId);
             }
+        }
+    }
+
+    @MessageMapping("/battle/{battleId}/leave")
+    public void handleParticipantLeave(@DestinationVariable Long battleId, Principal principal) {
+        if (principal == null) return;
+        Long userId = Long.parseLong(principal.getName());
+        User user = userRepository.findById(userId).orElse(null);
+        Battle battle = battleRepository.findById(battleId).orElse(null);
+        if (user == null || battle == null) return;
+
+        if (participantRepository.existsByBattleAndUser(battle, user)) {
+            if ("ACTIVE".equals(battle.getStatus()) || "VOTING".equals(battle.getStatus())) {
+                battleTimerService.completeBattleWithForfeit(battle, user);
+            }
+        }
+    }
+
+    @MessageMapping("/battle/{battleId}/end-battle")
+    public void handleEndBattle(@DestinationVariable Long battleId, Principal principal) {
+        if (principal == null) return;
+        Long userId = Long.parseLong(principal.getName());
+        Battle battle = battleRepository.findById(battleId).orElse(null);
+        if (battle == null) return;
+
+        if (battle.getCreator() != null && battle.getCreator().getId().equals(userId)) {
+            battleTimerService.completeLiveBattle(battle);
         }
     }
 

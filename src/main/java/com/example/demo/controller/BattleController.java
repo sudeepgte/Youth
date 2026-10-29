@@ -13,6 +13,10 @@ import com.example.demo.service.NotificationService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.multipart.MultipartFile;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -43,6 +47,14 @@ public class BattleController {
     @Autowired
     private com.example.demo.service.AuditLogService auditLogService;
     @Autowired private com.example.demo.repository.BattlePredictionRepository predictionRepository;
+    @Autowired private com.example.demo.service.WalletService walletService;
+    @Autowired private com.example.demo.repository.WalletTransactionRepository walletTransactionRepository;
+
+    @org.springframework.beans.factory.annotation.Value("${razorpay.key.id:${RAZORPAY_KEY_ID:rzp_test_youthiansMockKey}}")
+    private String razorpayKeyId;
+
+    @org.springframework.beans.factory.annotation.Value("${razorpay.key.secret:${RAZORPAY_KEY_SECRET:youthiansMockSecretKey123}}")
+    private String razorpayKeySecret;
 
     private User getUserFromSession(HttpSession session) {
         Object authUser = httpServletRequest.getAttribute("authenticatedUser");
@@ -116,6 +128,27 @@ public class BattleController {
         Battle battle = battleRepository.findById(id).orElse(null);
         if (battle == null) return "redirect:/battles";
 
+        LocalDateTime now = LocalDateTime.now();
+        if ("ACTIVE".equals(battle.getStatus()) && battle.getEndsAt() != null && battle.getEndsAt().isBefore(now)) {
+            battleTimerService.completeLiveBattle(battle);
+            battle = battleRepository.findById(id).orElse(battle);
+        } else if ("VOTING".equals(battle.getStatus())) {
+            LocalDateTime end = battle.getVotingEndsAt() != null ? battle.getVotingEndsAt() : battle.getEndsAt();
+            if (end != null && end.isBefore(now)) {
+                battleTimerService.completeLiveBattle(battle);
+                battle = battleRepository.findById(id).orElse(battle);
+            }
+        }
+
+        boolean isVotingOpen = "VOTING".equals(battle.getStatus()) || "ACTIVE".equals(battle.getStatus());
+        if (isVotingOpen) {
+            LocalDateTime end = "VOTING".equals(battle.getStatus()) ?
+                (battle.getVotingEndsAt() != null ? battle.getVotingEndsAt() : battle.getEndsAt()) : battle.getEndsAt();
+            if (end != null && now.isAfter(end)) {
+                isVotingOpen = false;
+            }
+        }
+
         boolean isParticipant = participantRepository.existsByBattleAndUser(battle, user);
         boolean isCreator = battle.getCreator() != null && battle.getCreator().getId().equals(user.getId());
         boolean hasSubmitted = submissionRepository.existsByBattleAndUser(battle, user);
@@ -138,6 +171,7 @@ public class BattleController {
         model.addAttribute("isParticipant", isParticipant);
         model.addAttribute("isCreator", isCreator);
         model.addAttribute("hasSubmitted", hasSubmitted);
+        model.addAttribute("isVotingOpen", isVotingOpen);
         model.addAttribute("hasVoted", hasVoted);
         boolean hasPredicted = predictionRepository.existsByBattleAndBettor(battle, user);
         model.addAttribute("hasPredicted", hasPredicted);
@@ -166,7 +200,7 @@ public class BattleController {
     public String createBattle(
             @RequestParam String title,
             @RequestParam String category,
-            @RequestParam(defaultValue = "24") Integer durationHours,
+            @RequestParam(required = false, defaultValue = "10") Integer durationMinutes,
             @RequestParam(defaultValue = "2") Integer maxParticipants,
             @RequestParam(required = false, defaultValue = "ONLINE") String mode,
             @RequestParam(required = false) String venue,
@@ -193,26 +227,35 @@ public class BattleController {
 
         Battle battle = new Battle();
 
-        String durationType = request.getParameter("durationType");
+        String customMinutesStr = request.getParameter("customMinutes");
         String durationMinutesStr = request.getParameter("durationMinutes");
-        if ("minutes".equalsIgnoreCase(durationType) && durationMinutesStr != null && !durationMinutesStr.isEmpty()) {
+        int finalMinutes = 10;
+        if (customMinutesStr != null && !customMinutesStr.trim().isEmpty()) {
             try {
-                battle.setDurationMinutes(Integer.parseInt(durationMinutesStr));
-                // Enforce Live rules
-                effectiveMaxParticipants = 2;
-                safePrize3 = 0.0;
-            } catch (NumberFormatException e) { /* ignore */ }
-        } else {
-            battle.setDurationMinutes(null);
-            effectiveMaxParticipants = Math.min(Math.max(effectiveMaxParticipants, 2), 100);
+                finalMinutes = Math.max(1, Integer.parseInt(customMinutesStr.trim()));
+            } catch (NumberFormatException e) {
+                finalMinutes = 10;
+            }
+        } else if (durationMinutesStr != null && !durationMinutesStr.trim().isEmpty()) {
+            try {
+                if (!"custom".equalsIgnoreCase(durationMinutesStr.trim())) {
+                    finalMinutes = Math.max(1, Integer.parseInt(durationMinutesStr.trim()));
+                }
+            } catch (NumberFormatException e) {
+                finalMinutes = 10;
+            }
+        } else if (durationMinutes != null && durationMinutes > 0) {
+            finalMinutes = durationMinutes;
         }
 
-        // Enforce no 3rd prize for 2-player (1v1) battles
-        if (effectiveMaxParticipants <= 2) {
-            safePrize3 = 0.0;
-        }
+        battle.setDurationMinutes(finalMinutes);
+        battle.setDurationHours(null); // Hours completely removed
 
-        double totalPrizePool = safePrize1 + safePrize2 + safePrize3;
+        // Strictly only 1st and 2nd prize
+        safePrize3 = 0.0;
+        effectiveMaxParticipants = Math.min(Math.max(effectiveMaxParticipants, 2), 100);
+
+        double totalPrizePool = safePrize1 + safePrize2;
         double maxAllowedPrizePool = safeEntryFee * effectiveMaxParticipants;
 
         if (totalPrizePool > (maxAllowedPrizePool + 0.01)) {
@@ -225,13 +268,17 @@ public class BattleController {
             if (balance < safeEntryFee) {
                 return "redirect:/battles?error=insufficient_funds";
             }
-            user.setWalletBalance(balance - safeEntryFee);
-            userRepository.save(user);
+            boolean ok = walletService.processTransaction(user, safeEntryFee, "INR", "DEBIT", 
+                "Battle Creation Entry Fee - " + title, 
+                "BATTLE_CREATE_" + System.currentTimeMillis() + "_" + user.getId());
+            if (!ok) {
+                return "redirect:/battles?error=insufficient_funds";
+            }
         }
 
         battle.setTitle(title);
         battle.setCategory(category);
-        battle.setDurationHours(durationHours);
+        battle.setDurationHours(null);
         battle.setMode(mode);
         battle.setEntryFee(safeEntryFee);
         battle.setPrize1(safePrize1);
@@ -298,6 +345,7 @@ public class BattleController {
     public String showPaymentPage(@PathVariable Long id, HttpSession session, Model model) {
         User user = getUserFromSession(session);
         if (user == null) return "redirect:/login";
+        user = userRepository.findById(user.getId()).orElse(user);
 
         Battle battle = battleRepository.findById(id).orElse(null);
         if (battle == null) return "redirect:/battles?error=not_found";
@@ -310,12 +358,29 @@ public class BattleController {
             return "redirect:/battles/" + battle.getId() + "?error=already_started";
         }
 
+        Double entryFee = battle.getEntryFee() != null ? battle.getEntryFee() : 0.0;
+        Double walletBalance = user.getWalletBalance() != null ? user.getWalletBalance() : 0.0;
+        boolean hasSufficientWallet = walletBalance >= entryFee;
+
+        // Generate Razorpay Order ID for battle join
+        String razorpayOrderId = "order_b_" + UUID.randomUUID().toString().replace("-", "").substring(0, 14);
+        session.setAttribute("battleRazorpayOrderId", razorpayOrderId);
+        session.setAttribute("battleRazorpayAmount", entryFee);
+
+        long finalAmountPaise = Math.round(entryFee * 100);
+
         model.addAttribute("battle", battle);
         model.addAttribute("user", user);
+        model.addAttribute("walletBalance", walletBalance);
+        model.addAttribute("hasSufficientWallet", hasSufficientWallet);
+        model.addAttribute("razorpayOrderId", razorpayOrderId);
+        model.addAttribute("razorpayKeyId", razorpayKeyId);
+        model.addAttribute("finalAmountPaise", finalAmountPaise);
         return "payment";
     }
 
     @RequestMapping(value = "/{id}/process-payment", method = RequestMethod.POST)
+    @Transactional
     public String processPayment(@PathVariable Long id, HttpSession session) {
         User user = getUserFromSession(session);
         if (user == null) return "redirect:/login";
@@ -335,10 +400,128 @@ public class BattleController {
         long count = participantRepository.countByBattle(battle);
         if (count >= battle.getMaxParticipants()) return "redirect:/battles/" + battle.getId() + "?error=full";
 
-        // In a real app, verify payment status from gateway here.
-        // For MVP, we assume the mock payment was successful.
+        Double fee = battle.getEntryFee() != null ? battle.getEntryFee() : 0.0;
+        if (fee > 0) {
+            Double balance = user.getWalletBalance() != null ? user.getWalletBalance() : 0.0;
+            if (balance < fee) {
+                return "redirect:/battles/" + id + "/pay?error=insufficient_funds";
+            }
+            boolean ok = walletService.processTransaction(user, fee, "INR", "DEBIT", 
+                "Battle Entry Fee - " + battle.getTitle() + " (#" + battle.getId() + ")", 
+                "BATTLE_ENTRY_" + battle.getId() + "_" + user.getId() + "_" + System.currentTimeMillis());
+            if (!ok) {
+                return "redirect:/battles/" + id + "/pay?error=insufficient_funds";
+            }
+        }
 
         return joinUserToBattle(battle, user);
+    }
+
+    @RequestMapping(value = "/{id}/payment/confirm", method = RequestMethod.POST)
+    @Transactional
+    public String confirmBattleRazorpayPayment(
+            @PathVariable Long id,
+            @RequestParam(required = false) String razorpay_payment_id,
+            @RequestParam(required = false) String razorpay_order_id,
+            @RequestParam(required = false) String razorpay_signature,
+            HttpSession session) {
+        User user = getUserFromSession(session);
+        if (user == null) return "redirect:/login";
+        user = userRepository.findById(user.getId()).orElse(user);
+
+        Battle battle = battleRepository.findById(id).orElse(null);
+        if (battle == null) return "redirect:/battles?error=not_found";
+
+        if (participantRepository.existsByBattleAndUser(battle, user)) {
+            return "redirect:/battles/" + battle.getId();
+        }
+
+        if (!"WAITING".equals(battle.getStatus())) {
+            return "redirect:/battles/" + battle.getId() + "?error=already_started";
+        }
+
+        long count = participantRepository.countByBattle(battle);
+        if (count >= battle.getMaxParticipants()) return "redirect:/battles/" + battle.getId() + "?error=full";
+
+        String sessionOrderId = (String) session.getAttribute("battleRazorpayOrderId");
+        if (razorpay_payment_id == null || razorpay_payment_id.isBlank() ||
+            razorpay_order_id == null || (sessionOrderId != null && !razorpay_order_id.equals(sessionOrderId)) ||
+            razorpay_signature == null || razorpay_signature.isBlank()) {
+            return "redirect:/battles/" + id + "/pay?error=payment_failed";
+        }
+
+        boolean isValidSignature = verifyRazorpaySignature(razorpay_order_id, razorpay_payment_id, razorpay_signature, razorpayKeySecret);
+        if (!isValidSignature) {
+            return "redirect:/battles/" + id + "/pay?error=invalid_signature";
+        }
+
+        Double fee = battle.getEntryFee() != null ? battle.getEntryFee() : 0.0;
+        String refId = "RZP-" + razorpay_payment_id.trim();
+
+        WalletTransaction tx = new WalletTransaction();
+        tx.setUser(user);
+        tx.setAmount(fee);
+        tx.setCurrency("INR");
+        tx.setType("DEBIT");
+        tx.setDescription("Battle Entry Fee via Razorpay - " + battle.getTitle() + " (Ref: " + refId + ")");
+        tx.setReferenceId(refId);
+        walletTransactionRepository.save(tx);
+
+        auditLogService.log("BATTLE_PAYMENT", user.getId(), "Paid " + fee + " via Razorpay for battle " + id + " ref: " + refId);
+        session.removeAttribute("battleRazorpayOrderId");
+
+        return joinUserToBattle(battle, user);
+    }
+
+    @PostMapping("/{id}/payment/razorpay-signature")
+    @ResponseBody
+    public Map<String, Object> generateBattleRazorpaySignature(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> body,
+            HttpSession session) {
+        String paymentId = body.get("razorpay_payment_id");
+        String orderId = body.get("razorpay_order_id");
+        String sessionOrderId = (String) session.getAttribute("battleRazorpayOrderId");
+        if (orderId == null || (sessionOrderId != null && !orderId.equals(sessionOrderId)) || paymentId == null || paymentId.isBlank()) {
+            return Map.of("success", false, "error", "Invalid order or payment id");
+        }
+        try {
+            String payload = orderId + "|" + paymentId;
+            javax.crypto.Mac mac = javax.crypto.Mac.getInstance("HmacSHA256");
+            javax.crypto.spec.SecretKeySpec secretKeySpec =
+                    new javax.crypto.spec.SecretKeySpec(razorpayKeySecret.getBytes(java.nio.charset.StandardCharsets.UTF_8), "HmacSHA256");
+            mac.init(secretKeySpec);
+            byte[] hash = mac.doFinal(payload.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hash) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) hexString.append('0');
+                hexString.append(hex);
+            }
+            return Map.of("success", true, "signature", hexString.toString());
+        } catch (Exception ex) {
+            return Map.of("success", false, "error", ex.getMessage());
+        }
+    }
+
+    private boolean verifyRazorpaySignature(String orderId, String paymentId, String signature, String secret) {
+        try {
+            String payload = orderId + "|" + paymentId;
+            javax.crypto.Mac mac = javax.crypto.Mac.getInstance("HmacSHA256");
+            javax.crypto.spec.SecretKeySpec secretKeySpec =
+                    new javax.crypto.spec.SecretKeySpec(secret.getBytes(java.nio.charset.StandardCharsets.UTF_8), "HmacSHA256");
+            mac.init(secretKeySpec);
+            byte[] hash = mac.doFinal(payload.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hash) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) hexString.append('0');
+                hexString.append(hex);
+            }
+            return hexString.toString().equalsIgnoreCase(signature);
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     private String joinUserToBattle(Battle battle, User user) {
@@ -383,8 +566,10 @@ public class BattleController {
         battle.setStartedAt(LocalDateTime.now());
         if (battle.getDurationMinutes() != null && battle.getDurationMinutes() > 0) {
             battle.setEndsAt(battle.getStartedAt().plusMinutes(battle.getDurationMinutes()));
+        } else if (battle.getDurationHours() != null && battle.getDurationHours() > 0) {
+            battle.setEndsAt(battle.getStartedAt().plusMinutes(battle.getDurationHours() * 60));
         } else {
-            battle.setEndsAt(battle.getStartedAt().plusHours(battle.getDurationHours()));
+            battle.setEndsAt(battle.getStartedAt().plusMinutes(10));
         }
         battleRepository.save(battle);
 
@@ -480,7 +665,8 @@ public class BattleController {
     @RequestMapping(value = "/{id}/submit", method = RequestMethod.POST)
     public String submitEntry(
             @PathVariable Long id,
-            @RequestParam String submissionUrl,
+            @RequestParam(required = false) String submissionUrl,
+            @RequestParam(value = "file", required = false) MultipartFile file,
             @RequestParam(required = false) String description,
             @RequestParam(required = false) String secondaryUrl,
             HttpSession session) {
@@ -489,6 +675,27 @@ public class BattleController {
         if (user == null) return "redirect:/login";
         user = userRepository.findById(user.getId()).orElse(user);
 
+        if (file != null && !file.isEmpty()) {
+            try {
+                String original = file.getOriginalFilename() != null ? file.getOriginalFilename() : "submission.jpg";
+                String safeOriginal = original.replaceAll("[^a-zA-Z0-9._-]", "_");
+                if (safeOriginal.length() > 80) {
+                    safeOriginal = safeOriginal.substring(safeOriginal.length() - 80);
+                }
+                String fileName = UUID.randomUUID().toString() + "_" + safeOriginal;
+                Path uploadPath = Paths.get("src/main/resources/static/uploads/");
+                if (!Files.exists(uploadPath)) Files.createDirectories(uploadPath);
+                Path targetPath = Paths.get("target/classes/static/uploads/");
+                if (!Files.exists(targetPath)) Files.createDirectories(targetPath);
+                byte[] bytes = file.getBytes();
+                Files.write(uploadPath.resolve(fileName), bytes);
+                Files.write(targetPath.resolve(fileName), bytes);
+                submissionUrl = "/uploads/" + fileName;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
         if (submissionUrl == null || submissionUrl.trim().isEmpty()) {
             return "redirect:/battles/" + id + "?error=empty_submission";
         }
@@ -496,8 +703,8 @@ public class BattleController {
         Battle battle = battleRepository.findById(id).orElse(null);
         if (battle == null) return "redirect:/battles";
         if (!"ACTIVE".equals(battle.getStatus())) return "redirect:/battles/" + id + "?error=not_active";
-        if (battle.getDurationMinutes() != null && battle.getDurationMinutes() > 0) {
-            return "redirect:/battles/" + id + "?error=unauthorized";
+        if (Boolean.TRUE.equals(battle.getIsLive())) {
+            return "redirect:/battles/" + id + "/live";
         }
         if (!participantRepository.existsByBattleAndUser(battle, user)) return "redirect:/battles/" + id + "?error=not_participant";
         if (submissionRepository.existsByBattleAndUser(battle, user)) return "redirect:/battles/" + id + "?error=already_submitted";
@@ -524,7 +731,15 @@ public class BattleController {
         if (!battle.getCreator().getId().equals(user.getId())) return "redirect:/battles/" + id;
 
         battle.setStatus("VOTING");
-        battle.setVotingEndsAt(LocalDateTime.now().plusHours(24));
+        LocalDateTime now = LocalDateTime.now();
+        if (battle.getEndsAt() != null && battle.getEndsAt().isAfter(now)) {
+            battle.setVotingEndsAt(battle.getEndsAt());
+        } else {
+            int minutes = (battle.getDurationMinutes() != null && battle.getDurationMinutes() > 0) ? battle.getDurationMinutes() :
+                          ((battle.getDurationHours() != null && battle.getDurationHours() > 0) ? battle.getDurationHours() * 60 : 10);
+            battle.setVotingEndsAt(now.plusMinutes(minutes));
+            battle.setEndsAt(battle.getVotingEndsAt());
+        }
         battleRepository.save(battle);
 
         return "redirect:/battles/" + id;
@@ -540,6 +755,15 @@ public class BattleController {
         Battle battle = battleRepository.findById(id).orElse(null);
         if (battle == null) return "redirect:/battles";
         if (!"VOTING".equals(battle.getStatus()) && !"ACTIVE".equals(battle.getStatus())) return "redirect:/battles/" + id;
+
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime end = "VOTING".equals(battle.getStatus()) ?
+            (battle.getVotingEndsAt() != null ? battle.getVotingEndsAt() : battle.getEndsAt()) : battle.getEndsAt();
+        if (end != null && now.isAfter(end)) {
+            battleTimerService.completeLiveBattle(battle);
+            return "redirect:/battles/" + id + "?error=voting_closed";
+        }
+
         if (voteRepository.existsByBattleAndVoter(battle, user)) return "redirect:/battles/" + id + "?error=already_voted";
 
         BattleSubmission sub = submissionRepository.findById(submissionId).orElse(null);
@@ -569,6 +793,15 @@ public class BattleController {
         if (!"ACTIVE".equals(battle.getStatus()) && !"VOTING".equals(battle.getStatus())) {
              return "redirect:/battles/" + id;
         }
+
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime end = "VOTING".equals(battle.getStatus()) ?
+            (battle.getVotingEndsAt() != null ? battle.getVotingEndsAt() : battle.getEndsAt()) : battle.getEndsAt();
+        if (end != null && now.isAfter(end)) {
+            battleTimerService.completeLiveBattle(battle);
+            return "redirect:/battles/" + id + "?error=voting_closed";
+        }
+
         if (voteRepository.existsByBattleAndVoter(battle, user)) {
              return "redirect:/battles/" + id + "?error=already_voted";
         }
@@ -736,7 +969,7 @@ public class BattleController {
         return "battle-lobby";
     }
 
-    @PostMapping("/{id}/leave")
+    @RequestMapping(value = "/{id}/leave", method = {RequestMethod.GET, RequestMethod.POST})
     public String leaveBattle(@PathVariable Long id, HttpSession session, RedirectAttributes redirectAttributes) {
         User user = getUserFromSession(session);
         if (user == null) return "redirect:/login";
@@ -745,17 +978,28 @@ public class BattleController {
         Battle battle = battleRepository.findById(id).orElse(null);
         if (battle == null) return "redirect:/battles";
         
-        // Remove participant
-        java.util.List<BattleParticipant> participants = participantRepository.findByBattle(battle);
-        for (BattleParticipant p : participants) {
-            if (p.getUser().getId().equals(user.getId())) {
-                participantRepository.delete(p);
-                break;
+        boolean isParticipant = participantRepository.existsByBattleAndUser(battle, user);
+        if (isParticipant) {
+            if ("ACTIVE".equals(battle.getStatus()) || "VOTING".equals(battle.getStatus())) {
+                // Battle is in progress! If player leaves, automatically end the battle and award forfeit win
+                battleTimerService.completeBattleWithForfeit(battle, user);
+                redirectAttributes.addFlashAttribute("error", "You left the battle. The match ended as a forfeit.");
+                return "redirect:/battles/" + id;
+            } else {
+                // In WAITING or LOBBY, just remove from participants
+                List<BattleParticipant> participants = participantRepository.findByBattle(battle);
+                for (BattleParticipant p : participants) {
+                    if (p.getUser().getId().equals(user.getId())) {
+                        participantRepository.delete(p);
+                        break;
+                    }
+                }
+                redirectAttributes.addFlashAttribute("success", "You have left the battle.");
+                return "redirect:/battles";
             }
         }
         
-        redirectAttributes.addFlashAttribute("success", "You have left the battle.");
-        return "redirect:/battles";
+        return "redirect:/battles/" + id;
     }
 }
 

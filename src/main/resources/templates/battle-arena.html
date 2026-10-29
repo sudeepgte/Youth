@@ -895,6 +895,7 @@
                 <span th:if="${param.error[0] == 'not_participant'}">You need to join this battle first.</span>
                 <span th:if="${param.error[0] == 'unauthorized'}">You are not authorized to perform this action.</span>
                 <span th:if="${param.error[0] == 'empty_submission'}">Please upload a file or provide a valid URL for your submission.</span>
+                <span th:if="${param.error[0] == 'voting_closed'}">Voting has ended for this battle!</span>
                 <span th:if="${param.error[0] == 'insufficient_funds'}">Insufficient funds in your wallet to pay the entry fee!</span>
                 <span th:if="${param.error[0] == 'invalid_prizes'}">Invalid Prize Amounts! Total prize pool cannot exceed the combined entry fee pool.</span>
             </div>
@@ -941,7 +942,7 @@
                         <span th:if="${battle.entryFee != null and battle.entryFee > 0}" style="color:#10B981; font-weight:700;"><i class="fas fa-ticket-alt"></i> &#8377;<span th:text="${battle.entryFee}">50</span> Entry Fee</span>
                         <span th:if="${battle.prize1 != null and battle.prize1 > 0}"><i class="fas fa-trophy" style="color:#FFD700;"></i> 1st Prize: &#8377;<span th:text="${battle.prize1}">100</span></span>
                         <span th:if="${battle.prize2 != null and battle.prize2 > 0}"><i class="fas fa-trophy" style="color:#C0C0C0;"></i> 2nd Prize: &#8377;<span th:text="${battle.prize2}">50</span></span>
-                        <span th:if="${(battle.maxParticipants == null or battle.maxParticipants > 2) and battle.prize3 != null and battle.prize3 > 0}"><i class="fas fa-trophy" style="color:#cd7f32;"></i> 3rd Prize: &#8377;<span th:text="${battle.prize3}">25</span></span>
+                        
                     </div>
 
                     <!-- Offline Event Details Block -->
@@ -1111,7 +1112,7 @@
                             </div>
 
                             <!-- Direct Vote Button (ACTIVE or VOTING phase) -->
-                            <div th:if="${battle.status == 'VOTING'}" style="display:flex; align-items:center; margin-left: auto; gap: 8px;">
+                            <div th:if="${(battle.status == 'VOTING' or battle.status == 'ACTIVE') and isVotingOpen}" style="display:flex; align-items:center; margin-left: auto; gap: 8px;">
                                 <form th:if="${!hasVoted}" th:action="@{'/battles/' + ${battle.id} + '/vote-participant/' + ${p.id}}" method="POST" style="margin:0;">
                                     <button type="submit" class="btn-arena btn-arena-primary btn-arena-sm" style="padding:4px 8px; font-size:10px;">
                                         <i class="fas fa-thumbs-up"></i> Vote
@@ -1125,14 +1126,14 @@
 
                 <!-- â”€â”€â”€ SUBMISSION FORM (ACTIVE battles only, if participant & not submitted) â”€â”€â”€ -->
 
-                <div th:if="${battle.status == 'ACTIVE' and isParticipant and !hasSubmitted and battle.durationMinutes == null}" class="battle-detail" id="submit-section">
+                <div th:if="${battle.status == 'ACTIVE' and isParticipant and !hasSubmitted and !battle.isLive}" class="battle-detail" id="submit-section">
 
                     <h3 style="font-size:18px; font-weight:900; color:#fff; margin-bottom:6px;">
                         <i class="fas fa-upload" style="color:#10B981;"></i> Upload Your Submission
                     </h3>
                     <p style="font-size:12px; color:var(--text-muted); margin-bottom:20px;">Submit your entry for this <span th:text="${battle.category}" style="color:var(--arena-primary); font-weight:800;">Category</span> battle</p>
 
-                    <form th:action="@{'/battles/' + ${battle.id} + '/submit'}" method="POST" onsubmit="return validateSubmissionForm()">
+                    <form th:action="@{'/battles/' + ${battle.id} + '/submit'}" method="POST" enctype="multipart/form-data" onsubmit="return validateSubmissionForm()">
 
 
                         <!-- ï¿½&bull;ï¿½ï¿½&bull;ï¿½ CATEGORY-SPECIFIC UPLOAD ZONE ï¿½&bull;ï¿½ï¿½&bull;ï¿½ -->
@@ -1192,10 +1193,14 @@
 
                                 <!-- Upload status shown inside zone -->
                                 <div id="uploadStatusPrimary" style="font-size:12px; color:var(--text-muted); margin-top:10px;"></div>
+                                <div id="imagePreviewContainer" style="display:none; margin-top:12px; border-radius:12px; overflow:hidden; border:1px solid rgba(34,211,238,0.4); max-width:100%; text-align:center; background:#0b0f19; padding:8px;">
+                                    <img id="imagePreview" src="" alt="Submission Preview" style="max-height:260px; max-width:100%; object-fit:contain; border-radius:8px; display:block; margin:0 auto;" />
+                                    <span id="imagePreviewName" style="display:block; font-size:11px; color:#22D3EE; font-weight:700; margin-top:6px;"></span>
+                                </div>
                             </div>
 
                             <!-- Hidden file input with category-specific accept -->
-                            <input type="file" id="submissionFile" style="display:none;" 
+                            <input type="file" id="submissionFile" name="file" style="display:none;" 
                                    th:attr="accept=${
                                        (battle.category == 'Music' or battle.category == 'Singing') ? 'audio/mpeg,audio/wav,audio/ogg,audio/mp4,audio/aac,audio/*' : 
                                        ((battle.category == 'Dance' or battle.category == 'Acting' or battle.category == 'Comedy' or battle.category == 'Video Editing') ? 'video/mp4,video/quicktime,video/x-msvideo,video/webm,video/*' : 
@@ -1267,7 +1272,7 @@
 
                 <!-- â”€â”€â”€ SUBMISSIONS & VOTING â”€â”€â”€ -->
 
-                <div th:if="${!submissions.isEmpty() and battle.durationMinutes == null}" class="battle-detail">
+                <div th:if="${!submissions.isEmpty() and !battle.isLive}" class="battle-detail">
 
                     <h3 style="font-size:18px; font-weight:900; color:#fff; margin-bottom:16px;">
                         <i class="fas fa-th-list" style="color:#3B82F6;"></i> Submissions
@@ -1291,8 +1296,22 @@
                             <p th:if="${sub.description != null and !sub.description.isEmpty()}"
                                style="font-size:13px; color:var(--text-secondary); margin:10px 0; line-height:1.6;"
                                th:text="${sub.description}">Description</p>
+                            <!-- Rich Media Display (Photography, Art, Music, Video, etc.) -->
+                            <div th:if="${battle.category == 'Photography' or battle.category == 'Drawing' or battle.category == 'Art' or battle.category == 'Meme' or battle.category == 'AI Prompt' or battle.category == 'Fashion' or battle.category == 'Cooking' or sub.submissionUrl.contains('/uploads/')}" 
+                                 class="submission-media-preview" style="margin:12px 0; border-radius:12px; overflow:hidden; background:#0b0f19; border:1px solid var(--arena-border); text-align:center;">
+                                <a th:href="${sub.submissionUrl}" target="_blank" style="display:block; cursor:zoom-in;">
+                                    <img th:src="${sub.submissionUrl}" alt="Photo Submission" style="max-height:380px; width:100%; object-fit:contain; display:block; margin:0 auto; transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.01)'" onmouseout="this.style.transform='scale(1)'" />
+                                </a>
+                            </div>
+                            <div th:if="${battle.category == 'Music' or battle.category == 'Singing'}" class="submission-media-preview" style="margin:12px 0; padding:10px; background:rgba(139,92,246,0.06); border-radius:10px; border:1px solid var(--arena-border);">
+                                <audio controls style="width:100%;" th:src="${sub.submissionUrl}"></audio>
+                            </div>
+                            <div th:if="${battle.category == 'Dance' or battle.category == 'Acting' or battle.category == 'Comedy' or battle.category == 'Video Editing'}" class="submission-media-preview" style="margin:12px 0; border-radius:12px; overflow:hidden; background:#000; border:1px solid var(--arena-border);">
+                                <video controls style="max-height:380px; width:100%; display:block;" th:src="${sub.submissionUrl}"></video>
+                            </div>
+
                             <div class="submission-links">
-                                <a th:href="${sub.submissionUrl}" target="_blank"><i class="fas fa-external-link-alt"></i> View Submission</a>
+                                <a th:href="${sub.submissionUrl}" target="_blank"><i class="fas fa-external-link-alt"></i> Open Full Submission</a>
                                 <a th:if="${sub.secondaryUrl != null and !sub.secondaryUrl.isEmpty()}" th:href="${sub.secondaryUrl}" target="_blank"><i class="fas fa-link"></i> Secondary Link</a>
                             </div>
 
@@ -1339,16 +1358,19 @@
                                 </form>
                             </div>
 
-                            <!-- Vote Button (during ACTIVE or VOTING phase) -->
-                            <div th:if="${battle.status == 'VOTING' and !hasVoted}" style="margin-top:14px;">
+                            <!-- Vote Button (during ACTIVE or VOTING phase, live only while isVotingOpen) -->
+                            <div th:if="${(battle.status == 'VOTING' or battle.status == 'ACTIVE') and isVotingOpen and !hasVoted}" style="margin-top:14px;">
                                 <form th:action="@{'/battles/' + ${battle.id} + '/vote/' + ${sub.id}}" method="POST">
                                     <button type="submit" class="btn-arena btn-arena-primary btn-arena-sm" style="width:100%; justify-content:center;">
                                         <i class="fas fa-thumbs-up"></i> Vote for <span th:text="${sub.user.username}">User</span>
                                     </button>
                                 </form>
                             </div>
-                            <div th:if="${battle.status == 'VOTING' and hasVoted}" style="margin-top:14px; text-align:center;">
+                            <div th:if="${(battle.status == 'VOTING' or battle.status == 'ACTIVE') and isVotingOpen and hasVoted}" style="margin-top:14px; text-align:center;">
                                 <span style="font-size:12px; color:var(--text-muted); font-weight:700;"><i class="fas fa-check"></i> You've voted</span>
+                            </div>
+                            <div th:if="${!isVotingOpen and battle.status != 'COMPLETED' and battle.status != 'TIE' and (battle.status == 'VOTING' or battle.status == 'ACTIVE')}" style="margin-top:14px; text-align:center;">
+                                <span style="font-size:12px; color:var(--text-muted); font-weight:700;"><i class="fas fa-lock"></i> Voting has ended</span>
                             </div>
                         </div>
                     </div>
@@ -1840,7 +1862,7 @@
 
                             <input type="number" step="0.01" name="entryFee" min="0" placeholder="e.g. 50.00" oninput="updatePrizePool()" required />
                         </div>
-                        <div id="prizesGrid" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom: 20px;">
+                        <div id="prizesGrid" style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom: 20px;">
                             <div class="arena-field" style="margin-bottom:0;">
                                 <label><i class="fas fa-trophy" style="color:#FFD700;"></i> 1st Prize (&#8377;)</label>
                                 <input type="number" step="0.01" name="prize1" min="0" placeholder="0" oninput="onPrize1Input()" required />
@@ -1849,40 +1871,27 @@
                                 <label><i class="fas fa-trophy" style="color:#C0C0C0;"></i> 2nd Prize (&#8377;)</label>
                                 <input type="number" step="0.01" name="prize2" min="0" placeholder="0" oninput="onPrize2Input()" required />
                             </div>
-                            <div id="prize3Container" class="arena-field" style="margin-bottom:0;">
-                                <label><i class="fas fa-trophy" style="color:#cd7f32;"></i> 3rd Prize (&#8377;)</label>
-                                <input type="number" step="0.01" name="prize3" min="0" placeholder="0" required />
-                            </div>
+                            <input type="hidden" name="prize3" value="0.0" />
                         </div>
 
                         <div class="arena-field">
-                            <label>Duration</label>
-                            <div style="display:flex; gap: 10px; margin-bottom: 10px;">
-                                <label style="display:flex; align-items:center; gap: 5px;"><input type="radio" name="durationType" value="hours" checked onchange="toggleDurationType()"> Hours</label>
-                                <label style="display:flex; align-items:center; gap: 5px;"><input type="radio" name="durationType" value="minutes" onchange="toggleDurationType()"> Minutes (Live)</label>
+                            <label><i class="fas fa-stopwatch" style="color:var(--arena-primary);"></i> Battle Duration (Minutes)</label>
+                            <select id="durationMinutesSelect" onchange="onDurationChange(this.value)">
+                                <option value="1">1 Minute &ndash; Speed Clash &#9889;</option>
+                                <option value="3">3 Minutes</option>
+                                <option value="5">5 Minutes</option>
+                                <option value="10" selected>10 Minutes</option>
+                                <option value="15">15 Minutes</option>
+                                <option value="30">30 Minutes</option>
+                                <option value="45">45 Minutes</option>
+                                <option value="60">60 Minutes</option>
+                                <option value="120">120 Minutes (2h)</option>
+                                <option value="custom">Custom Minutes...</option>
+                            </select>
+                            <div id="customMinutesContainer" style="display:none; margin-top:10px;">
+                                <input type="number" id="customMinutesInput" placeholder="Enter custom minutes (e.g. 25, 90)..." min="1" max="10080" oninput="onCustomMinutesInput(this.value)" />
                             </div>
-                            <div id="durationHoursWrapper">
-                                <select id="durationSelect" name="durationHours" onchange="toggleCustomDuration(this.value)">
-                                    <option value="1">1 Hour &ndash; Speed Round &#9889;</option>
-                                    <option value="6">6 Hours</option>
-                                    <option value="12">12 Hours</option>
-                                    <option value="24" selected>24 Hours</option>
-                                    <option value="48">48 Hours</option>
-                                    <option value="72">72 Hours</option>
-                                    <option value="custom">Custom...</option>
-                                </select>
-                                <div id="customDurationContainer" style="display:none; margin-top:10px;">
-                                    <input type="number" id="customDurationInput" placeholder="Enter custom hours..." min="1" max="720" />
-                                </div>
-                            </div>
-                            <div id="durationMinutesWrapper" style="display:none;">
-                                <select id="durationMinutesSelect">
-                                    <option value="1">1 Minute</option>
-                                    <option value="3">3 Minutes</option>
-                                    <option value="5" selected>5 Minutes</option>
-                                    <option value="10">10 Minutes</option>
-                                </select>
-                            </div>
+                            <input type="hidden" id="finalDurationMinutes" name="durationMinutes" value="10" required />
                         </div>
                         <div class="arena-field">
                             <label>Max Participants</label>
@@ -2324,30 +2333,19 @@
                 }
             }
 
-            const durationType = document.querySelector('input[name="durationType"]:checked')?.value || 'hours';
-            const mSelect = document.getElementById('durationMinutesSelect');
-            if (durationType === 'hours') {
-                if (mSelect) mSelect.removeAttribute('name');
-            } else {
-                if (mSelect) mSelect.setAttribute('name', 'durationMinutes');
-            }
-
-            const durSelect = document.getElementById('durationSelect');
-            const customDur = document.getElementById('customDurationInput');
-            if (durationType === 'minutes') {
-                if (durSelect) durSelect.removeAttribute('name');
-                if (customDur) customDur.removeAttribute('name');
-            } else if (durSelect.value === 'custom') {
-                durSelect.removeAttribute('name');
-                customDur.setAttribute('name', 'durationHours');
-                if (!customDur.value) {
+            const finalDur = document.getElementById('finalDurationMinutes');
+            const durSelect = document.getElementById('durationMinutesSelect');
+            const customMinInput = document.getElementById('customMinutesInput');
+            if (durSelect && durSelect.value === 'custom') {
+                const customVal = parseInt(customMinInput?.value || '0', 10);
+                if (!customVal || customVal < 1) {
                     e.preventDefault();
-                    alert('Please enter a custom duration in hours.');
+                    alert('Please enter a valid custom duration in minutes (minimum 1 minute).');
                     return;
                 }
-            } else {
-                durSelect.setAttribute('name', 'durationHours');
-                customDur.removeAttribute('name');
+                if (finalDur) finalDur.value = customVal;
+            } else if (durSelect) {
+                if (finalDur) finalDur.value = durSelect.value;
             }
 
             const partSelect = document.getElementById('participantsSelect');
@@ -2368,20 +2366,17 @@
                 participantCount = parseFloat(partSelect.value) || 2;
             }
 
-            // Validation: Total prize pool cannot exceed total entry fees (Entry Fee * Max Participants)
+            // Validation: Total prize pool (Prize 1 + Prize 2) cannot exceed total entry fees (Entry Fee * Max Participants)
             const entryFee = parseFloat(document.querySelector('input[name="entryFee"]')?.value || '0') || 0;
             const prize1 = parseFloat(document.querySelector('input[name="prize1"]')?.value || '0') || 0;
             const prize2 = parseFloat(document.querySelector('input[name="prize2"]')?.value || '0') || 0;
-            const prize3Container = document.getElementById('prize3Container');
-            const prize3Input = document.querySelector('input[name="prize3"]');
-            const prize3 = (prize3Container && prize3Container.style.display !== 'none' && prize3Input && !prize3Input.disabled) ? (parseFloat(prize3Input.value || '0') || 0) : 0;
 
-            const totalPrizePool = prize1 + prize2 + prize3;
+            const totalPrizePool = prize1 + prize2;
             const maxAllowedPrizePool = entryFee * participantCount;
 
             if (totalPrizePool > (maxAllowedPrizePool + 0.01)) {
                 e.preventDefault();
-                alert(`Invalid Prize Amounts! The total prize pool (&#8377;${totalPrizePool.toFixed(2)}) cannot exceed the total collected entry fee pool (&#8377;${entryFee.toFixed(2)} Ã— ${participantCount} participants = &#8377;${maxAllowedPrizePool.toFixed(2)}).`);
+                alert(`Invalid Prize Amounts! The total prize pool (₹${totalPrizePool.toFixed(2)}) cannot exceed the total collected entry fee pool (₹${entryFee.toFixed(2)} × ${participantCount} participants = ₹${maxAllowedPrizePool.toFixed(2)}).`);
                 return;
             }
         });
@@ -2445,7 +2440,14 @@
                 const diff = endTime - now;
 
                 if (diff <= 0) {
-                    timerEl.innerText = '00h 00m 00s';
+                    timerEl.innerText = '00h 00m 00s (Ended)';
+                    // Real-time lock all voting buttons immediately
+                    document.querySelectorAll('form[action*="/vote"] button').forEach(btn => {
+                        btn.disabled = true;
+                        btn.innerHTML = '<i class="fas fa-lock"></i> Voting Ended';
+                        btn.style.opacity = '0.6';
+                        btn.style.cursor = 'not-allowed';
+                    });
                     setTimeout(() => window.location.reload(), 1500);
                     return;
                 }
@@ -2461,12 +2463,12 @@
                 timerEl.innerText = `${hStr}h ${mStr}m ${sStr}s`;
             }
 
-        updateTimer();
+            updateTimer();
             setInterval(updateTimer, 1000);
         }
         document.addEventListener('DOMContentLoaded', initCountdown);
 
-        // â”€â”€â”€ Local File Uploading â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ─── Local File Uploading ───────────────────────────
         async function uploadLocalFile(fileInputId, targetInputId, statusSpanId) {
             const fileInput = document.getElementById(fileInputId);
             const targetInput = document.getElementById(targetInputId);
@@ -2475,11 +2477,22 @@
             if (!fileInput || fileInput.files.length === 0) return;
 
             const file = fileInput.files[0];
+
+            // Immediate preview for images
+            const previewContainer = document.getElementById('imagePreviewContainer');
+            const previewImg = document.getElementById('imagePreview');
+            const previewName = document.getElementById('imagePreviewName');
+            if (previewContainer && previewImg && file.type && file.type.startsWith('image/')) {
+                previewImg.src = URL.createObjectURL(file);
+                if (previewName) previewName.innerText = file.name;
+                previewContainer.style.display = 'block';
+            }
+
             const formData = new FormData();
             formData.append('file', file);
 
             statusSpan.style.color = 'var(--text-secondary)';
-            statusSpan.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Uploading...`;
+            statusSpan.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Uploading ${file.name}...`;
 
             try {
                 const response = await fetch('/api/chat/upload', {
@@ -2493,147 +2506,119 @@
 
                 const data = await response.json();
                 if (data && data.url) {
-                    targetInput.value = window.location.origin + data.url;
+                    targetInput.value = data.url;
                     statusSpan.style.color = 'var(--arena-green)';
-                    statusSpan.innerHTML = `<i class="fas fa-check-circle"></i> Uploaded!`;
+                    statusSpan.innerHTML = `<i class="fas fa-check-circle"></i> Uploaded: ${file.name}`;
                 } else {
                     throw new Error('No URL returned');
                 }
             } catch (err) {
                 console.error(err);
-                statusSpan.style.color = '#EF4444';
-                statusSpan.innerHTML = `<i class="fas fa-exclamation-circle"></i> Failed to upload.`;
+                // Keep file in file input so standard form submit will send it directly
+                statusSpan.style.color = 'var(--arena-primary)';
+                statusSpan.innerHTML = `<i class="fas fa-check"></i> File selected: ${file.name} (ready to submit)`;
             }
         }
 
         function validateSubmissionForm() {
             var urlInput = document.getElementById('submissionUrlInput').value;
-            if (!urlInput || urlInput.trim() === "") {
+            var fileInput = document.getElementById('submissionFile');
+            var hasFile = fileInput && fileInput.files && fileInput.files.length > 0;
+            if ((!urlInput || urlInput.trim() === "") && !hasFile) {
                 alert("Please upload a file or provide a valid URL for your submission.");
                 return false;
             }
             return true;
         }
-        function toggleDurationType() {
-            const type = document.querySelector('input[name="durationType"]:checked').value;
-            const hWrap = document.getElementById('durationHoursWrapper');
-            const mWrap = document.getElementById('durationMinutesWrapper');
-            const hSelect = document.getElementById('durationSelect');
-            const mSelect = document.getElementById('durationMinutesSelect');
-            
-            const pSelect = document.getElementById('participantsSelect');
-            const customPartInput = document.getElementById('customParticipantsInput');
-            const prize3Input = document.querySelector('input[name="prize3"]');
 
-            if(type === 'hours') {
-                hWrap.style.display = 'block';
-                mWrap.style.display = 'none';
-                hSelect.setAttribute('name', 'durationHours');
-                mSelect.removeAttribute('name');
-                
-                // Restore settings
-                pSelect.disabled = false;
-                customPartInput.disabled = false;
+        function onDurationChange(val) {
+            const customContainer = document.getElementById('customMinutesContainer');
+            const customInput = document.getElementById('customMinutesInput');
+            const finalDur = document.getElementById('finalDurationMinutes');
+            if (val === 'custom') {
+                if (customContainer) customContainer.style.display = 'block';
+                if (customInput) {
+                    customInput.focus();
+                    if (finalDur && customInput.value) finalDur.value = customInput.value;
+                }
             } else {
-                hWrap.style.display = 'none';
-                mWrap.style.display = 'block';
-                mSelect.setAttribute('name', 'durationMinutes');
-                hSelect.removeAttribute('name');
-                
-                // Enforce Live Battle rules (1v1, No 3rd Prize)
-                pSelect.value = "2";
-                pSelect.disabled = true;
-                customPartInput.disabled = true;
-                
-                toggleCustomParticipants("2");
+                if (customContainer) customContainer.style.display = 'none';
+                if (finalDur) finalDur.value = val;
             }
-            updatePrizePool();
+        }
+
+        function onCustomMinutesInput(val) {
+            const finalDur = document.getElementById('finalDurationMinutes');
+            if (finalDur && val) {
+                finalDur.value = val;
+            }
         }
 
         function updatePrizePool() {
-            const type = document.querySelector('input[name="durationType"]:checked')?.value || 'hours';
             const entryFeeInput = document.querySelector('input[name="entryFee"]');
             const prize1Input = document.querySelector('input[name="prize1"]');
             const prize2Input = document.querySelector('input[name="prize2"]');
-            const prize3Input = document.querySelector('input[name="prize3"]');
-            const prize3Container = document.getElementById('prize3Container');
-            const prizesGrid = document.getElementById('prizesGrid');
 
             if (!entryFeeInput || !prize1Input || !prize2Input) return;
 
             const entryFee = parseFloat(entryFeeInput.value || '0') || 0;
             
-            let participantCount = 2;
-            if (type !== 'minutes') {
-                const partSelect = document.getElementById('participantsSelect');
-                const customPart = document.getElementById('customParticipantsInput');
-                participantCount = 4;
-                if (partSelect && partSelect.value === 'custom' && customPart && customPart.value) {
-                    participantCount = parseFloat(customPart.value) || 2;
-                } else if (partSelect) {
-                    participantCount = parseFloat(partSelect.value) || 4;
-                }
+            const partSelect = document.getElementById('participantsSelect');
+            const customPart = document.getElementById('customParticipantsInput');
+            let participantCount = 4;
+            if (partSelect && partSelect.value === 'custom' && customPart && customPart.value) {
+                participantCount = parseFloat(customPart.value) || 2;
+            } else if (partSelect) {
+                participantCount = parseFloat(partSelect.value) || 4;
             }
 
             const totalPool = entryFee * participantCount;
 
-            if (participantCount <= 2) {
-                // 1st Prize = 80%, 2nd Prize = 20%
-                const prize1 = Math.round((totalPool * 0.80) * 100) / 100;
-                const prize2 = Math.round((totalPool * 0.20) * 100) / 100;
+            // Only 1st Prize (70%) and 2nd Prize (30%)
+            const prize1 = Math.round((totalPool * 0.70) * 100) / 100;
+            const prize2 = Math.round((totalPool * 0.30) * 100) / 100;
 
-                prize1Input.value = prize1 > 0 ? prize1 : 0;
-                prize2Input.value = prize2 > 0 ? prize2 : 0;
-                
-                if (prizesGrid) prizesGrid.style.gridTemplateColumns = '1fr 1fr';
-                if (prize3Container) prize3Container.style.display = 'none';
-                if (prize3Input) {
-                    prize3Input.value = 0;
-                    prize3Input.disabled = true;
-                }
-            } else {
-                // 1st Prize = 60%, 2nd Prize = 30%, 3rd Prize = 10%
-                const prize1 = Math.round((totalPool * 0.60) * 100) / 100;
-                const prize2 = Math.round((totalPool * 0.30) * 100) / 100;
-                const prize3 = Math.round((totalPool * 0.10) * 100) / 100;
-
-                prize1Input.value = prize1 > 0 ? prize1 : 0;
-                prize2Input.value = prize2 > 0 ? prize2 : 0;
-                
-                if (prizesGrid) prizesGrid.style.gridTemplateColumns = '1fr 1fr 1fr';
-                if (prize3Container) prize3Container.style.display = 'block';
-                if (prize3Input) {
-                    prize3Input.disabled = false;
-                    prize3Input.value = prize3 > 0 ? prize3 : 0;
-                }
-            }
+            prize1Input.value = prize1 > 0 ? prize1 : 0;
+            prize2Input.value = prize2 > 0 ? prize2 : 0;
         }
 
         function onPrize1Input() {
-            const type = document.querySelector('input[name="durationType"]:checked')?.value;
-            if (type === 'minutes') {
-                const entryFee = parseFloat(document.querySelector('input[name="entryFee"]')?.value || '0') || 0;
-                const totalPool = entryFee * 2;
-                const prize1 = parseFloat(document.querySelector('input[name="prize1"]')?.value || '0') || 0;
-                const prize2Input = document.querySelector('input[name="prize2"]');
-                if (prize2Input && prize1 <= totalPool) {
-                    const remaining = Math.max(0, totalPool - prize1);
-                    prize2Input.value = Math.round(remaining * 100) / 100;
-                }
+            const entryFee = parseFloat(document.querySelector('input[name="entryFee"]')?.value || '0') || 0;
+            const partSelect = document.getElementById('participantsSelect');
+            const customPart = document.getElementById('customParticipantsInput');
+            let participantCount = 4;
+            if (partSelect && partSelect.value === 'custom' && customPart && customPart.value) {
+                participantCount = parseFloat(customPart.value) || 2;
+            } else if (partSelect) {
+                participantCount = parseFloat(partSelect.value) || 4;
+            }
+
+            const totalPool = entryFee * participantCount;
+            const prize1 = parseFloat(document.querySelector('input[name="prize1"]')?.value || '0') || 0;
+            const prize2Input = document.querySelector('input[name="prize2"]');
+            if (prize2Input && prize1 <= totalPool) {
+                const remaining = Math.max(0, totalPool - prize1);
+                prize2Input.value = Math.round(remaining * 100) / 100;
             }
         }
 
         function onPrize2Input() {
-            const type = document.querySelector('input[name="durationType"]:checked')?.value;
-            if (type === 'minutes') {
-                const entryFee = parseFloat(document.querySelector('input[name="entryFee"]')?.value || '0') || 0;
-                const totalPool = entryFee * 2;
-                const prize2 = parseFloat(document.querySelector('input[name="prize2"]')?.value || '0') || 0;
-                const prize1Input = document.querySelector('input[name="prize1"]');
-                if (prize1Input && prize2 <= totalPool) {
-                    const remaining = Math.max(0, totalPool - prize2);
-                    prize1Input.value = Math.round(remaining * 100) / 100;
-                }
+            const entryFee = parseFloat(document.querySelector('input[name="entryFee"]')?.value || '0') || 0;
+            const partSelect = document.getElementById('participantsSelect');
+            const customPart = document.getElementById('customParticipantsInput');
+            let participantCount = 4;
+            if (partSelect && partSelect.value === 'custom' && customPart && customPart.value) {
+                participantCount = parseFloat(customPart.value) || 2;
+            } else if (partSelect) {
+                participantCount = parseFloat(partSelect.value) || 4;
+            }
+
+            const totalPool = entryFee * participantCount;
+            const prize2 = parseFloat(document.querySelector('input[name="prize2"]')?.value || '0') || 0;
+            const prize1Input = document.querySelector('input[name="prize1"]');
+            if (prize1Input && prize2 <= totalPool) {
+                const remaining = Math.max(0, totalPool - prize2);
+                prize1Input.value = Math.round(remaining * 100) / 100;
             }
         }
     </script>

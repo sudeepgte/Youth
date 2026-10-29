@@ -15,8 +15,11 @@ public class EventDataInitializer implements CommandLineRunner {
     @Autowired
     private EventRepository eventRepository;
 
-    @org.springframework.beans.factory.annotation.Value("${app.seed.events:true}")
-    private boolean seedEventsEnabled;
+    @Autowired(required = false)
+    private javax.sql.DataSource dataSource;
+
+    @org.springframework.beans.factory.annotation.Value("${app.seed.events:false}")
+    private boolean seedEventsEnabled = false;
 
     @Override
     public void run(String... args) throws Exception {
@@ -37,15 +40,53 @@ public class EventDataInitializer implements CommandLineRunner {
                 "Next Big Concert: EDM vs Rock?",
                 "Workshop Series: Cloud Computing"
             );
+            // 1. Direct SQL cleanup to delete static events and dependent records without FK constraint errors
+            if (dataSource != null) {
+                try (java.sql.Connection conn = dataSource.getConnection();
+                     java.sql.Statement stmt = conn.createStatement()) {
+                    String eventSelector = "SELECT id FROM events WHERE LOWER(title) IN (" +
+                            "'summer cricket league', 'zentrix football cup', 'youthians football cup', " +
+                            "'rhythmic night fest', 'zentrix film festival', 'youthians film festival', " +
+                            "'campus standup comedy night', 'tech hackathon 2024', 'tech hackathon 2026', " +
+                            "'ai & future workshop', 'valorant ultimate showdown', " +
+                            "'next big concert: edm vs rock?', 'workshop series: cloud computing') " +
+                            "OR LOWER(organizer) IN ('youthians sports club', 'fc youthians', 'youthians music society', " +
+                            "'youthians beats', 'youthians comedy club', 'media society', 'tech innovators', " +
+                            "'ai research lab', 'pro gamers league', 'youthians tech hub')";
+
+                    String[] dependentTables = {
+                        "DELETE FROM user_voted_events WHERE event_id IN (" + eventSelector + ")",
+                        "DELETE FROM vote WHERE poll_id IN (" + eventSelector + ")",
+                        "DELETE FROM event_registration WHERE event_id IN (" + eventSelector + ")",
+                        "DELETE FROM event_seats WHERE event_id IN (" + eventSelector + ")",
+                        "DELETE FROM event_seat_tiers WHERE event_id IN (" + eventSelector + ")",
+                        "DELETE FROM secret_reward_partners WHERE event_id IN (" + eventSelector + ")",
+                        "DELETE FROM adventure_details WHERE event_id IN (" + eventSelector + ")",
+                        "DELETE FROM ladies_party_details WHERE event_id IN (" + eventSelector + ")",
+                        "DELETE FROM trekking_details WHERE event_id IN (" + eventSelector + ")",
+                        "DELETE FROM bike_riding_details WHERE event_id IN (" + eventSelector + ")",
+                        "DELETE FROM events WHERE id IN (" + eventSelector + ")"
+                    };
+
+                    for (String sql : dependentTables) {
+                        try {
+                            stmt.execute(sql);
+                        } catch (Exception ignored) {}
+                    }
+                    System.out.println("[EventDataInitializer] Successfully cleaned up all static sample events from DB.");
+                } catch (Exception ex) {
+                    System.err.println("[EventDataInitializer] SQL cleanup note: " + ex.getMessage());
+                }
+            }
+
+            // 2. Secondary JPA cleanup
             for (String title : sampleTitles) {
                 eventRepository.findAll().stream()
                     .filter(e -> title.equalsIgnoreCase(e.getTitle()))
                     .forEach(e -> {
                         try {
                             eventRepository.delete(e);
-                        } catch (Exception ex) {
-                            // If has dependent child records, skip deletion
-                        }
+                        } catch (Exception ignored) {}
                     });
             }
             return;

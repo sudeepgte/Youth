@@ -162,6 +162,7 @@ public class ProfileController {
         String badge = targetUser.getLevel() != null ? targetUser.getLevel() : "Novice";
 
         boolean isOwnProfile = currentUser.getId().equals(targetUser.getId());
+        model.addAttribute("currentUser", currentUser);
         model.addAttribute("user", targetUser);
         model.addAttribute("isOwnProfile", isOwnProfile);
 
@@ -220,12 +221,14 @@ public class ProfileController {
                 targetUser, "STORY", java.time.LocalDateTime.now().minusHours(24)).isEmpty();
         model.addAttribute("hasStory", hasStory);
 
+        // Always provide notifications and unread count for current logged-in user in navbar
+        model.addAttribute("notifications", notificationRepository.findByUserOrderByCreatedAtDesc(currentUser));
+        model.addAttribute("unreadNotifCount", notificationRepository.countByUserAndIsRead(currentUser, false));
+
         if (isOwnProfile) {
             List<com.example.demo.model.PostCollaboration> pendingRequests = postCollaborationRepository
                     .findByUserAndStatus(currentUser, com.example.demo.model.CollaborationStatus.PENDING);
             model.addAttribute("pendingRequests", pendingRequests);
-            model.addAttribute("notifications", notificationRepository.findByUserOrderByCreatedAtDesc(currentUser));
-            model.addAttribute("unreadNotifCount", notificationRepository.countByUserAndIsRead(currentUser, false));
             final Long currentUserId = currentUser.getId();
             model.addAttribute("followRequests", followRequestRepository.findAll().stream()
                     .filter(r -> r.getReceiver().getId().equals(currentUserId))
@@ -263,8 +266,6 @@ public class ProfileController {
             model.addAttribute("userRewards", userRewards);
         } else {
             model.addAttribute("pendingRequests", new java.util.ArrayList<>());
-            model.addAttribute("notifications", new java.util.ArrayList<>());
-            model.addAttribute("unreadNotifCount", 0);
             model.addAttribute("followRequests", new java.util.ArrayList<>());
             model.addAttribute("followingUserIds", new java.util.HashSet<>());
             model.addAttribute("savedPosts", new java.util.ArrayList<>());
@@ -698,6 +699,11 @@ public class ProfileController {
         if (dbCurrentUser != null && dbTargetUser != null
                 && !dbTargetUser.getId().equals(dbCurrentUser.getId())) {
 
+            // Admin cannot be followed
+            if ("admin".equalsIgnoreCase(dbTargetUser.getUsername())) {
+                return (referer != null) ? "redirect:" + referer : "redirect:/profile";
+            }
+
             // Check if already following
             if (dbTargetUser.getFollowers().contains(dbCurrentUser)) {
                 return (referer != null) ? "redirect:" + referer : "redirect:/profile";
@@ -745,6 +751,9 @@ public class ProfileController {
         if (dbCurrentUser != null && dbTargetUser != null) {
             if (dbTargetUser.getId().equals(dbCurrentUser.getId())) {
                 return org.springframework.http.ResponseEntity.badRequest().body("You cannot follow yourself.");
+            }
+            if ("admin".equalsIgnoreCase(dbTargetUser.getUsername())) {
+                return org.springframework.http.ResponseEntity.badRequest().body(java.util.Map.of("error", "Admin cannot be followed."));
             }
 
             // Check if already following (ID-based check for proxy safety)

@@ -467,6 +467,7 @@
 
             <!-- Server-rendered initial cards (all users) -->
             <div th:each="u : ${allUsers}"
+                 th:if="${u.username != 'admin'}"
                  class="person-card" style="cursor: pointer;"
                  th:onclick="'openProfilePreview(' + ${u.id} + ')'"
                  th:attr="data-username=${u.username}, data-college=${u.collegeName != null ? u.collegeName : ''}">

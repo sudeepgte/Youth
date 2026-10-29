@@ -750,6 +750,9 @@ public class MobileApiController {
         if (user.getId().equals(target.getId())) {
             return ResponseEntity.badRequest().body(Map.of("error", "Cannot follow yourself"));
         }
+        if ("admin".equalsIgnoreCase(target.getUsername())) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Admin cannot be followed"));
+        }
         if (target.isPrivateAccount()) {
             Optional<FollowRequest> existing = followRequestRepository.findBySenderAndReceiver(user, target);
             if (existing.isPresent()) {
@@ -889,6 +892,7 @@ public class MobileApiController {
         List<Event> all = (search != null && !search.isBlank())
                 ? eventRepository.searchByVenueOrTitle(search.trim())
                 : eventRepository.findAll();
+        all = all.stream().filter(e -> !EventController.isStaticSampleEvent(e)).collect(Collectors.toList());
         if (category != null && !category.isBlank() && !"All".equalsIgnoreCase(category)) {
             all = all.stream().filter(e -> category.equalsIgnoreCase(e.getCategory())).collect(Collectors.toList());
         }
@@ -910,6 +914,7 @@ public class MobileApiController {
         LocalDateTime now = LocalDateTime.now();
         List<Map<String, Object>> trending = eventRepository.findAll().stream()
                 .filter(e -> !e.isDeleted())
+                .filter(e -> !EventController.isStaticSampleEvent(e))
                 .filter(e -> e.getStatus() == null || (!"COMPLETED".equalsIgnoreCase(e.getStatus()) && !"CANCELLED".equalsIgnoreCase(e.getStatus()) && !"REJECTED".equalsIgnoreCase(e.getStatus()) && !"VOTING".equalsIgnoreCase(e.getStatus())))
                 .filter(e -> e.getDateTime() == null || !e.getDateTime().isBefore(now))
                 .limit(3).map(e -> eventDto(e, user, false)).collect(Collectors.toList());

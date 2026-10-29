@@ -372,7 +372,7 @@ public class MainController {
         final User finalUser = user;
         Set<User> following = user.getFollowing();
         List<User> suggestions = allUsers.stream()
-                .filter(u -> !u.getId().equals(finalUser.getId()))
+                .filter(u -> !u.getId().equals(finalUser.getId()) && !"admin".equalsIgnoreCase(u.getUsername()))
                 .filter(u -> !following.contains(u))
                 .limit(5)
                 .collect(Collectors.toList());
@@ -415,7 +415,7 @@ public class MainController {
         final User finalUser = user;
         Set<User> following = user.getFollowing();
         List<User> suggestions = allUsers.stream()
-                .filter(u -> !u.getId().equals(finalUser.getId()))
+                .filter(u -> !u.getId().equals(finalUser.getId()) && !"admin".equalsIgnoreCase(u.getUsername()))
                 .filter(u -> !following.contains(u))
                 .limit(5)
                 .collect(Collectors.toList());
@@ -480,6 +480,7 @@ public class MainController {
         // Trending Events - Only upcoming active events
         List<Event> trendingEvents = eventRepository.findAllByOrderByCreatedAtDesc().stream()
                 .filter(e -> !e.isDeleted())
+                .filter(e -> !com.example.demo.controller.EventController.isStaticSampleEvent(e))
                 .filter(e -> e.getStatus() == null || (!"COMPLETED".equalsIgnoreCase(e.getStatus()) && !"CANCELLED".equalsIgnoreCase(e.getStatus()) && !"REJECTED".equalsIgnoreCase(e.getStatus())))
                 .filter(e -> e.getDateTime() == null || !e.getDateTime().isBefore(now))
                 .limit(3)
@@ -728,9 +729,9 @@ public class MainController {
             return "redirect:/login";
         final User finalUser = userRepository.findById(currentUser.getId()).orElse(currentUser);
 
-        // All users except self
+        // All users except self and admin
         List<User> allUsers = userRepository.findAll().stream()
-                .filter(u -> !u.getId().equals(finalUser.getId()))
+                .filter(u -> !u.getId().equals(finalUser.getId()) && !"admin".equalsIgnoreCase(u.getUsername()))
                 .collect(Collectors.toList());
 
         Set<Long> followingUserIds = finalUser.getFollowing().stream()

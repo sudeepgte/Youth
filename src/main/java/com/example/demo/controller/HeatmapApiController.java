@@ -22,6 +22,7 @@ public class HeatmapApiController {
     public Map<String, Object> getHeatmapData(@RequestParam(defaultValue = "all") String filter) {
         List<Event> allEvents = eventRepository.findAll().stream()
                 .filter(e -> !e.isDeleted())
+                .filter(e -> !EventController.isStaticSampleEvent(e))
                 .filter(e -> e.getLatitude() != null && e.getLongitude() != null)
                 .collect(Collectors.toList());
 

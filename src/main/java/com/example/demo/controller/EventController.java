@@ -136,6 +136,34 @@ public class EventController {
         return null;
     }
 
+    public static boolean isStaticSampleEvent(Event e) {
+        if (e == null) return false;
+        String title = e.getTitle() != null ? e.getTitle().trim().toLowerCase() : "";
+        List<String> staticTitles = List.of(
+            "summer cricket league",
+            "zentrix football cup",
+            "youthians football cup",
+            "rhythmic night fest",
+            "zentrix film festival",
+            "youthians film festival",
+            "campus standup comedy night",
+            "tech hackathon 2024",
+            "tech hackathon 2026",
+            "ai & future workshop",
+            "valorant ultimate showdown",
+            "next big concert: edm vs rock?",
+            "workshop series: cloud computing"
+        );
+        if (staticTitles.contains(title)) return true;
+        String organizer = e.getOrganizer() != null ? e.getOrganizer().trim().toLowerCase() : "";
+        List<String> staticOrganizers = List.of(
+            "youthians sports club", "fc youthians", "youthians music society",
+            "youthians beats", "youthians comedy club", "media society",
+            "tech innovators", "ai research lab", "pro gamers league", "youthians tech hub"
+        );
+        return staticOrganizers.contains(organizer);
+    }
+
     // ─────────────────────────────────────────────────────────
     //  PUBLIC: List Events  (Student View)
     // ─────────────────────────────────────────────────────────
@@ -190,6 +218,9 @@ public class EventController {
             allItems = eventRepository.findAll();
         }
 
+        // Exclude all static sample events so only admin-created events appear
+        allItems = allItems.stream().filter(e -> !isStaticSampleEvent(e)).collect(Collectors.toList());
+
         // ── Step 2: Further filter by category (both filters work together) ──
         boolean hasCategory = category != null && !category.trim().isEmpty() && !category.equalsIgnoreCase("All");
         if (hasCategory) {
@@ -225,6 +256,7 @@ public class EventController {
         LocalDateTime now = LocalDateTime.now();
         List<Event> trending = eventRepository.findAll().stream()
                 .filter(e -> !e.isDeleted())
+                .filter(e -> !isStaticSampleEvent(e))
                 .filter(e -> e.getStatus() == null || (!"COMPLETED".equalsIgnoreCase(e.getStatus()) && !"CANCELLED".equalsIgnoreCase(e.getStatus()) && !"REJECTED".equalsIgnoreCase(e.getStatus()) && !"VOTING".equalsIgnoreCase(e.getStatus())))
                 .filter(e -> e.getDateTime() == null || !e.getDateTime().isBefore(now))
                 .limit(3).collect(Collectors.toList());

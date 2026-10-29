@@ -23,6 +23,7 @@ public class BattleTimerService {
     @Autowired private BattleParticipantRepository participantRepository;
     @Autowired private BattleSubmissionRepository submissionRepository;
     @Autowired private UserRepository userRepository;
+    @Autowired private CoinTransactionRepository coinTransactionRepository;
     @Autowired private WalletService walletService;
     @Autowired private SimpMessagingTemplate messagingTemplate;
     @Autowired private TournamentBattleRepository tournamentBattleRepository;
@@ -35,22 +36,100 @@ public class BattleTimerService {
     public void checkBattleTimers() {
         LocalDateTime now = LocalDateTime.now();
         List<Battle> activeBattles = battleRepository.findByStatusOrderByCreatedAtDesc("ACTIVE");
-        
         for (Battle battle : activeBattles) {
             if (battle.getEndsAt() != null && battle.getEndsAt().isBefore(now)) {
                 completeLiveBattle(battle);
             }
         }
+
+        List<Battle> votingBattles = battleRepository.findByStatusOrderByCreatedAtDesc("VOTING");
+        for (Battle battle : votingBattles) {
+            LocalDateTime end = battle.getVotingEndsAt() != null ? battle.getVotingEndsAt() : battle.getEndsAt();
+            if (end != null && end.isBefore(now)) {
+                completeLiveBattle(battle);
+            }
+        }
+    }
+
+    private int determineCoinStake(Battle battle) {
+        if (battle.getPrize1() != null && battle.getPrize1() > 0) {
+            return Math.max(50, (int) Math.round(battle.getPrize1()));
+        }
+        if (battle.getEntryFee() != null && battle.getEntryFee() > 0) {
+            return Math.max(50, (int) Math.round(battle.getEntryFee()));
+        }
+        if (battle.getPrizePool() != null && battle.getPrizePool() > 0) {
+            return Math.max(50, (int) Math.round(battle.getPrizePool()));
+        }
+        return 50; // default friendly battle stake
+    }
+
+    private int transferCoinsFromLoserToWinner(User loser, User winner, int stakeAmount, Battle battle, String reason) {
+        if (loser == null || winner == null || loser.getId().equals(winner.getId())) return 0;
+
+        loser = userRepository.findById(loser.getId()).orElse(loser);
+        int loserBalance = loser.getCoins() != null ? loser.getCoins() : 0;
+        int coinsToDeduct = Math.min(loserBalance, stakeAmount);
+
+        // Deduct coins from loser
+        loser.deductCoins(stakeAmount);
+        userRepository.save(loser);
+
+        if (coinsToDeduct > 0) {
+            coinTransactionRepository.save(new CoinTransaction(
+                loser,
+                -coinsToDeduct,
+                "Battle Defeat (#" + battle.getId() + ")",
+                "Coins transferred to @" + winner.getUsername() + " (" + reason + ")"
+            ));
+        }
+
+        notificationService.sendNotification(
+            loser.getId(),
+            "Coins Deducted - Battle Defeat",
+            "You lost battle #" + battle.getId() + " (" + battle.getTitle() + "). " + 
+            coinsToDeduct + " coins were deducted and transferred to @" + winner.getUsername() + ".",
+            "fas fa-minus-circle",
+            "/battles/" + battle.getId()
+        );
+
+        return coinsToDeduct;
+    }
+
+    private void awardBattleRewards(User user, Double cashAmount, int xpAmount, Battle battle, String rankDesc) {
+        if (user == null) return;
+        user = userRepository.findById(user.getId()).orElse(user);
+
+        // 1. Award XP and update level automatically
+        user.addXp(xpAmount);
+
+        // 2. Award Cash
+        if (cashAmount != null && cashAmount > 0) {
+            walletService.processTransaction(user, cashAmount, "INR", "CREDIT", 
+                "Battle Prize (" + rankDesc + ") - " + battle.getTitle() + " (#" + battle.getId() + ")", 
+                "BATTLE_PRIZE_" + battle.getId() + "_" + user.getId() + "_" + System.currentTimeMillis());
+        }
+        userRepository.save(user);
     }
 
     @Transactional
     public void completeLiveBattle(Battle battle) {
         // Prevent double completion
-        if (!"ACTIVE".equals(battle.getStatus())) return;
+        if (!"ACTIVE".equals(battle.getStatus()) && !"VOTING".equals(battle.getStatus())) return;
 
         battle.setIsLive(false);
 
         List<BattleParticipant> participants = participantRepository.findByBattle(battle);
+        if (participants.isEmpty()) {
+            battle.setStatus("COMPLETED");
+            battleRepository.save(battle);
+            return;
+        }
+
+        User winner = null;
+        User runnerUp = null;
+        boolean isTie = false;
+
         if (participants.size() == 2) {
             User p1 = participants.get(0).getUser();
             User p2 = participants.get(1).getUser();
@@ -62,78 +141,146 @@ public class BattleTimerService {
             double score1 = (sub1 != null && sub1.getVoteCount() != null) ? sub1.getVoteCount() : 0.0;
             double score2 = (sub2 != null && sub2.getVoteCount() != null) ? sub2.getVoteCount() : 0.0;
 
-            boolean isTie = score1 == score2;
+            isTie = (score1 == score2);
             boolean p1Wins = score1 > score2;
 
             if (isTie) {
                 battle.setStatus("TIE");
                 battle.setWinner(p1);
                 battle.setWinner2(p2);
+                winner = p1;
+                runnerUp = p2;
             } else {
                 battle.setStatus("COMPLETED");
                 if (p1Wins) {
                     battle.setWinner(p1);
                     battle.setWinner2(p2);
+                    winner = p1;
+                    runnerUp = p2;
                 } else {
                     battle.setWinner(p2);
                     battle.setWinner2(p1);
+                    winner = p2;
+                    runnerUp = p1;
                 }
             }
 
             // Gamification and ELO
             updateElo(p1, p2, isTie, p1Wins);
-
-            userRepository.save(p1);
-            userRepository.save(p2);
         } else {
-            // Fallback for non-1v1
+            // Multi-participant battle
             battle.setStatus("COMPLETED");
+            List<BattleSubmission> subs = submissionRepository.findByBattleOrderByVoteCountDesc(battle);
+            if (!subs.isEmpty()) {
+                winner = subs.get(0).getUser();
+                battle.setWinner(winner);
+                if (subs.size() > 1) {
+                    runnerUp = subs.get(1).getUser();
+                    battle.setWinner2(runnerUp);
+                }
+                if (subs.size() > 2) {
+                    battle.setWinner3(subs.get(2).getUser());
+                }
+            } else if (!participants.isEmpty()) {
+                winner = participants.get(0).getUser();
+                battle.setWinner(winner);
+                if (participants.size() > 1) {
+                    runnerUp = participants.get(1).getUser();
+                    battle.setWinner2(runnerUp);
+                }
+            }
         }
         
         battleRepository.save(battle);
 
-        TournamentBattle tb = tournamentBattleRepository.findByBattle(battle);
-        if (tb != null && battle.getWinner() != null) {
-            tournamentService.advanceWinner(tb.getId(), battle.getWinner().getId());
-        }
+        // Award prizes, XP, and coins to winners
+        int winXp = battle.getWinnerXp() != null && battle.getWinnerXp() > 0 ? battle.getWinnerXp() : 500;
+        Double prize1 = (battle.getPrize1() != null && battle.getPrize1() > 0) ? battle.getPrize1() 
+                : (battle.getPrizePool() != null ? battle.getPrizePool() : 0.0);
+        Double prize2 = battle.getPrize2() != null ? battle.getPrize2() : 0.0;
+        int coinStake = determineCoinStake(battle);
 
-        Map<String, Object> msg = new HashMap<>();
-        msg.put("status", "COMPLETED");
-        msg.put("reason", "TIME_UP");
-        messagingTemplate.convertAndSend("/topic/battle/" + battle.getId() + "/status", (Object) msg);
-        
-        auditLogService.log("BATTLE_END", battle.getCreator().getId(), "Battle " + battle.getId() + " ended with status " + battle.getStatus());
-        
-        // Send notifications
-        if (participants.size() == 2) {
-            User p1 = participants.get(0).getUser();
-            User p2 = participants.get(1).getUser();
-            BattleSubmission sub1 = submissionRepository.findByBattleAndUser(battle, p1).orElse(null);
-            BattleSubmission sub2 = submissionRepository.findByBattleAndUser(battle, p2).orElse(null);
-            double score1 = (sub1 != null && sub1.getVoteCount() != null) ? sub1.getVoteCount() : 0.0;
-            double score2 = (sub2 != null && sub2.getVoteCount() != null) ? sub2.getVoteCount() : 0.0;
+        if (isTie && winner != null && runnerUp != null) {
+            double splitPrize = prize1 > 0 ? (Math.round((prize1 / 2.0) * 100.0) / 100.0) : 0.0;
+            int tieXp = (int) Math.round(winXp * 0.5);
 
-            if (score1 == score2) {
-                notificationService.sendNotification(p1.getId(), "Battle Ended in a Tie", "Your battle ended in a tie.", "fas fa-handshake", "/battles/" + battle.getId());
-                notificationService.sendNotification(p2.getId(), "Battle Ended in a Tie", "Your battle ended in a tie.", "fas fa-handshake", "/battles/" + battle.getId());
-            } else if (score1 > score2) {
-                notificationService.sendNotification(p1.getId(), "You Won!", "Congratulations, you won the battle!", "fas fa-trophy", "/battles/" + battle.getId());
-                notificationService.sendNotification(p2.getId(), "You Lost", "You lost the battle. Better luck next time!", "fas fa-sad-tear", "/battles/" + battle.getId());
-            } else {
-                notificationService.sendNotification(p2.getId(), "You Won!", "Congratulations, you won the battle!", "fas fa-trophy", "/battles/" + battle.getId());
-                notificationService.sendNotification(p1.getId(), "You Lost", "You lost the battle. Better luck next time!", "fas fa-sad-tear", "/battles/" + battle.getId());
-            }
-            
-            Double prize = battle.getPrizePool() != null ? battle.getPrizePool() : (battle.getPrize1() != null ? battle.getPrize1() : 0.0);
-            if (prize > 0) {
-                if (score1 == score2) {
-                    notificationService.sendNotification(p1.getId(), "Reward Received", "You received " + (prize/2) + " coins for tying.", "fas fa-coins", "/wallet");
-                    notificationService.sendNotification(p2.getId(), "Reward Received", "You received " + (prize/2) + " coins for tying.", "fas fa-coins", "/wallet");
-                } else if (score1 > score2) {
-                    notificationService.sendNotification(p1.getId(), "Reward Received", "You received " + prize + " coins for winning!", "fas fa-coins", "/wallet");
-                } else {
-                    notificationService.sendNotification(p2.getId(), "Reward Received", "You received " + prize + " coins for winning!", "fas fa-coins", "/wallet");
+            awardBattleRewards(winner, splitPrize, tieXp, battle, "Tie (Split Prize)");
+            awardBattleRewards(runnerUp, splitPrize, tieXp, battle, "Tie (Split Prize)");
+
+            notificationService.sendNotification(winner.getId(), "Battle Ended in a Tie", "Battle tied! You received ₹" + splitPrize + " cash and " + tieXp + " XP.", "fas fa-handshake", "/battles/" + battle.getId());
+            notificationService.sendNotification(runnerUp.getId(), "Battle Ended in a Tie", "Battle tied! You received ₹" + splitPrize + " cash and " + tieXp + " XP.", "fas fa-handshake", "/battles/" + battle.getId());
+        } else {
+            int totalCoinsFromLosers = 0;
+
+            if (participants.size() == 2 && winner != null && runnerUp != null) {
+                // 1v1 Battle: Deduct coins from runnerUp (the loser) and transfer to winner
+                runnerUp = userRepository.findById(runnerUp.getId()).orElse(runnerUp);
+                int deducted = transferCoinsFromLoserToWinner(runnerUp, winner, coinStake, battle, "1v1 Battle");
+                totalCoinsFromLosers += deducted;
+
+                runnerUp.setBattleLosses((runnerUp.getBattleLosses() != null ? runnerUp.getBattleLosses() : 0) + 1);
+                runnerUp.setWinStreak(0);
+                userRepository.save(runnerUp);
+            } else if (winner != null) {
+                // Multi-participant battle: Deduct coins from ALL participants who lost to the winner
+                for (BattleParticipant bp : participants) {
+                    if (bp.getUser() != null && !bp.getUser().getId().equals(winner.getId())) {
+                        User loserUser = userRepository.findById(bp.getUser().getId()).orElse(bp.getUser());
+                        int deducted = transferCoinsFromLoserToWinner(loserUser, winner, coinStake, battle, "Arena Battle");
+                        totalCoinsFromLosers += deducted;
+
+                        loserUser.setBattleLosses((loserUser.getBattleLosses() != null ? loserUser.getBattleLosses() : 0) + 1);
+                        loserUser.setWinStreak(0);
+                        loserUser.addXp(50);
+                        userRepository.save(loserUser);
+                    }
                 }
+            }
+
+            // 1st Prize Winner Rewards
+            if (winner != null) {
+                winner = userRepository.findById(winner.getId()).orElse(winner);
+                winner.addXp(winXp);
+                winner.setBattleWins((winner.getBattleWins() != null ? winner.getBattleWins() : 0) + 1);
+                winner.setWinStreak((winner.getWinStreak() != null ? winner.getWinStreak() : 0) + 1);
+
+                // Coins awarded: transferred from loser(s), guaranteed at least coinStake
+                int coinsAwarded = Math.max(totalCoinsFromLosers, coinStake);
+                winner.addCoins(coinsAwarded);
+
+                coinTransactionRepository.save(new CoinTransaction(
+                    winner, 
+                    coinsAwarded, 
+                    "Battle Victory (#" + battle.getId() + ")", 
+                    "Won from opponents in " + battle.getTitle()
+                ));
+
+                if (prize1 > 0) {
+                    walletService.processTransaction(winner, prize1, "INR", "CREDIT", 
+                        "Battle 1st Prize - " + battle.getTitle() + " (#" + battle.getId() + ")", 
+                        "BATTLE_PRIZE_" + battle.getId() + "_" + winner.getId() + "_" + System.currentTimeMillis());
+                }
+
+                userRepository.save(winner);
+
+                notificationService.sendNotification(winner.getId(), "🏆 You Won the Battle!", 
+                    "Congratulations! You won " + coinsAwarded + " coins (deducted from your opponent" + (participants.size() > 2 ? "s" : "") + "), ₹" + prize1 + " cash, and " + winXp + " XP!", 
+                    "fas fa-trophy", "/battles/" + battle.getId());
+            }
+
+            // 2nd Prize Runner-Up (if multi-participant with prize2)
+            if (participants.size() > 2 && runnerUp != null && prize2 > 0) {
+                runnerUp = userRepository.findById(runnerUp.getId()).orElse(runnerUp);
+                int runnerUpXp = (int) Math.round(winXp * 0.5);
+                runnerUp.addXp(runnerUpXp);
+                walletService.processTransaction(runnerUp, prize2, "INR", "CREDIT", 
+                    "Battle 2nd Prize - " + battle.getTitle() + " (#" + battle.getId() + ")", 
+                    "BATTLE_PRIZE2_" + battle.getId() + "_" + runnerUp.getId() + "_" + System.currentTimeMillis());
+                userRepository.save(runnerUp);
+
+                notificationService.sendNotification(runnerUp.getId(), "🥈 2nd Place in Battle", 
+                    "You placed 2nd! You received ₹" + prize2 + " cash prize and " + runnerUpXp + " XP!", 
+                    "fas fa-medal", "/battles/" + battle.getId());
             }
         }
         
@@ -163,6 +310,107 @@ public class BattleTimerService {
                 notificationService.sendNotification(bettor.getId(), "Prediction Refunded", "The battle ended in a tie. Your bet of " + pred.getAmount() + " coins was refunded.", "fas fa-undo", "/wallet");
             }
         }
+    }
+
+    @Transactional
+    public void completeBattleWithForfeit(Battle battle, User leaver) {
+        if (!"ACTIVE".equals(battle.getStatus()) && !"VOTING".equals(battle.getStatus())) return;
+
+        battle.setIsLive(false);
+        battle.setStatus("COMPLETED");
+
+        List<BattleParticipant> participants = participantRepository.findByBattle(battle);
+        User winner = null;
+        for (BattleParticipant p : participants) {
+            if (p.getUser() != null && !p.getUser().getId().equals(leaver.getId())) {
+                winner = p.getUser();
+                break;
+            }
+        }
+
+        if (winner != null) {
+            battle.setWinner(winner);
+            battle.setWinner2(leaver);
+
+            // Update ELO rating: winner wins, leaver loses
+            updateElo(winner, leaver, false, true);
+
+            int coinStake = determineCoinStake(battle);
+            int winXp = battle.getWinnerXp() != null && battle.getWinnerXp() > 0 ? battle.getWinnerXp() : 500;
+            Double prize = (battle.getPrize1() != null && battle.getPrize1() > 0) ? battle.getPrize1() 
+                    : (battle.getPrizePool() != null ? battle.getPrizePool() : 0.0);
+
+            // Deduct coins from leaver (the loser) and transfer to winner
+            leaver = userRepository.findById(leaver.getId()).orElse(leaver);
+            int coinsDeducted = transferCoinsFromLoserToWinner(leaver, winner, coinStake, battle, "Forfeit");
+            leaver.setBattleLosses((leaver.getBattleLosses() != null ? leaver.getBattleLosses() : 0) + 1);
+            leaver.setWinStreak(0);
+            userRepository.save(leaver);
+
+            // Winner gains coins from loser + XP + Cash prize
+            winner = userRepository.findById(winner.getId()).orElse(winner);
+            int coinsAwarded = Math.max(coinsDeducted, coinStake);
+            winner.addCoins(coinsAwarded);
+            winner.addXp(winXp);
+            winner.setBattleWins((winner.getBattleWins() != null ? winner.getBattleWins() : 0) + 1);
+            winner.setWinStreak((winner.getWinStreak() != null ? winner.getWinStreak() : 0) + 1);
+
+            coinTransactionRepository.save(new CoinTransaction(
+                winner,
+                coinsAwarded,
+                "Battle Won by Forfeit (#" + battle.getId() + ")",
+                "Coins transferred from @" + leaver.getUsername()
+            ));
+
+            if (prize > 0) {
+                walletService.processTransaction(winner, prize, "INR", "CREDIT", 
+                    "Battle 1st Prize (Forfeit Win) - " + battle.getTitle() + " (#" + battle.getId() + ")", 
+                    "BATTLE_PRIZE_" + battle.getId() + "_" + winner.getId() + "_" + System.currentTimeMillis());
+            }
+
+            userRepository.save(winner);
+
+            notificationService.sendNotification(winner.getId(), "🏆 Battle Won by Forfeit", 
+                "Your opponent @" + leaver.getUsername() + " left the battle! You won " + coinsAwarded + " coins (deducted from @" + leaver.getUsername() + "), ₹" + prize + " cash, and " + winXp + " XP!", 
+                "fas fa-trophy", "/battles/" + battle.getId());
+            notificationService.sendNotification(leaver.getId(), "Battle Forfeited", 
+                "You left battle #" + battle.getId() + ". " + coinsDeducted + " coins were deducted and transferred to @" + winner.getUsername() + ".", 
+                "fas fa-running", "/battles/" + battle.getId());
+
+            // Process predictions
+            List<com.example.demo.model.BattlePrediction> predictions = predictionRepository.findByBattle(battle);
+            for (com.example.demo.model.BattlePrediction pred : predictions) {
+                User bettor = pred.getBettor();
+                if (pred.getPredictedWinner().getId().equals(winner.getId())) {
+                    double payout = pred.getAmount() * 2.0;
+                    bettor.addWalletBalance(payout);
+                    userRepository.save(bettor);
+                    notificationService.sendNotification(bettor.getId(), "Prediction Won!", "Your bet on " + winner.getUsername() + " was correct! You won " + payout + " coins.", "fas fa-coins", "/wallet");
+                } else {
+                    notificationService.sendNotification(bettor.getId(), "Prediction Lost", "Your bet on " + pred.getPredictedWinner().getUsername() + " was incorrect.", "fas fa-times-circle", "/wallet");
+                }
+            }
+        }
+
+        battleRepository.save(battle);
+
+        TournamentBattle tb = tournamentBattleRepository.findByBattle(battle);
+        if (tb != null && battle.getWinner() != null) {
+            tournamentService.advanceWinner(tb.getId(), battle.getWinner().getId());
+        }
+
+        Map<String, Object> msg = new HashMap<>();
+        msg.put("status", "COMPLETED");
+        msg.put("reason", "PLAYER_LEFT");
+        msg.put("leaverId", leaver.getId());
+        msg.put("leaverUsername", leaver.getUsername());
+        if (winner != null) {
+            msg.put("winnerId", winner.getId());
+            msg.put("winnerUsername", winner.getUsername());
+        }
+        messagingTemplate.convertAndSend("/topic/battle/" + battle.getId() + "/status", (Object) msg);
+
+        auditLogService.log("BATTLE_FORFEIT", leaver.getId(), "User " + leaver.getId() + " left battle " + battle.getId() + ", winner: " + (winner != null ? winner.getId() : "none"));
     }
 
     private static final Map<String, Integer> recentMatchups = new java.util.concurrent.ConcurrentHashMap<>();

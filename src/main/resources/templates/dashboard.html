@@ -1318,23 +1318,63 @@
                     </div>
                     <div th:id="'comments-list-' + ${post.id}" class="comments-list"
                         style="max-height:220px; overflow-y:auto; margin-bottom:10px; padding-right:4px;">
-                        <div th:each="c : ${post.comments}"
-                            style="display:flex; gap:8px; align-items:flex-start; margin-bottom:8px;">
-                            <img th:src="${c.user != null and c.user.profilePhotoUrl != null and !c.user.profilePhotoUrl.isEmpty()} ? (${c.user.profilePhotoUrl.startsWith('/')} ? @{${c.user.profilePhotoUrl}} : ${c.user.profilePhotoUrl}) : 'https://ui-avatars.com/api/?name=' + ${c.user != null ? c.user.username : 'U'} + '&background=F84464&color=fff&size=40'"
-                                style="width:28px; height:28px; border-radius:50%; flex-shrink:0; object-fit:cover;">
-                            <div style="background:var(--glass-border); border-radius:10px; padding:6px 10px; flex:1;">
-                                <strong style="font-size:12px;"
-                                    th:text="${c.user != null ? c.user.username : 'Unknown'}"></strong>
-                                <p style="font-size:13px; margin:0;" th:text="${c.content}"></p>
+                        
+                        <!-- Top-level comments -->
+                        <div th:each="c : ${post.comments}" th:if="${c.parentComment == null}"
+                            th:id="'comment-item-' + ${c.id}" class="comment-item"
+                            style="margin-bottom:10px;">
+                            <div style="display:flex; gap:8px; align-items:flex-start;">
+                                <img th:src="${c.user != null and c.user.profilePhotoUrl != null and !c.user.profilePhotoUrl.isEmpty()} ? (${c.user.profilePhotoUrl.startsWith('/')} ? @{${c.user.profilePhotoUrl}} : ${c.user.profilePhotoUrl}) : 'https://ui-avatars.com/api/?name=' + ${c.user != null ? c.user.username : 'U'} + '&background=F84464&color=fff&size=40'"
+                                    style="width:28px; height:28px; border-radius:50%; flex-shrink:0; object-fit:cover; margin-top:2px;">
+                                <div style="background:var(--glass-border); border-radius:10px; padding:6px 10px; flex:1;">
+                                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                                        <strong style="font-size:12px; color:var(--text-primary);"
+                                            th:text="${c.user != null ? c.user.username : 'Unknown'}"></strong>
+                                        <span style="font-size:10px; color:var(--text-secondary);" th:text="${#temporals.format(c.createdAt, 'dd MMM, HH:mm')}"></span>
+                                    </div>
+                                    <p style="font-size:13px; margin:2px 0 4px 0; color:var(--text-primary); word-break:break-word;" th:text="${c.content}"></p>
+                                    <button type="button" class="reply-trigger-btn" th:data-post-id="${post.id}" th:data-comment-id="${c.id}" th:data-username="${c.user != null ? c.user.username : 'user'}"
+                                            style="background:none; border:none; padding:0; color:var(--accent); font-size:11px; cursor:pointer; font-weight:600;">Reply</button>
+                                </div>
+                            </div>
+
+                            <!-- Replies Container -->
+                            <div th:id="'comment-replies-' + ${c.id}" class="comment-replies-list"
+                                style="margin-left:28px; margin-top:6px; border-left:2px solid var(--glass-border); padding-left:10px; display:flex; flex-direction:column; gap:6px;">
+                                <div th:each="r : ${c.replies}" th:id="'comment-item-' + ${r.id}"
+                                    style="display:flex; gap:6px; align-items:flex-start;">
+                                    <img th:src="${r.user != null and r.user.profilePhotoUrl != null and !r.user.profilePhotoUrl.isEmpty()} ? (${r.user.profilePhotoUrl.startsWith('/')} ? @{${r.user.profilePhotoUrl}} : ${r.user.profilePhotoUrl}) : 'https://ui-avatars.com/api/?name=' + ${r.user != null ? r.user.username : 'U'} + '&background=F84464&color=fff&size=40'"
+                                        style="width:22px; height:22px; border-radius:50%; flex-shrink:0; object-fit:cover; margin-top:2px;">
+                                    <div style="background:var(--glass-border); border-radius:10px; padding:5px 8px; flex:1;">
+                                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                                            <strong style="font-size:11px; color:var(--text-primary);"
+                                                th:text="${r.user != null ? r.user.username : 'Unknown'}"></strong>
+                                            <span style="font-size:10px; color:var(--text-secondary);" th:text="${#temporals.format(r.createdAt, 'dd MMM, HH:mm')}"></span>
+                                        </div>
+                                        <p style="font-size:12px; margin:2px 0 0 0; color:var(--text-primary); word-break:break-word;" th:text="${r.content}"></p>
+                                        <button type="button" class="reply-trigger-btn" th:data-post-id="${post.id}" th:data-comment-id="${c.id}" th:data-username="${r.user != null ? r.user.username : 'user'}"
+                                                style="background:none; border:none; padding:0; color:var(--accent); font-size:10px; cursor:pointer; font-weight:600; margin-top:2px;">Reply</button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div th:if="${post.comments == null or post.comments.isEmpty()}" id='no-comments-msg'
+
+                        <div th:if="${post.comments == null or post.comments.isEmpty()}" class='no-comments-msg' id='no-comments-msg'
                             style="font-size:13px; color:var(--text-secondary); text-align:center; padding:10px;">No
                             comments yet.</div>
                     </div>
 
                     <!-- Comment Composer (Always at bottom of comment section) -->
                     <div class="comment-composer" style="position:relative; margin-top:8px;">
+                        <!-- Active Reply Indicator Banner -->
+                        <div th:id="'reply-banner-' + ${post.id}"
+                             style="display:none; justify-content:space-between; align-items:center; background:rgba(0,210,255,0.08); border:1px solid rgba(0,210,255,0.25); border-radius:8px; padding:5px 10px; margin-bottom:8px; font-size:12px; color:var(--text-primary);">
+                            <span>Replying to <strong th:id="'reply-user-' + ${post.id}" style="color:var(--accent);">@username</strong></span>
+                            <button type="button" th:attr="onclick='cancelReply(' + ${post.id} + ')'"
+                                    style="background:none; border:none; color:var(--text-secondary); cursor:pointer; font-size:16px; line-height:1; padding:0 4px;" title="Cancel reply">&times;</button>
+                        </div>
+                        <input type="hidden" th:id="'reply-parent-id-' + ${post.id}" value="">
+
                         <!-- Emoji Quick Selection Bar (Directly above comment input) -->
 					    <div class="emoji-bar" style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px; align-items:center;">
 					        <button type="button" class="emoji-quick-btn" th:attr="onclick='insertEmoji(' + ${post.id} + ', \'😀\')'">😀</button>
@@ -1377,13 +1417,13 @@
                         <div style="display:flex; gap:8px; align-items:center; position:relative;">
                             <div style="position:relative; flex:1; display:flex; align-items:center;">
                                 <input type="text" th:id="'comment-input-' + ${post.id}" placeholder="Write a comment..."
-                                    th:onkeydown="'if(event.key === \'Enter\') postComment(' + ${post.id} + ')'"
+                                    th:attr="onkeydown='if(event.key === \'Enter\'){event.preventDefault(); postComment(' + ${post.id} + ');}'"
                                     style="flex:1; padding:8px 36px 8px 12px; border-radius:20px; background:var(--card-bg); border:1px solid var(--glass-border); color:var(--text-primary); font-size:13px; outline:none;">
                                 <button type="button" th:attr="onclick='toggleEmojiPicker(' + ${post.id} + ')'" 
                                         style="position:absolute; right:12px; background:none; border:none; font-size:16px; cursor:pointer; color:#aaa; outline:none; user-select:none;">😀</button>
                             </div>
-                            <button th:onclick="'postComment(' + ${post.id} + ')'"
-                                style="background:var(--accent); color:white; border:none; border-radius:20px; padding:8px 16px; font-size:13px; cursor:pointer; font-weight:600; flex-shrink:0;">Post</button>
+                            <button type="button" th:id="'post-btn-' + ${post.id}" th:attr="onclick='postComment(' + ${post.id} + ')'"
+                                style="background:var(--accent); color:white; border:none; border-radius:20px; padding:8px 16px; font-size:13px; cursor:pointer; font-weight:600; flex-shrink:0; transition:all 0.2s ease;">Post</button>
                             
                             <!-- Dynamic Emoji Picker Popup -->
                             <div th:id="'emoji-picker-' + ${post.id}" class="emoji-picker-popup" 
@@ -2026,75 +2066,287 @@
             }
         }
 
-        // -- Comments Toggle ----------------------------------
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function startReply(postId, commentId, username) {
+            const banner = document.getElementById('reply-banner-' + postId);
+            const userSpan = document.getElementById('reply-user-' + postId);
+            const parentInput = document.getElementById('reply-parent-id-' + postId);
+            const input = document.getElementById('comment-input-' + postId);
+            if (banner && userSpan && parentInput && input) {
+                banner.style.display = 'flex';
+                userSpan.textContent = '@' + username;
+                parentInput.value = commentId;
+                input.placeholder = 'Reply to @' + username + '...';
+                input.focus();
+                input.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }
+
+        function cancelReply(postId) {
+            const banner = document.getElementById('reply-banner-' + postId);
+            const parentInput = document.getElementById('reply-parent-id-' + postId);
+            const input = document.getElementById('comment-input-' + postId);
+            if (banner) banner.style.display = 'none';
+            if (parentInput) parentInput.value = '';
+            if (input) {
+                input.placeholder = 'Write a comment...';
+            }
+        }
+
+        // -- Comments Toggle & Realtime Loading ---------------
+        const commentsLoadedMap = {};
+
+        function formatCommentDate(dateStr) {
+            if (!dateStr) return 'Just now';
+            try {
+                const d = new Date(dateStr);
+                if (isNaN(d.getTime())) return dateStr;
+                return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) + ', ' +
+                       d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+            } catch (_) {
+                return dateStr;
+            }
+        }
+
+        async function loadComments(postId, forceReload = false) {
+            if (!forceReload && commentsLoadedMap[postId]) return;
+            const list = document.getElementById('comments-list-' + postId);
+            if (!list) return;
+
+            try {
+                const base = (typeof basePath !== 'undefined' ? basePath : '');
+                const res = await fetch(base + '/api/posts/' + postId + '/comments');
+                if (!res.ok) return;
+                const comments = await res.json();
+                commentsLoadedMap[postId] = true;
+
+                const countBadge = document.getElementById('comment-count-' + postId);
+                if (countBadge && comments) countBadge.textContent = comments.length;
+
+                if (!comments || comments.length === 0) {
+                    list.innerHTML = '<div class="no-comments-msg" style="font-size:13px; color:var(--text-secondary); text-align:center; padding:10px;">No comments yet.</div>';
+                    return;
+                }
+
+                list.innerHTML = '';
+                const topLevel = comments.filter(c => !c.parentId);
+                const replies = comments.filter(c => c.parentId);
+
+                topLevel.forEach(c => {
+                    const photoUrl = c.photo ? (c.photo.startsWith('/') ? base + c.photo : c.photo) : ('https://ui-avatars.com/api/?name=' + encodeURIComponent(c.username || 'U') + '&background=F84464&color=fff&size=40');
+                    const div = document.createElement('div');
+                    div.id = 'comment-item-' + c.id;
+                    div.className = 'comment-item';
+                    div.style.cssText = 'margin-bottom:10px;';
+                    div.innerHTML = `
+                        <div style="display:flex;gap:8px;align-items:flex-start;">
+                            <img src="${photoUrl}" style="width:28px;height:28px;border-radius:50%;flex-shrink:0;object-fit:cover;margin-top:2px;">
+                            <div style="background:var(--glass-border);border-radius:10px;padding:6px 10px;flex:1;">
+                                <div style="display:flex;justify-content:space-between;align-items:center;">
+                                    <strong style="font-size:12px;color:var(--text-primary);">${escapeHtml(c.username || 'User')}</strong>
+                                    <span style="font-size:10px;color:var(--text-secondary);">${formatCommentDate(c.date)}</span>
+                                </div>
+                                <p style="font-size:13px;margin:2px 0 4px 0;color:var(--text-primary);word-break:break-word;">${escapeHtml(c.content || '')}</p>
+                                <button type="button" class="reply-trigger-btn" data-post-id="${postId}" data-comment-id="${c.id}" data-username="${escapeHtml(c.username || 'user')}"
+                                        style="background:none;border:none;padding:0;color:var(--accent);font-size:11px;cursor:pointer;font-weight:600;">Reply</button>
+                            </div>
+                        </div>
+                        <div id="comment-replies-${c.id}" class="comment-replies-list" style="margin-left:28px;margin-top:6px;border-left:2px solid var(--glass-border);padding-left:10px;display:flex;flex-direction:column;gap:6px;"></div>
+                    `;
+                    list.appendChild(div);
+                });
+
+                replies.forEach(r => {
+                    const rPhoto = r.photo ? (r.photo.startsWith('/') ? base + r.photo : r.photo) : ('https://ui-avatars.com/api/?name=' + encodeURIComponent(r.username || 'U') + '&background=F84464&color=fff&size=40');
+                    const repliesContainer = document.getElementById('comment-replies-' + r.parentId);
+                    if (repliesContainer) {
+                        const rDiv = document.createElement('div');
+                        rDiv.id = 'comment-item-' + r.id;
+                        rDiv.style.cssText = 'display:flex;gap:6px;align-items:flex-start;';
+                        rDiv.innerHTML = `
+                            <img src="${rPhoto}" style="width:22px;height:22px;border-radius:50%;flex-shrink:0;object-fit:cover;margin-top:2px;">
+                            <div style="background:var(--glass-border);border-radius:10px;padding:5px 8px;flex:1;">
+                                <div style="display:flex;justify-content:space-between;align-items:center;">
+                                    <strong style="font-size:11px;color:var(--text-primary);">${escapeHtml(r.username || 'User')}</strong>
+                                    <span style="font-size:10px;color:var(--text-secondary);">${formatCommentDate(r.date)}</span>
+                                </div>
+                                <p style="font-size:12px;margin:2px 0 0 0;color:var(--text-primary);word-break:break-word;">${escapeHtml(r.content || '')}</p>
+                                <button type="button" class="reply-trigger-btn" data-post-id="${postId}" data-comment-id="${r.parentId}" data-username="${escapeHtml(r.username || 'user')}"
+                                        style="background:none;border:none;padding:0;color:var(--accent);font-size:10px;cursor:pointer;font-weight:600;margin-top:2px;">Reply</button>
+                            </div>
+                        `;
+                        repliesContainer.appendChild(rDiv);
+                    }
+                });
+            } catch (err) {
+                console.warn('Could not load comments for post ' + postId, err);
+            }
+        }
+
         function toggleComments(postId) {
             const panel = document.getElementById('comments-panel-' + postId);
             if (!panel) return;
-            panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+            const isOpening = (panel.style.display === 'none' || panel.style.display === '');
+            panel.style.display = isOpening ? 'block' : 'none';
+            if (isOpening) {
+                loadComments(postId);
+                setTimeout(() => {
+                    const input = document.getElementById('comment-input-' + postId);
+                    if (input) input.focus();
+                }, 100);
+            }
         }
 
-        // -- Post Comment -------------------------------------
+        // -- Post Comment / Reply ------------------------------
         async function postComment(postId) {
+            const postBtn = document.getElementById('post-btn-' + postId);
+            if (postBtn && postBtn.disabled) return;
+
             const input = document.getElementById('comment-input-' + postId);
             if (!input || !input.value || !input.value.trim()) return;
             const content = input.value.trim();
+            const parentInput = document.getElementById('reply-parent-id-' + postId);
+            const parentId = (parentInput && parentInput.value) ? parentInput.value : null;
+
+            if (postBtn) {
+                postBtn.disabled = true;
+                postBtn.style.opacity = '0.6';
+            }
+
             try {
-                const res = await fetch(basePath + '/api/posts/' + postId + '/comment', {
+                const base = (typeof basePath !== 'undefined' ? basePath : '');
+                const url = base + '/api/posts/' + postId + '/comment';
+                const res = await fetch(url, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: 'content=' + encodeURIComponent(content)
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content: content, parentId: parentId })
                 });
-                if (!res.ok) throw new Error();
+
+                if (!res.ok) {
+                    let errMsg = 'Failed to post comment';
+                    try {
+                        const err = await res.json();
+                        if (err && err.error) errMsg = err.error;
+                    } catch (_) {
+                        try {
+                            const txt = await res.text();
+                            if (txt) errMsg = txt;
+                        } catch (_) {}
+                    }
+                    throw new Error(errMsg);
+                }
+
                 const c = await res.json();
                 const list = document.getElementById('comments-list-' + postId);
                 if (list) {
-                    const noMsg = list.querySelector('#no-comments-msg');
+                    const noMsg = list.querySelector('.no-comments-msg') || list.querySelector('#no-comments-msg');
                     if (noMsg) noMsg.remove();
-                    
-                    const div = document.createElement('div');
-                    div.style.cssText = 'display:flex;gap:8px;align-items:flex-start;margin-bottom:8px;';
 
-                    const photoUrl = c.photo ? (c.photo.startsWith('/') ? basePath + c.photo : c.photo) : `https://ui-avatars.com/api/?name=${encodeURIComponent(c.username || 'U')}&background=F84464&color=fff&size=40`;
-                    
-                    const img = document.createElement('img');
-                    img.src = photoUrl;
-                    img.style.cssText = 'width:28px;height:28px;border-radius:50%;flex-shrink:0;object-fit:cover;';
+                    const photoUrl = c.photo ? (c.photo.startsWith('/') ? base + c.photo : c.photo) : ('https://ui-avatars.com/api/?name=' + encodeURIComponent(c.username || 'U') + '&background=F84464&color=fff&size=40');
 
-                    const bubble = document.createElement('div');
-                    bubble.style.cssText = 'background:var(--glass-border);border-radius:10px;padding:6px 10px;flex:1;';
+                    if (c.parentId) {
+                        // This is a reply: append inside parent comment replies container
+                        let repliesContainer = document.getElementById('comment-replies-' + c.parentId);
+                        if (!repliesContainer) {
+                            const parentCommentEl = document.getElementById('comment-item-' + c.parentId);
+                            if (parentCommentEl) {
+                                repliesContainer = document.createElement('div');
+                                repliesContainer.id = 'comment-replies-' + c.parentId;
+                                repliesContainer.className = 'comment-replies-list';
+                                repliesContainer.style.cssText = 'margin-left:28px;margin-top:6px;border-left:2px solid var(--glass-border);padding-left:10px;display:flex;flex-direction:column;gap:6px;';
+                                parentCommentEl.appendChild(repliesContainer);
+                            } else {
+                                repliesContainer = list;
+                            }
+                        }
 
-                    const userStrong = document.createElement('strong');
-                    userStrong.style.fontSize = '12px';
-                    userStrong.textContent = c.username || 'You';
+                        const replyDiv = document.createElement('div');
+                        replyDiv.id = 'comment-item-' + c.id;
+                        replyDiv.style.cssText = 'display:flex;gap:6px;align-items:flex-start;margin-top:4px;';
+                        replyDiv.innerHTML = `
+                            <img src="${photoUrl}" style="width:22px;height:22px;border-radius:50%;flex-shrink:0;object-fit:cover;margin-top:2px;">
+                            <div style="background:var(--glass-border);border-radius:10px;padding:5px 8px;flex:1;">
+                                <div style="display:flex;justify-content:space-between;align-items:center;">
+                                    <strong style="font-size:11px;color:var(--text-primary);">${escapeHtml(c.username || 'You')}</strong>
+                                    <span style="font-size:10px;color:var(--text-secondary);">Just now</span>
+                                </div>
+                                <p style="font-size:12px;margin:2px 0 0 0;color:var(--text-primary);word-break:break-word;">${escapeHtml(c.content || content)}</p>
+                                <button type="button" class="reply-trigger-btn" data-post-id="${postId}" data-comment-id="${c.parentId}" data-username="${escapeHtml(c.username || 'user')}"
+                                        style="background:none;border:none;padding:0;color:var(--accent);font-size:10px;cursor:pointer;font-weight:600;margin-top:2px;">Reply</button>
+                            </div>
+                        `;
+                        repliesContainer.appendChild(replyDiv);
+                    } else {
+                        // Top-level comment
+                        const div = document.createElement('div');
+                        div.id = 'comment-item-' + c.id;
+                        div.className = 'comment-item';
+                        div.style.cssText = 'margin-bottom:10px;';
+                        div.innerHTML = `
+                            <div style="display:flex;gap:8px;align-items:flex-start;">
+                                <img src="${photoUrl}" style="width:28px;height:28px;border-radius:50%;flex-shrink:0;object-fit:cover;margin-top:2px;">
+                                <div style="background:var(--glass-border);border-radius:10px;padding:6px 10px;flex:1;">
+                                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                                        <strong style="font-size:12px;color:var(--text-primary);">${escapeHtml(c.username || 'You')}</strong>
+                                        <span style="font-size:10px;color:var(--text-secondary);">Just now</span>
+                                    </div>
+                                    <p style="font-size:13px;margin:2px 0 4px 0;color:var(--text-primary);word-break:break-word;">${escapeHtml(c.content || content)}</p>
+                                    <button type="button" class="reply-trigger-btn" data-post-id="${postId}" data-comment-id="${c.id}" data-username="${escapeHtml(c.username || 'user')}"
+                                            style="background:none;border:none;padding:0;color:var(--accent);font-size:11px;cursor:pointer;font-weight:600;">Reply</button>
+                                </div>
+                            </div>
+                            <div id="comment-replies-${c.id}" class="comment-replies-list" style="margin-left:28px;margin-top:6px;border-left:2px solid var(--glass-border);padding-left:10px;display:flex;flex-direction:column;gap:6px;"></div>
+                        `;
+                        list.appendChild(div);
+                    }
 
-                    const commentP = document.createElement('p');
-                    commentP.style.cssText = 'font-size:13px;margin:0;';
-                    commentP.textContent = c.content || content;
-
-                    bubble.appendChild(userStrong);
-                    bubble.appendChild(commentP);
-                    div.appendChild(img);
-                    div.appendChild(bubble);
-                    list.appendChild(div);
-
-                    // Scroll to the bottom to see the new comment
                     setTimeout(() => {
                         list.scrollTop = list.scrollHeight;
                     }, 50);
                 }
-                
-                // Update comment count badge if exists
+
+                // Update comment count badge
                 const countBadge = document.getElementById('comment-count-' + postId);
                 if (countBadge) {
-                    countBadge.textContent = parseInt(countBadge.textContent || 0) + 1;
+                    countBadge.textContent = (c.count != null) ? c.count : (parseInt(countBadge.textContent || 0) + 1);
                 }
-                
+
                 input.value = '';
+                cancelReply(postId);
             } catch (e) {
                 console.error('Comment failed', e);
+                alert('Could not post comment: ' + (e.message || 'Please try again'));
+            } finally {
+                if (postBtn) {
+                    postBtn.disabled = false;
+                    postBtn.style.opacity = '1';
+                }
             }
         }
 
+        // Delegated event listener for reply buttons
+        document.addEventListener('click', function(e) {
+            const replyBtn = e.target.closest('.reply-trigger-btn');
+            if (replyBtn) {
+                e.preventDefault();
+                e.stopPropagation();
+                const postId = replyBtn.dataset.postId;
+                const commentId = replyBtn.dataset.commentId;
+                const username = replyBtn.dataset.username;
+                if (postId && commentId && username) {
+                    startReply(postId, commentId, username);
+                }
+            }
+        });
 
         let allFollowers = [];
         async function openShareModal(postId) {

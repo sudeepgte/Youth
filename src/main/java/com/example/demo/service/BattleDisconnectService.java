@@ -76,17 +76,17 @@ public class BattleDisconnectService {
             User user = userRepository.findById(userId).orElse(null);
             if (user == null || !participantRepository.existsByBattleAndUser(battle, user)) return;
 
-            // Notify frontend that player disconnected (start grace period UI)
+            // Notify frontend that player disconnected
             Map<String, Object> msg = new HashMap<>();
             msg.put("userId", userId);
             msg.put("status", "DISCONNECTED_GRACE_PERIOD");
-            msg.put("gracePeriodSeconds", 45);
+            msg.put("gracePeriodSeconds", 3);
             messagingTemplate.convertAndSend("/topic/battle/" + battleId + "/status", (Object) msg);
 
-            // Schedule TKO
+            // Schedule immediate forfeit (3 seconds buffer for brief connection blips)
             ScheduledFuture<?> task = scheduler.schedule(() -> {
                 executeDisconnectTKO(battleId, userId);
-            }, 45, TimeUnit.SECONDS);
+            }, 3, TimeUnit.SECONDS);
             
             disconnectTasks.put(userId, task);
         }
@@ -98,32 +98,9 @@ public class BattleDisconnectService {
         Battle battle = battleRepository.findById(battleId).orElse(null);
         if (battle == null || !"ACTIVE".equals(battle.getStatus())) return;
         
-        List<BattleParticipant> participants = participantRepository.findByBattle(battle);
-        if (participants.size() != 2) return;
+        User disconnectedUser = userRepository.findById(disconnectedUserId).orElse(null);
+        if (disconnectedUser == null) return;
         
-        User disconnectedUser = participants.get(0).getUser().getId().equals(disconnectedUserId) ? participants.get(0).getUser() : participants.get(1).getUser();
-        User winnerUser = participants.get(0).getUser().getId().equals(disconnectedUserId) ? participants.get(1).getUser() : participants.get(0).getUser();
-        
-        battle.setIsLive(false);
-        battle.setStatus("COMPLETED");
-        battle.setWinner(winnerUser);
-        battle.setWinner2(disconnectedUser);
-        
-        // Update ELO rating (winnerUser wins)
-        battleTimerService.updateElo(winnerUser, disconnectedUser, false, true);
-        
-        userRepository.save(winnerUser);
-        userRepository.save(disconnectedUser);
-        battleRepository.save(battle);
-        
-        // Gamification logic could go here (similar to TimerService)
-        // For now, just mark TKO and notify
-
-        Map<String, Object> msg = new HashMap<>();
-        msg.put("status", "COMPLETED");
-        msg.put("reason", "DISCONNECT_TKO");
-        msg.put("winnerId", winnerUser.getId());
-        msg.put("loserId", disconnectedUser.getId());
-        messagingTemplate.convertAndSend("/topic/battle/" + battleId + "/status", (Object) msg);
+        battleTimerService.completeBattleWithForfeit(battle, disconnectedUser);
     }
 }

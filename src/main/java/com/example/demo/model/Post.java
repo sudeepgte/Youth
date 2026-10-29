@@ -153,7 +153,6 @@ public class Post {
     }
 
     public java.util.List<PostCollaboration> getCollaborations() {
-
         return collaborations;
     }
 
@@ -171,6 +170,13 @@ public class Post {
 
     public java.util.List<PostComment> getComments() {
         return comments;
+    }
+
+    public java.util.List<PostComment> getTopLevelComments() {
+        if (comments == null) return java.util.Collections.emptyList();
+        return comments.stream()
+                .filter(c -> c.getParentComment() == null)
+                .collect(java.util.stream.Collectors.toList());
     }
 
     public void setComments(java.util.List<PostComment> comments) {

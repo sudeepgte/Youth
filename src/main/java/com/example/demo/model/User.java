@@ -247,6 +247,21 @@ public class User implements Serializable {
 
     public void setXp(Integer xp) {
         this.xp = xp;
+        updateLevel();
+    }
+
+    public void addXp(int amount) {
+        this.xp = (this.xp != null ? this.xp : 0) + amount;
+        updateLevel();
+    }
+
+    public void updateLevel() {
+        int currentXp = this.xp != null ? this.xp : 0;
+        if (currentXp >= 5000) this.level = "Platinum";
+        else if (currentXp >= 2000) this.level = "Gold";
+        else if (currentXp >= 1000) this.level = "Silver";
+        else if (currentXp >= 500) this.level = "Bronze";
+        else this.level = "Novice";
     }
 
     public String getLevel() {
@@ -286,6 +301,17 @@ public class User implements Serializable {
     public Integer getCoins() { return coins != null ? coins : 0; }
     public void setCoins(Integer coins) { this.coins = coins; }
     public void addCoins(int amount) { this.coins = getCoins() + amount; }
+    public boolean deductCoins(int amount) {
+        if (amount <= 0) return true;
+        int current = getCoins();
+        if (current >= amount) {
+            this.coins = current - amount;
+            return true;
+        } else {
+            this.coins = 0;
+            return false;
+        }
+    }
 
     public Double getWalletBalance() { return walletBalance != null ? walletBalance : 0.0; }
     public void setWalletBalance(Double walletBalance) { this.walletBalance = walletBalance; }

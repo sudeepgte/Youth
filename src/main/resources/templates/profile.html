@@ -1211,11 +1211,10 @@
                     th:text="${unreadNotifCount}"></span>
             </a>
             <div class="profile-dropdown">
-                <a th:href="@{/profile}" class="active">
-                    <img th:src="${user != null and user.profilePhotoUrl != null and !user.profilePhotoUrl.isEmpty()} ? @{${user.profilePhotoUrl}} : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=1780&auto=format&fit=crop'"
-                        class="user-avatar" style="width: 32px; height: 32px; border: none;">
+                <a th:href="@{'/profile/' + ${currentUser != null ? currentUser.username : (session.user != null ? session.user.username : user.username)}}">
+                    <img th:src="${currentUser != null and currentUser.profilePhotoUrl != null and !currentUser.profilePhotoUrl.isEmpty()} ? @{${currentUser.profilePhotoUrl}} : (${session.user != null and session.user.profilePhotoUrl != null and !session.user.profilePhotoUrl.isEmpty()} ? @{${session.user.profilePhotoUrl}} : (${user != null and user.profilePhotoUrl != null and !user.profilePhotoUrl.isEmpty()} ? @{${user.profilePhotoUrl}} : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=1780&auto=format&fit=crop'))"
+                        class="user-avatar" style="width: 32px; height: 32px; border: none;" alt="My Avatar">
                 </a>
-
             </div>
         </div>
     </nav>
@@ -1242,7 +1241,7 @@
             <a th:href="@{/achievements}" class="sidebar-link"><i class="fas fa-trophy"></i> Achievements</a>
             <a th:href="@{/messages}" class="sidebar-link"><i class="fas fa-comment-dots"></i> Chat</a>
             <a th:href="@{/reels}" class="sidebar-link"><i class="fas fa-film"></i> Reels</a>
-            <a th:href="@{/profile}" class="sidebar-link active"><i class="fas fa-user"></i> Profile</a>
+            <a th:href="@{'/profile/' + ${currentUser != null ? currentUser.username : (session.user != null ? session.user.username : '')}}" class="sidebar-link" th:classappend="${isOwnProfile} ? ' active' : ''"><i class="fas fa-user"></i> My Profile</a>
             
             <a th:href="@{/wallet}" class="sidebar-link"><i class="fas fa-wallet"></i> Wallet</a>
             <a th:href="@{/user/my-bookings}" class="sidebar-link"><i class="fas fa-ticket-alt"></i> My Bookings</a>
@@ -1252,6 +1251,13 @@
 
         <!-- Center Feed -->
         <main class="social-feed">
+
+            <!-- Back navigation for visitors -->
+            <div th:if="${!isOwnProfile}" style="margin-bottom: 16px;">
+                <a href="javascript:history.back()" style="display: inline-flex; align-items: center; gap: 8px; color: var(--text-secondary); text-decoration: none; font-size: 13px; font-weight: 600; padding: 7px 14px; border-radius: 10px; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+                    <i class="fas fa-arrow-left"></i> Back
+                </a>
+            </div>
 
             <!-- Profile Header -->
             <div class="profile-header">
@@ -1279,32 +1285,45 @@
                             style="color:#fbbf24; font-size:18px; margin-left:5px;" title="Premium Member"></i>
                     </span>
 
-                    <!-- Coin Balance -->
-                    <a href="javascript:void(0)" onclick="GameRewards.showHistory()" class="coin-nav"
+                    <!-- Coin Balance (Only visible on own profile) -->
+                    <a th:if="${isOwnProfile}" href="javascript:void(0)" onclick="GameRewards.showHistory()" class="coin-nav"
                         style="background: rgba(255, 215, 0, 0.1); border: 1px solid rgba(255, 215, 0, 0.2); border-radius: 20px; padding: 5px 12px; height: auto; display: flex; align-items: center; gap: 8px; text-decoration: none; color: #ffd700; font-weight: 800; font-size: 13px; margin-left: 10px;">
                         <i class="fas fa-coins" style="font-size: 14px;"></i>
                         <span th:text="${user.coins}">0</span>
                     </a>
 
+                    <!-- Owner: Edit Profile Button -->
                     <button class="btn-edit" th:if="${isOwnProfile}" onclick="openM('editModal')">
                         <i class="fas fa-pen" style="font-size:11px;"></i> Edit Profile
                     </button>
-                    <div th:if="${!isOwnProfile}" th:id="'follow-wrapper-' + ${user.id}">
-                        <!-- Already Following -->
-                        <button th:if="${isFollowing}" class="btn-edit"
-                            th:onclick="'followUserAjax(' + ${user.id} + ', this)'">
-                            <i class="fas fa-user-check"></i> Following
-                        </button>
-                        <!-- Request Sent -->
-                        <button
-                            th:if="${!isFollowing and hasSentFollowRequest}"
-                            class="btn-edit" th:onclick="'followUserAjax(' + ${user.id} + ', this)'">Requested</button>
-                        <!-- Not Following & No Request -->
-                        <button
-                            th:if="${!isFollowing and !hasSentFollowRequest}"
-                            th:onclick="'followUserAjax(' + ${user.id} + ', this)'" class="btn-follow">
-                            <i class="fas fa-user-plus"></i> Follow
-                        </button>
+
+                    <!-- Visitor Actions: Follow/Following + Message Button -->
+                    <div th:if="${!isOwnProfile}" style="display: flex; align-items: center; gap: 8px; margin-left: 10px;">
+                        <div th:if="${user.username != 'admin'}" th:id="'follow-wrapper-' + ${user.id}">
+                            <!-- Already Following -->
+                            <button th:if="${isFollowing}" class="btn-edit"
+                                th:onclick="'followUserAjax(' + ${user.id} + ', this)'">
+                                <i class="fas fa-user-check"></i> Following
+                            </button>
+                            <!-- Request Sent -->
+                            <button
+                                th:if="${!isFollowing and hasSentFollowRequest}"
+                                class="btn-edit" th:onclick="'followUserAjax(' + ${user.id} + ', this)'">Requested</button>
+                            <!-- Not Following & No Request -->
+                            <button
+                                th:if="${!isFollowing and !hasSentFollowRequest}"
+                                th:onclick="'followUserAjax(' + ${user.id} + ', this)'" class="btn-follow">
+                                <i class="fas fa-user-plus"></i> Follow
+                            </button>
+                        </div>
+                        <span th:if="${user.username == 'admin'}" style="padding: 6px 14px; border-radius: 8px; background: rgba(248,68,100,0.15); color: #f84464; font-size: 13px; font-weight: 700; border: 1px solid rgba(248,68,100,0.3); display: inline-flex; align-items: center; gap: 6px;">
+                            <i class="fas fa-shield-alt"></i> Admin
+                        </span>
+                        <!-- Message Button -->
+                        <a th:href="@{'/messages?user=' + ${user.username}}" class="btn-edit"
+                           style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none; padding: 7px 16px; border-radius: 8px; background: rgba(255,255,255,0.08); border: 1px solid var(--glass-border); color: var(--text-primary); font-size: 13px; font-weight: 600;">
+                            <i class="fas fa-comment-dots"></i> Message
+                        </a>
                     </div>
                 </div>
 
@@ -2032,7 +2051,7 @@
     <!-- Modals -->
 
     <!-- Edit Profile -->
-    <div class="overlay" id="editModal">
+    <div class="overlay" id="editModal" th:if="${isOwnProfile}">
         <div class="modal">
             <div
                 style="padding:20px; border-bottom:1px solid var(--glass-border); display:flex; justify-content:space-between; align-items:center;">
