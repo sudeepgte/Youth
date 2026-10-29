@@ -194,6 +194,9 @@ public class MainController {
     @Autowired
     private BattleParticipantRepository battleParticipantRepository;
 
+    @Autowired
+    private TournamentRepository tournamentRepository;
+
     @GetMapping("/")
     public String root() {
         return "redirect:/home";
@@ -329,7 +332,8 @@ public class MainController {
     public String dashboard(
             Model model,
             HttpSession session,
-            @RequestParam(required = false) String category
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String tab
     ) {
         Object sessionUser = session.getAttribute("user");
         // Admin should land on admin dashboard, not student dashboard
@@ -351,6 +355,9 @@ public class MainController {
                 .findByUserAndStatus(user, CollaborationStatus.PENDING);
         model.addAttribute("user", user);
         model.addAttribute("pendingCount", pendingRequests.size());
+
+        boolean isTournamentsTab = "tournaments".equalsIgnoreCase(tab) || "tournaments".equalsIgnoreCase(category);
+        model.addAttribute("isTournamentsTab", isTournamentsTab);
 
         String normalizedCategory = (category == null) ? null : category.trim();
         if (normalizedCategory != null && normalizedCategory.isEmpty()) normalizedCategory = null;
@@ -486,6 +493,9 @@ public class MainController {
                 .limit(3)
                 .collect(Collectors.toList());
         model.addAttribute("trendingEvents", trendingEvents);
+
+        List<Tournament> allTournaments = tournamentRepository.findAllByOrderByIdDesc();
+        model.addAttribute("tournaments", allTournaments);
 
         return "dashboard";
     }

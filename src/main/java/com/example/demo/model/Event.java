@@ -21,6 +21,7 @@ public class Event {
     private String imageUrl;
     private LocalDateTime dateTime;
     private String venue;
+    @Column(columnDefinition = "VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
     private String price;
     private String category;
     private String organizer;
