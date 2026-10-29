@@ -44,9 +44,12 @@ public class TournamentJudgeController {
         Tournament t = tournamentRepository.findById(id).orElse(null);
         if (t == null) return "redirect:/tournaments";
 
-        // Verify if user is a judge for this tournament
+        // Verify if user is a judge for this tournament or platform admin
         boolean isJudge = t.getJudges().stream().anyMatch(u -> u.getId().equals(judge.getId()));
-        if (!isJudge && !"admin".equals(session.getAttribute("user"))) {
+        boolean isAdmin = "admin".equalsIgnoreCase(judge.getUsername())
+                || "admin".equals(session.getAttribute("user"))
+                || "admin".equals(session.getAttribute("admin"));
+        if (!isJudge && !isAdmin) {
             return "redirect:/tournaments/" + id + "?error=not_judge";
         }
 

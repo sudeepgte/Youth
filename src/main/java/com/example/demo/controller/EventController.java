@@ -1005,7 +1005,7 @@ public class EventController {
             @RequestParam Integer maxParticipants,
             @RequestParam(required = false, defaultValue = "Offline") String eventMode,
             @RequestParam(required = false) String meetingLink,
-            @RequestParam(required = false) MultipartFile imageFile,
+            @RequestParam(value = "imageFile", required = false) MultipartFile[] imageFiles,
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String votingStartDate,
             @RequestParam(required = false) String votingEndDate,
@@ -1074,25 +1074,32 @@ public class EventController {
         } catch (Exception ignored) {}
 
         // Handle File Upload
-        if (imageFile != null && !imageFile.isEmpty()) {
-            try {
-                String originalFilename = imageFile.getOriginalFilename();
-                String extension = "";
-                if(originalFilename != null && originalFilename.contains(".")) {
-                    extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+        if (imageFiles != null && imageFiles.length > 0) {
+            for (MultipartFile file : imageFiles) {
+                if (file != null && !file.isEmpty()) {
+                    try {
+                        String originalFilename = file.getOriginalFilename();
+                        String extension = "";
+                        if (originalFilename != null && originalFilename.contains(".")) {
+                            extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+                        }
+                        String newFilename = UUID.randomUUID().toString() + extension;
+                        Path uploadDir = Paths.get("src/main/resources/static/uploads");
+                        if (!Files.exists(uploadDir)) {
+                            Files.createDirectories(uploadDir);
+                        }
+                        Path filePath = uploadDir.resolve(newFilename);
+                        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+                        if (event.getImageUrl() == null || event.getImageUrl().isEmpty()) {
+                            event.setImageUrl("/uploads/" + newFilename);
+                        }
+                    } catch (IOException e) {
+                        // ignore and try next
+                    }
                 }
-                String newFilename = UUID.randomUUID().toString() + extension;
-                Path uploadDir = Paths.get("src/main/resources/static/uploads");
-                if (!Files.exists(uploadDir)) {
-                    Files.createDirectories(uploadDir);
-                }
-                Path filePath = uploadDir.resolve(newFilename);
-                Files.copy(imageFile.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-                event.setImageUrl("/uploads/" + newFilename);
-            } catch (IOException e) {
-                event.setImageUrl(getDefaultImage(category));
             }
-        } else {
+        }
+        if (event.getImageUrl() == null || event.getImageUrl().isEmpty()) {
             event.setImageUrl(getDefaultImage(category));
         }
 
@@ -1290,6 +1297,48 @@ public class EventController {
         return "redirect:/events/admin/manage?created=true";
     }
 
+    @RequestMapping(value = "/admin/view/{id}", method = RequestMethod.GET)
+    public String adminViewEvent(@PathVariable Long id, Model model, HttpSession session) {
+        if (!isAdmin(session)) return "redirect:/login";
+
+        Event event = eventRepository.findById(id).orElse(null);
+        if (event == null) return "redirect:/events/admin/manage";
+
+        List<EventRegistration> registrations = eventRegistrationRepository.findByEvent(event);
+        long attendedCount = eventRegistrationRepository.countByEventAndAttendanceMarked(event, true);
+        long registrationCount = eventRegistrationRepository.sumQuantityByEvent(event);
+
+        Integer totalCapacity = event.getMaxParticipants();
+        if (event.getSeatTiers() != null && !event.getSeatTiers().isEmpty() && event.getTotalRows() != null && event.getTotalRows() > 0) {
+            totalCapacity = event.getSeatTiers().stream().mapToInt(EventSeatTier::getCapacity).sum();
+        }
+        int spotsLeft = (totalCapacity != null && totalCapacity > 0)
+                ? Math.max(0, totalCapacity - (int) registrationCount) : -1;
+
+        if ("House Party".equalsIgnoreCase(event.getCategory())) {
+            ladiesPartyDetailsRepository.findByEvent(event).ifPresent(d -> model.addAttribute("lpDetails", d));
+        } else if ("Adventure".equalsIgnoreCase(event.getCategory())) {
+            adventureDetailsRepository.findByEvent(event).ifPresent(d -> model.addAttribute("advDetails", d));
+        } else if ("Trekking".equalsIgnoreCase(event.getCategory())) {
+            trekkingDetailsRepository.findByEvent(event).ifPresent(d -> model.addAttribute("trekDetails", d));
+        } else if ("Bike Riding".equalsIgnoreCase(event.getCategory())) {
+            bikeRidingDetailsRepository.findByEvent(event).ifPresent(d -> model.addAttribute("bikeDetails", d));
+        }
+
+        List<EventSeat> seats = eventSeatRepository.findByEvent(event);
+
+        model.addAttribute("event", event);
+        model.addAttribute("registrations", registrations != null ? registrations : java.util.Collections.emptyList());
+        model.addAttribute("attendedCount", attendedCount);
+        model.addAttribute("totalCapacity", totalCapacity != null ? totalCapacity : 0);
+        model.addAttribute("registrationCount", registrationCount);
+        model.addAttribute("spotsLeft", spotsLeft);
+        model.addAttribute("seats", seats != null ? seats : java.util.Collections.emptyList());
+        model.addAttribute("activeSubpage", "all");
+
+        return "admin-event-details";
+    }
+
     @RequestMapping(value = "/admin/edit/{id}", method = RequestMethod.GET)
     public String showEditEventForm(@PathVariable Long id, Model model, HttpSession session) {
         if (!isAdmin(session)) return "redirect:/login";
@@ -1314,7 +1363,7 @@ public class EventController {
             @RequestParam(required = false, defaultValue = "Offline") String eventMode,
             @RequestParam(required = false) String meetingLink,
             @RequestParam String status,
-            @RequestParam(required = false) MultipartFile imageFile,
+            @RequestParam(value = "imageFile", required = false) MultipartFile[] imageFiles,
             @RequestParam(required = false) String votingStartDate,
             @RequestParam(required = false) String votingEndDate,
             @RequestParam(required = false, defaultValue = "0") Integer totalRows,
@@ -1373,23 +1422,27 @@ public class EventController {
         } catch (Exception ignored) {}
 
         // Handle File Upload for edit
-        if (imageFile != null && !imageFile.isEmpty()) {
-            try {
-                String originalFilename = imageFile.getOriginalFilename();
-                String extension = "";
-                if(originalFilename != null && originalFilename.contains(".")) {
-                    extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+        if (imageFiles != null && imageFiles.length > 0) {
+            for (MultipartFile file : imageFiles) {
+                if (file != null && !file.isEmpty()) {
+                    try {
+                        String originalFilename = file.getOriginalFilename();
+                        String extension = "";
+                        if (originalFilename != null && originalFilename.contains(".")) {
+                            extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+                        }
+                        String newFilename = UUID.randomUUID().toString() + extension;
+                        Path uploadDir = Paths.get("src/main/resources/static/uploads");
+                        if (!Files.exists(uploadDir)) {
+                            Files.createDirectories(uploadDir);
+                        }
+                        Path filePath = uploadDir.resolve(newFilename);
+                        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+                        event.setImageUrl("/uploads/" + newFilename);
+                    } catch (IOException e) {
+                        // Keep existing
+                    }
                 }
-                String newFilename = UUID.randomUUID().toString() + extension;
-                Path uploadDir = Paths.get("src/main/resources/static/uploads");
-                if (!Files.exists(uploadDir)) {
-                    Files.createDirectories(uploadDir);
-                }
-                Path filePath = uploadDir.resolve(newFilename);
-                Files.copy(imageFile.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-                event.setImageUrl("/uploads/" + newFilename);
-            } catch (IOException e) {
-                // Keep existing
             }
         }
 
@@ -1894,9 +1947,13 @@ public class EventController {
 
 
     private boolean isAdmin(HttpSession session) {
-        Object authUser = httpServletRequest.getAttribute("authenticatedUser");
+        if (session == null) return false;
+        Object authUser = httpServletRequest != null ? httpServletRequest.getAttribute("authenticatedUser") : null;
         if ("admin".equals(authUser)) return true;
-        return "admin".equals(session.getAttribute("user"));
+        Object u = session.getAttribute("user");
+        if ("admin".equals(u)) return true;
+        if (u instanceof com.example.demo.model.User && "admin".equalsIgnoreCase(((com.example.demo.model.User) u).getUsername())) return true;
+        return "admin".equals(session.getAttribute("admin"));
     }
 
     private String getDefaultImage(String category) {

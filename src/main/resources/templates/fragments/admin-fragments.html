@@ -41,10 +41,6 @@
                 <i class="fas fa-rotate" id="syncIcon"></i>
                 <span class="d-none">Live Sync</span>
             </button>
-            <a th:href="@{/events/admin/create}" class="nav-btn" style="background: #10b981; color: white !important; border-color: #10b981;" title="Create Event">
-                <i class="fas fa-plus-circle"></i>
-                <span class="d-none">New Event</span>
-            </a>
             <button onclick="toggleAdminTheme()" class="theme-toggle-btn" title="Toggle Theme" aria-label="Toggle Theme">
                 <i id="themeToggleIcon" class="fas fa-moon"></i>
             </button>
@@ -71,19 +67,19 @@
 
         <!-- Overview Subtabs -->
         <div class="sidebar-subtabs" id="overviewSubtabs" th:if="${activePage == 'overview'}">
-            <a th:href="@{/admin#users-section}" class="sidebar-subtab" onclick="scrollToAdminSection('users-section')">
+            <a th:href="@{/admin#users-section}" class="sidebar-subtab" onclick="return scrollToAdminSection('users-section', event);">
                 <span><i class="fas fa-users" style="font-size: 12px; margin-right: 6px;"></i> Users</span>
                 <span class="sidebar-badge" id="sb-users-count" th:text="${users != null ? users.size() : (totalUsers != null ? totalUsers : '0')}">0</span>
             </a>
-            <a th:href="@{/admin#posts-section}" class="sidebar-subtab" onclick="scrollToAdminSection('posts-section')">
+            <a th:href="@{/admin#posts-section}" class="sidebar-subtab" onclick="return scrollToAdminSection('posts-section', event);">
                 <span><i class="fas fa-shield-alt" style="font-size: 12px; margin-right: 6px;"></i> Moderate Content</span>
                 <span class="sidebar-badge" id="sb-posts-count" th:text="${posts != null ? posts.size() : '0'}">0</span>
             </a>
-            <a th:href="@{/admin#support-inquiries-section}" class="sidebar-subtab" onclick="scrollToAdminSection('support-inquiries-section')">
+            <a th:href="@{/admin#support-inquiries-section}" class="sidebar-subtab" onclick="return scrollToAdminSection('support-inquiries-section', event);">
                 <span><i class="fas fa-headset" style="font-size: 12px; margin-right: 6px;"></i> Support</span>
                 <span class="sidebar-badge sidebar-badge-alert" id="sb-support-count" th:text="${contactMessages != null ? contactMessages.size() : '0'}">0</span>
             </a>
-            <a th:href="@{/admin#rewards-section}" class="sidebar-subtab" onclick="scrollToAdminSection('rewards-section')">
+            <a th:href="@{/admin#rewards-section}" class="sidebar-subtab" onclick="return scrollToAdminSection('rewards-section', event);">
                 <span><i class="fas fa-gift" style="font-size: 12px; margin-right: 6px;"></i> Rewards Config</span>
                 <span class="sidebar-badge sidebar-badge-success">XP</span>
             </a>
@@ -200,12 +196,64 @@
             }
 
             // ── Scroll to Section Handler ──
-            function scrollToAdminSection(sectionId) {
+            function scrollToAdminSection(sectionId, event) {
+                var e = event || window.event;
+                if (e) {
+                    try { if (e.preventDefault) e.preventDefault(); } catch (err) {}
+                    try { e.returnValue = false; } catch (err) {}
+                }
                 var el = document.getElementById(sectionId);
+                if (!el && (sectionId === 'rewards-section' || sectionId.indexOf('reward') !== -1)) {
+                    el = document.querySelector('[data-section="rewards-section"]') ||
+                         document.querySelector('[name="rewards-section"]') ||
+                         document.getElementById('rewards-section-anchor');
+                    if (!el) {
+                        var allH2 = document.querySelectorAll('h1, h2, h3, h4');
+                        for (var i = 0; i < allH2.length; i++) {
+                            if (allH2[i].textContent && allH2[i].textContent.indexOf('Reward Coin System') !== -1) {
+                                el = allH2[i];
+                                break;
+                            }
+                        }
+                    }
+                }
                 if (el) {
-                    el.scrollIntoView({ behavior: 'smooth' });
+                    var nav = document.querySelector('.admin-navbar') || document.querySelector('.dashboard-navbar');
+                    var navHeight = nav ? Math.max(nav.offsetHeight, 75) : 80;
+                    var rect = el.getBoundingClientRect();
+                    var scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+                    var targetTop = rect.top + scrollTop - navHeight - 15;
+
+                    window.scrollTo({
+                        top: Math.max(0, targetTop),
+                        behavior: 'smooth'
+                    });
+
+                    try {
+                        history.replaceState(null, null, '#' + sectionId);
+                    } catch (err) {}
+                } else if (!window.location.pathname.endsWith('/admin')) {
+                    window.location.href = '/admin#' + sectionId;
+                }
+                return false;
+            }
+
+            function handleAdminHashScroll() {
+                var hash = window.location.hash;
+                if (hash && hash.length > 1) {
+                    var targetId = hash.substring(1);
+                    setTimeout(function() {
+                        scrollToAdminSection(targetId);
+                    }, 100);
+                    setTimeout(function() {
+                        scrollToAdminSection(targetId);
+                    }, 400);
                 }
             }
+
+            window.addEventListener('DOMContentLoaded', handleAdminHashScroll);
+            window.addEventListener('load', handleAdminHashScroll);
+            window.addEventListener('hashchange', handleAdminHashScroll);
 
             // ── Theme Toggle Handler ──
             function toggleAdminTheme() {

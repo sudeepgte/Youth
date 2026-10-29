@@ -1,0 +1,7 @@
+# Ignore all user-uploaded media files (images, videos, audio)
+*
+!.gitignore
+!events/
+!events/.gitignore
+!reels/
+!reels/.gitignore

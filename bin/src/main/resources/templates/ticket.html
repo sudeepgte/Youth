@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Confirmed | Youthians</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 80px 20px 60px;
+        }
+
+        /* â”€â”€ Top nav â”€â”€ */
+        .topbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: rgba(10, 10, 20, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            z-index: 100;
+        }
+
+        .brand {
+            font-weight: 900;
+            font-size: 1.2rem;
+            background: linear-gradient(135deg, #f84464, #ff6b9d);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-links a {
+            color: rgba(255, 255, 255, 0.6);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            margin-left: 20px;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: #fff;
+        }
+
+        /* â”€â”€ Success Header â”€â”€ */
+        .success-header {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: fadeSlideIn 0.6s ease both;
+        }
+
+        @keyframes fadeSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .success-icon-wrap {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background: rgba(16, 185, 129, 0.12);
+            border: 2px solid rgba(16, 185, 129, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 22px;
+            font-size: 36px;
+            color: #10b981;
+            animation: popIn 0.5s ease 0.2s both;
+        }
+
+        @keyframes popIn {
+            0% {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+
+            80% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .success-header h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+        }
+
+        .success-header p {
+            color: rgba(255, 255, 255, 0.45);
+            font-size: 15px;
+        }
+
+        /* â”€â”€ Ticket â”€â”€ */
+        .ticket-wrapper {
+            width: 100%;
+            max-width: 680px;
+            animation: fadeSlideIn 0.6s ease 0.15s both;
+        }
+
+        .ticket {
+            background: linear-gradient(135deg, #12122a 0%, #1a0e2e 100%);
+            border: 1px solid rgba(248, 68, 100, 0.25);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(248, 68, 100, 0.1);
+            position: relative;
+        }
+
+        /* Decorative circles */
+        .ticket::before {
+            content: '';
+            position: absolute;
+            top: -60px;
+            right: -60px;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(248, 68, 100, 0.15) 0%, transparent 70%);
+        }
+
+        .ticket::after {
+            content: '';
+            position: absolute;
+            bottom: -40px;
+            left: -40px;
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.12) 0%, transparent 70%);
+        }
+
+        /* â”€â”€ Ticket Top â”€â”€ */
+        .ticket-top {
+            position: relative;
+            display: flex;
+            gap: 0;
+            overflow: hidden;
+        }
+
+        .ticket-banner {
+            width: 220px;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .ticket-banner img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .ticket-banner-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to right, transparent 60%, rgba(18, 18, 42, 1));
+        }
+
+        .ticket-header-info {
+            flex: 1;
+            padding: 28px 28px 20px;
+        }
+
+        .ticket-cat {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(248, 68, 100, 0.15);
+            border: 1px solid rgba(248, 68, 100, 0.3);
+            color: #f84464;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 800;
+            margin-bottom: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        .ticket-event-name {
+            font-size: 1.5rem;
+            font-weight: 900;
+            line-height: 1.2;
+            margin-bottom: 12px;
+            color: #fff;
+        }
+
+        .ticket-date-venue {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .tdv-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.55);
+        }
+
+        .tdv-row i {
+            color: #f84464;
+            width: 14px;
+            text-align: center;
+        }
+
+        /* â”€â”€ Perforation â”€â”€ */
+        .perforated {
+            position: relative;
+            margin: 0 20px;
+            border-top: 2px dashed rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .perf-circle {
+            width: 32px;
+            height: 32px;
+            background: #0a0a0f;
+            border-radius: 50%;
+            position: absolute;
+            top: -16px;
+        }
+
+        .perf-circle.left {
+            left: -36px;
+        }
+
+        .perf-circle.right {
+            right: -36px;
+        }
+
+        /* â”€â”€ Ticket Body â”€â”€ */
+        .ticket-body {
+            padding: 24px 28px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+        }
+
+        .ticket-field label {
+            display: block;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: rgba(255, 255, 255, 0.35);
+            margin-bottom: 5px;
+        }
+
+        .ticket-field .val {
+            font-size: 14px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        /* â”€â”€ Ticket Footer (Ticket ID + QR) â”€â”€ */
+        .ticket-footer {
+            padding: 0 28px 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .ticket-id-block {
+            flex: 1;
+        }
+
+        .ticket-id-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: rgba(255, 255, 255, 0.3);
+            margin-bottom: 8px;
+        }
+
+        .ticket-id-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.6rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, #f84464, #ff6b9d, #8b5cf6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .ticket-status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #10b981;
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 800;
+            margin-top: 10px;
+        }
+
+        .mini-qr {
+            width: 90px;
+            height: 90px;
+            flex-shrink: 0;
+            background: #fff;
+            border-radius: 10px;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Zentrix watermark */
+        .ticket-watermark {
+            position: absolute;
+            top: 50%;
+            right: 28px;
+            transform: translateY(-50%) rotate(-45deg);
+            font-size: 4rem;
+            font-weight: 900;
+            opacity: 0.03;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        /* â”€â”€ Action Buttons â”€â”€ */
+        .ticket-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 28px;
+            animation: fadeSlideIn 0.6s ease 0.3s both;
+        }
+
+        .btn-action {
+            flex: 1;
+            padding: 14px 20px;
+            border-radius: 13px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 9px;
+            transition: all 0.2s;
+            text-decoration: none;
+            border: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #f84464, #ff6b9d);
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(248, 68, 100, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(248, 68, 100, 0.55);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.06);
+            color: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        /* â”€â”€ Confetti â”€â”€ */
+        .confetti-piece {
+            position: fixed;
+            top: -10px;
+            width: 8px;
+            height: 8px;
+            border-radius: 2px;
+            animation: confettiFall linear forwards;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        @keyframes confettiFall {
+            0% {
+                transform: translateY(-10px) rotate(0deg);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(110vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+        @media print {
+            body { background: #fff !important; padding: 0 !important; margin: 0 !important; }
+            .topbar, .success-header, .ticket-actions, .confetti-piece { display: none !important; }
+            .ticket-wrapper, .ticket { box-shadow: none !important; margin: 0 !important; width: 100% !important; max-width: 100% !important; }
+            .ticket { background: #fff !important; border: 2px solid #000 !important; }
+            .ticket::before, .ticket::after { display: none !important; }
+            .ticket-banner-overlay { display: none !important; }
+            .perforated { border-top: 2px dashed #000 !important; }
+            .perf-circle { background: #fff !important; border: 2px solid #000 !important; }
+            .ticket-id-value { background: none !important; -webkit-text-fill-color: #000 !important; }
+            .mini-qr { border: 1px solid #ccc !important; }
+            * { color: #000 !important; text-shadow: none !important; }
+            .ticket-cat, .ticket-status-badge { border: 1px solid #000 !important; background: transparent !important; }
+            /* Handle inline styles for selected tickets / rewards */
+            div[style*="border: 1px solid rgba(255,255,255,0.08)"] { border: 1px solid #ccc !important; }
+            span[style*="background: rgba(255,255,255,0.1)"] { border: 1px solid #000 !important; }
+        }
+    </style>
+    <script defer th:src="@{/js/game-rewards.js}"></script>
+</head>
+
+<body>
+    <!-- Topbar -->
+    <div class="topbar">
+        <div class="brand">Youthians</div>
+        <div class="nav-links">
+            <a th:href="@{/events}">Browse Events</a>
+            <a th:href="@{/dashboard}">Dashboard</a>
+        </div>
+    </div>
+
+    <!-- â&bull;â&bull;â&bull;â&bull;â&bull; Success Header â&bull;â&bull;â&bull;â&bull;â&bull; -->
+    <div class="success-header">
+        <div class="success-icon-wrap"><i class="fas fa-check"></i></div>
+        <h1>You're Registered!</h1>
+        <p th:if="${registration.paymentStatus == 'PAID'}">Payment confirmed &middot; Your ticket is ready below</p>
+        <p th:if="${registration.paymentStatus != 'PAID'}">Registration successful &middot; Your free ticket is ready below</p>
+    </div>
+
+    <!-- â&bull;â&bull;â&bull;â&bull;â&bull; TICKET â&bull;â&bull;â&bull;â&bull;â&bull; -->
+    <div class="ticket-wrapper">
+        <div class="ticket" id="ticketCard">
+            <!-- Public Verification Banner (Only shows when scanned/public) -->
+            <div th:if="${session.user == null}"
+                style="background: #10b981; color: #fff; padding: 12px; text-align: center; font-weight: 800; font-size: 13px; text-transform: uppercase; letter-spacing: 2px; border-radius: 20px 20px 0 0;">
+                <i class="fas fa-shield-check"></i> Youthians Official Verified Ticket
+            </div>
+            <div class="ticket-watermark">YOUTHIANS</div>
+
+            <!-- Top Section -->
+            <div class="ticket-top">
+                <div class="ticket-banner">
+                    <img th:src="${event.imageUrl}" alt="event"
+                        onerror="this.src='https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400'">
+                    <div class="ticket-banner-overlay"></div>
+                </div>
+                <div class="ticket-header-info">
+                    <div class="ticket-cat">
+                        <i class="fas fa-tag"></i>
+                        <span th:text="${event.category}">Category</span>
+                    </div>
+                    <div class="ticket-event-name" th:text="${event.title}">Event Name</div>
+                    <div class="ticket-date-venue">
+                        <div class="tdv-row">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span
+                                th:text="${event.dateTime != null ? #temporals.format(event.dateTime, 'EEEE, MMMM dd yyyy') : 'TBA'}">Date</span>
+                        </div>
+                        <div class="tdv-row">
+                            <i class="fas fa-clock"></i>
+                            <span
+                                th:text="${event.dateTime != null ? #temporals.format(event.dateTime, 'hh:mm a') : 'TBA'}">Time</span>
+                        </div>
+                        <div class="tdv-row">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span th:text="${event.venue}">Venue</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Perforation -->
+            <div class="perforated" style="margin: 0;">
+                <div class="perf-circle left"></div>
+                <div class="perf-circle right"></div>
+            </div>
+
+            <!-- Body: Ticket Fields -->
+            <div class="ticket-body">
+                <div class="ticket-field">
+                    <label>Attendee Name</label>
+                    <div class="val" th:text="${canSeePII ? (registration.fullName != null ? registration.fullName : user.username) : 'Verified Attendee'}">
+                        Name</div>
+                </div>
+                <div class="ticket-field">
+                    <label>Email</label>
+                    <div class="val" style="font-size:12px;"
+                        th:text="${canSeePII ? (registration.email != null ? registration.email : '&mdash;') : '&bull;&bull;&bull;&bull;@&bull;&bull;&bull;&bull;.com'}">email@email.com</div>
+                </div>
+                <div class="ticket-field">
+                    <label>Phone</label>
+                    <div class="val" th:text="${canSeePII ? (registration.phone != null ? registration.phone : '&mdash;') : '&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;'}">Phone</div>
+                </div>
+                <div class="ticket-field">
+                    <label>College / Org</label>
+                    <div class="val" style="font-size:12px;"
+                        th:text="${registration.college != null ? registration.college : '&mdash;'}">&mdash;</div>
+                </div>
+                <div class="ticket-field">
+                    <label>Year of Study</label>
+                    <div class="val" th:text="${registration.yearOfStudy != null ? registration.yearOfStudy : '&mdash;'}">&mdash;
+                    </div>
+                </div>
+                <div class="ticket-field">
+                    <label>Amount Paid</label>
+                    <div class="val" th:text="${registration.totalPrice != null and registration.totalPrice > 0 ? '₹' + #numbers.formatDecimal(registration.totalPrice, 1, 0) : (event.price == null or event.price == 'Free' or event.price == '0' ? 'Free' : '₹0')}">Free</div>
+                </div>
+                
+                <!-- Secret Reward Section -->
+                <div th:if="${event.enableSecretRewards}" style="grid-column: span 3; margin-top: 15px; background: rgba(255,215,0,0.05); border: 1px dashed rgba(255,215,0,0.3); border-radius: 12px; padding: 15px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <h4 style="color:#ffd700; margin-bottom:5px; font-weight:700;"><i class="fas fa-gift"></i> Secret Reward</h4>
+                            <p style="font-size:12px; color:rgba(255,255,255,0.7);" th:if="${!registration.attendanceMarked and event.status != 'COMPLETED'}">Unlock after QR Check-In</p>
+                            <p style="font-size:12px; color:rgba(255,255,255,0.7);" th:if="${(registration.attendanceMarked or event.status == 'COMPLETED') and !registration.rewardRevealed}">Your reward is ready to be revealed!</p>
+                            <p style="font-size:12px; color:rgba(255,255,255,0.7);" th:if="${(registration.attendanceMarked or event.status == 'COMPLETED') and registration.rewardRevealed and userReward != null}">Sponsored by <span th:text="${userReward.secretReward.businessName}">Business</span></p>
+                        </div>
+                        
+                        <div th:if="${!registration.attendanceMarked and event.status != 'COMPLETED'}">
+                            <div style="background: rgba(255,68,68,0.2); color:#ff4444; padding:6px 12px; border-radius:8px; font-size:12px; font-weight:700;">
+                                <i class="fas fa-lock"></i> Locked
+                            </div>
+                        </div>
+                        
+                        <div th:if="${(registration.attendanceMarked or event.status == 'COMPLETED') and !registration.rewardRevealed}">
+                            <button th:onclick="'revealReward(' + ${registration.id} + ')'" style="background: linear-gradient(135deg, #ffd700, #f59e0b); color:#000; border:none; padding:8px 16px; border-radius:8px; font-weight:800; cursor:pointer;">
+                                Reveal Reward
+                            </button>
+                        </div>
+                        
+                        <div th:if="${(registration.attendanceMarked or event.status == 'COMPLETED') and registration.rewardRevealed and userReward != null}">
+                            <div style="background: rgba(16,185,129,0.2); color:#10b981; padding:12px; border-radius:8px; font-size:14px; font-weight:800; border: 1px solid rgba(16,185,129,0.3);">
+                                <div style="margin-bottom: 5px; font-size: 16px;"><i class="fas fa-check-circle"></i> <span th:text="${userReward.secretReward.rewardName}">Reward Name</span></div>
+                                
+                                <div th:if="${event.eventMode == 'Offline'}">
+                                    <div th:if="${userReward.secretReward.redeemStallNumber != null and !userReward.secretReward.redeemStallNumber.isEmpty()}" style="margin-top: 10px; font-size: 12px; color: #fff; background: rgba(0,0,0,0.3); padding: 8px; border-radius: 6px;">
+                                        <div style="color: rgba(255,255,255,0.7); text-transform: uppercase; font-size: 10px; margin-bottom: 3px;">Redeem At</div>
+                                        <div style="font-weight: 700;">Stall <span th:text="${userReward.secretReward.redeemStallNumber}">A1</span></div>
+                                    </div>
+                                    
+                                    <div th:if="${userReward.secretReward.storeName != null and !userReward.secretReward.storeName.isEmpty()}" style="margin-top: 10px; font-size: 12px; color: #fff; background: rgba(0,0,0,0.3); padding: 8px; border-radius: 6px; line-height: 1.4;">
+                                        <div style="color: rgba(255,255,255,0.7); text-transform: uppercase; font-size: 10px; margin-bottom: 5px;">Redeem In-Store</div>
+                                        <div style="font-weight: 700; color: #10b981;"><i class="fas fa-store"></i> <span th:text="${userReward.secretReward.storeName}">Store</span></div>
+                                        <div><i class="fas fa-map-marker-alt" style="width: 14px; text-align: center; color: rgba(255,255,255,0.5);"></i> <span th:text="${userReward.secretReward.storeAddress}">Address</span></div>
+                                        <div th:if="${userReward.secretReward.storeContact != null and !userReward.secretReward.storeContact.isEmpty()}"><i class="fas fa-phone" style="width: 14px; text-align: center; color: rgba(255,255,255,0.5);"></i> <span th:text="${userReward.secretReward.storeContact}">Contact</span></div>
+                                        <div style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.2);">
+                                            <span style="color: rgba(255,255,255,0.7);">Coupon Code:</span>
+                                            <span style="background: #10b981; color: #000; padding: 2px 6px; border-radius: 4px; font-family: monospace; font-weight: 900; letter-spacing: 1px;" th:text="${userReward.secretReward.couponCode}">CODE</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div th:if="${event.eventMode == 'Online'}" style="margin-top: 10px; font-size: 12px; color: #fff; background: rgba(59,130,246,0.2); padding: 10px; border-radius: 6px; border: 1px solid rgba(59,130,246,0.3);">
+                                    <div style="color: #3b82f6; text-transform: uppercase; font-size: 10px; font-weight: 800; margin-bottom: 8px; letter-spacing: 1px;"><i class="fas fa-truck"></i> Delivery Information</div>
+                                    <div style="margin-bottom: 5px;">
+                                        <span style="color: rgba(255,255,255,0.7); display: inline-block; width: 110px;">Delivery Method:</span>
+                                        <span style="font-weight: 700; color: #fff;" th:text="${userReward.secretReward.deliveryMethod != null ? userReward.secretReward.deliveryMethod : 'Home Delivery'}">Home Delivery</span>
+                                    </div>
+                                    <div style="margin-bottom: 5px;">
+                                        <span style="color: rgba(255,255,255,0.7); display: inline-block; width: 110px;">Estimated:</span>
+                                        <span style="font-weight: 700; color: #fff;" th:text="${userReward.secretReward.estimatedDelivery != null ? userReward.secretReward.estimatedDelivery : '3-5 Business Days'}">3-5 Business Days</span>
+                                    </div>
+                                    <div>
+                                        <span style="color: rgba(255,255,255,0.7); display: inline-block; width: 110px;">Delivery Type:</span>
+                                        <span style="font-weight: 700; color: #fff;" th:text="${userReward.secretReward.deliveryType != null ? userReward.secretReward.deliveryType : 'Courier Delivery'}">Courier Delivery</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div th:if="${not #lists.isEmpty(bookedSeats)}" style="grid-column: span 3; margin-top: 15px;">
+                    <label style="color: rgba(255,255,255,0.5); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; display: block;">Selected Tickets</label>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <div th:each="type : ${#sets.toSet(bookedSeats.![seatType])}" 
+                             style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px;">
+                            
+                            <div style="margin-bottom: 10px;">
+                                <span th:if="${type == 'VIP'}" style="background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #000; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; letter-spacing: 1px;"><i class="fas fa-star"></i> VIP</span>
+                                <span th:if="${type == 'PREMIUM'}" style="background: linear-gradient(135deg, #a855f7, #9333ea); color: #fff; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; letter-spacing: 1px;"><i class="fas fa-gem"></i> PREMIUM</span>
+                                <span th:if="${type == 'REGULAR'}" style="background: linear-gradient(135deg, #3b82f6, #2563eb); color: #fff; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; letter-spacing: 1px;"><i class="fas fa-ticket-alt"></i> REGULAR</span>
+                                <span th:if="${type == 'STUDENT'}" style="background: linear-gradient(135deg, #06b6d4, #0891b2); color: #fff; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; letter-spacing: 1px;"><i class="fas fa-graduation-cap"></i> STUDENT</span>
+                                <span th:if="${type != 'VIP' and type != 'PREMIUM' and type != 'REGULAR' and type != 'STUDENT'}" style="background: linear-gradient(135deg, #10b981, #059669); color: #fff; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; letter-spacing: 1px;"><i class="fas fa-tag"></i> <span th:text="${type}">CATEGORY</span></span>
+                            </div>
+                            
+                            <div style="color: rgba(255,255,255,0.6); font-size: 0.75rem; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">Seats:</div>
+                            
+                            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                                <th:block th:each="seat : ${bookedSeats}">
+                                    <span th:if="${seat.seatType == type}" 
+                                          th:text="${seat.seatIdentifier}" 
+                                          style="background: rgba(255,255,255,0.1); padding: 5px 10px; border-radius: 6px; font-size: 1.1rem; color: #fff; font-weight: 700; border: 1px solid rgba(255,255,255,0.15);">
+                                    </span>
+                                </th:block>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer: Ticket ID + Mini QR -->
+            <div class="ticket-footer">
+                <div class="ticket-id-block">
+                    <div class="ticket-id-label">Ticket ID</div>
+                    <div class="ticket-id-value" th:text="${registration.ticketId}">ZTX-GA-XXXXXX</div>
+                    <div class="ticket-status-badge">
+                        <i class="fas fa-check-circle"></i>
+                        <span th:text="${registration.registrationStatus}">REGISTERED</span>
+                    </div>
+                </div>
+                <!-- QR Code linking to verification URL -->
+                <div class="mini-qr">
+                    <img th:src="'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' + ${ticketUrl}"
+                        alt="QR Code" style="width:100%; height:100%; object-fit:contain;">
+                </div>
+            </div>
+        </div><!-- /ticket -->
+
+        <!-- Action Buttons -->
+        <div class="ticket-actions">
+            <button class="btn-action btn-secondary" onclick="printTicket()">
+                <i class="fas fa-print"></i> Print Ticket
+            </button>
+            <a th:href="@{/events}" class="btn-action btn-primary">
+                <i class="fas fa-calendar-alt"></i> Browse More Events
+            </a>
+            <a th:href="@{/dashboard}" class="btn-action btn-secondary">
+                <i class="fas fa-home"></i> Dashboard
+            </a>
+        </div>
+
+    </div><!-- /ticket-wrapper -->
+
+    <script>
+        // â”€â”€ Confetti on load â”€â”€
+        (function spawnConfetti() {
+            const colors = ['#f84464', '#ff6b9d', '#10b981', '#8b5cf6', '#f59e0b', '#3b82f6'];
+            for (let i = 0; i < 70; i++) {
+                setTimeout(() => {
+                    const el = document.createElement('div');
+                    el.className = 'confetti-piece';
+                    el.style.left = Math.random() * 100 + 'vw';
+                    el.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    el.style.width = (Math.random() * 10 + 5) + 'px';
+                    el.style.height = (Math.random() * 10 + 5) + 'px';
+                    el.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+                    el.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                    el.style.animationDelay = (Math.random() * 0.5) + 's';
+                    document.body.appendChild(el);
+                    el.addEventListener('animationend', () => el.remove());
+                }, i * 30);
+            }
+        })();
+
+        // ── Print Ticket ──
+        function printTicket() {
+            window.print();
+        }
+
+        // Auto-print if ?download=true is in the URL
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('download') === 'true') {
+                setTimeout(function() {
+                    window.print();
+                }, 500); // Slight delay to ensure styles and fonts are loaded
+            }
+        };
+    </script>
+    <script>
+        function revealReward(registrationId) {
+            fetch('/rewards/reveal/' + registrationId, { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.reload();
+                    } else {
+                        alert(data.message || "Failed to reveal reward.");
+                    }
+                })
+                .catch(err => alert("Error revealing reward"));
+        }
+    </script>
+</body>
+
+</html>
+

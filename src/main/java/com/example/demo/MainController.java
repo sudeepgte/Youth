@@ -546,7 +546,7 @@ public class MainController {
     @GetMapping("/admin/battles")
     @Transactional
     public String adminBattles(Model model, HttpSession session) {
-        if (!"admin".equals(session.getAttribute("user")))
+        if (!isAdminSession(session))
             return "redirect:/login";
 
         List<Battle> battles = battleRepository.findAllByOrderByCreatedAtDesc();
@@ -629,7 +629,7 @@ public class MainController {
             HttpSession session,
             RedirectAttributes redirectAttributes
     ) {
-        if (!"admin".equals(session.getAttribute("user")))
+        if (!isAdminSession(session))
             return "redirect:/login";
 
         User targetUser = userRepository.findById(id).orElse(null);
@@ -705,7 +705,7 @@ public class MainController {
             @org.springframework.web.bind.annotation.RequestParam boolean blocked,
             HttpSession session
     ) {
-        if (!"admin".equals(session.getAttribute("user")))
+        if (!isAdminSession(session))
             return "redirect:/login";
 
         Post post = postRepository.findById(id).orElse(null);

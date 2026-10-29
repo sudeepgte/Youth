@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="admin-head(title)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title}">Youthian Admin Portal</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script defer th:src="@{/js/game-rewards.js}"></script>
+</head>
+<body>
+
+    <!-- Unified Navbar Fragment -->
+    <header th:fragment="admin-navbar(activePage)" class="admin-navbar dashboard-navbar">
+        <link rel="stylesheet" th:href="@{/css/admin.css}">
+        <div class="admin-navbar-left">
+            <button class="mobile-menu-btn" onclick="toggleAdminMobileMenu()" aria-label="Toggle Menu">
+                <i class="fas fa-bars"></i>
+            </button>
+            <a th:href="@{/admin}" class="admin-logo dashboard-logo">
+                <svg width="28" height="28" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="yg-adm" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#6b21a8" />
+                            <stop offset="50%" stop-color="#2563eb" />
+                            <stop offset="100%" stop-color="#0ea5e9" />
+                        </linearGradient>
+                    </defs>
+                    <circle cx="50" cy="22" r="12" fill="url(#yg-adm)" />
+                    <path d="M 25 25 Q 40 50 45 65 L 45 90 Q 55 90 55 65 Q 60 50 80 25 Q 65 45 55 55 L 45 55 Q 35 45 25 25 Z" fill="url(#yg-adm)" />
+                    <path d="M 15 60 Q 50 90 90 40 Q 80 50 50 80 Q 25 70 15 60 Z" fill="url(#yg-adm)" />
+                    <polygon points="75,10 80,15 85,10 80,5" fill="#0ea5e9" />
+                </svg>
+                <span>Youthian Admin</span>
+            </a>
+        </div>
+
+        <div class="admin-navbar-right">
+            <button onclick="refreshRealtimeStatsNow()" class="nav-btn" title="Refresh Live Data" id="manualSyncBtn">
+                <i class="fas fa-rotate" id="syncIcon"></i>
+                <span class="d-none">Live Sync</span>
+            </button>
+            <button onclick="toggleAdminTheme()" class="theme-toggle-btn" title="Toggle Theme" aria-label="Toggle Theme">
+                <i id="themeToggleIcon" class="fas fa-moon"></i>
+            </button>
+            <a th:href="@{/logout}" class="nav-btn" style="color: #ef4444 !important; border-color: rgba(239, 68, 68, 0.3);" title="Sign out of Admin Session">
+                <i class="fas fa-sign-out-alt"></i>
+                <span class="d-none">Logout</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- Unified Sidebar Fragment -->
+    <aside th:fragment="admin-sidebar(activePage, activeSubpage)" class="admin-sidebar sidebar">
+        <link rel="stylesheet" th:href="@{/css/admin.css}">
+        <div class="sidebar-section-title">Navigation &amp; Controls</div>
+
+        <!-- 1. Overview -->
+        <a th:href="@{/admin}" class="sidebar-link" th:classappend="${activePage == 'overview'} ? 'active' : ''">
+            <span class="sidebar-link-content">
+                <i class="fas fa-chart-line"></i>
+                <span>Overview</span>
+            </span>
+            <i class="fas fa-chevron-right" style="font-size: 11px; opacity: 0.6;"></i>
+        </a>
+
+        <!-- Overview Subtabs -->
+        <div class="sidebar-subtabs" id="overviewSubtabs" th:if="${activePage == 'overview'}">
+            <a th:href="@{/admin#users-section}" class="sidebar-subtab" onclick="return scrollToAdminSection('users-section', event);">
+                <span><i class="fas fa-users" style="font-size: 12px; margin-right: 6px;"></i> Users</span>
+                <span class="sidebar-badge" id="sb-users-count" th:text="${users != null ? users.size() : (totalUsers != null ? totalUsers : '0')}">0</span>
+            </a>
+            <a th:href="@{/admin#posts-section}" class="sidebar-subtab" onclick="return scrollToAdminSection('posts-section', event);">
+                <span><i class="fas fa-shield-alt" style="font-size: 12px; margin-right: 6px;"></i> Moderate Content</span>
+                <span class="sidebar-badge" id="sb-posts-count" th:text="${posts != null ? posts.size() : '0'}">0</span>
+            </a>
+            <a th:href="@{/admin#support-inquiries-section}" class="sidebar-subtab" onclick="return scrollToAdminSection('support-inquiries-section', event);">
+                <span><i class="fas fa-headset" style="font-size: 12px; margin-right: 6px;"></i> Support</span>
+                <span class="sidebar-badge sidebar-badge-alert" id="sb-support-count" th:text="${contactMessages != null ? contactMessages.size() : '0'}">0</span>
+            </a>
+            <a th:href="@{/admin#rewards-section}" class="sidebar-subtab" onclick="return scrollToAdminSection('rewards-section', event);">
+                <span><i class="fas fa-gift" style="font-size: 12px; margin-right: 6px;"></i> Rewards Config</span>
+                <span class="sidebar-badge sidebar-badge-success">XP</span>
+            </a>
+        </div>
+
+        <div class="sidebar-section-title">Management</div>
+
+        <!-- 2. Events -->
+        <a th:href="@{/events/admin/manage}" class="sidebar-link" th:classappend="${activePage == 'events'} ? 'active' : ''">
+            <span class="sidebar-link-content">
+                <i class="fas fa-calendar-alt"></i>
+                <span>Manage Events</span>
+            </span>
+            <span class="sidebar-badge" id="sb-events-count" th:text="${totalEvents != null ? totalEvents : '0'}">0</span>
+        </a>
+        <div class="sidebar-subtabs" th:if="${activePage == 'events'}">
+            <a th:href="@{/events/admin/manage}" class="sidebar-subtab" th:classappend="${activeSubpage == 'all' or activeSubpage == null or activeSubpage == 'none'} ? 'active' : ''">
+                <span>All Events</span>
+            </a>
+            <a th:href="@{/events/admin/manage(status='UPCOMING')}" class="sidebar-subtab" th:classappend="${activeSubpage == 'upcoming'} ? 'active' : ''">
+                <span>Upcoming</span>
+                <span class="sidebar-badge" id="sb-upcoming-count" th:text="${upcomingCount != null ? upcomingCount : (upcomingEvents != null ? upcomingEvents : '0')}">0</span>
+            </a>
+            <a th:href="@{/events/admin/manage(status='ONGOING')}" class="sidebar-subtab" th:classappend="${activeSubpage == 'ongoing'} ? 'active' : ''">
+                <span>Ongoing</span>
+                <span class="sidebar-badge" id="sb-ongoing-count" th:text="${ongoingCount != null ? ongoingCount : (ongoingEvents != null ? ongoingEvents : '0')}">0</span>
+            </a>
+            <a th:href="@{/events/admin/manage(status='VOTING')}" class="sidebar-subtab" th:classappend="${activeSubpage == 'voting'} ? 'active' : ''">
+                <span>Active Polls</span>
+                <span class="sidebar-badge sidebar-badge-alert" id="sb-voting-count" th:text="${votingCount != null ? votingCount : '0'}">0</span>
+            </a>
+        </div>
+
+        <!-- 3. Create Event -->
+        <a th:href="@{/events/admin/create}" class="sidebar-link" th:classappend="${activePage == 'create-event'} ? 'active' : ''">
+            <span class="sidebar-link-content">
+                <i class="fas fa-plus-circle"></i>
+                <span>Create Event</span>
+            </span>
+            <i class="fas fa-sparkles" style="font-size: 11px; color: #10b981;"></i>
+        </a>
+
+        <!-- 4. Battles -->
+        <a th:href="@{/admin/battles}" class="sidebar-link" th:classappend="${activePage == 'battles'} ? 'active' : ''">
+            <span class="sidebar-link-content">
+                <i class="fas fa-fire"></i>
+                <span>Manage Battles</span>
+            </span>
+            <span class="sidebar-badge" id="sb-battles-count" th:text="${totalBattles != null ? totalBattles : '0'}">0</span>
+        </a>
+
+        <!-- 5. Tournaments -->
+        <a th:href="@{/admin/tournaments}" class="sidebar-link" th:classappend="${activePage == 'tournaments'} ? 'active' : ''">
+            <span class="sidebar-link-content">
+                <i class="fas fa-trophy"></i>
+                <span>Tournaments</span>
+            </span>
+            <i class="fas fa-crown" style="font-size: 12px; color: #f59e0b;"></i>
+        </a>
+        <div class="sidebar-subtabs" th:if="${activePage == 'tournaments'}">
+            <a th:href="@{/admin/tournaments}" class="sidebar-subtab" th:classappend="${activeSubpage == 'all' or activeSubpage == 'none'} ? 'active' : ''">
+                <span>All Tournaments</span>
+            </a>
+            <a th:href="@{/admin/tournaments/create}" class="sidebar-subtab" th:classappend="${activeSubpage == 'create'} ? 'active' : ''">
+                <span><i class="fas fa-plus" style="font-size: 10px; margin-right: 4px;"></i> Create New</span>
+            </a>
+        </div>
+
+        <!-- 6. Advertisements -->
+        <a th:href="@{/admin/advertisements}" class="sidebar-link" th:classappend="${activePage == 'advertisements'} ? 'active' : ''">
+            <span class="sidebar-link-content">
+                <i class="fas fa-rectangle-ad"></i>
+                <span>Manage Ads</span>
+            </span>
+            <span class="sidebar-badge" id="sb-ads-count" th:text="${totalAds != null ? totalAds : '0'}">0</span>
+        </a>
+        <div class="sidebar-subtabs" th:if="${activePage == 'advertisements'}">
+            <a th:href="@{/admin/advertisements}" class="sidebar-subtab" th:classappend="${activeSubpage == 'all' or activeSubpage == 'none'} ? 'active' : ''">
+                <span>All Ads</span>
+            </a>
+            <a th:href="@{/admin/advertisements/new}" class="sidebar-subtab" th:classappend="${activeSubpage == 'new'} ? 'active' : ''">
+                <span><i class="fas fa-plus" style="font-size: 10px; margin-right: 4px;"></i> Create Ad</span>
+            </a>
+        </div>
+
+        <!-- 7. Withdrawals & Finances -->
+        <a th:href="@{/admin/withdrawals}" class="sidebar-link" th:classappend="${activePage == 'withdrawals'} ? 'active' : ''">
+            <span class="sidebar-link-content">
+                <i class="fas fa-wallet"></i>
+                <span>Withdrawals</span>
+            </span>
+            <span class="sidebar-badge sidebar-badge-alert" id="sb-withdrawals-count">0</span>
+        </a>
+        <div class="sidebar-subtabs" th:if="${activePage == 'withdrawals'}">
+            <a th:href="@{/admin/withdrawals}" class="sidebar-subtab active">
+                <span>Pending Approvals</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Unified Realtime Scripts Fragment -->
+    <div th:fragment="admin-scripts">
+        <script>
+            // ── Mobile Menu Handler ──
+            function toggleAdminMobileMenu() {
+                var sidebar = document.querySelector('.admin-sidebar') || document.querySelector('.sidebar');
+                var overlay = document.querySelector('.mobile-menu-overlay');
+                if (sidebar) {
+                    sidebar.classList.toggle('mobile-open');
+                }
+                if (overlay) {
+                    overlay.classList.toggle('active');
+                }
+            }
+
+            // ── Scroll to Section Handler ──
+            function scrollToAdminSection(sectionId, event) {
+                var e = event || window.event;
+                if (e) {
+                    try { if (e.preventDefault) e.preventDefault(); } catch (err) {}
+                    try { e.returnValue = false; } catch (err) {}
+                }
+                var el = document.getElementById(sectionId);
+                if (!el && (sectionId === 'rewards-section' || sectionId.indexOf('reward') !== -1)) {
+                    el = document.querySelector('[data-section="rewards-section"]') ||
+                         document.querySelector('[name="rewards-section"]') ||
+                         document.getElementById('rewards-section-anchor');
+                    if (!el) {
+                        var allH2 = document.querySelectorAll('h1, h2, h3, h4');
+                        for (var i = 0; i < allH2.length; i++) {
+                            if (allH2[i].textContent && allH2[i].textContent.indexOf('Reward Coin System') !== -1) {
+                                el = allH2[i];
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (el) {
+                    var nav = document.querySelector('.admin-navbar') || document.querySelector('.dashboard-navbar');
+                    var navHeight = nav ? Math.max(nav.offsetHeight, 75) : 80;
+                    var rect = el.getBoundingClientRect();
+                    var scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+                    var targetTop = rect.top + scrollTop - navHeight - 15;
+
+                    window.scrollTo({
+                        top: Math.max(0, targetTop),
+                        behavior: 'smooth'
+                    });
+
+                    try {
+                        history.replaceState(null, null, '#' + sectionId);
+                    } catch (err) {}
+                } else if (!window.location.pathname.endsWith('/admin')) {
+                    window.location.href = '/admin#' + sectionId;
+                }
+                return false;
+            }
+
+            function handleAdminHashScroll() {
+                var hash = window.location.hash;
+                if (hash && hash.length > 1) {
+                    var targetId = hash.substring(1);
+                    setTimeout(function() {
+                        scrollToAdminSection(targetId);
+                    }, 100);
+                    setTimeout(function() {
+                        scrollToAdminSection(targetId);
+                    }, 400);
+                }
+            }
+
+            window.addEventListener('DOMContentLoaded', handleAdminHashScroll);
+            window.addEventListener('load', handleAdminHashScroll);
+            window.addEventListener('hashchange', handleAdminHashScroll);
+
+            // ── Theme Toggle Handler ──
+            function toggleAdminTheme() {
+                var currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+                var newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', newTheme);
+                if (newTheme === 'dark') {
+                    document.body.classList.add('dark-theme');
+                } else {
+                    document.body.classList.remove('dark-theme');
+                }
+                localStorage.setItem('admin_theme', newTheme);
+                localStorage.setItem('zentrix_theme', newTheme);
+                updateThemeIcon(newTheme);
+            }
+
+            function updateThemeIcon(theme) {
+                var icon = document.getElementById('themeToggleIcon');
+                if (icon) {
+                    if (theme === 'dark') {
+                        icon.className = 'fas fa-sun';
+                        icon.style.color = '#f59e0b';
+                    } else {
+                        icon.className = 'fas fa-moon';
+                        icon.style.color = 'inherit';
+                    }
+                }
+            }
+
+            // Initialize Theme immediately
+            (function initTheme() {
+                var savedTheme = localStorage.getItem('admin_theme') || localStorage.getItem('zentrix_theme');
+                if (!savedTheme) {
+                    savedTheme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                }
+                document.documentElement.setAttribute('data-theme', savedTheme);
+                if (savedTheme === 'dark') {
+                    document.body.classList.add('dark-theme');
+                }
+                updateThemeIcon(savedTheme);
+            })();
+
+            // ── Live Clock Handler ──
+            function updateLiveClock() {
+                var clock = document.getElementById('liveClock');
+                if (clock) {
+                    var now = new Date();
+                    clock.textContent = now.toLocaleTimeString();
+                }
+            }
+            setInterval(updateLiveClock, 1000);
+            updateLiveClock();
+
+            // ── Realtime Telemetry Poller ──
+            var isFetchingStats = false;
+            function fetchRealtimeStats() {
+                if (isFetchingStats) return;
+                isFetchingStats = true;
+
+                fetch('/api/admin/realtime-stats', { credentials: 'same-origin' })
+                    .then(function(res) {
+                        if (!res.ok) throw new Error('Status ' + res.status);
+                        return res.json();
+                    })
+                    .then(function(data) {
+                        updateElementText('sb-users-count', data.totalUsers);
+                        updateElementText('sb-posts-count', data.totalPosts);
+                        updateElementText('sb-events-count', data.totalEvents);
+                        updateElementText('sb-upcoming-count', data.upcomingEvents);
+                        updateElementText('sb-ongoing-count', data.ongoingEvents);
+                        updateElementText('sb-voting-count', data.votingEvents);
+                        updateElementText('sb-battles-count', data.totalBattles);
+                        updateElementText('sb-support-count', data.supportInquiries);
+                        updateElementText('sb-withdrawals-count', data.pendingWithdrawals > 0 ? data.pendingWithdrawals : '0');
+
+                        // Update Page Cards if present
+                        updateElementText('live-total-users', data.totalUsers);
+                        updateElementText('live-active-online', data.activeOnlineUsers);
+                        updateElementText('live-total-events', data.totalEvents);
+                        updateElementText('live-upcoming-events', data.upcomingEvents);
+                        updateElementText('live-ongoing-events', data.ongoingEvents);
+                        updateElementText('live-voting-count', data.votingEvents);
+                        updateElementText('live-total-battles', data.totalBattles);
+                        updateElementText('live-running-battles', data.runningBattles);
+                        updateElementText('live-total-joined', data.totalJoinedUsers);
+                        updateElementText('live-admin-commission', '₹' + data.formattedCommission);
+                        updateElementText('live-pending-withdrawals', data.pendingWithdrawals);
+                        updateElementText('live-support-inquiries', data.supportInquiries);
+                    })
+                    .catch(function(err) {
+                        // Silent catch
+                    })
+                    .finally(function() {
+                        isFetchingStats = false;
+                    });
+            }
+
+            function updateElementText(id, val) {
+                var el = document.getElementById(id);
+                if (el && val !== undefined && val !== null) {
+                    if (el.textContent !== String(val)) {
+                        el.textContent = val;
+                    }
+                }
+            }
+
+            function refreshRealtimeStatsNow() {
+                var syncIcon = document.getElementById('syncIcon');
+                if (syncIcon) {
+                    syncIcon.classList.add('fa-spin');
+                }
+                fetchRealtimeStats();
+                setTimeout(function() {
+                    if (syncIcon) syncIcon.classList.remove('fa-spin');
+                }, 800);
+            }
+
+            // Start polling every 5 seconds
+            setInterval(fetchRealtimeStats, 5000);
+            document.addEventListener('DOMContentLoaded', function() {
+                setTimeout(fetchRealtimeStats, 600);
+            });
+        </script>
+    </div>
+
+</body>
+</html>

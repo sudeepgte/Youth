@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/admin-fragments :: admin-head('Manage Tournament | Youthian Admin')}">
+    <meta charset="UTF-8">
+    <title>Manage Tournament</title>
+</head>
+<body>
+
+    <!-- Unified Admin Top Navbar -->
+    <div th:replace="~{fragments/admin-fragments :: admin-navbar('tournaments')}"></div>
+
+    <div class="admin-layout-container dashboard-container">
+        <div class="mobile-menu-overlay" onclick="toggleAdminMobileMenu()"></div>
+        <!-- Unified Left Sidebar -->
+        <aside th:replace="~{fragments/admin-fragments :: admin-sidebar('tournaments', 'none')}"></aside>
+
+        <!-- Main Content -->
+        <main class="social-feed" style="max-width: 100%; padding-bottom: 60px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px;">
+                <div>
+                    <a th:href="@{/admin/tournaments}" class="nav-btn" style="margin-bottom: 10px; display: inline-flex;">
+                        <i class="fas fa-arrow-left"></i> All Tournaments
+                    </a>
+                    <h1 style="margin: 0; color: var(--text-primary); font-weight: 900; font-size: 26px;" th:text="${tournament.name}">Tournament Name</h1>
+                    <div style="display: flex; align-items: center; gap: 10px; margin-top: 8px;">
+                        <span style="padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 800; text-transform: uppercase;"
+                              th:style="${tournament.status == 'REGISTRATION_OPEN' ? 'background: #dcfce7; color: #166534;' : (tournament.status == 'IN_PROGRESS' ? 'background: #fee2e2; color: #991b1b;' : (tournament.status == 'COMPLETED' ? 'background: #fef9c3; color: #854d0e;' : 'background: #f1f5f9; color: #475569;'))}"
+                              th:text="${tournament.status}"></span>
+                        <span style="font-size: 12px; font-weight: 700; color: #0284c7; background: rgba(2,132,199,0.1); padding: 4px 10px; border-radius: 8px;" th:text="${tournament.mode}">ONLINE</span>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                    <!-- Offline check-in button -->
+                    <a th:if="${tournament.mode == 'OFFLINE'}" th:href="@{/admin/tournaments/{id}/checkin(id=${tournament.id})}" class="nav-btn" style="background: #3b82f6; color: white; border: none;">
+                        <i class="fas fa-qrcode"></i> QR Ticket Check-in
+                    </a>
+
+                    <!-- Status Changer -->
+                    <form th:action="@{/admin/tournaments/{id}/status(id=${tournament.id})}" method="post" style="display: flex; align-items: center; gap: 8px; background: var(--card-bg); padding: 6px 12px; border-radius: 12px; border: 1px solid var(--glass-border);">
+                        <select name="status" style="padding: 6px 10px; border: 1px solid var(--glass-border); border-radius: 8px; font-size: 13px; font-weight: 700; background: rgba(255,255,255,0.8);">
+                            <option value="DRAFT" th:selected="${tournament.status == 'DRAFT'}">DRAFT</option>
+                            <option value="REGISTRATION_OPEN" th:selected="${tournament.status == 'REGISTRATION_OPEN'}">REGISTRATION OPEN</option>
+                            <option value="IN_PROGRESS" th:selected="${tournament.status == 'IN_PROGRESS'}">IN PROGRESS</option>
+                            <option value="COMPLETED" th:selected="${tournament.status == 'COMPLETED'}">COMPLETED</option>
+                        </select>
+                        <button type="submit" class="nav-btn" style="padding: 6px 12px; font-size: 13px;">Save</button>
+                    </form>
+
+                    <!-- Start Tournament Button -->
+                    <form th:if="${tournament.status == 'REGISTRATION_OPEN'}" th:action="@{/admin/tournaments/{id}/start(id=${tournament.id})}" method="post">
+                        <button type="submit" class="nav-btn" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 10px 18px; font-weight: 800;" onclick="return confirm('Close registrations and initialize the knockout bracket?');">
+                            <i class="fas fa-play"></i> Generate Bracket &amp; Start
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div th:if="${param.error}" style="background: #fee2e2; color: #dc2626; padding: 14px 20px; border-radius: 12px; margin-bottom: 20px; font-weight: 700; border: 1px solid #f87171;">
+                <i class="fas fa-circle-exclamation"></i> Action failed: <span th:text="${param.error}"></span>
+            </div>
+
+            <!-- Details Card -->
+            <div style="background: var(--card-bg); border: 1px solid var(--glass-border); border-radius: 20px; padding: 28px; margin-bottom: 24px; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px;">
+                    <div>
+                        <h3 style="margin-top: 0; color: var(--text-primary); font-size: 17px;"><i class="fas fa-circle-info" style="color: #0284c7; margin-right: 6px;"></i> Specifications</h3>
+                        <div style="margin-bottom: 12px;">
+                            <div style="font-size: 11px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase;">Category</div>
+                            <div style="font-size: 15px; font-weight: 600; color: var(--text-primary);" th:text="${tournament.type}"></div>
+                        </div>
+                        <div style="margin-bottom: 12px;">
+                            <div style="font-size: 11px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase;">Description</div>
+                            <div style="font-size: 14px; color: var(--text-primary); line-height: 1.5;" th:text="${tournament.description}"></div>
+                        </div>
+                        <div style="margin-bottom: 12px;">
+                            <div style="font-size: 11px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase;">Match Duration</div>
+                            <div style="font-size: 15px; font-weight: 600; color: var(--text-primary);" th:text="${tournament.battleDurationMinutes + ' mins'}"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 style="margin-top: 0; color: var(--text-primary); font-size: 17px;"><i class="fas fa-calendar" style="color: #8b5cf6; margin-right: 6px;"></i> Timeline</h3>
+                        <div style="margin-bottom: 12px;">
+                            <div style="font-size: 11px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase;">Registration Window</div>
+                            <div style="font-size: 14px; font-weight: 600; color: var(--text-primary);" th:text="${#temporals.format(tournament.registrationStart, 'dd MMM yyyy, HH:mm') + ' -> ' + #temporals.format(tournament.registrationEnd, 'dd MMM yyyy, HH:mm')}"></div>
+                        </div>
+                        <div style="margin-bottom: 12px;">
+                            <div style="font-size: 11px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase;">Tournament Starts</div>
+                            <div style="font-size: 14px; font-weight: 600; color: var(--text-primary);" th:text="${#temporals.format(tournament.tournamentStart, 'dd MMM yyyy, HH:mm')}"></div>
+                        </div>
+                        <div th:if="${tournament.venue != null and !tournament.venue.isEmpty()}" style="margin-bottom: 12px;">
+                            <div style="font-size: 11px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase;">Venue Location</div>
+                            <div style="font-size: 14px; font-weight: 700; color: #f84464;" th:text="${tournament.venue}"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Participants Card -->
+            <div style="background: var(--card-bg); border: 1px solid var(--glass-border); border-radius: 20px; padding: 28px; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+                    <h3 style="margin: 0; color: var(--text-primary); font-size: 17px;"><i class="fas fa-users" style="color: #10b981; margin-right: 6px;"></i> Registered Competitors</h3>
+                    <span class="sidebar-badge" style="font-size: 13px; padding: 4px 12px;" th:text="${(tournament.participants != null ? tournament.participants.size() : 0) + ' / ' + tournament.maxParticipants}">0 / 16</span>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px;">
+                    <div th:each="p : ${tournament.participants}" style="background: rgba(255,255,255,0.6); padding: 12px 16px; border-radius: 12px; border: 1px solid var(--glass-border); display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-user-circle" style="color: #0284c7; font-size: 20px;"></i>
+                        <div>
+                            <strong style="color: var(--text-primary); font-size: 14px;" th:text="${p.user.username}">Username</strong>
+                            <small th:if="${p.checkedIn}" style="display: block; color: #10b981; font-weight: 800; font-size: 11px;">✓ CHECKED IN</small>
+                        </div>
+                    </div>
+                    <div th:if="${tournament.participants == null or tournament.participants.isEmpty()}" style="grid-column: 1 / -1; text-align: center; color: var(--text-secondary); padding: 30px;">
+                        No participants registered yet.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Winner Banner if completed -->
+            <div th:if="${tournament.winner != null}" style="margin-top: 24px; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 20px; padding: 28px; text-align: center; color: white;">
+                <h2 style="margin: 0 0 6px 0; font-size: 22px;"><i class="fas fa-crown"></i> Official Tournament Champion</h2>
+                <div style="font-size: 28px; font-weight: 900;" th:text="'@' + ${tournament.winner.username}">Winner</div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Unified Admin Realtime Scripts -->
+    <div th:replace="~{fragments/admin-fragments :: admin-scripts}"></div>
+</body>
+</html>

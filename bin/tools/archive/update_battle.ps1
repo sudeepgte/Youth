@@ -1,0 +1,3 @@
+$c = Get-Content 'src\main\java\com\example\demo\model\Battle.java' -Raw
+$c = $c -replace 'public void setPrize3\(Double prize3\) \{ this\.prize3 = prize3; \}', "public void setPrize3(Double prize3) { this.prize3 = prize3; }`r`n`r`n    private Double adminCommissionPct = 7.0;`r`n    public Double getAdminCommissionPct() { return adminCommissionPct; }`r`n    public void setAdminCommissionPct(Double adminCommissionPct) { this.adminCommissionPct = adminCommissionPct; }`r`n`r`n    private Boolean payoutReleased = false;`r`n    public Boolean getPayoutReleased() { return payoutReleased; }`r`n    public void setPayoutReleased(Boolean payoutReleased) { this.payoutReleased = payoutReleased; }"
+Set-Content 'src\main\java\com\example\demo\model\Battle.java' -Value $c

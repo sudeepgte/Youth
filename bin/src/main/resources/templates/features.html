@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/template :: head('Features | Youthians')}">
+    <meta charset="UTF-8">
+    <script defer th:src="@{/js/game-rewards.js}"></script>
+</head>
+
+<body>
+
+    <div th:replace="~{fragments/template :: navbar('features')}"></div>
+
+    <div class="about-hero">
+        <h1 style="font-size: 48px;">Why Choose Us?</h1>
+    </div>
+
+    <!-- Features Grid -->
+    <section class="container">
+        <div class="features-grid">
+            <div class="feature-card">
+                <i class="fas fa-ticket-alt feature-icon"></i>
+                <h3 style="margin-bottom: 15px; font-size: 22px;">Instant Booking</h3>
+                <p style="color: var(--text-secondary);">Book tickets in seconds with our lightning-fast interface. No
+                    waiting, no hassle.</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-couch feature-icon"></i>
+                <h3 style="margin-bottom: 15px; font-size: 22px;">Choose Your Seats</h3>
+                <p style="color: var(--text-secondary);">Select the perfect seat with our interactive seating chart.
+                    Comfort guaranteed.</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-star feature-icon"></i>
+                <h3 style="margin-bottom: 15px; font-size: 22px;">Exclusive Loyalty</h3>
+                <p style="color: var(--text-secondary);">Earn points with every booking and redeem them for free tickets
+                    and snacks.</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-mobile-alt feature-icon"></i>
+                <h3 style="margin-bottom: 15px; font-size: 22px;">M-Ticket</h3>
+                <p style="color: var(--text-secondary);">Go paperless with our M-Ticket. Just scan your phone at the
+                    entrance.</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-shield-alt feature-icon"></i>
+                <h3 style="margin-bottom: 15px; font-size: 22px;">Secure Payments</h3>
+                <p style="color: var(--text-secondary);">Your transactions are safe with our bank-grade security
+                    encryption.</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-headset feature-icon"></i>
+                <h3 style="margin-bottom: 15px; font-size: 22px;">24/7 Support</h3>
+                <p style="color: var(--text-secondary);">We are always here to help you with any issues or queries,
+                    anytime.</p>
+            </div>
+        </div>
+
+    </section>
+
+
+    <footer th:replace="~{fragments/template :: footer}"></footer>
+
+</body>
+
+</html>

@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${event.title} + ' &middot; Admin Event Overview | Youthian'">Event Details &middot; Admin</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-gradient: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+            --text-primary: #0f172a;
+            --text-secondary: #334155;
+            --text-muted: #64748b;
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --glass-border: rgba(255, 255, 255, 0.7);
+            --dashboard-nav-height: 64px;
+            --primary: #0284c7;
+            --primary-hover: #0369a1;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --purple: #8b5cf6;
+        }
+
+        html, body {
+            overflow-x: clip !important;
+            background: var(--bg-gradient) !important;
+            color: var(--text-primary) !important;
+            min-height: 100vh;
+        }
+
+        /* Top Breadcrumb & Action Toolbar */
+        .view-header-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 22px;
+            padding: 4px 0;
+        }
+
+        .breadcrumb-nav {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .breadcrumb-link {
+            color: var(--primary) !important;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        .breadcrumb-link:hover {
+            color: var(--primary-hover) !important;
+            text-decoration: underline;
+        }
+
+        .breadcrumb-sep {
+            color: #94a3b8;
+        }
+
+        .breadcrumb-current {
+            color: #1e293b;
+            font-weight: 600;
+            max-width: 320px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .header-action-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .action-pill-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 18px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none !important;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .btn-ghost {
+            background: #ffffff !important;
+            color: #1e293b !important;
+            border: 1px solid #cbd5e1 !important;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .btn-ghost:hover {
+            background: #f8fafc !important;
+            color: #0f172a !important;
+            border-color: #94a3b8 !important;
+            transform: translateY(-1px);
+        }
+
+        .btn-edit-gradient {
+            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
+            color: #ffffff !important;
+            border: none !important;
+            box-shadow: 0 3px 10px rgba(2, 132, 199, 0.35);
+        }
+
+        .btn-edit-gradient:hover {
+            background: linear-gradient(135deg, #0369a1 0%, #075985 100%) !important;
+            color: #ffffff !important;
+            transform: translateY(-1px);
+            box-shadow: 0 5px 14px rgba(2, 132, 199, 0.45);
+        }
+
+        .btn-attendance-pill {
+            background: #eef2ff !important;
+            color: #4338ca !important;
+            border: 1px solid #c7d2fe !important;
+        }
+
+        .btn-attendance-pill:hover {
+            background: #e0e7ff !important;
+            color: #3730a3 !important;
+            transform: translateY(-1px);
+        }
+
+        .btn-results-pill {
+            background: #fef3c7 !important;
+            color: #b45309 !important;
+            border: 1px solid #fde68a !important;
+        }
+
+        .btn-results-pill:hover {
+            background: #fde68a !important;
+            color: #92400e !important;
+            transform: translateY(-1px);
+        }
+
+        /* Hero Event Card */
+        .hero-view-card {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 26px;
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.06), 0 4px 12px -2px rgba(0, 0, 0, 0.03);
+            margin-bottom: 24px;
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 28px;
+            align-items: stretch;
+        }
+
+        @media (max-width: 960px) {
+            .hero-view-card {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Poster Box with ambient glow */
+        .poster-wrapper {
+            width: 100%;
+            min-height: 280px;
+            border-radius: 16px;
+            overflow: hidden;
+            position: relative;
+            background: #f8fafc;
+            border: 1px solid rgba(226, 232, 240, 0.9);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .poster-ambient {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: blur(20px);
+            opacity: 0.28;
+            transform: scale(1.15);
+        }
+
+        .poster-main-img {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            height: 100%;
+            max-height: 340px;
+            object-fit: cover;
+            border-radius: 14px;
+            display: block;
+        }
+
+        /* Hero Right Column */
+        .hero-details-col {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .badge-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .tag-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+        }
+
+        .tag-cat { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+        .tag-upcoming { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+        .tag-ongoing { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+        .tag-completed { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+        .tag-voting { background: #f3e8ff; color: #6b21a8; border: 1px solid #e9d5ff; }
+        .tag-mode { background: #f1f5f9; color: #334155; border: 1px solid #e2e8f0; }
+        .tag-fee { background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; }
+        .tag-id { background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; }
+
+        .hero-event-heading {
+            font-size: 26px;
+            font-weight: 800;
+            color: #0f172a;
+            line-height: 1.3;
+            letter-spacing: -0.5px;
+            margin: 0;
+        }
+
+        /* Dedicated Venue Card */
+        .venue-highlight-card {
+            background: rgba(248, 250, 252, 0.95);
+            border: 1px solid rgba(226, 232, 240, 0.9);
+            border-radius: 14px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+        }
+
+        .venue-icon-box {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: #fee2e2;
+            color: #dc2626;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+            border: 1px solid #fecaca;
+        }
+
+        .venue-body {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .venue-top-line {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 4px;
+        }
+
+        .venue-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+        }
+
+        .maps-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 6px;
+            background: #ecfdf5;
+            color: #047857;
+            border: 1px solid #a7f3d0;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .maps-chip:hover {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .venue-text {
+            font-size: 13px;
+            font-weight: 600;
+            color: #1e293b;
+            line-height: 1.5;
+            word-break: break-word;
+        }
+
+        .meeting-room-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #2563eb;
+            text-decoration: underline;
+            margin-top: 6px;
+        }
+
+        /* 3-Column Balanced Specs Grid */
+        .specs-balanced-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        @media (max-width: 720px) {
+            .specs-balanced-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .spec-tile {
+            background: rgba(248, 250, 252, 0.95);
+            border: 1px solid rgba(226, 232, 240, 0.9);
+            border-radius: 12px;
+            padding: 12px 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .spec-tile-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            background: #ffffff;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+            border: 1px solid rgba(226, 232, 240, 0.9);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+        }
+
+        .spec-tile-content {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .spec-tile-lbl {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+        }
+
+        .spec-tile-val {
+            font-size: 12.5px;
+            font-weight: 600;
+            color: #0f172a;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Metrics Strip */
+        .stats-strip-custom {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 900px) {
+            .stats-strip-custom {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-strip-custom {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .metric-tile {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 18px 20px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.03);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .metric-tile:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+        }
+
+        .metric-icon-wrap {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .metric-icon-wrap.blue { background: #e0f2fe; color: #0284c7; }
+        .metric-icon-wrap.green { background: #dcfce7; color: #16a34a; }
+        .metric-icon-wrap.purple { background: #f3e8ff; color: #9333ea; }
+        .metric-icon-wrap.amber { background: #fef3c7; color: #d97706; }
+
+        .metric-val-num {
+            font-size: 24px;
+            font-weight: 800;
+            color: #0f172a;
+            line-height: 1.1;
+        }
+
+        .metric-val-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-top: 3px;
+        }
+
+        /* Detail Cards */
+        .detail-panel-card {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 18px;
+            padding: 24px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+            margin-bottom: 24px;
+        }
+
+        .panel-heading-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 18px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+        }
+
+        .panel-heading-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .panel-heading-title i {
+            color: var(--primary);
+        }
+
+        .event-description-text {
+            font-size: 14px;
+            line-height: 1.75;
+            color: #334155;
+            white-space: pre-line;
+        }
+
+        /* Grid specifications */
+        .specs-grid-4col {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 14px;
+        }
+
+        .spec-box-unit {
+            background: rgba(248, 250, 252, 0.95);
+            border: 1px solid rgba(226, 232, 240, 0.9);
+            border-radius: 12px;
+            padding: 14px 16px;
+        }
+
+        .spec-box-key {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .spec-box-val {
+            font-size: 14px;
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .chips-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 6px;
+        }
+
+        .feature-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 11px;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .feature-chip.active {
+            background: #ecfdf5;
+            border-color: #6ee7b7;
+            color: #047857;
+        }
+
+        /* Seating Matrix Box */
+        .seating-stage-banner {
+            text-align: center;
+            background: linear-gradient(180deg, rgba(2, 132, 199, 0.12) 0%, rgba(2, 132, 199, 0.02) 100%);
+            border: 1px dashed rgba(2, 132, 199, 0.35);
+            border-radius: 8px;
+            padding: 8px;
+            margin: 16px 0;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #0284c7;
+        }
+
+        /* Attendees Table */
+        .table-wrap-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .attendee-data-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 13px;
+        }
+
+        .attendee-data-table th {
+            background: rgba(241, 245, 249, 0.95);
+            color: #475569;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+            padding: 12px 14px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .attendee-data-table td {
+            padding: 13px 14px;
+            color: #1e293b;
+            border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+            vertical-align: middle;
+        }
+
+        .attendee-data-table tr:hover td {
+            background: rgba(248, 250, 252, 0.7);
+        }
+
+        .code-pill {
+            font-family: monospace;
+            font-weight: 700;
+            background: #f1f5f9;
+            padding: 3px 8px;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+            color: #0f172a;
+        }
+
+        .badge-present {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 9px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .badge-pending {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 9px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+        .empty-roster-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #64748b;
+        }
+
+        .empty-roster-state i {
+            font-size: 40px;
+            color: #cbd5e1;
+            margin-bottom: 12px;
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Admin Navigation Bar -->
+    <div th:replace="~{fragments/admin-fragments :: admin-navbar('events')}"></div>
+
+    <!-- Admin Unified Layout Container (Syncs with admin.css) -->
+    <div class="admin-layout-container dashboard-container">
+        <div class="mobile-menu-overlay" onclick="toggleAdminMobileMenu()"></div>
+
+        <!-- Unified Left Sidebar -->
+        <aside th:replace="~{fragments/admin-fragments :: admin-sidebar('events', ${activeSubpage != null ? activeSubpage : 'all'})}"></aside>
+
+        <!-- Main Content Feed -->
+        <main class="social-feed" style="max-width: 100%; padding-bottom: 60px;">
+
+            <!-- Breadcrumb Navigation & Action Toolbar -->
+            <div class="view-header-bar">
+                <div class="breadcrumb-nav">
+                    <a th:href="@{/events/admin/manage}" class="breadcrumb-link">
+                        <i class="fas fa-arrow-left"></i> Manage Events
+                    </a>
+                    <span class="breadcrumb-sep">/</span>
+                    <span class="breadcrumb-current" th:text="${event.title}">Event Details</span>
+                </div>
+
+                <div class="header-action-group">
+                    <a th:href="@{/events/admin/manage}" class="action-pill-btn btn-ghost">
+                        <i class="fas fa-list"></i> All Events
+                    </a>
+                    <a th:href="@{'/events/admin/edit/' + ${event.id}}" class="action-pill-btn btn-edit-gradient">
+                        <i class="fas fa-edit"></i> Edit Event
+                    </a>
+                    <a th:href="@{'/events/admin/' + ${event.id} + '/attendance'}" class="action-pill-btn btn-attendance-pill">
+                        <i class="fas fa-clipboard-check"></i> Attendance
+                    </a>
+                    <a th:href="@{'/events/admin/' + ${event.id} + '/attendance?declare=true'}" class="action-pill-btn btn-results-pill">
+                        <i class="fas fa-trophy"></i> Results
+                    </a>
+                </div>
+            </div>
+
+            <!-- Hero Event Card -->
+            <div class="hero-view-card">
+                <!-- Poster Container with ambient blur and clean fit -->
+                <div class="poster-wrapper">
+                    <img class="poster-ambient"
+                         th:src="${event.imageUrl != null and !event.imageUrl.isEmpty()} ? ${event.imageUrl} : 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800&auto=format&fit=crop'"
+                         alt="Ambient Blur">
+                    <img class="poster-main-img"
+                         th:src="${event.imageUrl != null and !event.imageUrl.isEmpty()} ? ${event.imageUrl} : 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800&auto=format&fit=crop'"
+                         alt="Event Poster"
+                         onerror="this.src='https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800&auto=format&fit=crop'">
+                </div>
+
+                <!-- Hero Details Column -->
+                <div class="hero-details-col">
+                    <div>
+                        <!-- Category, Status, Mode, Fee Badges -->
+                        <div class="badge-bar" style="margin-bottom: 12px;">
+                            <span class="tag-pill tag-cat" th:text="${event.category != null ? event.category : 'General'}">Category</span>
+                            <span class="tag-pill"
+                                  th:classappend="${event.status == 'ONGOING'} ? 'tag-ongoing' : (${event.status == 'COMPLETED'} ? 'tag-completed' : (${event.status == 'VOTING'} ? 'tag-voting' : 'tag-upcoming'))"
+                                  th:text="${event.status != null ? event.status : 'UPCOMING'}">UPCOMING</span>
+                            <span class="tag-pill tag-mode">
+                                <i th:class="${event.eventMode == 'Online' ? 'fas fa-video' : 'fas fa-map-marker-alt'}"></i>
+                                <span th:text="${event.eventMode != null ? event.eventMode : 'Offline'}">Offline</span>
+                            </span>
+                            <span class="tag-pill tag-fee"
+                                  th:text="${event.price != null and !event.price.isEmpty() ? #strings.replace(event.price, '$', '₹') : 'Free'}">Free</span>
+                            <span class="tag-pill tag-id" th:text="'ID: #' + ${event.id}">ID: #11</span>
+                        </div>
+
+                        <!-- Event Title -->
+                        <h1 class="hero-event-heading" th:text="${event.title}">Event Title Name</h1>
+                    </div>
+
+                    <!-- Dedicated Full-Width Venue & Location Row (Prevents Staggered Layout) -->
+                    <div class="venue-highlight-card">
+                        <div class="venue-icon-box">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <div class="venue-body">
+                            <div class="venue-top-line">
+                                <span class="venue-label">Venue / Location</span>
+                                <a th:if="${event.latitude != null and event.longitude != null}"
+                                   th:href="'https://www.google.com/maps/search/?api=1&query=' + ${event.latitude} + ',' + ${event.longitude}"
+                                   target="_blank" class="maps-chip" title="Open in Google Maps">
+                                    <i class="fas fa-location-arrow"></i>
+                                    <span th:text="${#numbers.formatDecimal(event.latitude, 1, 4)} + ', ' + ${#numbers.formatDecimal(event.longitude, 1, 4)}">12.9024, 77.5949</span>
+                                    <i class="fas fa-external-link-alt" style="font-size:9px;"></i>
+                                </a>
+                            </div>
+                            <div class="venue-text" th:text="${event.venue != null and !event.venue.isEmpty() ? event.venue : (event.eventMode == 'Online' ? 'Virtual Online Room' : 'Venue TBA')}">
+                                Venue address details
+                            </div>
+                            <div th:if="${event.eventMode == 'Online' and event.meetingLink != null and !event.meetingLink.isEmpty()}">
+                                <a th:href="${event.meetingLink}" target="_blank" class="meeting-room-link">
+                                    <i class="fas fa-video"></i> Join Virtual Room: <span th:text="${event.meetingLink}">https://meet.google.com</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3-Column Balanced Specs Grid (Date/Time, Organizer, Published Date) -->
+                    <div class="specs-balanced-grid">
+                        <div class="spec-tile">
+                            <div class="spec-tile-icon"><i class="fas fa-calendar-alt"></i></div>
+                            <div class="spec-tile-content">
+                                <span class="spec-tile-lbl">Date & Time</span>
+                                <span class="spec-tile-val" th:text="${event.dateTime != null ? #temporals.format(event.dateTime, 'dd MMM yyyy, hh:mm a') : 'TBA'}">31 Oct 2026, 01:04 PM</span>
+                            </div>
+                        </div>
+
+                        <div class="spec-tile">
+                            <div class="spec-tile-icon" style="color:#6366f1;"><i class="fas fa-user-shield"></i></div>
+                            <div class="spec-tile-content">
+                                <span class="spec-tile-lbl">Organizer</span>
+                                <span class="spec-tile-val" th:text="${event.organizer != null ? event.organizer : 'Youthian Admin'}">Youthian Admin</span>
+                            </div>
+                        </div>
+
+                        <div class="spec-tile">
+                            <div class="spec-tile-icon" style="color:#059669;"><i class="fas fa-clock"></i></div>
+                            <div class="spec-tile-content">
+                                <span class="spec-tile-lbl">Published At</span>
+                                <span class="spec-tile-val" th:text="${event.createdAt != null ? #temporals.format(event.createdAt, 'dd MMM yyyy, hh:mm a') : 'Recently'}">29 Oct 2026, 01:06 PM</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Key Metrics Strip -->
+            <div class="stats-strip-custom">
+                <div class="metric-tile">
+                    <div class="metric-icon-wrap blue"><i class="fas fa-users"></i></div>
+                    <div>
+                        <div class="metric-val-num" th:text="${totalCapacity > 0 ? totalCapacity : 'Unlimited'}">100</div>
+                        <div class="metric-val-label">Total Spot Capacity</div>
+                    </div>
+                </div>
+
+                <div class="metric-tile">
+                    <div class="metric-icon-wrap green"><i class="fas fa-ticket-alt"></i></div>
+                    <div>
+                        <div class="metric-val-num" th:text="${registrationCount}">0</div>
+                        <div class="metric-val-label">Registered Participants</div>
+                    </div>
+                </div>
+
+                <div class="metric-tile">
+                    <div class="metric-icon-wrap purple"><i class="fas fa-clipboard-check"></i></div>
+                    <div>
+                        <div class="metric-val-num" th:text="${attendedCount}">0</div>
+                        <div class="metric-val-label">Attendees Marked</div>
+                    </div>
+                </div>
+
+                <div class="metric-tile">
+                    <div class="metric-icon-wrap amber"><i class="fas fa-chair"></i></div>
+                    <div>
+                        <div class="metric-val-num" th:text="${spotsLeft >= 0 ? spotsLeft : 'Open'}">100</div>
+                        <div class="metric-val-label">Spots Available</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detail Sections -->
+            <!-- Section: Description -->
+            <div class="detail-panel-card">
+                <div class="panel-heading-row">
+                    <h2 class="panel-heading-title"><i class="fas fa-align-left"></i> About This Event</h2>
+                </div>
+                <div class="event-description-text" th:text="${event.description != null and !event.description.isEmpty() ? event.description : 'No description provided for this event.'}">
+                    Event description details will appear here.
+                </div>
+            </div>
+
+            <!-- Section: BMOS Seat Setup Grid (if configured) -->
+            <div class="detail-panel-card" th:if="${event.totalRows != null and event.totalRows > 0}">
+                <div class="panel-heading-row">
+                    <h2 class="panel-heading-title"><i class="fas fa-th"></i> BMOS Seating Configuration</h2>
+                    <span class="tag-pill tag-cat" th:text="${event.seatLayoutType != null ? event.seatLayoutType : 'Standard Layout'}">Standard Layout</span>
+                </div>
+
+                <div class="specs-grid-4col">
+                    <div class="spec-box-unit">
+                        <div class="spec-box-key"><i class="fas fa-arrows-alt-v"></i> Total Seating Rows</div>
+                        <div class="spec-box-val" th:text="${event.totalRows} + ' Rows (A-' + ${#strings.substring('ABCDEFGHIJKLMNOPQRSTUVWXYZ', event.totalRows - 1, event.totalRows)} + ')'">10 Rows</div>
+                    </div>
+
+                    <div class="spec-box-unit">
+                        <div class="spec-box-key"><i class="fas fa-arrows-alt-h"></i> Seats Per Row</div>
+                        <div class="spec-box-val" th:text="${event.seatsPerRow != null ? event.seatsPerRow : 0} + ' Seats'">20 Seats</div>
+                    </div>
+
+                    <div class="spec-box-unit">
+                        <div class="spec-box-key"><i class="fas fa-calculator"></i> Total Grid Capacity</div>
+                        <div class="spec-box-val" th:text="${event.totalRows * (event.seatsPerRow != null ? event.seatsPerRow : 0)} + ' Total Seats'">200 Seats</div>
+                    </div>
+
+                    <div class="spec-box-unit" th:if="${event.vipSeatCount != null and event.vipSeatCount > 0}">
+                        <div class="spec-box-key" style="color:#d97706;"><i class="fas fa-crown"></i> VIP Seats Allocation</div>
+                        <div class="spec-box-val" th:text="${event.vipSeatCount} + ' VIP Seats @ ₹' + ${event.vipPrice}">10 VIP @ ₹500</div>
+                    </div>
+
+                    <div class="spec-box-unit" th:if="${event.regularPrice != null and event.regularPrice > 0}">
+                        <div class="spec-box-key"><i class="fas fa-tag"></i> Regular Seat Price</div>
+                        <div class="spec-box-val" th:text="'₹' + ${event.regularPrice}">₹150</div>
+                    </div>
+                </div>
+
+                <div class="seating-stage-banner">
+                    <i class="fas fa-desktop"></i> SCREEN / STAGE THIS WAY
+                </div>
+            </div>
+
+            <!-- Section: Secret Rewards Partner (if enabled) -->
+            <div class="detail-panel-card" th:if="${event.enableSecretRewards and event.secretRewards != null and !#lists.isEmpty(event.secretRewards)}">
+                <div class="panel-heading-row">
+                    <h2 class="panel-heading-title" style="color:#d97706;"><i class="fas fa-gift"></i> Secret Reward Partner Perks</h2>
+                    <span class="tag-pill" style="background:#fef3c7; color:#b45309;">Exclusive Sponsor</span>
+                </div>
+
+                <div class="specs-grid-4col">
+                    <div class="spec-box-unit" th:each="partner : ${event.secretRewards}">
+                        <div class="spec-box-key"><i class="fas fa-store"></i> Partner Business</div>
+                        <div class="spec-box-val" th:text="${partner.businessName}">Burger House</div>
+
+                        <div style="margin-top:10px; display:flex; flex-direction:column; gap:4px; font-size:12px; color:#475569;">
+                            <div><strong>Category:</strong> <span th:text="${partner.category}">Restaurant</span></div>
+                            <div th:if="${partner.offerDescription != null and !partner.offerDescription.isEmpty()}">
+                                <strong>Perk:</strong> <span th:text="${partner.offerDescription}">Free Burger with Drink</span>
+                            </div>
+                            <div th:if="${partner.couponCode != null and !partner.couponCode.isEmpty()}">
+                                <strong>Coupon:</strong> <code class="code-pill" th:text="${partner.couponCode}">BURGER25</code>
+                            </div>
+                            <div th:if="${partner.quantity != null}">
+                                <strong>Quantity:</strong> <span th:text="${partner.remainingQuantity} + ' / ' + ${partner.quantity} + ' remaining'">10 / 10 remaining</span>
+                            </div>
+                            <div th:if="${partner.deliveryMethod != null and !partner.deliveryMethod.isEmpty()}">
+                                <strong>Redemption:</strong> <span th:text="${partner.deliveryMethod}">Store Pickup</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section: House Party Details -->
+            <div class="detail-panel-card" th:if="${event.category == 'House Party'}">
+                <div class="panel-heading-row">
+                    <h2 class="panel-heading-title"><i class="fas fa-glass-cheers"></i> House Party Specifications</h2>
+                </div>
+                <div class="specs-grid-4col">
+                    <div class="spec-box-unit" th:if="${event.hpPartyType != null}">
+                        <div class="spec-box-key">Party Type</div>
+                        <div class="spec-box-val" th:text="${event.hpPartyType}">Social Gathering</div>
+                    </div>
+                    <div class="spec-box-unit" th:if="${event.hpTheme != null and !event.hpTheme.isEmpty()}">
+                        <div class="spec-box-key">Theme</div>
+                        <div class="spec-box-val" th:text="${event.hpTheme}">Retro Neon</div>
+                    </div>
+                    <div class="spec-box-unit" th:if="${event.hpDressCode != null and !event.hpDressCode.isEmpty()}">
+                        <div class="spec-box-key">Dress Code</div>
+                        <div class="spec-box-val" th:text="${event.hpDressCode}">Smart Casual</div>
+                    </div>
+                    <div class="spec-box-unit" th:if="${event.hpMinimumAge != null or event.hpMaximumAge != null}">
+                        <div class="spec-box-key">Age Bracket</div>
+                        <div class="spec-box-val" th:text="${event.hpMinimumAge != null ? event.hpMinimumAge : '18'} + ' - ' + ${event.hpMaximumAge != null ? event.hpMaximumAge : '35'} + ' yrs'">18 - 35 yrs</div>
+                    </div>
+                    <div class="spec-box-unit" th:if="${event.hpMusicGenre != null and !event.hpMusicGenre.isEmpty()}">
+                        <div class="spec-box-key">Music Genre</div>
+                        <div class="spec-box-val" th:text="${event.hpMusicGenre}">EDM / Pop</div>
+                    </div>
+                    <div class="spec-box-unit" style="grid-column: 1 / -1;">
+                        <div class="spec-box-key">Inclusions & Amenities</div>
+                        <div class="chips-container">
+                            <span class="feature-chip" th:classappend="${event.hpFoodIncluded} ? 'active' : ''"><i class="fas fa-utensils"></i> Food Included</span>
+                            <span class="feature-chip" th:classappend="${event.hpDrinksIncluded} ? 'active' : ''"><i class="fas fa-cocktail"></i> Drinks Included</span>
+                            <span class="feature-chip" th:classappend="${event.hpParkingAvailable} ? 'active' : ''"><i class="fas fa-parking"></i> Parking Available</span>
+                            <span class="feature-chip" th:classappend="${event.hpSecurityAvailable} ? 'active' : ''"><i class="fas fa-shield-alt"></i> Security On-site</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section: Adventure Details -->
+            <div class="detail-panel-card" th:if="${event.category == 'Adventure'}">
+                <div class="panel-heading-row">
+                    <h2 class="panel-heading-title"><i class="fas fa-hiking"></i> Adventure Specifications</h2>
+                </div>
+                <div class="specs-grid-4col">
+                    <div class="spec-box-unit" th:if="${event.advAdventureType != null}">
+                        <div class="spec-box-key">Adventure Type</div>
+                        <div class="spec-box-val" th:text="${event.advAdventureType}">Kayaking</div>
+                    </div>
+                    <div class="spec-box-unit" th:if="${event.advDifficultyLevel != null}">
+                        <div class="spec-box-key">Difficulty Level</div>
+                        <div class="spec-box-val" th:text="${event.advDifficultyLevel}">Moderate</div>
+                    </div>
+                    <div class="spec-box-unit" th:if="${event.advDuration != null}">
+                        <div class="spec-box-key">Duration</div>
+                        <div class="spec-box-val" th:text="${event.advDuration}">Half Day</div>
+                    </div>
+                    <div class="spec-box-unit" th:if="${event.advMinAge != null or event.advMaxAge != null}">
+                        <div class="spec-box-key">Allowed Ages</div>
+                        <div class="spec-box-val" th:text="${event.advMinAge != null ? event.advMinAge : '12'} + ' - ' + ${event.advMaxAge != null ? event.advMaxAge : '50'} + ' yrs'">12 - 50 yrs</div>
+                    </div>
+                    <div class="spec-box-unit" style="grid-column: 1 / -1;">
+                        <div class="spec-box-key">Safety & Verification</div>
+                        <div class="chips-container">
+                            <span class="feature-chip" th:classappend="${event.advSafetyEquipIncluded} ? 'active' : ''"><i class="fas fa-hard-hat"></i> Safety Equipment Provided</span>
+                            <span class="feature-chip" th:classappend="${event.advInstructorAvailable} ? 'active' : ''"><i class="fas fa-user-check"></i> Certified Instructor</span>
+                            <span class="feature-chip" th:classappend="${event.advInsuranceIncluded} ? 'active' : ''"><i class="fas fa-file-contract"></i> Insurance Covered</span>
+                            <span class="feature-chip" th:classappend="${event.advMedicalCertRequired} ? 'active' : ''"><i class="fas fa-heartbeat"></i> Medical Certificate Required</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section: Trekking Details -->
+            <div class="detail-panel-card" th:if="${event.category == 'Trekking'}">
+                <div class="panel-heading-row">
+                    <h2 class="panel-heading-title"><i class="fas fa-mountain"></i> Trekking Specifications</h2>
+                </div>
+                <div class="specs-grid-4col">
+                    <div class="spec-box-unit" th:if="${event.trTrekDifficulty != null}">
+                        <div class="spec-box-key">Trek Difficulty</div>
+                        <div class="spec-box-val" th:text="${event.trTrekDifficulty}">Moderate</div>
+                    </div>
+                    <div class="spec-box-unit" th:if="${event.trTrekDistance != null}">
+                        <div class="spec-box-key">Trek Distance</div>
+                        <div class="spec-box-val" th:text="${event.trTrekDistance} + ' KM'">12 KM</div>
+                    </div>
+                    <div class="spec-box-unit" th:if="${event.trTrekDuration != null}">
+                        <div class="spec-box-key">Duration</div>
+                        <div class="spec-box-val" th:text="${event.trTrekDuration}">1 Night, 2 Days</div>
+                    </div>
+                    <div class="spec-box-unit" th:if="${event.trTrekHeight != null and !event.trTrekHeight.isEmpty()}">
+                        <div class="spec-box-key">Peak Altitude</div>
+                        <div class="spec-box-val" th:text="${event.trTrekHeight}">1,890 m</div>
+                    </div>
+                    <div class="spec-box-unit" th:if="${event.trMeetingPoint != null and !event.trMeetingPoint.isEmpty()}">
+                        <div class="spec-box-key">Meeting Point</div>
+                        <div class="spec-box-val" th:text="${event.trMeetingPoint}">Base Camp Point</div>
+                    </div>
+                    <div class="spec-box-unit" th:if="${event.trReportingTime != null and !event.trReportingTime.isEmpty()}">
+                        <div class="spec-box-key">Reporting Time</div>
+                        <div class="spec-box-val" th:text="${event.trReportingTime}">06:00 AM</div>
+                    </div>
+                    <div class="spec-box-unit" style="grid-column: 1 / -1;">
+                        <div class="spec-box-key">Trek Facilities Included</div>
+                        <div class="chips-container">
+                            <span class="feature-chip" th:classappend="${event.trGuideIncluded} ? 'active' : ''"><i class="fas fa-compass"></i> Guide Included</span>
+                            <span class="feature-chip" th:classappend="${event.trCampingIncluded} ? 'active' : ''"><i class="fas fa-campground"></i> Camping Tents</span>
+                            <span class="feature-chip" th:classappend="${event.trFoodIncluded} ? 'active' : ''"><i class="fas fa-utensils"></i> Food Provided</span>
+                            <span class="feature-chip" th:classappend="${event.trTransportIncluded} ? 'active' : ''"><i class="fas fa-bus"></i> Transport Provided</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section: Bike Riding Details -->
+            <div class="detail-panel-card" th:if="${event.category == 'Bike Riding'}">
+                <div class="panel-heading-row">
+                    <h2 class="panel-heading-title"><i class="fas fa-motorcycle"></i> Bike Expedition Specifications</h2>
+                </div>
+                <div class="specs-grid-4col">
+                    <div class="spec-box-unit" th:if="${event.bkRideType != null}">
+                        <div class="spec-box-key">Ride Type</div>
+                        <div class="spec-box-val" th:text="${event.bkRideType}">Highway Cruise</div>
+                    </div>
+                    <div class="spec-box-unit" th:if="${event.bkRideDistance != null}">
+                        <div class="spec-box-key">Total Distance</div>
+                        <div class="spec-box-val" th:text="${event.bkRideDistance} + ' KM'">250 KM</div>
+                    </div>
+                    <div class="spec-box-unit" th:if="${event.bkStartLocation != null and !event.bkStartLocation.isEmpty()}">
+                        <div class="spec-box-key">Start Point</div>
+                        <div class="spec-box-val" th:text="${event.bkStartLocation}">Bangalore Toll Plaza</div>
+                    </div>
+                    <div class="spec-box-unit" th:if="${event.bkDestination != null and !event.bkDestination.isEmpty()}">
+                        <div class="spec-box-key">Destination</div>
+                        <div class="spec-box-val" th:text="${event.bkDestination}">Nandi Hills</div>
+                    </div>
+                    <div class="spec-box-unit" th:if="${event.bkCCLimit != null and !event.bkCCLimit.isEmpty()}">
+                        <div class="spec-box-key">Minimum Bike CC</div>
+                        <div class="spec-box-val" th:text="${event.bkCCLimit} + ' CC'">200 CC</div>
+                    </div>
+                    <div class="spec-box-unit" style="grid-column: 1 / -1;">
+                        <div class="spec-box-key">Rider Safety & Support</div>
+                        <div class="chips-container">
+                            <span class="feature-chip" th:classappend="${event.bkHelmetMandatory} ? 'active' : ''"><i class="fas fa-hard-hat"></i> Helmet Mandatory</span>
+                            <span class="feature-chip" th:classappend="${event.bkJacketMandatory} ? 'active' : ''"><i class="fas fa-tshirt"></i> Jacket Mandatory</span>
+                            <span class="feature-chip" th:classappend="${event.bkGlovesMandatory} ? 'active' : ''"><i class="fas fa-mitten"></i> Gloves Mandatory</span>
+                            <span class="feature-chip" th:classappend="${event.bkSupportVehicle} ? 'active' : ''"><i class="fas fa-truck-pickup"></i> Support Vehicle</span>
+                            <span class="feature-chip" th:classappend="${event.bkBreakfastIncluded} ? 'active' : ''"><i class="fas fa-coffee"></i> Breakfast Included</span>
+                            <span class="feature-chip" th:classappend="${event.bkLunchIncluded} ? 'active' : ''"><i class="fas fa-utensils"></i> Lunch Included</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section: Registered Attendees List -->
+            <div class="detail-panel-card">
+                <div class="panel-heading-row">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <h2 class="panel-heading-title"><i class="fas fa-id-badge"></i> Registered Participants</h2>
+                        <span class="tag-pill tag-cat" th:text="${#lists.size(registrations)} + ' Registered'">0 Registered</span>
+                    </div>
+                    <input type="text" id="attendeeSearchInput" placeholder="Search by name, email, ticket..."
+                           onkeyup="filterAttendeeTable()"
+                           style="padding: 8px 14px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 12px; width: 260px; background: #ffffff;">
+                </div>
+
+                <div class="table-wrap-responsive" th:if="${!#lists.isEmpty(registrations)}">
+                    <table class="attendee-data-table" id="attendeeTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Ticket ID</th>
+                                <th>Attendee Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Seat / Tier</th>
+                                <th>Registered Date</th>
+                                <th>Attendance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="reg, iter : ${registrations}">
+                                <td th:text="${iter.count}">1</td>
+                                <td><span class="code-pill" th:text="${reg.ticketId != null ? reg.ticketId : 'ZTX-' + reg.id}">ZTX-A1B2C3</span></td>
+                                <td>
+                                    <div style="display:flex; align-items:center; gap:8px;">
+                                        <i class="fas fa-user-circle" style="color:#64748b; font-size:16px;"></i>
+                                        <strong th:text="${reg.user != null ? reg.user.name : (reg.name != null ? reg.name : 'Guest Participant')}">John Doe</strong>
+                                    </div>
+                                </td>
+                                <td th:text="${reg.user != null ? reg.user.email : (reg.email != null ? reg.email : '-')}">john@example.com</td>
+                                <td th:text="${reg.phone != null and !reg.phone.isEmpty() ? reg.phone : '-'}">+91 9876543210</td>
+                                <td>
+                                    <span class="tag-pill tag-mode"
+                                          th:text="${reg.seatNumber != null and !reg.seatNumber.isEmpty() ? reg.seatNumber : (reg.tierName != null ? reg.tierName : 'General')}">General</span>
+                                </td>
+                                <td th:text="${reg.registrationDate != null ? #temporals.format(reg.registrationDate, 'dd MMM yyyy, hh:mm a') : '-'}">29 Oct 2026</td>
+                                <td>
+                                    <span th:if="${reg.attendanceMarked}" class="badge-present">
+                                        <i class="fas fa-check-circle"></i> Present
+                                    </span>
+                                    <span th:unless="${reg.attendanceMarked}" class="badge-pending">
+                                        <i class="fas fa-clock"></i> Pending
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="empty-roster-state" th:if="${#lists.isEmpty(registrations)}">
+                    <i class="fas fa-user-friends"></i>
+                    <p style="font-size: 15px; font-weight: 700; color: #334155; margin-bottom: 4px;">No Participants Registered Yet</p>
+                    <p style="font-size: 13px;">Registrations made through the youth portal will appear here in real-time.</p>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Admin Footer Scripts -->
+    <div th:replace="~{fragments/admin-fragments :: admin-scripts}"></div>
+
+    <script>
+        function filterAttendeeTable() {
+            const input = document.getElementById('attendeeSearchInput');
+            const filter = input.value.toLowerCase();
+            const table = document.getElementById('attendeeTable');
+            if (!table) return;
+            const rows = table.getElementsByTagName('tr');
+
+            for (let i = 1; i < rows.length; i++) {
+                const text = rows[i].textContent.toLowerCase();
+                rows[i].style.display = text.indexOf(filter) > -1 ? '' : 'none';
+            }
+        }
+    </script>
+</body>
+
+</html>

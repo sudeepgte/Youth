@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <script defer th:src="@{/js/game-rewards.js}"></script>
+</head>
+<body>
+
+<div th:fragment="createPostModal">
+    <style>
+        .collab-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+        .ctag {
+            background: rgba(167, 139, 250, .15);
+            border: 1px solid rgba(167, 139, 250, .4);
+            color: var(--accent2);
+            border-radius: 20px;
+            padding: 3px 10px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .mdrop {
+            position: absolute;
+            background: var(--card-bg);
+            border: 1px solid var(--accent2);
+            border-radius: 8px;
+            z-index: 600;
+            max-height: 180px;
+            overflow-y: auto;
+            min-width: 200px;
+            display: none;
+            top: 100%;
+            left: 0;
+            width: 100%;
+        }
+        .mdrop.open {
+            display: block;
+        }
+        .mi {
+            padding: 9px 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+        }
+        .mi:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .mi img {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+        }
+        .cat-btn {
+            padding:6px 12px; 
+            border-radius:20px; 
+            border:1.5px solid var(--glass-border); 
+            background:transparent; 
+            color:var(--text-secondary); 
+            font-size:12px; 
+            cursor:pointer; 
+            display:flex; 
+            align-items:center; 
+            gap:5px; 
+            transition:all 0.2s;
+        }
+    </style>
+
+    <!-- Create Post Modal -->
+    <div class="overlay" id="createPostModal" style="display:none;" onclick="if(event.target===this)closeM('createPostModal')">
+        <div class="modal" style="display:none; flex-direction: column; max-height: 90vh; width: 90% !important; max-width: 500px !important;">
+            <div style="padding:20px; border-bottom:1px solid var(--glass-border); display:flex; justify-content:space-between; align-items:center;">
+                <h3 style="font-size:16px; display:flex; align-items:center; gap:8px;">
+                    <i class="fas fa-plus-circle" style="color:var(--accent);"></i>
+                    Create Content
+                </h3>
+                <button class="nav-btn" onclick="closeM('createPostModal')"
+                    style="background:none; border:none; color:var(--text-secondary); font-size:20px;">&times;</button>
+            </div>
+            <div style="padding:20px; overflow-y:auto; flex:1;">
+                <form id="createPostForm" th:action="@{/profile/post}" method="post" enctype="multipart/form-data">
+                    <!-- Hidden fields for type & category & bgColor & textColor -->
+                    <input type="hidden" name="postType" id="postTypeInput" value="POST">
+                    <input type="hidden" name="category" id="categoryInput" value="">
+                    <input type="hidden" name="bgColor" id="bgColorInput" value="#000000">
+                    <input type="hidden" name="textColor" id="textColorInput" value="#ffffff">
+
+                    <!-- Post Type Segmented Selector -->
+                    <div class="form-group">
+                        <label style="font-size:12px; color:var(--text-secondary); margin-bottom:8px; display:block;">
+                            <i class="fas fa-layer-group"></i> &nbsp;Select Type
+                        </label>
+                        <div id="typeSelector" style="display:flex; gap:8px; margin-bottom:4px; overflow-x: auto; padding-bottom: 5px;">
+                            <button type="button" class="type-btn active" data-type="POST"
+                                onclick="selectPostType(this)"
+                                style="flex: 0 0 auto; padding:10px 12px; border-radius:10px; border:2px solid var(--accent); background:rgba(248,68,100,0.15); color:var(--accent); font-weight:600; font-size:13px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; transition:all 0.2s;">
+                                <i class="fas fa-image" style="font-size:18px;"></i>
+                                Post
+                            </button>
+                            <button type="button" class="type-btn" data-type="REEL" onclick="selectPostType(this)"
+                                style="flex: 0 0 auto; padding:10px 12px; border-radius:10px; border:2px solid var(--glass-border); background:transparent; color:var(--text-secondary); font-weight:600; font-size:13px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; transition:all 0.2s;">
+                                <i class="fas fa-film" style="font-size:18px;"></i>
+                                Reel
+                            </button>
+                            <button type="button" class="type-btn" data-type="STORY" onclick="selectPostType(this)"
+                                style="flex: 0 0 auto; padding:10px 12px; border-radius:10px; border:2px solid var(--glass-border); background:transparent; color:var(--text-secondary); font-weight:600; font-size:13px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; transition:all 0.2s;">
+                                <i class="fas fa-circle-notch" style="font-size:18px;"></i>
+                                Story
+                            </button>
+                            <button type="button" class="type-btn" data-type="CAMERA" onclick="selectPostType(this)"
+                                style="flex: 0 0 auto; padding:10px 12px; border-radius:10px; border:2px solid var(--glass-border); background:transparent; color:var(--text-secondary); font-weight:600; font-size:13px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; transition:all 0.2s;">
+                                <i class="fas fa-camera" style="font-size:18px;"></i>
+                                Camera
+                            </button>
+                            <button type="button" class="type-btn" data-type="THOUGHT" onclick="selectPostType(this)"
+                                style="flex: 0 0 auto; padding:10px 12px; border-radius:10px; border:2px solid var(--glass-border); background:transparent; color:var(--text-secondary); font-weight:600; font-size:13px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; transition:all 0.2s;">
+                                <i class="fas fa-quote-left" style="font-size:18px; color: #3b82f6;"></i>
+                                Thought
+                            </button>
+                            <button type="button" class="type-btn" data-type="GOLIVE" onclick="selectPostType(this)"
+                                style="flex: 0 0 auto; padding:10px 12px; border-radius:10px; border:2px solid var(--glass-border); background:transparent; color:var(--text-secondary); font-weight:600; font-size:13px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; transition:all 0.2s;">
+                                <i class="fas fa-broadcast-tower" style="font-size:18px; color: #ef4444;"></i>
+                                Go Live
+                            </button>
+                        </div>
+                        <p id="typeHint"
+                            style="font-size:11px; color:var(--text-secondary); margin:4px 0 0; min-height:14px;">
+                            Share a photo with your followers
+                        </p>
+                    </div>
+
+                    <!-- Caption / Content -->
+                    <div class="form-group" style="position:relative;">
+                        <label style="font-size:12px; color:var(--text-secondary); margin-bottom:6px; display:block;">
+                            <i class="fas fa-pen"></i> &nbsp;Caption
+                        </label>
+                        <textarea id="postContent" name="content" class="form-input" rows="3"
+                            placeholder="What's on your mind? Type @ to mention..."></textarea>
+                        <div class="mdrop" id="mentionDrop"></div>
+                    </div>
+
+                    <!-- Background and Text Color for Text Stories -->
+                    <div class="form-group" id="storyColorSelector" style="display:none;">
+                        <label style="font-size:12px; color:var(--text-secondary); margin-bottom:6px; display:block;">
+                            <i class="fas fa-palette"></i> &nbsp;Background Color
+                        </label>
+                        <div style="display:flex; gap:8px; margin-bottom: 12px;">
+                            <button type="button" class="color-btn" data-color="#000000" onclick="selectStoryColor(this)" style="width:30px; height:30px; border-radius:50%; border:2px solid var(--accent); background:#000000; cursor:pointer;"></button>
+                            <button type="button" class="color-btn" data-color="#ffffff" onclick="selectStoryColor(this)" style="width:30px; height:30px; border-radius:50%; border:2px solid transparent; background:#ffffff; cursor:pointer;"></button>
+                            <button type="button" class="color-btn" data-color="#f84464" onclick="selectStoryColor(this)" style="width:30px; height:30px; border-radius:50%; border:2px solid transparent; background:#f84464; cursor:pointer;"></button>
+                            <button type="button" class="color-btn" data-color="#8b5cf6" onclick="selectStoryColor(this)" style="width:30px; height:30px; border-radius:50%; border:2px solid transparent; background:#8b5cf6; cursor:pointer;"></button>
+                            <button type="button" class="color-btn" data-color="#3b82f6" onclick="selectStoryColor(this)" style="width:30px; height:30px; border-radius:50%; border:2px solid transparent; background:#3b82f6; cursor:pointer;"></button>
+                            <button type="button" class="color-btn" data-color="#10b981" onclick="selectStoryColor(this)" style="width:30px; height:30px; border-radius:50%; border:2px solid transparent; background:#10b981; cursor:pointer;"></button>
+                            <button type="button" class="color-btn" data-color="#f59e0b" onclick="selectStoryColor(this)" style="width:30px; height:30px; border-radius:50%; border:2px solid transparent; background:#f59e0b; cursor:pointer;"></button>
+                        </div>
+                        
+                        <label style="font-size:12px; color:var(--text-secondary); margin-bottom:6px; display:block;">
+                            <i class="fas fa-font"></i> &nbsp;Text Color
+                        </label>
+                        <div style="display:flex; gap:8px;">
+                            <button type="button" class="txt-color-btn" data-color="#ffffff" onclick="selectStoryTextColor(this)" style="width:30px; height:30px; border-radius:50%; border:2px solid var(--accent); background:#ffffff; cursor:pointer;"></button>
+                            <button type="button" class="txt-color-btn" data-color="#000000" onclick="selectStoryTextColor(this)" style="width:30px; height:30px; border-radius:50%; border:2px solid transparent; background:#000000; cursor:pointer;"></button>
+                            <button type="button" class="txt-color-btn" data-color="#f84464" onclick="selectStoryTextColor(this)" style="width:30px; height:30px; border-radius:50%; border:2px solid transparent; background:#f84464; cursor:pointer;"></button>
+                            <button type="button" class="txt-color-btn" data-color="#8b5cf6" onclick="selectStoryTextColor(this)" style="width:30px; height:30px; border-radius:50%; border:2px solid transparent; background:#8b5cf6; cursor:pointer;"></button>
+                            <button type="button" class="txt-color-btn" data-color="#3b82f6" onclick="selectStoryTextColor(this)" style="width:30px; height:30px; border-radius:50%; border:2px solid transparent; background:#3b82f6; cursor:pointer;"></button>
+                            <button type="button" class="txt-color-btn" data-color="#10b981" onclick="selectStoryTextColor(this)" style="width:30px; height:30px; border-radius:50%; border:2px solid transparent; background:#10b981; cursor:pointer;"></button>
+                            <button type="button" class="txt-color-btn" data-color="#f59e0b" onclick="selectStoryTextColor(this)" style="width:30px; height:30px; border-radius:50%; border:2px solid transparent; background:#f59e0b; cursor:pointer;"></button>
+                        </div>
+                    </div>
+
+                    <!-- Category -->
+                    <div class="form-group">
+                        <label style="font-size:12px; color:var(--text-secondary); margin-bottom:6px; display:block;">
+                            <i class="fas fa-tags"></i> &nbsp;Category
+                        </label>
+                        <div id="categoryGrid" style="display:flex; flex-wrap:wrap; gap:7px;">
+                            <button type="button" class="cat-btn" data-cat="Food" onclick="selectCategory(this)">🍔 Food</button>
+                            <button type="button" class="cat-btn" data-cat="Vlog" onclick="selectCategory(this)">🎥 Vlog</button>
+                            <button type="button" class="cat-btn" data-cat="Blog" onclick="selectCategory(this)">📝 Blog</button>
+                            <button type="button" class="cat-btn" data-cat="Gym" onclick="selectCategory(this)">💪 Gym</button>
+                            <button type="button" class="cat-btn" data-cat="Dance" onclick="selectCategory(this)">💃 Dance</button>
+                            <button type="button" class="cat-btn" data-cat="Singing" onclick="selectCategory(this)">🎤 Singing</button>
+                            <button type="button" class="cat-btn" data-cat="Travel" onclick="selectCategory(this)">✈️ Travel</button>
+                            <button type="button" class="cat-btn" data-cat="Fashion" onclick="selectCategory(this)">👗 Fashion</button>
+                            <button type="button" class="cat-btn" data-cat="Comedy" onclick="selectCategory(this)">😂 Comedy</button>
+                            <button type="button" class="cat-btn" data-cat="Gaming" onclick="selectCategory(this)">🎮 Gaming</button>
+                            <button type="button" class="cat-btn" data-cat="Others" onclick="selectCategory(this)">✨ Others</button>
+                        </div>
+                    </div>
+
+                    <!-- Media Upload -->
+                    <div class="form-group">
+                        <label style="font-size:12px; color:var(--text-secondary); margin-bottom:6px; display:block;">
+                            <i class="fas fa-paperclip"></i> &nbsp;Media
+                        </label>
+                        <!-- Camera Options Dropdown (Hidden initially) -->
+                        <div id="cameraTypeDropdown" style="display:none; margin-bottom: 12px; border-radius: 12px; overflow: hidden; border: 1px solid var(--glass-border); background: var(--card-bg);">
+                            <div style="padding: 12px; background: rgba(255,255,255,0.05); font-size: 13px; color: var(--text-secondary); text-align: center; font-weight: 600;">
+                                Select Camera Mode
+                            </div>
+                            <div style="display: flex; flex-direction: column;">
+                                <button type="button" onclick="selectCameraSubMode('POST')" style="padding: 15px; border: none; border-bottom: 1px solid var(--glass-border); background: transparent; color: var(--text-primary); text-align: left; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: background 0.2s;">
+                                    <i class="fas fa-image" style="color: var(--accent); width: 20px; text-align: center;"></i> Photo Post
+                                </button>
+                                <button type="button" onclick="selectCameraSubMode('REEL')" style="padding: 15px; border: none; border-bottom: 1px solid var(--glass-border); background: transparent; color: var(--text-primary); text-align: left; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: background 0.2s;">
+                                    <i class="fas fa-film" style="color: var(--accent); width: 20px; text-align: center;"></i> Reel Video
+                                </button>
+                                <button type="button" onclick="selectCameraSubMode('STORY')" style="padding: 15px; border: none; background: transparent; color: var(--text-primary); text-align: left; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: background 0.2s;">
+                                    <i class="fas fa-circle-notch" style="color: var(--accent); width: 20px; text-align: center;"></i> Story
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Live Options (Hidden initially) -->
+                        <div id="goLiveOptions" style="display:none; margin-bottom: 12px;">
+                            <label style="font-size:12px; color:var(--text-secondary); margin-bottom:6px; display:block;">
+                                <i class="fas fa-heading"></i> &nbsp;Live Stream Title
+                            </label>
+                            <input type="text" id="liveTitle" class="form-input" placeholder="What are you doing today?">
+                        </div>
+
+                        <div id="mediaDropZone"
+                            style="border:2px dashed var(--glass-border); border-radius:12px; padding:20px; text-align:center; cursor:pointer; transition:border-color 0.2s; position:relative;"
+                            onclick="handleMediaDropZoneClick()"
+                            ondragover="event.preventDefault(); this.style.borderColor='var(--accent)';"
+                            ondragleave="this.style.borderColor='var(--glass-border)';" ondrop="handleFileDrop(event)">
+                            <i class="fas fa-cloud-upload-alt"
+                                style="font-size:28px; color:var(--text-secondary); display:block; margin-bottom:6px;"></i>
+                            <span id="dropZoneLabel" style="font-size:13px; color:var(--text-secondary);">Click or drag to upload a photo</span>
+                            <input type="file" id="mediaFile" name="file" accept="image/*" style="display:none;"
+                                onchange="previewMedia(this)">
+                        </div>
+                        <div id="mediaPreview" style="display:none; margin-top:10px;"></div>
+                        
+                        <!-- Live Camera Container -->
+                        <div id="liveCameraContainer" style="display:none; flex-direction:column; align-items:center; margin-top:10px; background:#000; border-radius:12px; overflow:hidden; position:relative;">
+                            <button type="button" onclick="switchLiveCamera()" style="position:absolute; top:10px; right:10px; padding:8px; border-radius:50%; border:none; background:rgba(0,0,0,0.6); color:#fff; cursor:pointer; width:36px; height:36px; display:flex; align-items:center; justify-content:center; z-index:10;" title="Switch Camera">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                            <video id="liveCameraVideo" autoplay playsinline style="width:100%; max-height:300px; object-fit:cover;"></video>
+                            <div style="padding:10px; display:flex; gap:10px; flex-wrap:wrap; justify-content:center; width:100%; background:rgba(0,0,0,0.8);">
+                                <button type="button" id="btnCapturePhoto" onclick="takePhoto()" style="padding:8px 16px; border-radius:8px; border:none; background:var(--accent); color:#fff; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:6px;">
+                                    <i class="fas fa-camera"></i> Photo
+                                </button>
+                                <button type="button" id="btnRecordVideo" onclick="toggleRecording()" style="padding:8px 16px; border-radius:8px; border:none; background:#ef4444; color:#fff; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:6px;">
+                                    <i class="fas fa-video"></i> Record
+                                </button>
+                                <button type="button" onclick="closeCamera()" style="padding:8px 16px; border-radius:8px; border:none; background:#334155; color:#fff; font-weight:600; cursor:pointer;">
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tag Collaborators -->
+                    <div class="form-group" id="collabGroup" style="position:relative;">
+                        <label style="font-size:12px; color:var(--text-secondary); margin-bottom:6px; display:block;">
+                            <i class="fas fa-user-tag"></i> &nbsp;Tag Collaborators
+                        </label>
+                        <div class="collab-tags" id="collabTags"></div>
+                        <input type="text" id="collabSearch" class="form-input" placeholder="Search users...">
+                        <div class="mdrop" id="collabDrop"></div>
+                        <input type="hidden" name="collaborators" id="collabHidden">
+                    </div>
+
+                    <!-- Hashtags -->
+                    <div class="form-group" id="hashtagGroup">
+                        <label style="font-size:12px; color:var(--text-secondary); margin-bottom:6px; display:block;">
+                            <i class="fas fa-hashtag"></i> &nbsp;Hashtags
+                        </label>
+                        <input type="text" name="hashtags" class="form-input" placeholder="#zentrix #creative">
+                    </div>
+
+                    <button type="submit" class="cta-btn" id="submitPostBtn" style="width:100%; margin-top:4px;">
+                        <i class="fas fa-paper-plane"></i> &nbsp;<span id="submitBtnLabel">Share Post</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        // Helper constants
+        var FB = FB || 'https://ui-avatars.com/api/?background=22d3ee&color=fff';
+
+        function openM(id) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.classList.add('open');
+                el.style.display = 'flex'; 
+                const modal = el.querySelector('.modal');
+                if (modal) modal.style.display = 'block';
+            }
+            if (el && !el.classList.contains('overlay')) {
+                const overlay = document.getElementById('overlay');
+                if (overlay) {
+                    overlay.classList.add('open');
+                    overlay.style.display = 'flex';
+                }
+            }
+        }
+        function closeM(id) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.classList.remove('open');
+                el.style.display = 'none';
+                const modal = el.querySelector('.modal');
+                if (modal) modal.style.display = 'none';
+            }
+            const overlay = document.getElementById('overlay');
+            if (overlay) {
+                overlay.classList.remove('open');
+                overlay.style.display = 'none';
+            }
+        }
+        function openCreateModal() { openM('createPostModal'); }
+        function closeCreateModal() { closeM('createPostModal'); }
+
+        /* ===== Category Selector ===== */
+        function selectCategory(btn) {
+            const cat = btn.dataset.cat;
+            const hidden = document.getElementById('categoryInput');
+
+            if (hidden.value === cat) {
+                hidden.value = '';
+                btn.style.borderColor = 'var(--glass-border)';
+                btn.style.background = 'transparent';
+                btn.style.color = 'var(--text-secondary)';
+            } else {
+                document.querySelectorAll('.cat-btn').forEach(b => {
+                    b.style.borderColor = 'var(--glass-border)';
+                    b.style.background = 'transparent';
+                    b.style.color = 'var(--text-secondary)';
+                });
+                hidden.value = cat;
+                btn.style.borderColor = 'var(--accent)';
+                btn.style.background = 'rgba(248,68,100,0.1)';
+                btn.style.color = 'var(--accent)';
+            }
+        }
+
+        /* ===== Story Color Selector ===== */
+        function selectStoryColor(btn) {
+            const color = btn.dataset.color;
+            document.getElementById('bgColorInput').value = color;
+            document.querySelectorAll('.color-btn').forEach(b => {
+                b.style.borderColor = 'transparent';
+                if(b.dataset.color === '#ffffff') b.style.border = '1px solid #ccc';
+            });
+            btn.style.borderColor = 'var(--accent)';
+            if(color === '#ffffff') btn.style.border = '2px solid var(--accent)';
+        }
+
+        function selectStoryTextColor(btn) {
+            const color = btn.dataset.color;
+            document.getElementById('textColorInput').value = color;
+            document.querySelectorAll('.txt-color-btn').forEach(b => {
+                b.style.borderColor = 'transparent';
+                if(b.dataset.color === '#ffffff') b.style.border = '1px solid #ccc';
+            });
+            btn.style.borderColor = 'var(--accent)';
+            if(color === '#ffffff') btn.style.border = '2px solid var(--accent)';
+        }
+
+        /* ===== Drag-and-drop media ===== */
+        function handleFileDrop(event) {
+            event.preventDefault();
+            document.getElementById('mediaDropZone').style.borderColor = 'var(--glass-border)';
+            const files = event.dataTransfer.files;
+            if (!files || !files[0]) return;
+            const fileInput = document.getElementById('mediaFile');
+            const dt = new DataTransfer();
+            dt.items.add(files[0]);
+            fileInput.files = dt.files;
+            previewMedia(fileInput);
+        }
+
+        function previewMedia(inp) {
+            const wrap = document.getElementById('mediaPreview'); 
+            wrap.innerHTML = '';
+            if (!inp.files || !inp.files[0]) { wrap.style.display = 'none'; return; }
+            const f = inp.files[0];
+            
+            if (f.type.startsWith('video') && f.size > 2000 * 1024 * 1024) {
+                alert('Video file is too large! Maximum allowed is 2000MB.');
+                inp.value = '';
+                return;
+            }
+            if (f.type.startsWith('image') && f.size > 5 * 1024 * 1024) {
+                alert('Image file is too large! Maximum allowed is 5MB.');
+                inp.value = '';
+                return;
+            }
+            
+            const url = URL.createObjectURL(f);
+            
+            if (f.type.startsWith('video')) {
+                const videoEl = document.createElement('video');
+                videoEl.preload = 'metadata';
+                videoEl.src = url;
+                videoEl.onloadedmetadata = function() {
+                    const duration = videoEl.duration;
+                    const postType = document.getElementById('postTypeInput').value;
+                    if (postType === 'REEL' && duration > 60) {
+                        alert('Reel video duration cannot exceed 1 minute!');
+                        inp.value = '';
+                        wrap.innerHTML = '';
+                        wrap.style.display = 'none';
+                        return;
+                    }
+                    wrap.style.display = 'block';
+                    wrap.innerHTML = `<video src="${url}" controls style="width:100%; max-height:180px; border-radius:8px;"></video>`;
+                };
+            } else {
+                wrap.style.display = 'block';
+                wrap.innerHTML = `<img src="${url}" style="width:100%; max-height:180px; border-radius:8px;">`;
+            }
+        }
+
+        function handleMediaDropZoneClick() {
+            const postType = document.getElementById('postTypeInput').value;
+            if (postType === 'CAMERA') {
+                openLiveCamera();
+            } else {
+                document.getElementById('mediaFile').click();
+            }
+        }
+
+        let mediaStream = null;
+        let mediaRecorder = null;
+        let recordedChunks = [];
+        let currentFacingMode = 'user';
+
+        async function openLiveCamera() {
+            try {
+                if (mediaStream) {
+                    mediaStream.getTracks().forEach(track => track.stop());
+                }
+                mediaStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: currentFacingMode }, audio: true });
+                const videoEl = document.getElementById('liveCameraVideo');
+                videoEl.srcObject = mediaStream;
+                document.getElementById('mediaDropZone').style.display = 'none';
+                document.getElementById('mediaPreview').style.display = 'none';
+                document.getElementById('liveCameraContainer').style.display = 'flex';
+                
+                // Reset recording state
+                const recordBtn = document.getElementById('btnRecordVideo');
+                recordBtn.innerHTML = '<i class="fas fa-video"></i> Record';
+                recordBtn.style.background = '#ef4444';
+            } catch (err) {
+                console.error("Error accessing camera: ", err);
+                alert("Could not access camera. Please ensure you have granted permissions.");
+            }
+        }
+
+        function switchLiveCamera() {
+            currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+            openLiveCamera();
+        }
+
+        function closeCamera() {
+            if (mediaStream) {
+                mediaStream.getTracks().forEach(track => track.stop());
+                mediaStream = null;
+            }
+            if (mediaRecorder && mediaRecorder.state !== "inactive") {
+                mediaRecorder.stop();
+            }
+            document.getElementById('liveCameraContainer').style.display = 'none';
+            
+            const activeBtn = document.querySelector('#typeSelector .type-btn.active');
+            const currentType = activeBtn ? activeBtn.dataset.type : '';
+            if (currentType !== 'CAMERA' && currentType !== 'GOLIVE') {
+                document.getElementById('mediaDropZone').style.display = 'block';
+            }
+        }
+
+        function takePhoto() {
+            if (!mediaStream) return;
+            const videoEl = document.getElementById('liveCameraVideo');
+            const canvas = document.createElement('canvas');
+            canvas.width = videoEl.videoWidth;
+            canvas.height = videoEl.videoHeight;
+            canvas.getContext('2d').drawImage(videoEl, 0, 0);
+            
+            canvas.toBlob(blob => {
+                const file = new File([blob], "camera_photo.jpg", { type: "image/jpeg" });
+                const dt = new DataTransfer();
+                dt.items.add(file);
+                const fileInput = document.getElementById('mediaFile');
+                fileInput.files = dt.files;
+                closeCamera();
+                previewMedia(fileInput);
+            }, "image/jpeg", 0.95);
+        }
+
+        function toggleRecording() {
+            if (!mediaStream) return;
+            const recordBtn = document.getElementById('btnRecordVideo');
+            
+            if (mediaRecorder && mediaRecorder.state === "recording") {
+                mediaRecorder.stop();
+                recordBtn.innerHTML = '<i class="fas fa-video"></i> Record';
+                recordBtn.style.background = '#ef4444';
+            } else {
+                recordedChunks = [];
+                // Check supported types
+                let options = { mimeType: 'video/webm;codecs=vp9,opus' };
+                if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+                    options = { mimeType: 'video/webm;codecs=vp8,opus' };
+                    if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+                        options = { mimeType: 'video/webm' };
+                        if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+                            options = { mimeType: '' };
+                        }
+                    }
+                }
+                
+                mediaRecorder = new MediaRecorder(mediaStream, options);
+                mediaRecorder.ondataavailable = event => {
+                    if (event.data && event.data.size > 0) {
+                        recordedChunks.push(event.data);
+                    }
+                };
+                mediaRecorder.onstop = () => {
+                    const blob = new Blob(recordedChunks, { type: mediaRecorder.mimeType || 'video/webm' });
+                    // Determine file extension
+                    const ext = (mediaRecorder.mimeType && mediaRecorder.mimeType.includes('mp4')) ? 'mp4' : 'webm';
+                    const file = new File([blob], `camera_video.${ext}`, { type: blob.type });
+                    const dt = new DataTransfer();
+                    dt.items.add(file);
+                    const fileInput = document.getElementById('mediaFile');
+                    fileInput.files = dt.files;
+                    closeCamera();
+                    previewMedia(fileInput);
+                };
+                
+                mediaRecorder.start();
+                recordBtn.innerHTML = '<i class="fas fa-stop"></i> Stop';
+                recordBtn.style.background = '#000';
+            }
+        }
+
+        /* ===== Post Type Selector ===== */
+        const typeConfig = {
+            POST: { accept: 'image/*', hint: 'Share a photo with your followers', label: 'Share Post', zone: 'Click or drag to upload a photo' },
+            REEL: { accept: 'video/*', hint: 'Upload a short video reel 🎬', label: 'Share Reel', zone: 'Click or drag to upload a video' },
+            STORY: { accept: 'image/*,video/*', hint: 'Your story disappears in 24 hours ⏳', label: 'Share Story', zone: 'Click or drag to upload a photo or video' },
+            THOUGHT: { accept: '', hint: 'Your words will appear on the public home page for everyone to see! 💬', label: 'Publish to Home Page', zone: '' },
+            CAMERA: { accept: 'image/*,video/*', hint: 'Select what you want to capture 📸', label: 'Continue', zone: 'Click to open camera' },
+            GOLIVE: { accept: '', hint: 'Broadcast live to your followers 📡', label: 'Start Live Now', zone: '' }
+        };
+
+        let cameraSubMode = 'POST';
+
+        function selectCameraSubMode(mode) {
+            cameraSubMode = mode;
+            // Update hidden input to reflect actual post type once captured
+            document.getElementById('postTypeInput').value = mode;
+            document.getElementById('cameraTypeDropdown').style.display = 'none';
+            openLiveCamera();
+        }
+
+        function selectPostType(btn) {
+            const type = btn.dataset.type;
+            
+            if (type !== 'CAMERA') {
+                document.getElementById('postTypeInput').value = type;
+            }
+
+            document.querySelectorAll('.type-btn').forEach(b => {
+                b.classList.remove('active');
+                b.style.border = '2px solid var(--glass-border)';
+                b.style.background = 'transparent';
+                b.style.color = 'var(--text-secondary)';
+            });
+
+            btn.classList.add('active');
+            btn.style.border = '2px solid var(--accent)';
+            btn.style.background = 'rgba(248,68,100,0.15)';
+            btn.style.color = 'var(--accent)';
+
+            const cfg = typeConfig[type];
+            document.getElementById('typeHint').textContent = cfg.hint;
+            document.getElementById('mediaFile').accept = cfg.accept;
+            if (type === 'CAMERA') {
+                document.getElementById('mediaFile').setAttribute('capture', 'environment');
+                document.getElementById('cameraTypeDropdown').style.display = 'block';
+                document.getElementById('mediaDropZone').style.display = 'none';
+                document.getElementById('goLiveOptions').style.display = 'none';
+                
+                // Hide other groups temporarily
+                const cg = document.getElementById('collabGroup'); if(cg) cg.style.display = 'none';
+                const hg = document.getElementById('hashtagGroup'); if(hg) hg.style.display = 'none';
+                const sbtn = document.getElementById('submitPostBtn'); if(sbtn) sbtn.style.display = 'none';
+            } else if (type === 'GOLIVE') {
+                document.getElementById('cameraTypeDropdown').style.display = 'none';
+                document.getElementById('mediaDropZone').style.display = 'none';
+                document.getElementById('goLiveOptions').style.display = 'block';
+                
+                // Hide camera if it was open
+                document.getElementById('liveCameraContainer').style.display = 'none';
+                closeCamera();
+                
+                const cg = document.getElementById('collabGroup'); if(cg) cg.style.display = 'none';
+                const hg = document.getElementById('hashtagGroup'); if(hg) hg.style.display = 'none';
+                const sbtn = document.getElementById('submitPostBtn'); if(sbtn) sbtn.style.display = 'block';
+                document.getElementById('submitBtnLabel').textContent = cfg.label;
+            } else if (type === 'THOUGHT') {
+                document.getElementById('cameraTypeDropdown').style.display = 'none';
+                document.getElementById('mediaDropZone').style.display = 'none';
+                document.getElementById('goLiveOptions').style.display = 'none';
+                document.getElementById('liveCameraContainer').style.display = 'none';
+                closeCamera();
+                const cg = document.getElementById('collabGroup'); if(cg) cg.style.display = 'none';
+                const hg = document.getElementById('hashtagGroup'); if(hg) hg.style.display = 'none';
+                const sbtn = document.getElementById('submitPostBtn'); if(sbtn) sbtn.style.display = 'block';
+                document.getElementById('submitBtnLabel').textContent = cfg.label;
+                const ta = document.getElementById('postContent');
+                if (ta) ta.placeholder = 'Share your thoughts, experiences, or feedback for the public home page...';
+            } else {
+                document.getElementById('mediaFile').removeAttribute('capture');
+                document.getElementById('cameraTypeDropdown').style.display = 'none';
+                document.getElementById('mediaDropZone').style.display = 'block';
+                document.getElementById('goLiveOptions').style.display = 'none';
+                
+                // Hide camera if it was open
+                document.getElementById('liveCameraContainer').style.display = 'none';
+                closeCamera();
+                
+                // Show other groups
+                const cg = document.getElementById('collabGroup'); if(cg) cg.style.display = 'block';
+                const hg = document.getElementById('hashtagGroup'); if(hg) hg.style.display = 'block';
+                const sbtn = document.getElementById('submitPostBtn'); if(sbtn) sbtn.style.display = 'block';
+                document.getElementById('submitBtnLabel').textContent = cfg.label;
+                document.getElementById('dropZoneLabel').textContent = cfg.zone;
+                const ta = document.getElementById('postContent');
+                if (ta) ta.placeholder = "What's on your mind? Type @ to mention...";
+            }
+
+            const prev = document.getElementById('mediaPreview');
+            prev.innerHTML = ''; prev.style.display = 'none';
+            
+            // If switching away from camera, close it
+            if (type !== 'CAMERA') {
+                closeCamera();
+            }
+
+            // Show color selector only for STORY
+            const colorSelector = document.getElementById('storyColorSelector');
+            if (colorSelector) {
+                colorSelector.style.display = (type === 'STORY') ? 'block' : 'none';
+            }
+        }
+
+        /* Mention/Collab Autocomplete logic */
+        function fetchU(q, drop, onSel) {
+            fetch('/profile/api/users/search?q=' + encodeURIComponent(q))
+                .then(r => r.json()).then(us => {
+                    drop.innerHTML = '';
+                    if (!us.length) { drop.classList.remove('open'); return; }
+                    us.forEach(u => {
+                        const d = document.createElement('div'); d.className = 'mi';
+                        d.innerHTML = `<img src="${u.profilePhotoUrl || FB}"><span class="mu">@${u.username}</span>`;
+                        d.onmousedown = (e) => { e.preventDefault(); onSel(u.username); };
+                        drop.appendChild(d);
+                    });
+                    drop.classList.add('open');
+                });
+        }
+
+        function initModalListeners() {
+            const postContent = document.getElementById('postContent');
+            const mentionDrop = document.getElementById('mentionDrop');
+            if (postContent && mentionDrop) {
+                postContent.oninput = () => {
+                    const val = postContent.value, pos = postContent.selectionStart;
+                    let at = -1;
+                    for (let i = pos - 1; i >= 0; i--) { if (val[i] === '@') { at = i; break; } if (/\s/.test(val[i])) break; }
+                    if (at === -1) { mentionDrop.classList.remove('open'); return; }
+                    const q = val.substring(at + 1, pos);
+                    if (!q) { mentionDrop.classList.remove('open'); return; }
+                    fetchU(q, mentionDrop, u => {
+                        postContent.value = val.substring(0, at) + '@' + u + ' ' + val.substring(pos);
+                        mentionDrop.classList.remove('open');
+                    });
+                };
+            }
+
+            const collabSearch = document.getElementById('collabSearch');
+            const collabDrop = document.getElementById('collabDrop');
+            const collabTags = document.getElementById('collabTags');
+            const collabHidden = document.getElementById('collabHidden');
+            let selCollabs = [];
+
+            if (collabSearch && collabDrop) {
+                collabSearch.oninput = () => {
+                    const q = collabSearch.value.trim();
+                    if (!q) { collabDrop.classList.remove('open'); return; }
+                    fetchU(q, collabDrop, u => {
+                        if (!selCollabs.includes(u)) {
+                            selCollabs.push(u); collabHidden.value = selCollabs.join(',');
+                            const t = document.createElement('div'); t.className = 'ctag';
+                            t.innerHTML = `@${u} <span style="cursor:pointer; font-weight:bold;">&times;</span>`;
+                            t.onclick = () => { selCollabs = selCollabs.filter(x => x !== u); collabHidden.value = selCollabs.join(','); t.remove(); };
+                            collabTags.appendChild(t);
+                        }
+                        collabSearch.value = ''; collabDrop.classList.remove('open');
+                    });
+                };
+            }
+
+            const createPostForm = document.getElementById('createPostForm');
+            if (createPostForm) {
+                createPostForm.onsubmit = function(e) {
+                    const postType = document.getElementById('postTypeInput').value;
+                    const activeBtn = document.querySelector('#typeSelector .type-btn.active');
+                    const originalType = activeBtn ? activeBtn.dataset.type : '';
+                    
+                    if (originalType === 'GOLIVE') {
+                        e.preventDefault();
+                        const title = document.getElementById('liveTitle').value.trim() || 'My Live Stream';
+                        window.location.href = '/live?title=' + encodeURIComponent(title) + '&start=true';
+                        return false;
+                    }
+                    
+                    const content = document.getElementById('postContent').value.trim();
+                    const mediaFiles = document.getElementById('mediaFile').files.length;
+                    if (!content && mediaFiles === 0) {
+                        e.preventDefault();
+                        alert('Please add content before posting');
+                        return false;
+                    }
+                    return true;
+                };
+            }
+        }
+
+        // When a photo/video is taken in camera mode, re-show submit buttons
+        const originalPreviewMedia = previewMedia;
+        previewMedia = function(inp) {
+            originalPreviewMedia(inp);
+            
+            const activeBtn = document.querySelector('#typeSelector .type-btn.active');
+            const originalType = activeBtn ? activeBtn.dataset.type : '';
+            
+            if (originalType === 'CAMERA' && inp.files.length > 0) {
+                const cg = document.getElementById('collabGroup'); if(cg) cg.style.display = 'block';
+                const hg = document.getElementById('hashtagGroup'); if(hg) hg.style.display = 'block';
+                const sbtn = document.getElementById('submitPostBtn'); if(sbtn) sbtn.style.display = 'block';
+                document.getElementById('submitBtnLabel').textContent = typeConfig[cameraSubMode].label;
+            }
+        };
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initModalListeners);
+        } else {
+            initModalListeners();
+        }
+    </script>
+    <script th:src="@{/js/session-keepalive.js}"></script>
+
+    <!-- Global Incoming Call Modal -->
+    <div id="globalIncomingCallModal" style="display:none; position:fixed; top:20px; left:50%; transform:translateX(-50%); width:300px; background:var(--glass-bg, rgba(30,30,30,0.8)); backdrop-filter:blur(10px); border:1px solid var(--glass-border, rgba(255,255,255,0.1)); border-radius:12px; padding:20px; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.5); z-index:9999;">
+        <div id="globalIncomingCallAvatar" style="width:60px; height:60px; border-radius:50%; background:var(--accent, #f84464); color:white; display:flex; align-items:center; justify-content:center; font-size:24px; margin:0 auto 15px;">U</div>
+        <h3 id="globalIncomingCallName" style="margin:0 0 5px; color:var(--text-primary, #fff);">Username</h3>
+        <p id="globalIncomingCallType" style="margin:0 0 20px; color:var(--text-secondary, #aaa); font-size:14px;">Incoming Video Call...</p>
+        <div style="display:flex; justify-content:center; gap:20px;">
+            <button onclick="globalRejectCall()" style="width:50px; height:50px; border-radius:50%; background:#ff4444; border:none; color:white; cursor:pointer; display:flex; align-items:center; justify-content:center;">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+            </button>
+            <button onclick="globalAcceptCall()" style="width:50px; height:50px; border-radius:50%; background:#00C851; border:none; color:white; cursor:pointer; display:flex; align-items:center; justify-content:center; animation: pulseCall 1.5s infinite;">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+            </button>
+        </div>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const gSessionUser = /*[[${session.user != null ? session.user.id : null}]]*/ null;
+        /*]]>*/
+        
+        let globalStompClient = null;
+        let globalIncomingCallData = null;
+
+        if (gSessionUser != null && !window.location.pathname.includes('/messages')) {
+            const socket = new SockJS('/ws-chat');
+            globalStompClient = Stomp.over(socket);
+            globalStompClient.debug = null;
+            
+            globalStompClient.connect({}, function (frame) {
+                globalStompClient.subscribe('/user/queue/call', function (msg) {
+                    const data = JSON.parse(msg.body);
+                    if (data.senderId == gSessionUser) return;
+                    
+                    if (data.type === 'ring') {
+                        globalIncomingCallData = data;
+                        document.getElementById('globalIncomingCallName').innerText = data.senderName;
+                        document.getElementById('globalIncomingCallType').innerText = data.callType === 'video' ? 'Incoming Video Call...' : 'Incoming Voice Call...';
+                        document.getElementById('globalIncomingCallAvatar').innerText = data.senderName.charAt(0).toUpperCase();
+                        document.getElementById('globalIncomingCallModal').style.display = 'block';
+                    } else if (data.type === 'live') {
+                        globalIncomingCallData = data;
+                        document.getElementById('globalIncomingCallName').innerText = "@" + data.senderName + " is Live Now!";
+                        document.getElementById('globalIncomingCallType').innerText = "Join my broadcast: " + data.title;
+                        document.getElementById('globalIncomingCallAvatar').innerHTML = '<i class="fas fa-broadcast-tower"></i>';
+                        document.getElementById('globalIncomingCallModal').style.display = 'block';
+                    } else if (data.type === 'reject' || data.type === 'end') {
+                        document.getElementById('globalIncomingCallModal').style.display = 'none';
+                        globalIncomingCallData = null;
+                    }
+                });
+            });
+        }
+
+        function globalRejectCall() {
+            if (globalIncomingCallData && globalStompClient) {
+                if (globalIncomingCallData.type === 'ring') {
+                    globalStompClient.send("/app/chat.call", {}, JSON.stringify({
+                        type: 'reject',
+                        senderId: gSessionUser,
+                        recipientId: globalIncomingCallData.senderId
+                    }));
+                }
+            }
+            document.getElementById('globalIncomingCallModal').style.display = 'none';
+            globalIncomingCallData = null;
+        }
+
+        function globalAcceptCall() {
+            if (globalIncomingCallData) {
+                if (globalIncomingCallData.type === 'ring') {
+                    if (globalStompClient) {
+                        // Send hold_on signal so caller knows we are redirecting
+                        globalStompClient.send("/app/chat.call", {}, JSON.stringify({
+                            type: 'hold_on',
+                            senderId: gSessionUser,
+                            recipientId: globalIncomingCallData.senderId
+                        }));
+                    }
+                    // Redirect to messages page with query parameter
+                    window.location.href = '/messages?acceptCallFrom=' + globalIncomingCallData.senderId;
+                } else if (globalIncomingCallData.type === 'live') {
+                    // Redirect to the live room
+                    window.location.href = '/live?roomId=' + globalIncomingCallData.roomId;
+                }
+            }
+        }
+    </script>
+</div>
+
+</body>
+</html>

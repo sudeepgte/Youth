@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${ad.id == null ? 'Create Advertisement | Youthian Admin' : 'Edit Advertisement | Youthian Admin'}">Create Advertisement | Youthian Admin</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-gradient: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+            --text-primary: #0f172a;
+            --text-secondary: #334155;
+            --text-muted: #64748b;
+            --card-bg: rgba(255, 255, 255, 0.94);
+            --glass-border: rgba(255, 255, 255, 0.75);
+            --dashboard-nav-height: 64px;
+            --primary: #0284c7;
+            --primary-hover: #0369a1;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --purple: #8b5cf6;
+        }
+
+        html, body {
+            overflow-x: clip !important;
+            background: var(--bg-gradient) !important;
+            color: var(--text-primary) !important;
+            min-height: 100vh;
+        }
+
+        /* Top Page Header */
+        .ad-page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 24px;
+            padding: 4px 0;
+        }
+
+        .ad-breadcrumb {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 500;
+            margin-bottom: 6px;
+        }
+
+        .ad-breadcrumb a {
+            color: var(--primary) !important;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+        }
+
+        .ad-breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .ad-header-title {
+            font-size: 24px;
+            font-weight: 800;
+            color: #0f172a;
+            margin: 0;
+            line-height: 1.25;
+            letter-spacing: -0.5px;
+        }
+
+        .ad-header-sub {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .btn-header-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 18px;
+            background: #ffffff !important;
+            color: #1e293b !important;
+            border: 1px solid #cbd5e1 !important;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none !important;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s ease;
+        }
+
+        .btn-header-back:hover {
+            background: #f8fafc !important;
+            color: #0f172a !important;
+            border-color: #94a3b8 !important;
+            transform: translateY(-1px);
+        }
+
+        /* 2-Column Responsive Layout */
+        .ad-form-layout {
+            display: grid;
+            grid-template-columns: 1.15fr 0.85fr;
+            gap: 28px;
+            align-items: start;
+        }
+
+        @media (max-width: 1080px) {
+            .ad-form-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Form Card */
+        .ad-card-panel {
+            background: var(--card-bg);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 28px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.04), 0 4px 10px -2px rgba(0, 0, 0, 0.02);
+            margin-bottom: 24px;
+        }
+
+        .form-section-divider {
+            margin: 24px 0 20px 0;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 15px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .form-section-divider i {
+            color: var(--primary);
+            font-size: 16px;
+        }
+
+        .form-section-divider:first-of-type {
+            margin-top: 0;
+        }
+
+        /* Input Controls */
+        .field-group {
+            margin-bottom: 18px;
+            position: relative;
+        }
+
+        .field-header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+
+        .field-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: #334155;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .field-label .req {
+            color: var(--danger);
+            font-weight: 800;
+        }
+
+        .char-counter {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .input-control {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: 1.5px solid #cbd5e1;
+            background: #ffffff;
+            color: #0f172a;
+            font-size: 13.5px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+
+        .input-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+            background: #ffffff;
+        }
+
+        .input-control.is-invalid {
+            border-color: var(--danger) !important;
+            background: #fff5f5 !important;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12) !important;
+        }
+
+        .input-control.is-valid {
+            border-color: var(--success);
+        }
+
+        .field-error-msg {
+            display: none;
+            font-size: 11.5px;
+            font-weight: 600;
+            color: var(--danger);
+            margin-top: 5px;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .field-error-msg.visible {
+            display: flex;
+        }
+
+        .field-hint {
+            font-size: 11.5px;
+            color: var(--text-muted);
+            margin-top: 5px;
+            display: block;
+            line-height: 1.4;
+        }
+
+        /* 2-Column form fields */
+        .grid-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        @media (max-width: 600px) {
+            .grid-2col {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Sample Image Presets */
+        .sample-presets-bar {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .preset-chip {
+            padding: 4px 9px;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #475569;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            user-select: none;
+        }
+
+        .preset-chip:hover {
+            background: #e0f2fe;
+            color: #0369a1;
+            border-color: #bae6fd;
+        }
+
+        /* Submit Bar */
+        .form-actions-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 28px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .btn-submit-ad {
+            flex: 1;
+            padding: 13px 24px;
+            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
+            color: #ffffff !important;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
+            transition: all 0.2s ease;
+        }
+
+        .btn-submit-ad:hover {
+            background: linear-gradient(135deg, #0369a1 0%, #075985 100%) !important;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(2, 132, 199, 0.45);
+        }
+
+        .btn-cancel-ad {
+            padding: 13px 20px;
+            background: #f1f5f9;
+            color: #475569 !important;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none !important;
+            transition: all 0.2s ease;
+        }
+
+        .btn-cancel-ad:hover {
+            background: #e2e8f0;
+            color: #1e293b !important;
+        }
+
+        /* Sticky Live Preview Panel */
+        .preview-sticky-wrap {
+            position: sticky;
+            top: 85px;
+        }
+
+        .preview-header-line {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+        }
+
+        .preview-title {
+            font-size: 14px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .preview-placement-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: #e0f2fe;
+            color: #0369a1;
+            font-size: 11px;
+            font-weight: 700;
+            border: 1px solid #bae6fd;
+            text-transform: uppercase;
+        }
+
+        /* Live Preview Ad Card */
+        .preview-ad-card {
+            background: #ffffff;
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid rgba(226, 232, 240, 0.9);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            position: relative;
+            margin-bottom: 20px;
+            transition: box-shadow 0.2s ease;
+        }
+
+        .preview-top-flag {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(8px);
+            color: #ffffff;
+            font-size: 10px;
+            font-weight: 800;
+            padding: 4px 10px;
+            border-radius: 20px;
+            letter-spacing: 1px;
+            z-index: 3;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .preview-banner-box {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            background: #0f172a;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .preview-banner-ambient {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: blur(14px);
+            opacity: 0.35;
+            transform: scale(1.1);
+        }
+
+        .preview-banner-img {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .preview-content-box {
+            padding: 22px;
+        }
+
+        .preview-org-name {
+            font-size: 11.5px;
+            font-weight: 800;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 6px;
+        }
+
+        .preview-ad-title {
+            font-size: 18px;
+            font-weight: 800;
+            color: #0f172a;
+            margin: 0 0 10px 0;
+            line-height: 1.35;
+        }
+
+        .preview-ad-desc {
+            font-size: 13.5px;
+            color: #475569;
+            line-height: 1.6;
+            margin: 0 0 18px 0;
+            white-space: pre-line;
+            word-break: break-word;
+        }
+
+        .preview-cta-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 12px 20px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+            color: #ffffff;
+            font-size: 13.5px;
+            font-weight: 700;
+            text-decoration: none;
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Unified Admin Top Navbar -->
+    <div th:replace="~{fragments/admin-fragments :: admin-navbar('advertisements')}"></div>
+
+    <!-- Admin Layout Container -->
+    <div class="admin-layout-container dashboard-container">
+        <div class="mobile-menu-overlay" onclick="toggleAdminMobileMenu()"></div>
+
+        <!-- Unified Left Sidebar -->
+        <aside th:replace="~{fragments/admin-fragments :: admin-sidebar('advertisements', 'none')}"></aside>
+
+        <!-- Main Content Feed -->
+        <main class="social-feed" style="max-width: 100%; padding-bottom: 60px;">
+
+            <!-- Page Header -->
+            <div class="ad-page-header">
+                <div>
+                    <div class="ad-breadcrumb">
+                        <a th:href="@{/admin/advertisements}"><i class="fas fa-arrow-left"></i> Manage Advertisements</a>
+                        <span>/</span>
+                        <span th:text="${ad.id == null ? 'New Campaign' : 'Edit Campaign'}">New Campaign</span>
+                    </div>
+                    <h1 class="ad-header-title" th:text="${ad.id == null ? 'Create New Advertisement' : 'Edit Advertisement Details'}">Create New Advertisement</h1>
+                    <p class="ad-header-sub">Configure ad placement, banner media, target audience, and live student feed preview.</p>
+                </div>
+
+                <div>
+                    <a th:href="@{/admin/advertisements}" class="btn-header-back">
+                        <i class="fas fa-arrow-left"></i> Back to Advertisements
+                    </a>
+                </div>
+            </div>
+
+            <!-- Toast Messages -->
+            <div th:if="${errorMessage != null}"
+                 style="background: #fef2f2; border: 1.5px solid #fecaca; color: #b91c1c; padding: 12px 18px; border-radius: 12px; margin-bottom: 20px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-exclamation-circle" style="font-size: 16px;"></i>
+                <span th:text="${errorMessage}">Error saving advertisement.</span>
+            </div>
+
+            <!-- Form & Live Preview Grid Layout -->
+            <div class="ad-form-layout">
+
+                <!-- Left Column: Form Panel -->
+                <div class="ad-card-panel">
+                    <form th:action="@{/admin/advertisements}" method="post" th:object="${ad}" id="adForm" onsubmit="return validateAdForm(event)" novalidate>
+                        <input type="hidden" th:field="*{id}">
+
+                        <!-- SECTION 1: Campaign Identity -->
+                        <div class="form-section-divider">
+                            <i class="fas fa-bullhorn"></i>
+                            <span>Campaign Identity</span>
+                        </div>
+
+                        <!-- Ad Title -->
+                        <div class="field-group">
+                            <div class="field-header-row">
+                                <label for="titleInput" class="field-label">Ad Title <span class="req">*</span></label>
+                                <span class="char-counter" id="titleCount">0 / 100</span>
+                            </div>
+                            <input type="text" th:field="*{title}" id="titleInput" class="input-control"
+                                   placeholder="e.g. Youthian Annual Tech Hackathon 2026"
+                                   maxlength="100" autocomplete="off"
+                                   oninput="handleTitleInput(this)" onblur="validateTitle(true)">
+                            <div class="field-error-msg" id="titleError">
+                                <i class="fas fa-exclamation-circle"></i> <span>Title must be between 3 and 100 characters.</span>
+                            </div>
+                        </div>
+
+                        <!-- Organization Name -->
+                        <div class="field-group">
+                            <div class="field-header-row">
+                                <label for="orgInput" class="field-label">Organization / Sponsor Name <span class="req">*</span></label>
+                                <span class="char-counter" id="orgCount">0 / 80</span>
+                            </div>
+                            <input type="text" th:field="*{organizationName}" id="orgInput" class="input-control"
+                                   placeholder="e.g. Google Cloud Students Club"
+                                   maxlength="80" autocomplete="off"
+                                   oninput="handleOrgInput(this)" onblur="validateOrg(true)">
+                            <div class="field-error-msg" id="orgError">
+                                <i class="fas fa-exclamation-circle"></i> <span>Organization name is required (2-80 characters).</span>
+                            </div>
+                        </div>
+
+                        <!-- Ad Type & Placement -->
+                        <div class="grid-2col">
+                            <div class="field-group">
+                                <label for="adTypeSelect" class="field-label">Ad Type <span class="req">*</span></label>
+                                <select th:field="*{adType}" id="adTypeSelect" class="input-control" onchange="updatePreviewBadges()">
+                                    <option th:each="type : ${adTypes}" th:value="${type}" th:text="${type}">BANNER</option>
+                                </select>
+                                <span class="field-hint">Visual category format for students.</span>
+                            </div>
+
+                            <div class="field-group">
+                                <label for="placementSelect" class="field-label">Ad Placement <span class="req">*</span></label>
+                                <select th:field="*{placement}" id="placementSelect" class="input-control" onchange="updatePreviewBadges()">
+                                    <option th:each="pl : ${placements}" th:value="${pl}" th:text="${pl}">FEED</option>
+                                </select>
+                                <span class="field-hint">Location where this ad is rendered.</span>
+                            </div>
+                        </div>
+
+                        <!-- SECTION 2: Creative & Media -->
+                        <div class="form-section-divider">
+                            <i class="fas fa-image"></i>
+                            <span>Creative Banner & Copy</span>
+                        </div>
+
+                        <!-- Image URL -->
+                        <div class="field-group">
+                            <div class="field-header-row">
+                                <label for="imageUrlInput" class="field-label">Banner Image URL <span class="req">*</span></label>
+                                <span class="char-counter" style="color:var(--primary); font-weight:700;">16:9 Recommended</span>
+                            </div>
+                            <input type="url" th:field="*{imageUrl}" id="imageUrlInput" class="input-control"
+                                   placeholder="https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=1200&auto=format&fit=crop"
+                                   oninput="handleImageInput(this)" onblur="validateImageUrl(true)">
+                            <div class="field-error-msg" id="imageUrlError">
+                                <i class="fas fa-exclamation-circle"></i> <span>Please enter a valid image web URL (starting with http:// or https://).</span>
+                            </div>
+
+                            <!-- Fast Presets for Quick Testing -->
+                            <div class="sample-presets-bar">
+                                <span style="font-size:11px; font-weight:700; color:var(--text-muted);">Quick Presets:</span>
+                                <span class="preset-chip" onclick="applyPresetImage('https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=1000&auto=format&fit=crop')"><i class="fas fa-laptop-code"></i> Coding</span>
+                                <span class="preset-chip" onclick="applyPresetImage('https://images.unsplash.com/photo-1511512578047-dfb367046420?w=1000&auto=format&fit=crop')"><i class="fas fa-gamepad"></i> Gaming</span>
+                                <span class="preset-chip" onclick="applyPresetImage('https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1000&auto=format&fit=crop')"><i class="fas fa-calendar-check"></i> Events</span>
+                                <span class="preset-chip" onclick="applyPresetImage('https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=1000&auto=format&fit=crop')"><i class="fas fa-users"></i> Campus</span>
+                            </div>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="field-group">
+                            <div class="field-header-row">
+                                <label for="descInput" class="field-label">Ad Caption / Description <span class="req">*</span></label>
+                                <span class="char-counter" id="descCount">0 / 500</span>
+                            </div>
+                            <textarea th:field="*{description}" id="descInput" class="input-control" rows="3"
+                                      placeholder="Write a clear, engaging pitch explaining the offer, event, or product to students..."
+                                      maxlength="500"
+                                      oninput="handleDescInput(this)" onblur="validateDescription(true)"></textarea>
+                            <div class="field-error-msg" id="descError">
+                                <i class="fas fa-exclamation-circle"></i> <span>Description is required (minimum 10 characters).</span>
+                            </div>
+                        </div>
+
+                        <!-- SECTION 3: Call-To-Action (CTA) -->
+                        <div class="form-section-divider">
+                            <i class="fas fa-external-link-alt"></i>
+                            <span>Call-To-Action (CTA) Button</span>
+                        </div>
+
+                        <div class="grid-2col">
+                            <!-- CTA Text -->
+                            <div class="field-group">
+                                <label for="ctaTextInput" class="field-label">CTA Button Label <span class="req">*</span></label>
+                                <input type="text" th:field="*{ctaText}" id="ctaTextInput" class="input-control"
+                                       placeholder="e.g. Register Now, Learn More"
+                                       maxlength="30" autocomplete="off"
+                                       oninput="handleCtaTextInput(this)" onblur="validateCtaText(true)">
+                                <div class="field-error-msg" id="ctaTextError">
+                                    <i class="fas fa-exclamation-circle"></i> <span>CTA text is required (2-30 characters).</span>
+                                </div>
+                            </div>
+
+                            <!-- CTA Destination URL -->
+                            <div class="field-group">
+                                <label for="ctaUrlInput" class="field-label">Destination URL <span class="req">*</span></label>
+                                <input type="url" th:field="*{ctaUrl}" id="ctaUrlInput" class="input-control"
+                                       placeholder="https://example.com/register"
+                                       oninput="validateCtaUrl(false)" onblur="validateCtaUrl(true)">
+                                <div class="field-error-msg" id="ctaUrlError">
+                                    <i class="fas fa-exclamation-circle"></i> <span>Please enter a valid destination link (http:// or https://).</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SECTION 4: Audience & Scheduling -->
+                        <div class="form-section-divider">
+                            <i class="fas fa-sliders-h"></i>
+                            <span>Audience & Scheduling</span>
+                        </div>
+
+                        <div class="grid-2col">
+                            <!-- Target Audience -->
+                            <div class="field-group">
+                                <label for="audienceSelect" class="field-label">Target Audience <span class="req">*</span></label>
+                                <select th:field="*{targetAudience}" id="audienceSelect" class="input-control">
+                                    <option th:each="ta : ${audiences}" th:value="${ta}" th:text="${ta}">ALL_STUDENTS</option>
+                                </select>
+                            </div>
+
+                            <!-- Priority -->
+                            <div class="field-group">
+                                <label for="priorityInput" class="field-label">Priority Level</label>
+                                <input type="number" th:field="*{priority}" id="priorityInput" class="input-control"
+                                       min="0" max="999" placeholder="0"
+                                       oninput="validatePriority(false)" onblur="validatePriority(true)">
+                                <span class="field-hint">Higher priority (0-999) ranks higher in student feeds.</span>
+                                <div class="field-error-msg" id="priorityError">
+                                    <i class="fas fa-exclamation-circle"></i> <span>Priority must be a number between 0 and 999.</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Start and End Dates -->
+                        <div class="grid-2col">
+                            <div class="field-group">
+                                <label for="startDateInput" class="field-label">Start Date & Time</label>
+                                <input type="datetime-local" name="startDateStr" id="startDateInput" class="input-control"
+                                       th:value="${ad.startDateTime != null ? #temporals.format(ad.startDateTime, 'yyyy-MM-dd''T''HH:mm') : ''}"
+                                       onchange="validateDates(false)">
+                                <span class="field-hint">Leave blank to start immediately.</span>
+                            </div>
+
+                            <div class="field-group">
+                                <label for="endDateInput" class="field-label">End Date & Time</label>
+                                <input type="datetime-local" name="endDateStr" id="endDateInput" class="input-control"
+                                       th:value="${ad.endDateTime != null ? #temporals.format(ad.endDateTime, 'yyyy-MM-dd''T''HH:mm') : ''}"
+                                       onchange="validateDates(true)">
+                                <span class="field-hint">Campaign automatically expires after this.</span>
+                                <div class="field-error-msg" id="dateError">
+                                    <i class="fas fa-exclamation-circle"></i> <span>End date must be after Start date.</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Initial Status -->
+                        <div class="field-group">
+                            <label for="statusSelect" class="field-label">Campaign Status</label>
+                            <select th:field="*{status}" id="statusSelect" class="input-control">
+                                <option th:each="st : ${statuses}" th:value="${st}" th:text="${st}">ACTIVE</option>
+                            </select>
+                            <span class="field-hint">System will automatically update status according to start/end dates.</span>
+                        </div>
+
+                        <!-- Actions Bar -->
+                        <div class="form-actions-bar">
+                            <button type="submit" id="saveAdBtn" class="btn-submit-ad">
+                                <i class="fas fa-rocket"></i>
+                                <span th:text="${ad.id == null ? 'Publish Advertisement' : 'Update Advertisement'}">Publish Advertisement</span>
+                            </button>
+                            <a th:href="@{/admin/advertisements}" class="btn-cancel-ad">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Right Column: Sticky Live Student Preview -->
+                <div class="preview-sticky-wrap">
+                    <div class="preview-header-line">
+                        <span class="preview-title"><i class="fas fa-eye"></i> Live Student Preview</span>
+                        <span class="preview-placement-pill" id="previewPlacementBadge"><i class="fas fa-layer-group"></i> Feed Ad</span>
+                    </div>
+
+                    <!-- Feed Ad Component Card -->
+                    <div class="preview-ad-card">
+                        <div class="preview-top-flag">
+                            <i class="fas fa-ad" style="margin-right: 3px;"></i> SPONSORED
+                        </div>
+
+                        <!-- 16:9 Banner Media Box with Ambient Glow -->
+                        <div class="preview-banner-box">
+                            <img id="previewImgAmbient" class="preview-banner-ambient"
+                                 src="https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800&auto=format&fit=crop"
+                                 alt="Ambient">
+                            <img id="previewImg" class="preview-banner-img"
+                                 src="https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800&auto=format&fit=crop"
+                                 alt="Preview Banner"
+                                 onerror="handleImageLoadError(this)">
+                        </div>
+
+                        <!-- Card Body -->
+                        <div class="preview-content-box">
+                            <div id="previewOrg" class="preview-org-name">ORGANIZATION NAME</div>
+                            <h3 id="previewTitle" class="preview-ad-title">Advertisement Title Headline</h3>
+                            <p id="previewDesc" class="preview-ad-desc">This is where your compelling advertisement message and offer details will appear for youthian students.</p>
+
+                            <div style="display:flex; align-items:center;">
+                                <div id="previewCtaBtn" class="preview-cta-btn">
+                                    <span id="previewCtaText">Register Now</span>
+                                    <i class="fas fa-arrow-right"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div><!-- /ad-form-layout -->
+
+        </main>
+    </div>
+
+    <!-- Admin Footer Scripts -->
+    <div th:replace="~{fragments/admin-fragments :: admin-scripts}"></div>
+
+    <!-- Interactive Form Validation & Live Preview JavaScript -->
+    <script>
+        const fallbackImage = 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800&auto=format&fit=crop';
+
+        function handleImageLoadError(img) {
+            img.src = fallbackImage;
+            const ambient = document.getElementById('previewImgAmbient');
+            if (ambient) ambient.src = fallbackImage;
+        }
+
+        function applyPresetImage(url) {
+            const input = document.getElementById('imageUrlInput');
+            input.value = url;
+            input.classList.remove('is-invalid');
+            input.classList.add('is-valid');
+            document.getElementById('imageUrlError').classList.remove('visible');
+            updatePreviewImage(url);
+            validateImageUrl(false);
+        }
+
+        function updatePreviewImage(url) {
+            const previewImg = document.getElementById('previewImg');
+            const ambientImg = document.getElementById('previewImgAmbient');
+            const cleanUrl = (url && url.trim().length > 0) ? url.trim() : fallbackImage;
+            previewImg.src = cleanUrl;
+            if (ambientImg) ambientImg.src = cleanUrl;
+        }
+
+        // Live Input Handlers
+        function handleTitleInput(input) {
+            const val = input.value;
+            document.getElementById('titleCount').textContent = val.length + ' / 100';
+            document.getElementById('previewTitle').textContent = val.trim().length > 0 ? val : 'Advertisement Title Headline';
+            validateTitle(false);
+        }
+
+        function handleOrgInput(input) {
+            const val = input.value;
+            document.getElementById('orgCount').textContent = val.length + ' / 80';
+            document.getElementById('previewOrg').textContent = val.trim().length > 0 ? val.toUpperCase() : 'ORGANIZATION NAME';
+            validateOrg(false);
+        }
+
+        function handleDescInput(input) {
+            const val = input.value;
+            document.getElementById('descCount').textContent = val.length + ' / 500';
+            document.getElementById('previewDesc').textContent = val.trim().length > 0 ? val : 'This is where your compelling advertisement message and offer details will appear for youthian students.';
+            validateDescription(false);
+        }
+
+        function handleImageInput(input) {
+            updatePreviewImage(input.value);
+            validateImageUrl(false);
+        }
+
+        function handleCtaTextInput(input) {
+            const val = input.value;
+            document.getElementById('previewCtaText').textContent = val.trim().length > 0 ? val : 'Register Now';
+            validateCtaText(false);
+        }
+
+        function updatePreviewBadges() {
+            const pl = document.getElementById('placementSelect').value;
+            const badge = document.getElementById('previewPlacementBadge');
+            if (badge) {
+                badge.innerHTML = '<i class="fas fa-layer-group"></i> ' + pl + ' AD';
+            }
+        }
+
+        // Validators
+        function validateTitle(showError) {
+            const input = document.getElementById('titleInput');
+            const err = document.getElementById('titleError');
+            const isValid = input.value.trim().length >= 3 && input.value.trim().length <= 100;
+
+            if (isValid) {
+                input.classList.remove('is-invalid');
+                input.classList.add('is-valid');
+                err.classList.remove('visible');
+            } else if (showError) {
+                input.classList.add('is-invalid');
+                input.classList.remove('is-valid');
+                err.classList.add('visible');
+            }
+            return isValid;
+        }
+
+        function validateOrg(showError) {
+            const input = document.getElementById('orgInput');
+            const err = document.getElementById('orgError');
+            const isValid = input.value.trim().length >= 2 && input.value.trim().length <= 80;
+
+            if (isValid) {
+                input.classList.remove('is-invalid');
+                input.classList.add('is-valid');
+                err.classList.remove('visible');
+            } else if (showError) {
+                input.classList.add('is-invalid');
+                input.classList.remove('is-valid');
+                err.classList.add('visible');
+            }
+            return isValid;
+        }
+
+        function validateDescription(showError) {
+            const input = document.getElementById('descInput');
+            const err = document.getElementById('descError');
+            const isValid = input.value.trim().length >= 10 && input.value.trim().length <= 500;
+
+            if (isValid) {
+                input.classList.remove('is-invalid');
+                input.classList.add('is-valid');
+                err.classList.remove('visible');
+            } else if (showError) {
+                input.classList.add('is-invalid');
+                input.classList.remove('is-valid');
+                err.classList.add('visible');
+            }
+            return isValid;
+        }
+
+        function isValidWebUrl(string) {
+            if (!string || string.trim().length === 0) return false;
+            try {
+                const url = new URL(string.trim());
+                return url.protocol === "http:" || url.protocol === "https:";
+            } catch (_) {
+                // allow relative uploads
+                return string.startsWith('/uploads/');
+            }
+        }
+
+        function validateImageUrl(showError) {
+            const input = document.getElementById('imageUrlInput');
+            const err = document.getElementById('imageUrlError');
+            const isValid = isValidWebUrl(input.value);
+
+            if (isValid) {
+                input.classList.remove('is-invalid');
+                input.classList.add('is-valid');
+                err.classList.remove('visible');
+            } else if (showError) {
+                input.classList.add('is-invalid');
+                input.classList.remove('is-valid');
+                err.classList.add('visible');
+            }
+            return isValid;
+        }
+
+        function validateCtaText(showError) {
+            const input = document.getElementById('ctaTextInput');
+            const err = document.getElementById('ctaTextError');
+            const isValid = input.value.trim().length >= 2 && input.value.trim().length <= 30;
+
+            if (isValid) {
+                input.classList.remove('is-invalid');
+                input.classList.add('is-valid');
+                err.classList.remove('visible');
+            } else if (showError) {
+                input.classList.add('is-invalid');
+                input.classList.remove('is-valid');
+                err.classList.add('visible');
+            }
+            return isValid;
+        }
+
+        function validateCtaUrl(showError) {
+            const input = document.getElementById('ctaUrlInput');
+            const err = document.getElementById('ctaUrlError');
+            const isValid = isValidWebUrl(input.value);
+
+            if (isValid) {
+                input.classList.remove('is-invalid');
+                input.classList.add('is-valid');
+                err.classList.remove('visible');
+            } else if (showError) {
+                input.classList.add('is-invalid');
+                input.classList.remove('is-valid');
+                err.classList.add('visible');
+            }
+            return isValid;
+        }
+
+        function validatePriority(showError) {
+            const input = document.getElementById('priorityInput');
+            const err = document.getElementById('priorityError');
+            if (!input.value) {
+                input.value = "0";
+            }
+            const val = parseInt(input.value);
+            const isValid = !isNaN(val) && val >= 0 && val <= 999;
+
+            if (isValid) {
+                input.classList.remove('is-invalid');
+                input.classList.add('is-valid');
+                err.classList.remove('visible');
+            } else if (showError) {
+                input.classList.add('is-invalid');
+                input.classList.remove('is-valid');
+                err.classList.add('visible');
+            }
+            return isValid;
+        }
+
+        function validateDates(showError) {
+            const startInput = document.getElementById('startDateInput');
+            const endInput = document.getElementById('endDateInput');
+            const err = document.getElementById('dateError');
+
+            let isValid = true;
+            if (startInput.value && endInput.value) {
+                const startDate = new Date(startInput.value);
+                const endDate = new Date(endInput.value);
+                if (endDate <= startDate) {
+                    isValid = false;
+                }
+            }
+
+            if (isValid) {
+                endInput.classList.remove('is-invalid');
+                err.classList.remove('visible');
+            } else if (showError) {
+                endInput.classList.add('is-invalid');
+                err.classList.add('visible');
+            }
+            return isValid;
+        }
+
+        // Full Form Validation on Submit
+        function validateAdForm(e) {
+            const isTitleOk = validateTitle(true);
+            const isOrgOk = validateOrg(true);
+            const isDescOk = validateDescription(true);
+            const isImageOk = validateImageUrl(true);
+            const isCtaTextOk = validateCtaText(true);
+            const isCtaUrlOk = validateCtaUrl(true);
+            const isPriorityOk = validatePriority(true);
+            const isDatesOk = validateDates(true);
+
+            if (!isTitleOk || !isOrgOk || !isDescOk || !isImageOk || !isCtaTextOk || !isCtaUrlOk || !isPriorityOk || !isDatesOk) {
+                e.preventDefault();
+
+                // Focus first invalid element
+                const firstInvalid = document.querySelector('.input-control.is-invalid');
+                if (firstInvalid) {
+                    firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    firstInvalid.focus();
+                }
+                return false;
+            }
+
+            const btn = document.getElementById('saveAdBtn');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving Advertisement...';
+            btn.style.opacity = '0.85';
+            btn.style.pointerEvents = 'none';
+            return true;
+        }
+
+        // Initial setup on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            const titleInput = document.getElementById('titleInput');
+            const orgInput = document.getElementById('orgInput');
+            const descInput = document.getElementById('descInput');
+            const imgInput = document.getElementById('imageUrlInput');
+            const ctaTextInput = document.getElementById('ctaTextInput');
+            const ctaUrlInput = document.getElementById('ctaUrlInput');
+
+            if (titleInput && titleInput.value) handleTitleInput(titleInput);
+            if (orgInput && orgInput.value) handleOrgInput(orgInput);
+            if (descInput && descInput.value) handleDescInput(descInput);
+            if (imgInput && imgInput.value) handleImageInput(imgInput);
+            if (ctaTextInput && ctaTextInput.value) handleCtaTextInput(ctaTextInput);
+            if (ctaUrlInput && ctaUrlInput.value) validateCtaUrl(false);
+
+            updatePreviewBadges();
+            validateDates(false);
+        });
+    </script>
+</body>
+
+</html>

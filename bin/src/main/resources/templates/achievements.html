@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaderboard & Achievements | Youthians</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg-gradient) !important;
+            color: var(--text-primary) !important;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        /* Header is handled by shared .dashboard-navbar styles in style.css */
+
+        /* â”€â”€ Main Layout â”€â”€ */
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 30px;
+            max-width: 1440px;
+            margin: calc(var(--dashboard-nav-height) + 16px) auto 0;
+            padding: 0 20px;
+        }
+
+        .content-area {
+            flex: 1;
+            padding: 32px 42px;
+            max-width: 1100px;
+            margin: 0 auto;
+            min-width: 0;
+        }
+
+        .content-area p {
+            color: var(--text-secondary);
+        }
+
+        .content-area h1,
+        .content-area h2,
+        .content-area h3,
+        .content-area h4 {
+            color: var(--text-primary);
+        }
+
+        /* â”€â”€ Leaderboard Core â”€â”€ */
+        .lb-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+
+        .lb-header h1 {
+            font-weight: 900;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .lb-header h1 i {
+            color: #fbbf24;
+        }
+
+        .my-stats-card {
+            background: rgba(255, 255, 255, 0.80);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 24px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .my-stats-card img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #f84464;
+        }
+
+        .my-stats-info h3 {
+            font-size: 1.1rem;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+
+        .my-stats-info p {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .xp-pill {
+            margin-left: auto;
+            background: rgba(59, 130, 246, 0.10);
+            border: 1px solid rgba(59, 130, 246, 0.22);
+            color: var(--primary);
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-weight: 800;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .mystery-card {
+            background: rgba(255, 255, 255, 0.80);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 24px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .mystery-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 14px;
+            background: rgba(139, 92, 246, 0.14);
+            border: 1px solid rgba(139, 92, 246, 0.28);
+            color: #7c3aed;
+            font-size: 26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mystery-info {
+            flex: 1;
+        }
+
+        .mystery-info h3 {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .mystery-info p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .mystery-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(15, 23, 42, 0.06);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .mystery-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #8b5cf6 0%, #a78bfa 55%, #c4b5fd 100%);
+            transition: width 0.5s;
+        }
+
+        .mystery-coupon {
+            background: rgba(255, 255, 255, 0.90);
+            border: 1px dashed rgba(59, 130, 246, 0.45);
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--text-primary);
+            display: inline-block;
+            letter-spacing: 1px;
+        }
+
+        .badge-system {
+            background: rgba(255, 255, 255, 0.80);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 30px;
+        }
+
+        .badge-system h4 {
+            font-size: 13px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 14px;
+        }
+
+        .badges-row {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .tier {
+            flex: 1;
+            text-align: center;
+            padding: 14px;
+            background: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            transition: transform 0.2s;
+        }
+
+        .tier:hover {
+            transform: translateY(-4px);
+        }
+
+        .tier i {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .tier .t-name {
+            font-weight: 700;
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+
+        .tier .t-req {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .c-novice i {
+            color: #9ca3af;
+        }
+
+        .c-bronze i {
+            color: #d97706;
+        }
+
+        .c-silver i {
+            color: #94a3b8;
+        }
+
+        .c-gold i {
+            color: #eab308;
+        }
+
+        .c-platinum i {
+            color: #38bdf8;
+        }
+
+        /* â”€â”€ Achievements Grid â”€â”€ */
+        .achievements-section {
+            margin-bottom: 40px;
+        }
+
+        .achievements-section h2 {
+            font-size: 1.2rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-primary);
+        }
+
+        .achievements-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .achievement-card {
+            background: var(--card-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 24px;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .achievement-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(248, 68, 100, 0.4);
+            background: linear-gradient(135deg, rgba(248, 68, 100, 0.1), rgba(255, 255, 255, 0.5));
+        }
+
+        .award-icon {
+            width: 54px;
+            height: 54px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .award-winner {
+            background: rgba(251, 191, 36, 0.15);
+            color: #fbbf24;
+            box-shadow: 0 0 15px rgba(251, 191, 36, 0.2);
+        }
+
+        .award-runner {
+            background: rgba(226, 232, 240, 0.15);
+            color: #e2e8f0;
+        }
+
+        .award-info h4 {
+            font-size: 15px;
+            font-weight: 800;
+            margin-bottom: 4px;
+            color: var(--text-primary);
+        }
+
+        .award-info p {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .award-xp {
+            font-size: 12px;
+            font-weight: 700;
+            color: #4ade80;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .empty-achievements {
+            background: var(--card-bg);
+            border: 1px dashed var(--glass-border);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            color: var(--text-muted);
+        }
+
+        .empty-achievements i {
+            font-size: 40px;
+            margin-bottom: 15px;
+            display: block;
+            opacity: 0.2;
+        }
+
+        /* â”€â”€ Leaderboard Table â”€â”€ */
+        .lb-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--card-bg);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--glass-border);
+        }
+
+        .lb-table th {
+            text-align: left;
+            padding: 16px 20px;
+            background: rgba(0, 0, 0, 0.02);
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .lb-table td {
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+            transition: background 0.2s;
+        }
+
+        .lb-row:hover td {
+            background: rgba(0, 0, 0, 0.02);
+        }
+
+        .rank {
+            font-weight: 900;
+            font-size: 16px;
+            color: var(--text-muted);
+            width: 50px;
+            text-align: center;
+        }
+
+        .rank-1 {
+            color: #eab308;
+            font-size: 20px;
+        }
+
+        .rank-2 {
+            color: #cbd5e1;
+            font-size: 18px;
+        }
+
+        .rank-3 {
+            color: #b45309;
+            font-size: 18px;
+        }
+
+        .u-flex {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .u-flex img {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .u-flex div {
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .u-flex span {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .xp-score {
+            font-weight: 800;
+            color: #f84464;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .lvl-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: 1px solid transparent;
+        }
+
+        .c-platinum {
+            color: #475569;
+            background: rgba(71, 85, 105, 0.1);
+            border-color: rgba(71, 85, 105, 0.2);
+            box-shadow: 0 0 10px rgba(71, 85, 105, 0.05);
+        }
+
+        .c-gold {
+            color: #d97706;
+            background: rgba(217, 119, 6, 0.1);
+            border-color: rgba(217, 119, 6, 0.2);
+            box-shadow: 0 0 10px rgba(217, 119, 6, 0.05);
+        }
+
+        .c-silver {
+            color: #475569;
+            background: rgba(71, 85, 105, 0.10);
+            border-color: rgba(71, 85, 105, 0.2);
+        }
+
+        .c-bronze {
+            color: #b45309;
+            background: rgba(180, 83, 9, 0.1);
+            border-color: rgba(180, 83, 9, 0.2);
+        }
+
+        .c-novice {
+            color: var(--text-muted);
+            background: rgba(15, 23, 42, 0.05);
+            border-color: rgba(15, 23, 42, 0.1);
+        }
+
+        /* â”€â”€ Responsive â”€â”€ */
+        @media (max-width: 920px) {
+            .dashboard-container {
+                grid-template-columns: 220px 1fr;
+                gap: 20px;
+            }
+            .content-area {
+                padding: 24px;
+            }
+            .achievements-grid {
+                grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-container {
+                grid-template-columns: minmax(0, 1fr);
+                padding: 0 12px;
+                gap: 15px;
+                margin-top: calc(var(--dashboard-nav-height) + 10px);
+            }
+            .content-area {
+                padding: 15px 12px;
+            }
+            .lb-header {
+                margin-bottom: 20px;
+            }
+            .lb-header h1 {
+                font-size: 1.5rem;
+            }
+            .my-stats-card, .mystery-card {
+                padding: 18px 15px;
+                gap: 15px;
+                align-items: flex-start;
+            }
+            .my-stats-card {
+                flex-direction: row;
+                align-items: center;
+                flex-wrap: wrap;
+            }
+            .my-stats-card img {
+                width: 50px;
+                height: 50px;
+            }
+            .my-stats-info h3 {
+                font-size: 1rem;
+            }
+            .xp-pill {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+            .mystery-card {
+                flex-direction: column;
+                align-items: stretch;
+                text-align: center;
+            }
+            .mystery-icon {
+                width: 50px;
+                height: 50px;
+                font-size: 22px;
+                margin: 0 auto 5px;
+            }
+            .mystery-info h3 {
+                justify-content: center;
+                font-size: 1.05rem;
+            }
+            .achievements-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            .achievement-card {
+                padding: 18px 15px;
+                gap: 15px;
+            }
+            .award-icon {
+                width: 46px;
+                height: 46px;
+                font-size: 20px;
+            }
+            .award-info h4 {
+                font-size: 14px;
+            }
+            .lb-table th, .lb-table td {
+                padding: 10px 6px;
+            }
+
+            .lb-table th:nth-child(3), .lb-table td:nth-child(3) {
+                display: table-cell; /* Show Tier column on mobile */
+            }
+
+            /* Tier column is now shown on mobile */
+
+            .u-flex {
+                gap: 8px;
+            }
+            .u-flex img {
+                width: 30px;
+                height: 30px;
+            }
+            .u-flex div div {
+                font-size: 13px;
+                max-width: 100px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+            .u-flex span {
+                display: none !important; /* Hide email on mobile to prevent layout stretching */
+            }
+            .rank {
+                width: 30px;
+                font-size: 14px;
+            }
+            .rank-1 {
+                font-size: 18px;
+            }
+            .rank-2, .rank-3 {
+                font-size: 16px;
+            }
+            .xp-score {
+                font-size: 13px;
+            }
+            #redeemSection {
+                flex-direction: column;
+                width: 100%;
+            }
+            #redeemSection input, #redeemSection button {
+                width: 100%;
+            }
+            .achievements-section h2 {
+                font-size: 1.15rem;
+            }
+            .empty-achievements {
+                padding: 30px 20px;
+            }
+            .empty-achievements i {
+                font-size: 32px;
+            }
+            .badges-row {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+            .badges-row .tier:last-child {
+                grid-column: span 2;
+            }
+            .tier {
+                padding: 10px;
+            }
+            .tier i {
+                font-size: 20px;
+            }
+            .tier .t-name {
+                font-size: 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .u-flex span {
+                display: none; /* Hide emails on mobile under 480px to prevent layout pushing */
+            }
+            .u-flex div div {
+                max-width: 100px;
+            }
+            .lb-table th:nth-child(3), .lb-table td:nth-child(3) {
+                display: none !important; /* Hide Tier column on mobile to prevent overflow */
+            }
+            .my-stats-card {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                gap: 10px;
+            }
+            .xp-pill {
+                margin: 10px auto 0;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .content-area {
+                padding: 10px 5px;
+            }
+            .lb-header h1 {
+                font-size: 1.3rem;
+            }
+            .badges-row {
+                grid-template-columns: 1fr;
+            }
+            .badges-row .tier:last-child {
+                grid-column: auto;
+            }
+            .u-flex div div {
+                max-width: 80px;
+            }
+        }
+    </style>
+    <script defer th:src="@{/js/game-rewards.js}"></script>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <!-- Mobile Sidebar Overlay -->
+    <div class="mobile-menu-overlay" onclick="document.querySelector('.sidebar').classList.remove('mobile-open'); this.classList.remove('active');"></div>
+
+    <nav class="dashboard-navbar">
+
+        <button class="mobile-menu-btn" onclick="const s=document.querySelector('.sidebar');if(s)s.classList.toggle('mobile-open'); const o=document.querySelector('.mobile-menu-overlay');if(o)o.classList.toggle('active');" style="display:none; background:none; border:none; color:var(--text-primary); font-size:20px; cursor:pointer; margin-right:15px; margin-left: 5px; padding: 0;">
+            <i class="fas fa-bars"></i>
+        </button>
+        <a class="dashboard-logo" th:href="@{/home}" style="display: inline-flex; flex-direction: column; align-items: center; text-decoration: none; line-height: 1.1; margin-right: 15px;">
+    <svg width="28" height="28" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <linearGradient id="yg" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#6b21a8" />
+                <stop offset="50%" stop-color="#2563eb" />
+                <stop offset="100%" stop-color="#0ea5e9" />
+            </linearGradient>
+        </defs>
+        <circle cx="50" cy="22" r="12" fill="url(#yg)" />
+        <path d="M 25 25 Q 40 50 45 65 L 45 90 Q 55 90 55 65 Q 60 50 80 25 Q 65 45 55 55 L 45 55 Q 35 45 25 25 Z" fill="url(#yg)" />
+        <path d="M 15 60 Q 50 90 90 40 Q 80 50 50 80 Q 25 70 15 60 Z" fill="url(#yg)" />
+        <polygon points="75,10 80,15 85,10 80,5" fill="#0ea5e9" />
+    </svg>
+    <span style="font-size: 11px; font-weight: 800; color: #1e3a8a; letter-spacing: 1px; margin-top: 2px;">YOUTHIANS</span>
+</a>
+
+        <div class="dashboard-spacer"></div>
+        <div class="dashboard-nav-links">
+            <a th:href="@{/dashboard}"><i class="fas fa-home"></i></a>
+            <a th:href="@{/messages}"><i class="fas fa-comment-dots"></i></a>
+            <a th:href="@{/explore}"><i class="fas fa-compass"></i></a>
+            <div class="profile-dropdown">
+                <a th:href="@{/profile}">
+                    <img th:src="${user != null and user.profilePhotoUrl != null ? user.profilePhotoUrl : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=1780&auto=format&fit=crop'}"
+                        class="user-avatar" style="width:32px; height:32px; border:none;">
+                </a>
+
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Layout -->
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <a th:href="@{/dashboard}" class="sidebar-link"><i class="fas fa-home"></i> Home</a>
+            <a th:href="@{/explore}" class="sidebar-link"><i class="fas fa-compass"></i> Explore</a>
+            <a th:href="@{/events}" class="sidebar-link"><i class="fas fa-calendar-alt"></i> Events</a>
+            <a th:href="@{/battles}" class="sidebar-link"><i class="fas fa-fire"></i> Battle Arena</a>
+            <a th:href="@{/achievements}" class="sidebar-link active"><i class="fas fa-trophy"></i> Achievements</a>
+            <a th:href="@{/messages}" class="sidebar-link"><i class="fas fa-comment-dots"></i> Chat</a>
+            <a th:href="@{/reels}" class="sidebar-link"><i class="fas fa-film"></i> Reels</a>
+            <a th:href="@{/profile}" class="sidebar-link"><i class="fas fa-user"></i> Profile</a>
+            
+            <a th:href="@{/wallet}" class="sidebar-link"><i class="fas fa-wallet"></i> Wallet</a>
+            <a th:href="@{/user/my-bookings}" class="sidebar-link"><i class="fas fa-ticket-alt"></i> My Bookings</a>
+            <a href="javascript:void(0)" class="sidebar-link" onclick="openCreateModal()"><i class="fas fa-plus-circle" style="color: var(--accent);"></i> Create Post</a>
+            <a th:href="@{/settings}" class="sidebar-link"><i class="fas fa-cog"></i> Settings</a>
+            <a th:href="@{/logout}" class="sidebar-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </aside>
+
+        <!-- Content -->
+        <main class="content-area">
+
+            <div class="lb-header">
+                <h1><i class="fas fa-crown"></i> Youthians Leaderboard</h1>
+            </div>
+
+            <!-- Current User Stats -->
+            <div class="my-stats-card" th:if="${user != null}">
+                <img th:src="${user.profilePhotoUrl != null ? user.profilePhotoUrl : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100'}"
+                    alt="profile">
+                <div class="my-stats-info">
+                    <h3 th:text="${user.username}">Username</h3>
+                    <p th:text="${user.level != null ? user.level : 'Novice'} + ' Tier'">Tier</p>
+                </div>
+                <div class="xp-pill">
+                    <i class="fas fa-bolt"></i>
+                    <span th:text="${user.xp != null ? user.xp : 0} + ' XP'">0 XP</span>
+                </div>
+            </div>
+
+            <!-- Mystery Gift Section -->
+            <div class="mystery-card" th:if="${user != null}">
+                <div class="mystery-icon">
+                    <i th:class="${attendedCount >= 3} ? 'fas fa-gift' : 'fas fa-lock'"></i>
+                </div>
+                <div class="mystery-info">
+                    <h3>
+                        <i class="fas fa-sparkles" style="color:#fbbf24;"></i>
+                        Mystery Gift Unlock
+                    </h3>
+                    <p th:if="${attendedCount < 3}">
+                        Keep participating! Attend <strong>3 events</strong> to unlock your special mystery reward
+                        coupon.
+                        (<span th:text="${attendedCount}">0</span> / 3 Attended)
+                    </p>
+                    <p th:if="${attendedCount >= 3}" style="color:#4ade80; font-weight:700;">
+                        Congratulations! You've unlocked the Elite Youthians Reward.
+                    </p>
+
+                    <div class="mystery-bar">
+                        <div class="mystery-fill"
+                            th:style="'width: ' + (${attendedCount >= 3 ? 100 : (attendedCount * 100 / 3)}) + '%'">
+                        </div>
+                    </div>
+
+                    <div style="margin-top:15px;" th:if="${attendedCount >= 3}">
+                        <div class="mystery-coupon">ZENTRIX-ELITE-2025</div>
+                        <div id="redeemSection" style="margin-top: 12px; display: flex; gap: 10px; align-items: center;">
+                            <input type="text" id="couponCodeInput" placeholder="Enter code here" style="padding: 8px 12px; border-radius: 8px; border: 1px solid var(--glass-border); outline: none; flex: 1; font-weight: 600; color: #333;">
+                            <button onclick="redeemCoupon()" style="padding: 8px 16px; border-radius: 8px; background: #8b5cf6; color: #fff; border: none; font-weight: 700; cursor: pointer; white-space: nowrap; transition: 0.2s;">Redeem</button>
+                        </div>
+                        <p id="redeemMessage" style="font-size:12px; margin-top:8px; font-weight:700; display:none;"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Scorer Section -->
+            <div class="achievements-section" th:if="${not #lists.isEmpty(leaderboard)}">
+                <h2><i class="fas fa-trophy" style="color:#fbbf24;"></i> Youthians Top Scorer</h2>
+
+                <div class="achievement-card" style="background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(255, 255, 255, 0.5)); border-color: rgba(251, 191, 36, 0.4); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 20px;">
+                    <div style="display: flex; align-items: center; gap: 18px;">
+                        <img th:src="${leaderboard[0].profilePhotoUrl != null ? leaderboard[0].profilePhotoUrl : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100'}"
+                            alt="Top Scorer" style="width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 3px solid #fbbf24; box-shadow: 0 0 15px rgba(251, 191, 36, 0.4);">
+                        <div class="award-info">
+                            <p style="color: #d97706; font-weight: 800; font-size: 12px; margin-bottom: 4px;"><i class="fas fa-star"></i> #1 PLAYER</p>
+                            <h4 th:text="${leaderboard[0].username}" style="font-size: 1.4rem; margin-bottom: 8px;">Username</h4>
+                            
+                            <!-- Tier Badge -->
+                            <span class="lvl-badge"
+                                th:classappend="${leaderboard[0].level == 'Platinum'} ? 'c-platinum' : (${leaderboard[0].level == 'Gold'} ? 'c-gold' : (${leaderboard[0].level == 'Silver'} ? 'c-silver' : (${leaderboard[0].level == 'Bronze'} ? 'c-bronze' : 'c-novice')))">
+                                <i class="fas"
+                                    th:classappend="${leaderboard[0].level == 'Platinum'} ? 'fa-gem' : 
+                                                              (${leaderboard[0].level == 'Gold'} ? 'fa-crown' : 
+                                                              (${leaderboard[0].level == 'Silver'} ? 'fa-award' : 
+                                                              (${leaderboard[0].level == 'Bronze'} ? 'fa-medal' : 'fa-user-astronaut')))"></i>
+                                <span th:text="${leaderboard[0].level != null ? leaderboard[0].level : 'Novice'}">Novice</span>
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: right; display: flex; flex-direction: column; justify-content: center; align-items: flex-end;">
+                        <div style="font-size: 28px; font-weight: 900; color: #f84464; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+                            <i class="fas fa-bolt"></i> <span th:text="${leaderboard[0].xp != null ? leaderboard[0].xp : 0}">0</span>
+                        </div>
+                        <p style="font-size: 12px; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">Total XP</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Global Leaderboard Table -->
+            <div style="width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 16px; border: 1px solid var(--glass-border); margin-top: 20px; margin-bottom: 20px;">
+                <table class="lb-table" style="border: none; margin-bottom: 0;">
+                    <thead>
+                        <tr>
+                            <th style="text-align:center;">Rank</th>
+                            <th>User</th>
+                            <th>Tier</th>
+                            <th style="text-align:right; padding-right: 16px;">XP</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="player, iter : ${leaderboard}" class="lb-row">
+                            <td class="rank"
+                                th:classappend="${iter.index == 0} ? 'rank-1' : (${iter.index == 1} ? 'rank-2' : (${iter.index == 2} ? 'rank-3' : ''))"
+                                th:text="${iter.index + 1}">
+                            </td>
+                            <td>
+                                <div class="u-flex">
+                                    <img th:src="${player.profilePhotoUrl != null ? player.profilePhotoUrl : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100'}"
+                                        alt="user">
+                                    <div>
+                                        <div th:text="${player.username}">Name</div>
+                                        <span th:text="${player.email}">email</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="lvl-badge"
+                                    th:classappend="${player.level == 'Platinum'} ? 'c-platinum' : (${player.level == 'Gold'} ? 'c-gold' : (${player.level == 'Silver'} ? 'c-silver' : (${player.level == 'Bronze'} ? 'c-bronze' : 'c-novice')))">
+                                    <i class="fas"
+                                        th:classappend="${player.level == 'Platinum'} ? 'fa-gem' : 
+                                                                  (${player.level == 'Gold'} ? 'fa-crown' : 
+                                                                  (${player.level == 'Silver'} ? 'fa-award' : 
+                                                                  (${player.level == 'Bronze'} ? 'fa-medal' : 'fa-user-astronaut')))"></i>
+                                    <span th:text="${player.level != null ? player.level : 'Novice'}">Novice</span>
+                                </span>
+                            </td>
+                            <td style="text-align:right; padding-right: 16px;">
+                                <div class="xp-score" style="justify-content: flex-end;">
+                                    <i class="fas fa-bolt"></i>
+                                    <span th:text="${player.xp != null ? player.xp : 0}"></span>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </main>
+    </div>
+    <div th:replace="~{fragments/modals :: createPostModal}"></div>
+    
+    <script th:inline="javascript">
+        function redeemCoupon() {
+            const code = document.getElementById('couponCodeInput').value;
+            const msgEl = document.getElementById('redeemMessage');
+            if (!code) return;
+
+            fetch('/api/redeem', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code: code })
+            })
+            .then(async response => {
+                const data = await response.json();
+                msgEl.style.display = 'block';
+                if (response.ok) {
+                    msgEl.style.color = '#4ade80';
+                    msgEl.innerHTML = '<i class="fas fa-check-circle"></i> ' + data.message;
+                    document.getElementById('redeemSection').style.display = 'none';
+                    // Optional: reload to update UI stats after 2s
+                    setTimeout(() => window.location.reload(), 2000);
+                } else {
+                    msgEl.style.color = '#ef4444';
+                    msgEl.innerHTML = '<i class="fas fa-exclamation-circle"></i> ' + data.error;
+                }
+            })
+            .catch(err => {
+                msgEl.style.display = 'block';
+                msgEl.style.color = '#ef4444';
+                msgEl.innerHTML = '<i class="fas fa-exclamation-circle"></i> Network error';
+            });
+        }
+    </script>
+</body>
+
+</html>
+
+
+
+
+
