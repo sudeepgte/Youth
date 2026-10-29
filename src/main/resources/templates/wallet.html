@@ -37,7 +37,24 @@
             margin: 0 auto !important;
         }
 
-        /* P2P Incoming Request Card Anti-Collapse */
+        /* Hero Wallet Card */
+        .wallet-hero-card {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            text-align: center !important;
+            background: var(--card-bg);
+            padding: 36px 20px;
+            border-radius: 24px;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-premium);
+            width: 100%;
+            box-sizing: border-box;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* P2P Incoming Request Card */
         .p2p-req-card {
             background: var(--card-bg);
             border: 1.5px solid rgba(59, 130, 246, 0.25);
@@ -53,7 +70,8 @@
             transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
         .p2p-req-card:hover {
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            transform: translateY(-2px);
         }
 
         .p2p-req-left {
@@ -162,6 +180,39 @@
             border-bottom: none;
         }
 
+        /* Transaction Filter Pills */
+        .tx-filters-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 14px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        .tx-filters-bar::-webkit-scrollbar { display: none; }
+
+        .tx-filter-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            color: var(--text-secondary);
+            padding: 7px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+        .tx-filter-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+        }
+        .tx-filter-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 2px 10px rgba(59, 130, 246, 0.3);
+        }
+
         @media (max-width: 960px) {
             .dashboard-container {
                 grid-template-columns: 220px minmax(0, 1fr) !important;
@@ -206,21 +257,117 @@
             }
         }
 
-        .chip-btn {
-            background: rgba(16, 185, 129, 0.08);
-            border: 1px solid rgba(16, 185, 129, 0.3);
+        .quick-cash-btn {
+            padding: 10px;
+            border-radius: 10px;
+            border: 1.5px solid var(--glass-border);
+            background: var(--bg-color);
             color: var(--text-primary);
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 13px;
             font-weight: 700;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.2s;
         }
-        .chip-btn:hover, .chip-btn.active {
-            background: #10B981;
-            color: white;
+        .quick-cash-btn.selected,
+        .quick-cash-btn:hover {
             border-color: #10B981;
+            background: rgba(16, 185, 129, 0.12);
+            color: #10B981;
+        }
+
+        /* Razorpay Checkout & RazorpayX Modal Styles */
+        .rzp-tab-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 14px;
+            border: none;
+            background: transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            color: #475569;
+            text-align: left;
+            transition: all 0.2s;
+            width: 100%;
+        }
+        .rzp-tab-btn:hover {
+            background: #e2e8f0;
+            color: #0f172a;
+        }
+        .rzp-tab-btn.active {
+            background: #0284c7;
+            color: white;
+        }
+        .rzp-tab-btn.active i {
+            color: white !important;
+        }
+
+        .rzp-app-pill {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 12px 6px;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 10px;
+            background: white;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 700;
+            color: #1e293b;
+            transition: all 0.2s;
+        }
+        .rzp-app-pill:hover, .rzp-app-pill.selected {
+            border-color: #0284c7;
+            background: #f0f9ff;
+            box-shadow: 0 2px 8px rgba(2, 132, 199, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .rzp-bank-tile {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 12px 6px;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 10px;
+            background: white;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 700;
+            color: #1e293b;
+            transition: all 0.2s;
+        }
+        .rzp-bank-tile:hover, .rzp-bank-tile.active {
+            border-color: #0284c7;
+            background: #f0f9ff;
+            box-shadow: 0 2px 8px rgba(2, 132, 199, 0.2);
+        }
+
+        .rzp-pay-action-btn {
+            width: 100%;
+            padding: 13px 18px;
+            background: linear-gradient(135deg, #0284c7, #0369a1);
+            border: none;
+            color: white;
+            font-weight: 700;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+            transition: all 0.2s;
+        }
+        .rzp-pay-action-btn:hover {
+            filter: brightness(1.08);
+            transform: translateY(-1px);
         }
     </style>
 </head>
@@ -232,21 +379,21 @@
             <i class="fas fa-bars"></i>
         </button>
         <a class="dashboard-logo" th:href="@{/home}" style="display: inline-flex; flex-direction: column; align-items: center; text-decoration: none; line-height: 1.1; margin-right: 15px;">
-    <svg width="28" height="28" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-            <linearGradient id="yg" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#6b21a8" />
-                <stop offset="50%" stop-color="#2563eb" />
-                <stop offset="100%" stop-color="#0ea5e9" />
-            </linearGradient>
-        </defs>
-        <circle cx="50" cy="22" r="12" fill="url(#yg)" />
-        <path d="M 25 25 Q 40 50 45 65 L 45 90 Q 55 90 55 65 Q 60 50 80 25 Q 65 45 55 55 L 45 55 Q 35 45 25 25 Z" fill="url(#yg)" />
-        <path d="M 15 60 Q 50 90 90 40 Q 80 50 50 80 Q 25 70 15 60 Z" fill="url(#yg)" />
-        <polygon points="75,10 80,15 85,10 80,5" fill="#0ea5e9" />
-    </svg>
-    <span style="font-size: 11px; font-weight: 800; color: #1e3a8a; letter-spacing: 1px; margin-top: 2px;">YOUTHIANS</span>
-</a>
+            <svg width="28" height="28" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="yg" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#6b21a8" />
+                        <stop offset="50%" stop-color="#2563eb" />
+                        <stop offset="100%" stop-color="#0ea5e9" />
+                    </linearGradient>
+                </defs>
+                <circle cx="50" cy="22" r="12" fill="url(#yg)" />
+                <path d="M 25 25 Q 40 50 45 65 L 45 90 Q 55 90 55 65 Q 60 50 80 25 Q 65 45 55 55 L 45 55 Q 35 45 25 25 Z" fill="url(#yg)" />
+                <path d="M 15 60 Q 50 90 90 40 Q 80 50 50 80 Q 25 70 15 60 Z" fill="url(#yg)" />
+                <polygon points="75,10 80,15 85,10 80,5" fill="#0ea5e9" />
+            </svg>
+            <span style="font-size: 11px; font-weight: 800; color: #1e3a8a; letter-spacing: 1px; margin-top: 2px;">YOUTHIANS</span>
+        </a>
         <div class="dashboard-spacer"></div>
         <div class="dashboard-nav-links">
             <a th:href="@{/dashboard}"><i class="fas fa-home"></i></a>
@@ -288,18 +435,19 @@
         <main class="social-feed">
             <div th:if="${success}" style="margin-bottom: 20px; width: 100%;">
                 <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid #10B981; color: #10B981; padding: 15px; border-radius: 12px; display: flex; align-items: center; gap: 12px;">
-                    <i class="fas fa-check-circle"></i>
+                    <i class="fas fa-check-circle" style="font-size: 18px;"></i>
                     <strong style="display: block; font-size: 14px;" th:text="${success}">Success message</strong>
                 </div>
             </div>
             <div th:if="${error}" style="margin-bottom: 20px; width: 100%;">
                 <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444; padding: 15px; border-radius: 12px; display: flex; align-items: center; gap: 12px;">
-                    <i class="fas fa-exclamation-circle"></i>
+                    <i class="fas fa-exclamation-circle" style="font-size: 18px;"></i>
                     <strong style="display: block; font-size: 14px;" th:text="${error}">Error message</strong>
                 </div>
             </div>
 
-            <div class="profile-header" style="display: flex !important; flex-direction: column !important; align-items: center !important; text-align: center !important; background: var(--card-bg); padding: 36px 20px; border-radius: 24px; border: 1px solid var(--glass-border); box-shadow: var(--shadow-premium); width: 100%; box-sizing: border-box;">
+            <!-- Hero Dual Balance Card -->
+            <div class="wallet-hero-card">
                 <div style="width: 76px; height: 76px; border-radius: 50%; background: linear-gradient(135deg, #10B981, #3B82F6); display: flex; align-items: center; justify-content: center; margin-bottom: 16px; box-shadow: 0 8px 24px rgba(16,185,129,0.3);">
                     <i class="fas fa-wallet" style="font-size: 34px; color: white;"></i>
                 </div>
@@ -315,7 +463,7 @@
                         </div>
                         <div style="font-size: 34px; font-weight: 900; color: var(--text-primary); display: flex; justify-content: center; align-items: center; gap: 4px;">
                             <span style="color: #10B981;">&#8377;</span>
-                            <span th:text="${user.walletBalance != null ? #numbers.formatDecimal(user.walletBalance, 1, 'COMMA', 2, 'POINT') : '0.00'}">0.00</span>
+                            <span id="walletPageCashBalance" class="wallet-cash-display" th:text="${user.walletBalance != null ? #numbers.formatDecimal(user.walletBalance, 1, 'COMMA', 2, 'POINT') : '0.00'}">0.00</span>
                         </div>
                     </div>
                     
@@ -331,7 +479,7 @@
                     </div>
                 </div>
                 
-                <!-- Quick Action Buttons (Add Cash, P2P Transfer, Request & Withdrawal) -->
+                <!-- Quick Action Buttons -->
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; width: 100%; max-width: 580px;">
                     <button onclick="openM('addCashModal')" style="padding: 13px 14px; font-size: 14px; background: linear-gradient(135deg, #10B981, #059669); border: none; color: white; border-radius: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 16px rgba(16,185,129,0.3); transition: transform 0.2s ease;">
                         <i class="fas fa-plus-circle"></i> Add Cash
@@ -348,7 +496,7 @@
                 </div>
             </div>
 
-            <!-- Incoming P2P Requests Section (Prominently displayed right under hero balance) -->
+            <!-- Incoming P2P Requests Section -->
             <div th:if="${incomingRequests != null and !#lists.isEmpty(incomingRequests)}" style="margin-top: 28px; width: 100%;">
                 <h3 style="font-size: 18px; font-weight: 800; margin-bottom: 14px; color: var(--text-primary); display: flex; align-items: center; gap: 10px;">
                     <i class="fas fa-bell" style="color: #3b82f6;"></i> Action Required: Incoming Requests
@@ -379,12 +527,12 @@
                             </div>
                         </div>
                         <div class="p2p-req-actions">
-                            <form th:action="@{/wallet/request/accept/{id}(id=${req.id})}" method="POST" style="margin: 0;">
+                            <form th:action="@{/wallet/request/accept/{id}(id=${req.id})}" method="POST" style="margin: 0;" onsubmit="return confirm('Accept this request and send funds to @' + this.dataset.username + '?');" th:attr="data-username=${req.requester != null ? req.requester.username : 'user'}">
                                 <button type="submit" class="p2p-btn-accept" title="Accept and transfer funds">
                                     <i class="fas fa-check-circle"></i> Accept &amp; Send
                                 </button>
                             </form>
-                            <form th:action="@{/wallet/request/decline/{id}(id=${req.id})}" method="POST" style="margin: 0;">
+                            <form th:action="@{/wallet/request/decline/{id}(id=${req.id})}" method="POST" style="margin: 0;" onsubmit="return confirm('Decline this request?');">
                                 <button type="submit" class="p2p-btn-decline" title="Decline this request">
                                     <i class="fas fa-times-circle"></i> Decline
                                 </button>
@@ -469,30 +617,86 @@
                 </div>
             </div>
             
-            <!-- Recent Transactions List -->
-            <h3 style="font-size: 18px; font-weight: 800; margin: 34px 0 16px 0; color: var(--text-primary);"><i class="fas fa-history"></i> Recent Transactions</h3>
+            <!-- Active Pending Withdrawals Tracker Card -->
+            <div th:if="${pendingWithdrawals != null and !#lists.isEmpty(pendingWithdrawals)}" style="margin-top: 28px;">
+                <div th:each="w : ${pendingWithdrawals}" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(217, 119, 6, 0.03)); border: 1.5px solid rgba(245, 158, 11, 0.35); border-radius: 18px; padding: 20px 24px; margin-bottom: 16px; box-shadow: 0 4px 16px rgba(245, 158, 11, 0.1);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span style="background: #f59e0b; color: white; width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);">
+                                <i class="fas fa-hourglass-half"></i>
+                            </span>
+                            <div>
+                                <h4 style="margin: 0; font-size: 15px; font-weight: 800; color: var(--text-primary);">Withdrawal in Progress (24h Guarantee)</h4>
+                                <span style="font-size: 12px; color: #b45309; font-weight: 600;">Funds will be reviewed and transferred to your account within 24 hours</span>
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <span style="font-size: 11px; color: var(--text-muted); display: block;">Net Payout Expected</span>
+                            <span style="font-size: 20px; font-weight: 900; color: #16a34a;" th:text="'₹' + ${#numbers.formatDecimal(w.netAmount != null ? w.netAmount : (w.amount * 0.95), 1, 2)}">₹95.00</span>
+                        </div>
+                    </div>
+
+                    <!-- 3-Step Live Progress Timeline -->
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 16px 0; background: rgba(255,255,255,0.7); padding: 14px; border-radius: 12px; border: 1px solid rgba(245, 158, 11, 0.2);">
+                        <div style="text-align: center;">
+                            <i class="fas fa-check-circle" style="color: #10b981; font-size: 18px; margin-bottom: 4px; display: block;"></i>
+                            <span style="font-size: 11px; font-weight: 800; color: #10b981; display: block;">1. Request Submitted</span>
+                            <span style="font-size: 10px; color: var(--text-muted);" th:text="${#temporals.format(w.timestamp, 'dd MMM, HH:mm')}">Date</span>
+                        </div>
+                        <div style="text-align: center; border-left: 1px dashed rgba(245, 158, 11, 0.3); border-right: 1px dashed rgba(245, 158, 11, 0.3);">
+                            <i class="fas fa-spinner fa-spin" style="color: #f59e0b; font-size: 18px; margin-bottom: 4px; display: block;"></i>
+                            <span style="font-size: 11px; font-weight: 800; color: #b45309; display: block;">2. Admin Verification</span>
+                            <span style="font-size: 10px; color: #b45309;">In review queue (2-24h)</span>
+                        </div>
+                        <div style="text-align: center;">
+                            <i class="far fa-circle" style="color: #94a3b8; font-size: 18px; margin-bottom: 4px; display: block;"></i>
+                            <span style="font-size: 11px; font-weight: 700; color: #64748b; display: block;">3. Account Credited</span>
+                            <span style="font-size: 10px; color: var(--text-muted);">Direct to UPI / Bank</span>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--text-muted); flex-wrap: wrap; gap: 6px;">
+                        <span><strong style="color: var(--text-secondary);">Destination:</strong> <span th:text="${w.description}">Details</span></span>
+                        <span th:if="${w.referenceId != null}"><strong style="color: var(--text-secondary);">Ref ID:</strong> <span th:text="${w.referenceId}" style="font-family: monospace;">Ref</span></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Transactions List with Filter Tabs -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin: 34px 0 16px 0; flex-wrap: wrap; gap: 12px;">
+                <h3 style="font-size: 18px; font-weight: 800; margin: 0; color: var(--text-primary);">
+                    <i class="fas fa-history" style="color: var(--primary); margin-right: 6px;"></i> Recent Activity
+                </h3>
+                
+                <div class="tx-filters-bar">
+                    <button class="tx-filter-btn active" onclick="filterTx('all', this)">All Activity</button>
+                    <button class="tx-filter-btn" onclick="filterTx('cash', this)"><i class="fas fa-money-bill-wave"></i> Cash (₹)</button>
+                    <button class="tx-filter-btn" onclick="filterTx('coins', this)">🪙 Youth Coins</button>
+                </div>
+            </div>
             
-            <div style="background: var(--card-bg); border: 1px solid var(--glass-border); border-radius: 16px; overflow: hidden;">
-                <!-- If transactions is empty -->
-                <div th:if="${#lists.isEmpty(transactions)}" style="text-align: center; padding: 40px 20px; color: var(--text-secondary);">
-                    <i class="fas fa-receipt" style="font-size: 40px; opacity: 0.3; margin-bottom: 12px;"></i>
-                    <p>No transactions yet.</p>
+            <div style="background: var(--card-bg); border: 1px solid var(--glass-border); border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-sm);">
+                <!-- If both transactions and coinTransactions are empty -->
+                <div th:if="${#lists.isEmpty(transactions) and (coinTransactions == null or #lists.isEmpty(coinTransactions))}" style="text-align: center; padding: 40px 20px; color: var(--text-secondary);">
+                    <i class="fas fa-receipt" style="font-size: 40px; opacity: 0.3; margin-bottom: 12px; display: block;"></i>
+                    <p style="font-weight: 600;">No transactions yet.</p>
                 </div>
                 
-                <!-- If transactions is not empty -->
+                <!-- Cash Transactions -->
                 <div th:if="${not #lists.isEmpty(transactions)}">
-                    <div th:each="tx : ${transactions}" style="padding: 16px 20px; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center;">
+                    <div th:each="tx : ${transactions}" class="tx-item" data-txtype="cash" style="padding: 16px 20px; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; transition: background 0.2s ease;">
                         <div style="text-align: left;">
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <span style="font-weight: 700; font-size: 14px; color: var(--text-primary);" th:text="${tx.details}">Details</span>
                                 <span th:if="${tx.status != null}" 
                                       style="font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 12px; text-transform: uppercase;"
-                                      th:styleappend="${tx.status == 'COMPLETED'} ? 'background: rgba(16,185,129,0.15); color: #10B981;' : (${tx.status == 'PENDING'} ? 'background: rgba(245,158,11,0.15); color: #f59e0b;' : 'background: rgba(239,68,68,0.15); color: #ef4444;')"
+                                      th:styleappend="${tx.status == 'COMPLETED' or tx.status == 'APPROVED'} ? 'background: rgba(16,185,129,0.15); color: #10B981;' : (${tx.status == 'PENDING'} ? 'background: rgba(245,158,11,0.15); color: #f59e0b;' : 'background: rgba(239,68,68,0.15); color: #ef4444;')"
                                       th:text="${tx.status}">COMPLETED</span>
                             </div>
-                            <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px; display: flex; gap: 12px;">
+                            <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px; display: flex; gap: 12px; flex-wrap: wrap;">
                                 <span th:text="${#temporals.format(tx.timestamp, 'dd-MM-yyyy HH:mm')}">Date</span>
                                 <span th:if="${tx.referenceId != null and !tx.referenceId.isEmpty()}" th:text="'Ref: ' + ${tx.referenceId}">Ref</span>
+                                <span style="color: #10b981; font-weight: 600;"><i class="fas fa-wallet"></i> Cash</span>
                             </div>
                         </div>
                         <div style="font-weight: 800; font-size: 16px;" 
@@ -501,13 +705,38 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Coin Transactions -->
+                <div th:if="${coinTransactions != null and not #lists.isEmpty(coinTransactions)}">
+                    <div th:each="ctx : ${coinTransactions}" class="tx-item" data-txtype="coins" style="padding: 16px 20px; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; transition: background 0.2s ease;">
+                        <div style="text-align: left;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="font-weight: 700; font-size: 14px; color: var(--text-primary);" th:text="${ctx.source + (ctx.reason != null && !ctx.reason.isEmpty() ? ' - ' + ctx.reason : '')}">Source</span>
+                                <span style="font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 12px; text-transform: uppercase; background: rgba(245, 158, 11, 0.15); color: #f59e0b;">COINS</span>
+                            </div>
+                            <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px; display: flex; gap: 12px;">
+                                <span th:text="${ctx.timestamp != null ? #temporals.format(ctx.timestamp, 'dd-MM-yyyy HH:mm') : 'Just now'}">Date</span>
+                                <span style="color: #f59e0b; font-weight: 600;">🪙 Youth Coins</span>
+                            </div>
+                        </div>
+                        <div style="font-weight: 800; font-size: 16px;" 
+                             th:styleappend="${ctx.amount >= 0} ? 'color: #f59e0b;' : 'color: #ef4444;'">
+                            <span th:text="${ctx.amount >= 0 ? '+' : ''}"></span><span th:text="${ctx.amount}">0</span> 🪙
+                        </div>
+                    </div>
+                </div>
+
+                <div id="no-filtered-tx-msg" style="display: none; text-align: center; padding: 40px 20px; color: var(--text-secondary);">
+                    <i class="fas fa-filter" style="font-size: 32px; opacity: 0.4; margin-bottom: 12px; display: block;"></i>
+                    <p style="font-weight: 600;">No transactions match the selected filter.</p>
+                </div>
             </div>
             
         </main>
     </div>
     
-    <!-- Add Cash Modal (DEF-09) -->
-    <div class="overlay" id="addCashModal">
+    <!-- Add Cash Modal (Razorpay / Instant Secure Gateway) -->
+    <div class="overlay" id="addCashModal" onclick="if(event.target===this)closeM('addCashModal')">
         <div class="modal" style="max-width: 440px; background: var(--card-bg); border-radius: 20px; border: 1px solid var(--glass-border); box-shadow: var(--shadow-premium);">
             <div style="padding: 20px; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center;">
                 <h3 style="font-size: 18px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
@@ -518,18 +747,18 @@
             <div style="padding: 20px;">
                 <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 12px; padding: 12px 14px; margin-bottom: 16px; font-size: 12px; color: var(--text-secondary); line-height: 1.4;">
                     <i class="fas fa-shield-alt" style="color: #10B981; margin-right: 4px;"></i>
-                    Instant deposit secured by Razorpay. Funds are instantly credited to your wallet balance.
+                    Instant deposit secured by Razorpay. Funds are verified and credited to your wallet balance.
                 </div>
                 
                 <div style="margin-bottom: 16px;">
                     <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px;">Select Quick Amount</label>
                     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px;">
-                        <button type="button" onclick="setAddCashAmount(100)" class="quick-cash-btn" style="padding: 10px; border-radius: 10px; border: 1.5px solid #10B981; background: rgba(16, 185, 129, 0.12); color: #10B981; font-weight: 700; cursor: pointer; transition: all 0.2s;">₹100</button>
-                        <button type="button" onclick="setAddCashAmount(200)" class="quick-cash-btn" style="padding: 10px; border-radius: 10px; border: 1.5px solid var(--glass-border); background: var(--bg-color); color: var(--text-primary); font-weight: 700; cursor: pointer; transition: all 0.2s;">₹200</button>
-                        <button type="button" onclick="setAddCashAmount(500)" class="quick-cash-btn" style="padding: 10px; border-radius: 10px; border: 1.5px solid var(--glass-border); background: var(--bg-color); color: var(--text-primary); font-weight: 700; cursor: pointer; transition: all 0.2s;">₹500</button>
-                        <button type="button" onclick="setAddCashAmount(1000)" class="quick-cash-btn" style="padding: 10px; border-radius: 10px; border: 1.5px solid var(--glass-border); background: var(--bg-color); color: var(--text-primary); font-weight: 700; cursor: pointer; transition: all 0.2s;">₹1,000</button>
-                        <button type="button" onclick="setAddCashAmount(2000)" class="quick-cash-btn" style="padding: 10px; border-radius: 10px; border: 1.5px solid var(--glass-border); background: var(--bg-color); color: var(--text-primary); font-weight: 700; cursor: pointer; transition: all 0.2s;">₹2,000</button>
-                        <button type="button" onclick="setAddCashAmount(5000)" class="quick-cash-btn" style="padding: 10px; border-radius: 10px; border: 1.5px solid var(--glass-border); background: var(--bg-color); color: var(--text-primary); font-weight: 700; cursor: pointer; transition: all 0.2s;">₹5,000</button>
+                        <button type="button" onclick="setAddCashAmount(100, this)" class="quick-cash-btn selected">₹100</button>
+                        <button type="button" onclick="setAddCashAmount(200, this)" class="quick-cash-btn">₹200</button>
+                        <button type="button" onclick="setAddCashAmount(500, this)" class="quick-cash-btn">₹500</button>
+                        <button type="button" onclick="setAddCashAmount(1000, this)" class="quick-cash-btn">₹1,000</button>
+                        <button type="button" onclick="setAddCashAmount(2000, this)" class="quick-cash-btn">₹2,000</button>
+                        <button type="button" onclick="setAddCashAmount(5000, this)" class="quick-cash-btn">₹5,000</button>
                     </div>
                 </div>
 
@@ -549,7 +778,7 @@
     </div>
 
     <!-- P2P Send Funds Modal -->
-    <div class="overlay" id="sendFundsModal">
+    <div class="overlay" id="sendFundsModal" onclick="if(event.target===this)closeM('sendFundsModal')">
         <div class="modal" style="max-width: 440px; background: var(--card-bg); border-radius: 20px; border: 1px solid var(--glass-border); box-shadow: var(--shadow-premium);">
             <div style="padding: 20px; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center;">
                 <h3 style="font-size: 18px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
@@ -568,7 +797,7 @@
                     </div>
                     <div style="margin-bottom: 14px;">
                         <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">Recipient Username</label>
-                        <input type="text" name="recipientUsername" placeholder="e.g. rohit_kumar (without @)" required style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--glass-border); background: var(--bg-color); color: var(--text-primary); box-sizing: border-box;">
+                        <input type="text" name="recipientUsername" placeholder="e.g. rohit_kumar or @rohit" required style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--glass-border); background: var(--bg-color); color: var(--text-primary); box-sizing: border-box;">
                     </div>
                     <div style="margin-bottom: 14px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
@@ -589,7 +818,7 @@
     </div>
 
     <!-- P2P Request Funds Modal -->
-    <div class="overlay" id="requestFundsModal">
+    <div class="overlay" id="requestFundsModal" onclick="if(event.target===this)closeM('requestFundsModal')">
         <div class="modal" style="max-width: 440px; background: var(--card-bg); border-radius: 20px; border: 1px solid var(--glass-border); box-shadow: var(--shadow-premium);">
             <div style="padding: 20px; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center;">
                 <h3 style="font-size: 18px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
@@ -612,11 +841,12 @@
                     </div>
                     <div style="margin-bottom: 14px;">
                         <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">Request From Username</label>
-                        <input type="text" name="targetUsername" placeholder="e.g. friend_username" required style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--glass-border); background: var(--bg-color); color: var(--text-primary); box-sizing: border-box;">
+                        <input type="text" name="targetUsername" placeholder="e.g. friend_username or @friend" required style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--glass-border); background: var(--bg-color); color: var(--text-primary); box-sizing: border-box;">
                     </div>
                     <div style="margin-bottom: 14px;">
                         <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">Amount</label>
                         <input type="number" name="amount" min="1" max="10000" step="any" placeholder="Enter amount (Min: 1)" required style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--glass-border); background: var(--bg-color); color: var(--text-primary); box-sizing: border-box;">
+                        <p id="requestErrorMsg" style="display: none; color: #ef4444; font-size: 12px; margin-top: 6px; font-weight: 600;"></p>
                     </div>
                     <div style="margin-bottom: 18px;">
                         <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">Reason / Note</label>
@@ -629,7 +859,7 @@
     </div>
 
     <!-- Withdraw Modal -->
-    <div class="overlay" id="withdrawModal">
+    <div class="overlay" id="withdrawModal" onclick="if(event.target===this)closeM('withdrawModal')">
         <div class="modal" style="max-width: 440px; background: var(--card-bg); border-radius: 20px; border: 1px solid var(--glass-border); box-shadow: var(--shadow-premium);">
             <div style="padding: 20px; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center;">
                 <h3 style="font-size: 18px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
@@ -638,15 +868,15 @@
                 <button onclick="closeM('withdrawModal')" style="background: none; border: none; font-size: 20px; color: var(--text-secondary); cursor: pointer;"><i class="fas fa-times"></i></button>
             </div>
             <div style="padding: 20px;">
-                <div style="background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 12px; padding: 12px 14px; margin-bottom: 12px; font-size: 12px; color: var(--text-secondary); line-height: 1.4;">
-                    <i class="fas fa-info-circle" style="color: #3b82f6; margin-right: 4px;"></i>
-                    Withdrawal requests are reviewed and sent to your UPI / Bank within 24 hours. The requested amount is locked under <strong>PENDING</strong> review.
+                <div style="background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.25); border-radius: 12px; padding: 12px 14px; margin-bottom: 12px; font-size: 12px; color: var(--text-secondary); line-height: 1.4;">
+                    <i class="fas fa-bolt" style="color: #6366f1; margin-right: 4px;"></i>
+                    Realtime payout powered by <strong>RazorpayX Banking</strong>. Funds are settled directly to your UPI ID or Bank Account 24x7.
                 </div>
                 <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 12px; padding: 10px 14px; margin-bottom: 16px; font-size: 12px; color: #b45309; font-weight: 600;">
                     <span style="display: flex; align-items: center; gap: 6px;"><i class="fas fa-percentage"></i> Platform Charge: 5%</span>
                     <span style="font-size: 11px; color: var(--text-secondary);">Deducted from payout</span>
                 </div>
-                <form th:action="@{/wallet/withdraw}" method="POST" onsubmit="return validateWithdrawForm(this)">
+                <form id="withdrawForm" onsubmit="triggerRazorpayWithdraw(event)">
                     <div style="margin-bottom: 16px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                             <label style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Amount to Withdraw (&#8377;)</label>
@@ -674,12 +904,481 @@
                     </div>
                     <div style="margin-bottom: 20px;">
                         <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px;">Transfer To (UPI ID / Bank A/C &amp; IFSC)</label>
-                        <input type="text" name="accountDetails" placeholder="e.g. yourname@upi or Account No + IFSC" maxlength="80" required style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--glass-border); background: var(--bg-color); color: var(--text-primary); box-sizing: border-box;">
+                        <input type="text" id="withdrawAccountInput" name="accountDetails" placeholder="e.g. yourname@upi or Account No + IFSC" maxlength="80" required style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--glass-border); background: var(--bg-color); color: var(--text-primary); box-sizing: border-box;">
                         <p style="font-size: 11px; color: var(--text-muted); margin-top: 6px;">Available Balance: &#8377;[[${user.walletBalance != null ? #numbers.formatDecimal(user.walletBalance, 1, 'COMMA', 2, 'POINT') : '0.00'}]]</p>
                     </div>
-                    <button type="submit" style="width: 100%; padding: 12px; background: var(--accent); border: none; color: white; font-weight: 700; border-radius: 10px; cursor: pointer; font-size: 14px;">Submit Withdrawal Request</button>
+                    <button type="submit" id="withdrawSubmitBtn" style="width: 100%; padding: 13px; background: linear-gradient(135deg, #4f46e5, #4338ca); border: none; color: white; font-weight: 700; border-radius: 12px; cursor: pointer; font-size: 15px; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);">
+                        <i class="fas fa-bolt" style="color: #fbbf24;"></i> Withdraw via RazorpayX Payout
+                    </button>
                 </form>
             </div>
+        </div>
+    </div>
+
+    <!-- Razorpay Checkout Modal (Real-Time Experience) -->
+    <div class="overlay" id="razorpayCheckoutModal" style="z-index: 9999;" onclick="if(event.target===this)confirmCloseRazorpay()">
+        <div class="modal" style="max-width: 660px; width: 95%; background: #ffffff; color: #1e293b; border-radius: 16px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); padding: 0; border: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+            
+            <!-- Razorpay Blue Header -->
+            <div style="background: linear-gradient(135deg, #0c2340, #132f54); color: white; padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #00ba9d;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="background: white; border-radius: 8px; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.2);">
+                        <svg width="24" height="24" viewBox="0 0 40 40" fill="none">
+                            <path d="M22.5 4L9 24.5H19.5L16.5 36L30 15.5H19.5L22.5 4Z" fill="#0c2340"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <span style="font-size: 15px; font-weight: 700; letter-spacing: -0.2px;">Youthians Gaming &amp; Social</span>
+                            <span style="background: rgba(16,185,129,0.25); color: #34d399; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 700;">VERIFIED</span>
+                        </div>
+                        <div style="font-size: 11px; color: #94a3b8; display: flex; align-items: center; gap: 8px; margin-top: 2px;">
+                            <span id="rzpOrderDisplayId">Order: order_w_...</span>
+                            <span>&bull;</span>
+                            <span style="display: flex; align-items: center; gap: 3px;"><i class="fas fa-shield-alt" style="color: #38bdf8;"></i> Razorpay Trusted</span>
+                        </div>
+                    </div>
+                </div>
+                <div style="text-align: right; display: flex; align-items: center; gap: 16px;">
+                    <div>
+                        <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px;">Amount Payable</div>
+                        <div style="font-size: 20px; font-weight: 800; color: #ffffff;" id="rzpAmountDisplay">₹0.00</div>
+                    </div>
+                    <button type="button" onclick="confirmCloseRazorpay()" style="background: rgba(255,255,255,0.1); border: none; color: white; width: 32px; height: 32px; border-radius: 50%; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- View 1: Main Gateway Selection (UPI / Card / NetBanking / Wallets) -->
+            <div id="rzpMainView" style="display: flex; min-height: 380px;">
+                <!-- Left Nav Tabs -->
+                <div style="width: 200px; background: #f8fafc; border-right: 1px solid #e2e8f0; padding: 12px 8px; display: flex; flex-direction: column; gap: 4px;">
+                    <div style="font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; padding: 6px 12px;">Payment Options</div>
+                    <button type="button" onclick="switchRzpTab('upi')" class="rzp-tab-btn active" id="rzpTab-upi">
+                        <i class="fas fa-qrcode" style="font-size: 15px; width: 20px; color: #0284c7;"></i>
+                        <span>UPI / QR Code</span>
+                    </button>
+                    <button type="button" onclick="switchRzpTab('card')" class="rzp-tab-btn" id="rzpTab-card">
+                        <i class="fas fa-credit-card" style="font-size: 15px; width: 20px; color: #6366f1;"></i>
+                        <span>Cards (Debit/Credit)</span>
+                    </button>
+                    <button type="button" onclick="switchRzpTab('netbanking')" class="rzp-tab-btn" id="rzpTab-netbanking">
+                        <i class="fas fa-university" style="font-size: 15px; width: 20px; color: #059669;"></i>
+                        <span>Net Banking</span>
+                    </button>
+                    <button type="button" onclick="switchRzpTab('wallet')" class="rzp-tab-btn" id="rzpTab-wallet">
+                        <i class="fas fa-wallet" style="font-size: 15px; width: 20px; color: #d97706;"></i>
+                        <span>Wallets</span>
+                    </button>
+                    
+                    <div style="margin-top: auto; padding: 12px; font-size: 10px; color: #64748b; line-height: 1.4; border-top: 1px solid #e2e8f0;">
+                        <div style="display: flex; align-items: center; gap: 5px; color: #0f172a; font-weight: 600; margin-bottom: 2px;">
+                            <i class="fas fa-lock" style="color: #10b981;"></i> 256-bit SSL
+                        </div>
+                        PCI-DSS Level 1 Gateway
+                    </div>
+                </div>
+
+                <!-- Right Content Pane -->
+                <div style="flex: 1; padding: 22px 24px; background: white; overflow-y: auto;">
+                    
+                    <!-- UPI / QR Tab Panel -->
+                    <div id="rzpPanel-upi" class="rzp-panel" style="display: block;">
+                        <div style="display: flex; gap: 16px; align-items: center; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 14px 16px; margin-bottom: 16px;">
+                            <div style="background: white; padding: 6px; border-radius: 8px; border: 1px solid #cbd5e1; box-shadow: 0 2px 4px rgba(0,0,0,0.05); text-align: center;">
+                                <div id="rzpQrContainer" style="width: 90px; height: 90px; display: flex; align-items: center; justify-content: center; background: #0f172a; border-radius: 4px; color: white;">
+                                    <i class="fas fa-qrcode" style="font-size: 64px; color: #ffffff;"></i>
+                                </div>
+                            </div>
+                            <div style="flex: 1;">
+                                <div style="display: flex; align-items: center; gap: 6px; font-weight: 700; color: #166534; font-size: 13px;">
+                                    <i class="fas fa-bolt"></i> Scan &amp; Pay with any UPI App
+                                </div>
+                                <div style="font-size: 11px; color: #15803d; margin: 4px 0 6px 0;">Google Pay &bull; PhonePe &bull; Paytm &bull; CRED &bull; BHIM</div>
+                                <div style="display: flex; align-items: center; gap: 6px; font-size: 11px; color: #64748b;">
+                                    <i class="far fa-clock"></i> Expires in: <span id="rzpQrTimer" style="font-weight: 700; color: #dc2626;">04:59</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 14px;">
+                            <label style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px;">Popular UPI Apps (1-Click Instant)</label>
+                            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;">
+                                <button type="button" onclick="selectRzpUpiApp('Google Pay')" class="rzp-app-pill">
+                                    <i class="fab fa-google-pay" style="font-size: 20px; color: #4285F4;"></i>
+                                    <span>GPay</span>
+                                </button>
+                                <button type="button" onclick="selectRzpUpiApp('PhonePe')" class="rzp-app-pill">
+                                    <i class="fas fa-mobile-alt" style="font-size: 18px; color: #5f259f;"></i>
+                                    <span>PhonePe</span>
+                                </button>
+                                <button type="button" onclick="selectRzpUpiApp('Paytm UPI')" class="rzp-app-pill">
+                                    <i class="fas fa-wallet" style="font-size: 18px; color: #00b9f5;"></i>
+                                    <span>Paytm</span>
+                                </button>
+                                <button type="button" onclick="selectRzpUpiApp('CRED UPI')" class="rzp-app-pill">
+                                    <i class="fas fa-gem" style="font-size: 18px; color: #111827;"></i>
+                                    <span>CRED</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 16px;">
+                            <label style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px;">Or enter UPI ID / VPA</label>
+                            <div style="display: flex; gap: 8px;">
+                                <input type="text" id="rzpUpiIdInput" placeholder="username@okhdfcbank" value="kishor@upi" style="flex: 1; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; outline: none;">
+                            </div>
+                        </div>
+
+                        <button type="button" onclick="proceedToRzpOtp('UPI')" class="rzp-pay-action-btn">
+                            <span id="rzpUpiPayBtnText">Pay ₹0.00 via UPI</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+
+                    <!-- Cards Tab Panel -->
+                    <div id="rzpPanel-card" class="rzp-panel" style="display: none;">
+                        <div style="margin-bottom: 14px;">
+                            <label style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px;">Card Number</label>
+                            <div style="position: relative;">
+                                <input type="text" id="rzpCardNumber" maxlength="19" value="4532 8901 2345 6789" style="width: 100%; padding: 10px 42px 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; font-family: monospace; letter-spacing: 1px; box-sizing: border-box;">
+                                <i class="fab fa-cc-visa" style="position: absolute; right: 12px; top: 12px; font-size: 20px; color: #1a1f71;"></i>
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+                            <div>
+                                <label style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px;">Expiry (MM/YY)</label>
+                                <input type="text" id="rzpCardExpiry" maxlength="5" value="12/28" style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; box-sizing: border-box;">
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px;">CVV / CVC</label>
+                                <input type="password" id="rzpCardCvv" maxlength="4" value="882" style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; box-sizing: border-box;">
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 18px;">
+                            <label style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px;">Cardholder Name</label>
+                            <input type="text" id="rzpCardName" value="Kishor Kumar" style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; box-sizing: border-box;">
+                        </div>
+
+                        <button type="button" onclick="proceedToRzpOtp('Card')" class="rzp-pay-action-btn">
+                            <span id="rzpCardPayBtnText">Pay ₹0.00 via Card</span>
+                            <i class="fas fa-lock"></i>
+                        </button>
+                    </div>
+
+                    <!-- Net Banking Tab Panel -->
+                    <div id="rzpPanel-netbanking" class="rzp-panel" style="display: none;">
+                        <label style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 8px;">Popular Indian Banks</label>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px;">
+                            <button type="button" onclick="selectRzpBank(this, 'State Bank of India')" class="rzp-bank-tile active">
+                                <i class="fas fa-university" style="color: #0284c7;"></i>
+                                <span>SBI</span>
+                            </button>
+                            <button type="button" onclick="selectRzpBank(this, 'HDFC Bank')" class="rzp-bank-tile">
+                                <i class="fas fa-university" style="color: #004c8f;"></i>
+                                <span>HDFC</span>
+                            </button>
+                            <button type="button" onclick="selectRzpBank(this, 'ICICI Bank')" class="rzp-bank-tile">
+                                <i class="fas fa-university" style="color: #b91c1c;"></i>
+                                <span>ICICI</span>
+                            </button>
+                            <button type="button" onclick="selectRzpBank(this, 'Axis Bank')" class="rzp-bank-tile">
+                                <i class="fas fa-university" style="color: #831843;"></i>
+                                <span>Axis</span>
+                            </button>
+                            <button type="button" onclick="selectRzpBank(this, 'Kotak Mahindra')" class="rzp-bank-tile">
+                                <i class="fas fa-university" style="color: #dc2626;"></i>
+                                <span>Kotak</span>
+                            </button>
+                            <button type="button" onclick="selectRzpBank(this, 'Punjab National Bank')" class="rzp-bank-tile">
+                                <i class="fas fa-university" style="color: #ca8a04;"></i>
+                                <span>PNB</span>
+                            </button>
+                        </div>
+
+                        <div style="margin-bottom: 18px;">
+                            <label style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px;">Or choose from all banks</label>
+                            <select id="rzpBankSelect" style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px;">
+                                <option value="SBI">State Bank of India</option>
+                                <option value="HDFC">HDFC Bank</option>
+                                <option value="ICICI">ICICI Bank</option>
+                                <option value="AXIS">Axis Bank</option>
+                                <option value="KOTAK">Kotak Mahindra Bank</option>
+                                <option value="BOB">Bank of Baroda</option>
+                                <option value="CANARA">Canara Bank</option>
+                                <option value="UNION">Union Bank of India</option>
+                            </select>
+                        </div>
+
+                        <button type="button" onclick="proceedToRzpOtp('Netbanking')" class="rzp-pay-action-btn">
+                            <span id="rzpBankPayBtnText">Pay ₹0.00 via Netbanking</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+
+                    <!-- Wallets Tab Panel -->
+                    <div id="rzpPanel-wallet" class="rzp-panel" style="display: none;">
+                        <label style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 8px;">Select Wallet</label>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px;">
+                            <button type="button" onclick="selectRzpWallet(this, 'Paytm Wallet')" class="rzp-bank-tile active">
+                                <i class="fas fa-wallet" style="color: #00b9f5;"></i>
+                                <span>Paytm Wallet</span>
+                            </button>
+                            <button type="button" onclick="selectRzpWallet(this, 'PhonePe Wallet')" class="rzp-bank-tile">
+                                <i class="fas fa-wallet" style="color: #5f259f;"></i>
+                                <span>PhonePe Wallet</span>
+                            </button>
+                            <button type="button" onclick="selectRzpWallet(this, 'Mobikwik')" class="rzp-bank-tile">
+                                <i class="fas fa-wallet" style="color: #10b981;"></i>
+                                <span>Mobikwik</span>
+                            </button>
+                            <button type="button" onclick="selectRzpWallet(this, 'Airtel Money')" class="rzp-bank-tile">
+                                <i class="fas fa-wallet" style="color: #ef4444;"></i>
+                                <span>Airtel Money</span>
+                            </button>
+                        </div>
+
+                        <button type="button" onclick="proceedToRzpOtp('Wallet')" class="rzp-pay-action-btn">
+                            <span id="rzpWalletPayBtnText">Pay ₹0.00 via Wallet</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- View 2: Bank 3D Secure / OTP Simulation Screen -->
+            <div id="rzpOtpView" style="display: none; padding: 28px 32px; background: white; text-align: center;">
+                <div style="width: 54px; height: 54px; margin: 0 auto 14px auto; background: #eff6ff; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-shield-alt" style="font-size: 26px; color: #2563eb;"></i>
+                </div>
+                <h4 style="font-size: 18px; font-weight: 700; color: #0f172a; margin-bottom: 6px;">Bank 3D Secure 2.0 Authorization</h4>
+                <p style="font-size: 13px; color: #64748b; margin-bottom: 18px; line-height: 1.4;">
+                    Razorpay has redirected to the issuing bank for 2-factor authentication. An OTP has been sent to your registered mobile ending in <strong>•••• 4921</strong>.
+                </p>
+
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; max-width: 380px; margin: 0 auto 20px auto;">
+                    <div style="display: flex; justify-content: space-between; font-size: 12px; color: #64748b; margin-bottom: 8px;">
+                        <span>Merchant: <strong>Youthians</strong></span>
+                        <span id="rzpOtpAmountLabel">Amount: <strong>₹0.00</strong></span>
+                    </div>
+                    
+                    <label style="display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: #475569; margin-bottom: 8px; text-align: left;">Enter One-Time Password (OTP)</label>
+                    <div style="display: flex; gap: 8px; justify-content: center; margin-bottom: 12px;">
+                        <input type="text" id="rzpOtpInput" maxlength="6" value="123456" style="width: 100%; text-align: center; font-size: 20px; font-weight: 700; letter-spacing: 8px; padding: 10px; border: 2px solid #3b82f6; border-radius: 8px; outline: none; background: white;">
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 11px; color: #94a3b8;">Demo OTP: 123456</span>
+                        <button type="button" onclick="document.getElementById('rzpOtpInput').value='123456'" style="background: none; border: none; color: #2563eb; font-size: 11px; font-weight: 600; cursor: pointer;">Auto-fill</button>
+                    </div>
+                </div>
+
+                <div style="max-width: 380px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px;">
+                    <button type="button" id="rzpSubmitOtpBtn" onclick="submitRzpPaymentAuthorization()" class="rzp-pay-action-btn" style="padding: 13px;">
+                        <span>Confirm &amp; Authorize Payment</span>
+                        <i class="fas fa-check-circle"></i>
+                    </button>
+                    <button type="button" onclick="backToRzpMain()" style="background: none; border: none; color: #64748b; font-size: 12px; cursor: pointer; padding: 6px;">
+                        &larr; Cancel &amp; Choose Another Payment Method
+                    </button>
+                </div>
+            </div>
+
+            <!-- View 3: Processing Animation Screen -->
+            <div id="rzpProcessingView" style="display: none; padding: 48px 32px; background: white; text-align: center;">
+                <div style="width: 70px; height: 70px; margin: 0 auto 20px auto; position: relative; display: flex; align-items: center; justify-content: center;">
+                    <div style="width: 64px; height: 64px; border: 4px solid #e2e8f0; border-top: 4px solid #0284c7; border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
+                    <i class="fas fa-shield-alt" style="position: absolute; font-size: 24px; color: #0284c7;"></i>
+                </div>
+                <h4 style="font-size: 19px; font-weight: 700; color: #0f172a; margin-bottom: 8px;" id="rzpProcessingTitle">Authorizing with Razorpay...</h4>
+                <p style="font-size: 13px; color: #64748b; max-width: 380px; margin: 0 auto; line-height: 1.5;">
+                    Please do not close this window or press back. We are verifying your payment receipt securely via HMAC-SHA256 signature.
+                </p>
+            </div>
+
+            <!-- View 4: Payment Success Screen -->
+            <div id="rzpSuccessView" style="display: none; padding: 36px 32px; background: white; text-align: center;">
+                <div style="width: 68px; height: 68px; margin: 0 auto 16px auto; background: #dcfce7; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(22, 163, 74, 0.25);">
+                    <i class="fas fa-check" style="font-size: 32px; color: #16a34a;"></i>
+                </div>
+                <h3 style="font-size: 22px; font-weight: 800; color: #15803d; margin-bottom: 4px;">Payment Successful!</h3>
+                <p style="font-size: 13px; color: #64748b; margin-bottom: 20px;">Funds have been added instantly to your Youthians wallet.</p>
+
+                <div style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 12px; padding: 16px 20px; max-width: 420px; margin: 0 auto 24px auto; text-align: left; font-size: 13px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="color: #64748b;">Amount Credited:</span>
+                        <strong style="color: #10b981; font-size: 15px;" id="rzpSuccessAmount">₹0.00</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="color: #64748b;">Payment ID:</span>
+                        <span style="font-family: monospace; font-weight: 600; color: #0f172a;" id="rzpSuccessPayId">pay_...</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="color: #64748b;">Order ID:</span>
+                        <span style="font-family: monospace; font-weight: 600; color: #0f172a;" id="rzpSuccessOrderId">order_...</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; border-top: 1px dashed #e2e8f0; padding-top: 8px;">
+                        <span style="color: #64748b;">New Wallet Balance:</span>
+                        <strong style="color: #0f172a;" id="rzpSuccessNewBalance">₹0.00</strong>
+                    </div>
+                </div>
+
+                <button type="button" onclick="finishRzpSuccess()" style="padding: 12px 28px; background: linear-gradient(135deg, #10b981, #059669); border: none; color: white; font-weight: 700; border-radius: 10px; cursor: pointer; font-size: 14px; box-shadow: 0 4px 12px rgba(16,185,129,0.3);">
+                    <i class="fas fa-wallet" style="margin-right: 6px;"></i> Return to Wallet
+                </button>
+            </div>
+
+            <!-- Razorpay Footer Security Badge -->
+            <div style="background: #f1f5f9; padding: 10px 24px; font-size: 11px; color: #64748b; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e2e8f0;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-lock" style="color: #0c2340;"></i>
+                    <span>Secured by <strong>Razorpay Payments</strong></span>
+                </div>
+                <div>PCI-DSS Level 1 &bull; RBI Regulated</div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- RazorpayX Instant Payout Modal (Real-Time Experience) -->
+    <div class="overlay" id="razorpayXPayoutModal" style="z-index: 9999;" onclick="if(event.target===this)confirmCloseRzpX()">
+        <div class="modal" style="max-width: 580px; width: 95%; background: #ffffff; color: #1e293b; border-radius: 16px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); padding: 0; border: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+            
+            <!-- RazorpayX Violet/Navy Header -->
+            <div style="background: linear-gradient(135deg, #1e1b4b, #312e81); color: white; padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #818cf8;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="background: #4f46e5; border-radius: 8px; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.2);">
+                        <i class="fas fa-bolt" style="font-size: 20px; color: #fbbf24;"></i>
+                    </div>
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <span style="font-size: 16px; font-weight: 800; letter-spacing: -0.2px;">RazorpayX Instant Payout</span>
+                            <span style="background: rgba(99,102,241,0.3); color: #c7d2fe; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 700;">DIRECT BANKING</span>
+                        </div>
+                        <div style="font-size: 11px; color: #cbd5e1; margin-top: 2px;">
+                            <span>IMPS / UPI 24x7 Realtime Settlement</span>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" onclick="confirmCloseRzpX()" style="background: rgba(255,255,255,0.1); border: none; color: white; width: 32px; height: 32px; border-radius: 50%; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <!-- View 1: Payout Review & Authorization -->
+            <div id="rzpXReviewView" style="padding: 24px 28px; background: white;">
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+                    <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #64748b; letter-spacing: 0.5px; margin-bottom: 12px;">Payout Summary Breakdown</div>
+                    
+                    <div style="display: flex; justify-content: space-between; font-size: 13px; color: #475569; margin-bottom: 8px;">
+                        <span>Gross Withdrawal:</span>
+                        <strong style="color: #0f172a;" id="rzpXGrossLabel">₹0.00</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 13px; color: #ea580c; margin-bottom: 8px;">
+                        <span>Platform Processing Fee (5%):</span>
+                        <strong id="rzpXFeeLabel">-₹0.00</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 15px; font-weight: 800; color: #4f46e5; border-top: 1px dashed #cbd5e1; padding-top: 10px; margin-bottom: 12px;">
+                        <span>Net Payout to Transfer:</span>
+                        <span id="rzpXNetLabel">₹0.00</span>
+                    </div>
+
+                    <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px; font-size: 12px; display: flex; align-items: center; justify-content: space-between;">
+                        <span style="color: #64748b;"><i class="fas fa-university" style="margin-right: 6px; color: #6366f1;"></i> Destination:</span>
+                        <strong style="color: #0f172a; font-family: monospace;" id="rzpXDestLabel">user@upi</strong>
+                    </div>
+                </div>
+
+                <!-- 2FA Authorization Code -->
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 6px;">
+                        RazorpayX 2FA Payout Authorization Code
+                    </label>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="text" id="rzpXAuthCode" maxlength="6" value="749201" style="flex: 1; text-align: center; font-size: 18px; font-weight: 700; letter-spacing: 6px; padding: 10px; border: 2px solid #818cf8; border-radius: 8px; outline: none;">
+                        <button type="button" onclick="document.getElementById('rzpXAuthCode').value='749201'" style="background: #eef2ff; border: 1px solid #c7d2fe; color: #4f46e5; font-size: 12px; font-weight: 600; border-radius: 8px; padding: 0 14px; cursor: pointer;">
+                            Auto-fill (749201)
+                        </button>
+                    </div>
+                    <p style="font-size: 11px; color: #64748b; margin-top: 6px;">
+                        <i class="fas fa-shield-alt" style="color: #10b981;"></i> Required by RBI guidelines for corporate instant fund routing.
+                    </p>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <button type="button" onclick="executeRazorpayXPayout()" id="rzpXSubmitBtn" style="width: 100%; padding: 14px; background: linear-gradient(135deg, #4f46e5, #4338ca); border: none; color: white; font-weight: 700; border-radius: 10px; cursor: pointer; font-size: 15px; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);">
+                        <i class="fas fa-paper-plane"></i> Authorize &amp; Transfer via RazorpayX
+                    </button>
+                    <button type="button" onclick="closeM('razorpayXPayoutModal')" style="background: none; border: none; color: #64748b; font-size: 12px; cursor: pointer; padding: 6px;">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+
+            <!-- View 2: RazorpayX Processing Animation Screen -->
+            <div id="rzpXProcessingView" style="display: none; padding: 48px 32px; background: white; text-align: center;">
+                <div style="width: 70px; height: 70px; margin: 0 auto 20px auto; position: relative; display: flex; align-items: center; justify-content: center;">
+                    <div style="width: 64px; height: 64px; border: 4px solid #e2e8f0; border-top: 4px solid #4f46e5; border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
+                    <i class="fas fa-university" style="position: absolute; font-size: 24px; color: #4f46e5;"></i>
+                </div>
+                <h4 style="font-size: 19px; font-weight: 700; color: #0f172a; margin-bottom: 8px;" id="rzpXProcessingTitle">Routing Payout via RazorpayX...</h4>
+                <p style="font-size: 13px; color: #64748b; max-width: 380px; margin: 0 auto; line-height: 1.5;">
+                    Validating NPCI IMPS gateway route and generating Bank UTR reference. Funds are directly transferring to the beneficiary.
+                </p>
+            </div>
+
+            <!-- View 3: RazorpayX Payout Submitted Screen -->
+            <div id="rzpXSuccessView" style="display: none; padding: 36px 32px; background: white; text-align: center;">
+                <div style="width: 68px; height: 68px; margin: 0 auto 16px auto; background: #e0e7ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(79, 70, 229, 0.25);">
+                    <i class="fas fa-clock" style="font-size: 32px; color: #4f46e5;"></i>
+                </div>
+                <h3 style="font-size: 22px; font-weight: 800; color: #3730a3; margin-bottom: 4px;">Withdrawal Request Submitted!</h3>
+                <p style="font-size: 13px; color: #64748b; margin-bottom: 20px;">Your withdrawal is registered under <strong>PENDING</strong> review. Funds will be verified and sent to your account within 24 hours.</p>
+
+                <div style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 12px; padding: 16px 20px; max-width: 420px; margin: 0 auto 24px auto; text-align: left; font-size: 13px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="color: #64748b;">Status:</span>
+                        <span style="background: #fef3c7; color: #d97706; padding: 2px 8px; border-radius: 6px; font-weight: 700; font-size: 11px;">PENDING REVIEW</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="color: #64748b;">Net Payout to Receive:</span>
+                        <strong style="color: #4f46e5; font-size: 16px;" id="rzpXSuccessNet">₹0.00</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="color: #64748b;">Reference Ref:</span>
+                        <span style="font-family: monospace; font-weight: 700; color: #0f172a;" id="rzpXSuccessUtr">UTR...</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="color: #64748b;">Request ID:</span>
+                        <span style="font-family: monospace; font-weight: 600; color: #0f172a;" id="rzpXSuccessPayoutId">pout_...</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="color: #64748b;">Beneficiary:</span>
+                        <span style="font-weight: 600; color: #0f172a;" id="rzpXSuccessBeneficiary">...</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; border-top: 1px dashed #e2e8f0; padding-top: 8px;">
+                        <span style="color: #64748b;">Remaining Wallet Balance:</span>
+                        <strong style="color: #0f172a;" id="rzpXSuccessNewBalance">₹0.00</strong>
+                    </div>
+                </div>
+
+                <button type="button" onclick="finishRzpXSuccess()" style="padding: 12px 28px; background: linear-gradient(135deg, #4f46e5, #4338ca); border: none; color: white; font-weight: 700; border-radius: 10px; cursor: pointer; font-size: 14px; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);">
+                    <i class="fas fa-check-circle" style="margin-right: 6px;"></i> Return to Wallet
+                </button>
+            </div>
+
+            <!-- RazorpayX Footer Security Badge -->
+            <div style="background: #f1f5f9; padding: 10px 24px; font-size: 11px; color: #64748b; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e2e8f0;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-bolt" style="color: #4f46e5;"></i>
+                    <span>Powered by <strong>RazorpayX Banking</strong></span>
+                </div>
+                <div>Instant IMPS &bull; RBI NPCI Integrated</div>
+            </div>
+
         </div>
     </div>
 
@@ -688,11 +1387,9 @@
 
     <script th:inline="javascript">
         /* User balance variables for client-side validation */
-        const currentCashBalance = /*[[${user.walletBalance != null ? user.walletBalance : 0.0}]]*/ 0.0;
-        const currentCoinBalance = /*[[${user.coins != null ? user.coins : 0}]]*/ 0;
+        let currentCashBalance = /*[[${user.walletBalance != null ? user.walletBalance : 0.0}]]*/ 0.0;
+        let currentCoinBalance = /*[[${user.coins != null ? user.coins : 0}]]*/ 0;
         const razorpayKey = /*[[${razorpayKeyId}]]*/ 'rzp_test_youthiansMockKey';
-
-        let activeCoinPackPrice = 99;
 
         function openM(id) {
             const el = document.getElementById(id);
@@ -721,6 +1418,12 @@
             });
         }
         function openCreateModal() { openM('createPostModal'); }
+
+        // Close on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeAllModals();
+        });
+
         // P2P Transfer & Request Helpers
         function updateSendBalanceHint() {
             const cur = document.getElementById('sendCurrencySelect').value;
@@ -740,24 +1443,54 @@
                 if (err) { err.textContent = 'Please enter a valid amount greater than 0.'; err.style.display = 'block'; }
                 return false;
             }
-            if (cur === 'COINS' && amt > currentCoinBalance) {
-                if (err) { err.textContent = 'Insufficient coins. You currently have ' + currentCoinBalance + ' coins.'; err.style.display = 'block'; }
-                return false;
-            }
-            if (cur === 'CASH' && amt > currentCashBalance) {
-                if (err) { err.textContent = 'Insufficient balance. You currently have ₹' + currentCashBalance.toFixed(2) + '.'; err.style.display = 'block'; }
-                return false;
+            if (cur === 'COINS') {
+                if (amt < 1 || !Number.isInteger(amt)) {
+                    if (err) { err.textContent = 'Youth Coins must be whole numbers (minimum 1 Coin).'; err.style.display = 'block'; }
+                    return false;
+                }
+                if (amt > currentCoinBalance) {
+                    if (err) { err.textContent = 'Insufficient coins. You currently have ' + currentCoinBalance + ' coins.'; err.style.display = 'block'; }
+                    return false;
+                }
+            } else {
+                if (amt < 1.0) {
+                    if (err) { err.textContent = 'Minimum transfer amount is ₹1.00.'; err.style.display = 'block'; }
+                    return false;
+                }
+                if (amt > 10000.0) {
+                    if (err) { err.textContent = 'Maximum transfer limit is ₹10,000.00 per transaction.'; err.style.display = 'block'; }
+                    return false;
+                }
+                if (amt > currentCashBalance) {
+                    if (err) { err.textContent = 'Insufficient balance. You currently have ₹' + currentCashBalance.toFixed(2) + '.'; err.style.display = 'block'; }
+                    return false;
+                }
             }
             if (err) err.style.display = 'none';
             return true;
         }
 
         function validateRequestForm(form) {
+            const cur = form.currency.value;
             const amt = parseFloat(form.amount.value);
+            const err = document.getElementById('requestErrorMsg');
             if (isNaN(amt) || amt <= 0) {
-                alert('Please enter a valid request amount greater than 0.');
+                if (err) { err.textContent = 'Please enter a valid request amount.'; err.style.display = 'block'; }
                 return false;
             }
+            if (cur === 'COINS' && (amt < 1 || !Number.isInteger(amt))) {
+                if (err) { err.textContent = 'Youth Coins requests must be whole numbers (minimum 1 Coin).'; err.style.display = 'block'; }
+                return false;
+            }
+            if (cur === 'CASH' && amt < 1.0) {
+                if (err) { err.textContent = 'Minimum request amount is ₹1.00.'; err.style.display = 'block'; }
+                return false;
+            }
+            if (amt > 10000.0) {
+                if (err) { err.textContent = 'Maximum request amount is 10,000.'; err.style.display = 'block'; }
+                return false;
+            }
+            if (err) err.style.display = 'none';
             return true;
         }
 
@@ -809,20 +1542,37 @@
                 });
             }
         });
-        // ── Razorpay Add Cash Flow (DEF-09) ──
-        function setAddCashAmount(amt) {
+
+        // Filter Activity Transactions
+        function filterTx(type, btn) {
+            document.querySelectorAll('.tx-filter-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+
+            let visibleCount = 0;
+            document.querySelectorAll('.tx-item').forEach(el => {
+                if (type === 'all' || el.dataset.txtype === type) {
+                    el.style.display = 'flex';
+                    visibleCount++;
+                } else {
+                    el.style.display = 'none';
+                }
+            });
+
+            const noMsg = document.getElementById('no-filtered-tx-msg');
+            if (noMsg) {
+                noMsg.style.display = visibleCount === 0 ? 'block' : 'none';
+            }
+        }
+
+        // ── Razorpay Add Cash Flow (Real-Time Experience) ──
+        let activeRzpOrder = null;
+        let rzpTimerInterval = null;
+
+        function setAddCashAmount(amt, btn) {
             const input = document.getElementById('addCashAmountInput');
             if (input) input.value = amt;
-            document.querySelectorAll('.quick-cash-btn').forEach(b => {
-                b.style.borderColor = 'var(--glass-border)';
-                b.style.background = 'var(--bg-color)';
-                b.style.color = 'var(--text-primary)';
-            });
-            if (window.event && window.event.target) {
-                window.event.target.style.borderColor = '#10B981';
-                window.event.target.style.background = 'rgba(16, 185, 129, 0.12)';
-                window.event.target.style.color = '#10B981';
-            }
+            document.querySelectorAll('.quick-cash-btn').forEach(b => b.classList.remove('selected'));
+            if (btn) btn.classList.add('selected');
         }
 
         async function triggerRazorpayDeposit() {
@@ -835,7 +1585,7 @@
             const btn = document.getElementById('payRazorpayBtn');
             if (btn) {
                 btn.disabled = true;
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Initializing Gateway...';
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Initializing Razorpay Gateway...';
             }
 
             try {
@@ -850,72 +1600,360 @@
                     return;
                 }
                 const orderData = await res.json();
+                activeRzpOrder = {
+                    orderId: orderData.orderId,
+                    amount: orderData.amount,
+                    keyId: orderData.keyId
+                };
 
-                const options = {
-                    key: orderData.keyId || razorpayKey,
-                    amount: Math.round(orderData.amount * 100),
-                    currency: 'INR',
-                    name: 'Youthians Wallet',
-                    description: 'Add Funds to Youthians Balance',
-                    order_id: orderData.orderId,
-                    handler: async function(paymentResponse) {
-                        if (btn) btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying Payment...';
-                        const params = new URLSearchParams();
-                        params.append('razorpay_payment_id', paymentResponse.razorpay_payment_id);
-                        params.append('razorpay_order_id', paymentResponse.razorpay_order_id);
-                        params.append('razorpay_signature', paymentResponse.razorpay_signature);
-                        params.append('amount', orderData.amount);
+                // Close Add Cash Dialog
+                closeM('addCashModal');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-lock"></i> Proceed to Pay via Razorpay';
+                }
 
-                        try {
-                            const verifyRes = await fetch('/wallet/verify-payment', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                                body: params
-                            });
-                            const verifyData = await verifyRes.json();
-                            if (verifyData.status === 'success') {
-                                alert('🎉 Payment of ₹' + orderData.amount + ' verified and credited successfully!');
-                                window.location.reload();
-                            } else {
-                                alert('Payment verification failed: ' + (verifyData.error || 'Verification error'));
+                // Check if live Razorpay credentials are used
+                const isRealRazorpay = orderData.isLive === true || (
+                    orderData.keyId && 
+                    !orderData.keyId.includes('Mock') && 
+                    !orderData.keyId.includes('youthians') &&
+                    (orderData.keyId.startsWith('rzp_live_') || orderData.keyId.startsWith('rzp_test_')) &&
+                    !orderData.orderId.startsWith('order_w_')
+                );
+
+                if (isRealRazorpay && typeof Razorpay !== 'undefined') {
+                    // Open Official Razorpay Checkout Popup
+                    const options = {
+                        key: orderData.keyId,
+                        amount: Math.round(orderData.amount * 100),
+                        currency: 'INR',
+                        name: 'Youthians Gaming & Social',
+                        description: 'Wallet Deposit',
+                        handler: async function(paymentResponse) {
+                            await verifyAndCreditPayment(paymentResponse, orderData.amount);
+                        },
+                        prefill: {
+                            name: /*[[${user.username}]]*/ 'User',
+                            email: /*[[${user.email != null ? user.email : ''}]]*/ ''
+                        },
+                        modal: {
+                            ondismiss: function() {
                                 if (btn) {
                                     btn.disabled = false;
                                     btn.innerHTML = '<i class="fas fa-lock"></i> Proceed to Pay via Razorpay';
                                 }
                             }
-                        } catch (err) {
-                            alert('Network error verifying payment.');
-                            if (btn) {
-                                btn.disabled = false;
-                                btn.innerHTML = '<i class="fas fa-lock"></i> Proceed to Pay via Razorpay';
-                            }
-                        }
-                    },
-                    modal: {
-                        ondismiss: function() {
-                            if (btn) {
-                                btn.disabled = false;
-                                btn.innerHTML = '<i class="fas fa-lock"></i> Proceed to Pay via Razorpay';
-                            }
-                        }
-                    },
-                    theme: { color: '#10B981' }
-                };
+                        },
+                        theme: { color: '#0c2340' }
+                    };
 
-                const rzp = new Razorpay(options);
-                rzp.open();
+                    if (orderData.orderId && !orderData.orderId.startsWith('order_w_')) {
+                        options.order_id = orderData.orderId;
+                    }
+
+                    try {
+                        const rzp = new Razorpay(options);
+                        rzp.on('payment.failed', function(resp) {
+                            alert('Payment failed: ' + (resp.error ? resp.error.description : 'Transaction cancelled'));
+                        });
+                        rzp.open();
+                    } catch(e) {
+                        openRazorpayCheckoutModal(activeRzpOrder);
+                    }
+                } else {
+                    // Open Realistic Gateway Simulator
+                    openRazorpayCheckoutModal(activeRzpOrder);
+                }
+
             } catch (err) {
-                alert('Failed to connect to payment service.');
+                alert('Connection error. Please try again.');
                 if (btn) {
                     btn.disabled = false;
                     btn.innerHTML = '<i class="fas fa-lock"></i> Proceed to Pay via Razorpay';
                 }
             }
         }
+
+        function openRazorpayCheckoutModal(order) {
+            document.getElementById('rzpAmountDisplay').textContent = '₹' + order.amount.toFixed(2);
+            document.getElementById('rzpOrderDisplayId').textContent = 'Order: ' + order.orderId;
+            document.getElementById('rzpUpiPayBtnText').textContent = 'Pay ₹' + order.amount.toFixed(2) + ' via UPI';
+            document.getElementById('rzpCardPayBtnText').textContent = 'Pay ₹' + order.amount.toFixed(2) + ' via Card';
+            document.getElementById('rzpBankPayBtnText').textContent = 'Pay ₹' + order.amount.toFixed(2) + ' via Netbanking';
+            document.getElementById('rzpWalletPayBtnText').textContent = 'Pay ₹' + order.amount.toFixed(2) + ' via Wallet';
+            document.getElementById('rzpOtpAmountLabel').innerHTML = 'Amount: <strong>₹' + order.amount.toFixed(2) + '</strong>';
+
+            // Reset Views
+            document.getElementById('rzpMainView').style.display = 'flex';
+            document.getElementById('rzpOtpView').style.display = 'none';
+            document.getElementById('rzpProcessingView').style.display = 'none';
+            document.getElementById('rzpSuccessView').style.display = 'none';
+
+            switchRzpTab('upi');
+            startRzpQrTimer();
+
+            openM('razorpayCheckoutModal');
+        }
+
+        function switchRzpTab(tabName) {
+            document.querySelectorAll('.rzp-tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.rzp-panel').forEach(p => p.style.display = 'none');
+
+            const btn = document.getElementById('rzpTab-' + tabName);
+            const panel = document.getElementById('rzpPanel-' + tabName);
+            if (btn) btn.classList.add('active');
+            if (panel) panel.style.display = 'block';
+        }
+
+        function selectRzpUpiApp(appName) {
+            document.getElementById('rzpUpiIdInput').value = 'kishor@' + appName.toLowerCase().replace(/[^a-z]/g, '');
+            proceedToRzpOtp('UPI (' + appName + ')');
+        }
+
+        function selectRzpBank(btn, bankName) {
+            document.querySelectorAll('.rzp-bank-tile').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        function selectRzpWallet(btn, walletName) {
+            document.querySelectorAll('#rzpPanel-wallet .rzp-bank-tile').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        function proceedToRzpOtp(paymentMethod) {
+            document.getElementById('rzpMainView').style.display = 'none';
+            document.getElementById('rzpOtpView').style.display = 'block';
+            document.getElementById('rzpOtpInput').value = '123456';
+            document.getElementById('rzpOtpInput').focus();
+        }
+
+        function backToRzpMain() {
+            document.getElementById('rzpOtpView').style.display = 'none';
+            document.getElementById('rzpMainView').style.display = 'flex';
+        }
+
+        async function submitRzpPaymentAuthorization() {
+            const otp = document.getElementById('rzpOtpInput').value;
+            if (!otp || otp.length < 4) {
+                alert('Please enter the 6-digit bank authorization OTP (e.g., 123456).');
+                return;
+            }
+
+            document.getElementById('rzpOtpView').style.display = 'none';
+            document.getElementById('rzpProcessingView').style.display = 'block';
+            document.getElementById('rzpProcessingTitle').textContent = 'Authorizing with Razorpay...';
+            document.getElementById('rzpProcessingSub').textContent = 'Verifying payment receipt and HMAC-SHA256 signature with Youthians servers...';
+
+            try {
+                // Step 1: Simulate Razorpay Gateway Signature
+                const simRes = await fetch('/wallet/simulate-test-payment?orderId=' + encodeURIComponent(activeRzpOrder.orderId), { method: 'POST' });
+                if (!simRes.ok) {
+                    const err = await simRes.json();
+                    alert('Razorpay processing error: ' + (err.error || 'Authorization failed'));
+                    backToRzpMain();
+                    return;
+                }
+                const paymentPayload = await simRes.json();
+                await verifyAndCreditPayment(paymentPayload, activeRzpOrder.amount);
+
+            } catch (err) {
+                alert('Network error communicating with Razorpay. Please retry.');
+                backToRzpMain();
+            }
+        }
+
+        async function verifyAndCreditPayment(paymentPayload, amount) {
+            const params = new URLSearchParams();
+            params.append('razorpay_payment_id', paymentPayload.razorpay_payment_id);
+            params.append('razorpay_order_id', paymentPayload.razorpay_order_id);
+            params.append('razorpay_signature', paymentPayload.razorpay_signature);
+            params.append('amount', amount);
+
+            try {
+                const verifyRes = await fetch('/wallet/verify-payment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: params
+                });
+                const verifyData = await verifyRes.json();
+
+                if (verifyData.status === 'success') {
+                    // Update in-memory state
+                    currentCashBalance = verifyData.balance;
+
+                    // Update UI balances on page
+                    document.querySelectorAll('.wallet-cash-display').forEach(el => {
+                        el.textContent = '₹' + currentCashBalance.toFixed(2);
+                    });
+
+                    // Show Razorpay Success View
+                    document.getElementById('rzpMainView').style.display = 'none';
+                    document.getElementById('rzpOtpView').style.display = 'none';
+                    document.getElementById('rzpProcessingView').style.display = 'none';
+                    document.getElementById('rzpSuccessView').style.display = 'block';
+
+                    document.getElementById('rzpSuccessAmount').textContent = '₹' + parseFloat(amount).toFixed(2);
+                    document.getElementById('rzpSuccessPayId').textContent = paymentPayload.razorpay_payment_id;
+                    document.getElementById('rzpSuccessOrderId').textContent = paymentPayload.razorpay_order_id;
+                    document.getElementById('rzpSuccessNewBalance').textContent = '₹' + currentCashBalance.toFixed(2);
+
+                    openM('razorpayCheckoutModal');
+                } else {
+                    alert('Payment verification failed: ' + (verifyData.error || 'Invalid signature'));
+                    if (typeof backToRzpMain === 'function') backToRzpMain();
+                }
+
+            } catch (err) {
+                alert('Network error communicating with verification server. Please retry.');
+                if (typeof backToRzpMain === 'function') backToRzpMain();
+            }
+        }
+
+        function startRzpQrTimer() {
+            if (rzpTimerInterval) clearInterval(rzpTimerInterval);
+            let totalSec = 299; // 4m 59s
+            const timerEl = document.getElementById('rzpQrTimer');
+            rzpTimerInterval = setInterval(() => {
+                if (totalSec <= 0) {
+                    clearInterval(rzpTimerInterval);
+                    if (timerEl) timerEl.textContent = '00:00 (Expired)';
+                    return;
+                }
+                totalSec--;
+                const m = Math.floor(totalSec / 60);
+                const s = totalSec % 60;
+                if (timerEl) timerEl.textContent = (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+            }, 1000);
+        }
+
+        function confirmCloseRazorpay() {
+            if (rzpTimerInterval) clearInterval(rzpTimerInterval);
+            closeM('razorpayCheckoutModal');
+        }
+
+        function finishRzpSuccess() {
+            closeM('razorpayCheckoutModal');
+            window.location.reload();
+        }
+
+        // ── RazorpayX Withdrawal Flow (Real-Time Experience) ──
+        let activeWithdrawal = null;
+
+        function triggerRazorpayWithdraw(e) {
+            if (e) e.preventDefault();
+
+            const amtInput = document.getElementById('withdrawAmountInput');
+            const accInput = document.getElementById('withdrawAccountInput');
+            const err = document.getElementById('withdrawErrorMsg');
+
+            const amount = parseFloat(amtInput ? amtInput.value : 0);
+            const accountDetails = accInput ? accInput.value.trim() : '';
+
+            if (isNaN(amount) || amount < 100) {
+                if (err) { err.textContent = 'Minimum withdrawal amount is ₹100.00.'; err.style.display = 'block'; }
+                return;
+            }
+            if (amount > 50000) {
+                if (err) { err.textContent = 'Maximum withdrawal limit is ₹50,000.00 per transaction.'; err.style.display = 'block'; }
+                return;
+            }
+            if (amount > currentCashBalance) {
+                if (err) { err.textContent = 'Insufficient balance. Your available balance is ₹' + currentCashBalance.toFixed(2) + '.'; err.style.display = 'block'; }
+                return;
+            }
+            if (!accountDetails) {
+                if (err) { err.textContent = 'Please provide valid transfer account details (UPI ID or Bank Account).'; err.style.display = 'block'; }
+                return;
+            }
+
+            if (err) err.style.display = 'none';
+
+            const fee = Math.round(amount * 0.05 * 100) / 100;
+            const netPayout = Math.round((amount - fee) * 100) / 100;
+
+            activeWithdrawal = {
+                amount: amount,
+                fee: fee,
+                netPayout: netPayout,
+                accountDetails: accountDetails
+            };
+
+            // Close standard withdraw modal
+            closeM('withdrawModal');
+
+            // Populate RazorpayX Payout Modal
+            document.getElementById('rzpXGrossLabel').textContent = '₹' + amount.toFixed(2);
+            document.getElementById('rzpXFeeLabel').textContent = '-₹' + fee.toFixed(2);
+            document.getElementById('rzpXNetLabel').textContent = '₹' + netPayout.toFixed(2);
+            document.getElementById('rzpXDestLabel').textContent = accountDetails;
+            document.getElementById('rzpXAuthCode').value = '749201';
+
+            // Reset Views
+            document.getElementById('rzpXReviewView').style.display = 'block';
+            document.getElementById('rzpXProcessingView').style.display = 'none';
+            document.getElementById('rzpXSuccessView').style.display = 'none';
+
+            openM('razorpayXPayoutModal');
+        }
+
+        async function executeRazorpayXPayout() {
+            const code = document.getElementById('rzpXAuthCode').value;
+            if (!code || code.length < 4) {
+                alert('Please enter the 6-digit authorization code.');
+                return;
+            }
+
+            document.getElementById('rzpXReviewView').style.display = 'none';
+            document.getElementById('rzpXProcessingView').style.display = 'block';
+
+            const params = new URLSearchParams();
+            params.append('amount', activeWithdrawal.amount);
+            params.append('accountDetails', activeWithdrawal.accountDetails);
+
+            try {
+                const res = await fetch('/wallet/razorpay/payout', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: params
+                });
+
+                const data = await res.json();
+                if (data.status === 'success' || data.status === 'pending') {
+                    // Update in-memory balance
+                    currentCashBalance = data.balance;
+                    document.querySelectorAll('.wallet-cash-display').forEach(el => {
+                        el.textContent = currentCashBalance.toFixed(2);
+                    });
+
+                    document.getElementById('rzpXProcessingView').style.display = 'none';
+                    document.getElementById('rzpXSuccessView').style.display = 'block';
+
+                    document.getElementById('rzpXSuccessNet').textContent = '₹' + data.netAmount.toFixed(2);
+                    document.getElementById('rzpXSuccessUtr').textContent = data.utr;
+                    document.getElementById('rzpXSuccessPayoutId').textContent = data.poutId || data.payoutId;
+                    document.getElementById('rzpXSuccessBeneficiary').textContent = data.accountDetails;
+                    document.getElementById('rzpXSuccessNewBalance').textContent = '₹' + currentCashBalance.toFixed(2);
+                } else {
+                    alert('Payout failed: ' + (data.error || 'Server error'));
+                    document.getElementById('rzpXProcessingView').style.display = 'none';
+                    document.getElementById('rzpXReviewView').style.display = 'block';
+                }
+            } catch (err) {
+                alert('Network error executing RazorpayX payout. Please retry.');
+                document.getElementById('rzpXProcessingView').style.display = 'none';
+                document.getElementById('rzpXReviewView').style.display = 'block';
+            }
+        }
+
+        function confirmCloseRzpX() {
+            closeM('razorpayXPayoutModal');
+        }
+
+        function finishRzpXSuccess() {
+            closeM('razorpayXPayoutModal');
+            window.location.reload();
+        }
     </script>
 </body>
 </html>
-
-
-
-

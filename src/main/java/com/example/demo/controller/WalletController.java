@@ -59,11 +59,28 @@ public class WalletController {
         return null;
     }
 
-    @org.springframework.beans.factory.annotation.Value("${razorpay.key.id:rzp_test_youthiansMockKey}")
+    @org.springframework.beans.factory.annotation.Value("${razorpay.key.id:${RAZORPAY_KEY_ID:rzp_test_youthiansMockKey}}")
     private String razorpayKeyId;
 
-    @org.springframework.beans.factory.annotation.Value("${razorpay.key.secret:youthiansMockSecretKey123}")
+    @org.springframework.beans.factory.annotation.Value("${razorpay.key.secret:${RAZORPAY_KEY_SECRET:youthiansMockSecretKey123}}")
     private String razorpayKeySecret;
+
+    private String computeHmacSha256(String data, String key) {
+        try {
+            javax.crypto.Mac mac = javax.crypto.Mac.getInstance("HmacSHA256");
+            mac.init(new javax.crypto.spec.SecretKeySpec(key.getBytes(java.nio.charset.StandardCharsets.UTF_8), "HmacSHA256"));
+            byte[] hash = mac.doFinal(data.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hash) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) hexString.append('0');
+                hexString.append(hex);
+            }
+            return hexString.toString();
+        } catch (Exception e) {
+            throw new RuntimeException("HMAC computation failed", e);
+        }
+    }
 
     private boolean verifyRazorpaySignature(String orderId, String paymentId, String signature, String secret) {
         if (orderId == null || paymentId == null || signature == null || secret == null) {
@@ -71,19 +88,35 @@ public class WalletController {
         }
         try {
             String payload = orderId + "|" + paymentId;
-            javax.crypto.Mac mac = javax.crypto.Mac.getInstance("HmacSHA256");
-            mac.init(new javax.crypto.spec.SecretKeySpec(secret.getBytes(java.nio.charset.StandardCharsets.UTF_8), "HmacSHA256"));
-            byte[] hash = mac.doFinal(payload.getBytes(java.nio.charset.StandardCharsets.UTF_8));
-            StringBuilder hexString = new StringBuilder();
-            for (byte b : hash) {
-                String hex = Integer.toHexString(0xff & b);
-                if (hex.length() == 1) hexString.append('0');
-                hexString.append(hex);
-            }
-            return hexString.toString().equalsIgnoreCase(signature.trim());
+            String computed = computeHmacSha256(payload, secret);
+            return computed.equalsIgnoreCase(signature.trim());
         } catch (Exception e) {
             return false;
         }
+    }
+
+    @PostMapping("/simulate-test-payment")
+    @ResponseBody
+    public org.springframework.http.ResponseEntity<?> simulateTestPayment(@RequestParam String orderId, HttpSession session) {
+        User user = getUserFromSession(session);
+        if (user == null) {
+            return org.springframework.http.ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        }
+        Object amtObj = session.getAttribute("wallet_order_" + orderId);
+        if (amtObj == null) {
+            return org.springframework.http.ResponseEntity.badRequest().body(Map.of("error", "Invalid or expired order session"));
+        }
+        Double amount = Double.parseDouble(amtObj.toString());
+        String paymentId = "pay_mock_" + UUID.randomUUID().toString().replace("-", "").substring(0, 10);
+        String payload = orderId + "|" + paymentId;
+        String signature = computeHmacSha256(payload, razorpayKeySecret);
+
+        return org.springframework.http.ResponseEntity.ok(Map.of(
+            "razorpay_order_id", orderId,
+            "razorpay_payment_id", paymentId,
+            "razorpay_signature", signature,
+            "amount", amount
+        ));
     }
 
     private boolean isAdminSession(HttpSession session) {
@@ -104,13 +137,60 @@ public class WalletController {
         if (amount == null || Double.isNaN(amount) || Double.isInfinite(amount) || amount < 10.0 || amount > 50000.0) {
             return org.springframework.http.ResponseEntity.badRequest().body(Map.of("error", "Deposit amount must be between Rs. 10 and Rs. 50,000"));
         }
-        String orderId = "order_w_" + UUID.randomUUID().toString().replace("-", "").substring(0, 14);
+
+        boolean isRealKey = razorpayKeyId != null 
+            && !razorpayKeyId.contains("Mock") 
+            && !razorpayKeyId.contains("youthians")
+            && (razorpayKeyId.startsWith("rzp_live_") || razorpayKeyId.startsWith("rzp_test_"));
+
+        String orderId = null;
+        if (isRealKey && razorpayKeySecret != null && !razorpayKeySecret.contains("Mock")) {
+            try {
+                orderId = createRazorpayApiOrder(amount);
+            } catch (Exception e) {
+                System.err.println("Razorpay Live API Order Creation: " + e.getMessage());
+            }
+        }
+
+        if (orderId == null) {
+            orderId = "order_w_" + UUID.randomUUID().toString().replace("-", "").substring(0, 14);
+        }
+
         session.setAttribute("wallet_order_" + orderId, amount);
         return org.springframework.http.ResponseEntity.ok(Map.of(
             "orderId", orderId,
             "amount", amount,
-            "keyId", razorpayKeyId
+            "keyId", razorpayKeyId,
+            "isLive", isRealKey && !orderId.startsWith("order_w_")
         ));
+    }
+
+    private String createRazorpayApiOrder(Double amount) throws Exception {
+        long amountInPaise = Math.round(amount * 100);
+        String receipt = "rcpt_" + System.currentTimeMillis();
+        String jsonPayload = String.format("{\"amount\":%d,\"currency\":\"INR\",\"receipt\":\"%s\"}", amountInPaise, receipt);
+
+        String auth = razorpayKeyId + ":" + razorpayKeySecret;
+        String encodedAuth = java.util.Base64.getEncoder().encodeToString(auth.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+
+        java.net.http.HttpClient client = java.net.http.HttpClient.newHttpClient();
+        java.net.http.HttpRequest request = java.net.http.HttpRequest.newBuilder()
+            .uri(java.net.URI.create("https://api.razorpay.com/v1/orders"))
+            .header("Authorization", "Basic " + encodedAuth)
+            .header("Content-Type", "application/json")
+            .POST(java.net.http.HttpRequest.BodyPublishers.ofString(jsonPayload))
+            .build();
+
+        java.net.http.HttpResponse<String> response = client.send(request, java.net.http.HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() == 200 || response.statusCode() == 201) {
+            String body = response.body();
+            java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("\"id\"\\s*:\\s*\"(order_[^\"]+)\"");
+            java.util.regex.Matcher matcher = pattern.matcher(body);
+            if (matcher.find()) {
+                return matcher.group(1);
+            }
+        }
+        throw new RuntimeException("Status " + response.statusCode() + ": " + response.body());
     }
 
     @PostMapping("/verify-payment")
@@ -163,13 +243,19 @@ public class WalletController {
         }
         user = userRepository.findById(user.getId()).orElse(user);
         List<WalletTransaction> transactions = walletTransactionRepository.findByUserOrderByTimestampDesc(user);
+        List<CoinTransaction> coinTransactions = coinTransactionRepository.findByUserOrderByTimestampDesc(user);
         List<WalletRequest> incomingRequests = walletRequestRepository.findByTargetUserAndStatusOrderByCreatedAtDesc(user, "PENDING");
         List<WalletRequest> sentRequests = walletRequestRepository.findByRequesterOrderByCreatedAtDesc(user);
+        List<WalletTransaction> pendingWithdrawals = transactions.stream()
+                .filter(t -> "WITHDRAWAL".equalsIgnoreCase(t.getType()) && "PENDING".equalsIgnoreCase(t.getStatus()))
+                .toList();
 
         model.addAttribute("user", user);
         model.addAttribute("transactions", transactions);
+        model.addAttribute("coinTransactions", coinTransactions);
         model.addAttribute("incomingRequests", incomingRequests);
         model.addAttribute("sentRequests", sentRequests);
+        model.addAttribute("pendingWithdrawals", pendingWithdrawals);
         model.addAttribute("razorpayKeyId", razorpayKeyId);
         return "wallet";
     }
@@ -204,7 +290,7 @@ public class WalletController {
             return "redirect:/wallet";
         }
 
-        String targetName = recipientUsername.trim();
+        String targetName = recipientUsername.trim().replaceFirst("^@", "");
         if (targetName.equalsIgnoreCase(sender.getUsername())) {
             redirectAttributes.addFlashAttribute("error", "You cannot send funds to yourself.");
             return "redirect:/wallet";
@@ -299,7 +385,7 @@ public class WalletController {
             return "redirect:/wallet";
         }
 
-        String targetName = targetUsername.trim();
+        String targetName = targetUsername.trim().replaceFirst("^@", "");
         if (targetName.equalsIgnoreCase(requester.getUsername())) {
             redirectAttributes.addFlashAttribute("error", "You cannot request funds from yourself.");
             return "redirect:/wallet";
@@ -313,6 +399,12 @@ public class WalletController {
 
         if (amount == null || amount <= 0 || amount.isNaN() || amount.isInfinite()) {
             redirectAttributes.addFlashAttribute("error", "Please enter a valid amount.");
+            return "redirect:/wallet";
+        }
+
+        boolean isCoinsReq = "COINS".equalsIgnoreCase(currency);
+        if (isCoinsReq && amount.intValue() <= 0) {
+            redirectAttributes.addFlashAttribute("error", "Minimum coin request is 1 Coin.");
             return "redirect:/wallet";
         }
 
@@ -451,7 +543,6 @@ public class WalletController {
 
         Double currentBalance = user.getWalletBalance() != null ? user.getWalletBalance() : 0.0;
         if (currentBalance < amount) {
-            redirectAttributes.addFlashAttribute("error", "Insufficient balance. Your available balance is \u20B9" + String.format("%.2f", currentBalance));
             redirectAttributes.addFlashAttribute("error", "Insufficient balance. Your available balance is Rs. " + String.format("%.2f", currentBalance));
             return "redirect:/wallet";
         }
@@ -483,7 +574,6 @@ public class WalletController {
         tx.setNetAmount(netPayout);
         walletTransactionRepository.save(tx);
 
-        redirectAttributes.addFlashAttribute("success", "Withdrawal of \u20B9" + String.format("%.2f", amount) + " to " + accountClean + " processed successfully. Ref: " + refId);
         notificationRepository.save(new Notification(user, null, 
             "Withdrawal request of Rs. " + String.format("%.2f", amount) + " submitted. Platform charge (5%): Rs. " 
             + String.format("%.2f", fee) + ". Net payout of Rs. " + String.format("%.2f", netPayout) 
@@ -495,6 +585,83 @@ public class WalletController {
             + " | Net Payout: Rs. " + String.format("%.2f", netPayout) 
             + " to " + accountClean + " (Ref: " + refId + ").");
         return "redirect:/wallet";
+    }
+
+    @PostMapping("/razorpay/payout")
+    @ResponseBody
+    public org.springframework.http.ResponseEntity<?> processRazorpayPayout(
+            @RequestParam(value = "amount", required = false) Double amount,
+            @RequestParam(value = "accountDetails", required = false) String accountDetails,
+            HttpSession session) {
+        User user = getUserFromSession(session);
+        if (user == null) {
+            return org.springframework.http.ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        }
+
+        user = userRepository.findById(user.getId()).orElse(user);
+
+        if (amount == null || amount.isNaN() || amount.isInfinite() || amount < 100.0) {
+            return org.springframework.http.ResponseEntity.badRequest().body(Map.of("error", "Minimum withdrawal amount is Rs. 100.00."));
+        }
+
+        if (amount > 50000.0) {
+            return org.springframework.http.ResponseEntity.badRequest().body(Map.of("error", "Maximum withdrawal limit is Rs. 50,000.00 per transaction."));
+        }
+
+        if (accountDetails == null || accountDetails.trim().isEmpty()) {
+            return org.springframework.http.ResponseEntity.badRequest().body(Map.of("error", "Please provide valid transfer account details (UPI ID or Bank Account)."));
+        }
+
+        Double currentBalance = user.getWalletBalance() != null ? user.getWalletBalance() : 0.0;
+        if (currentBalance < amount) {
+            return org.springframework.http.ResponseEntity.badRequest().body(Map.of("error", "Insufficient balance. Your available balance is Rs. " + String.format("%.2f", currentBalance)));
+        }
+
+        // Platform charge: 5% processing fee deducted from payout
+        double platformFeePct = 5.0;
+        double fee = Math.round((amount * (platformFeePct / 100.0)) * 100.0) / 100.0;
+        double netPayout = Math.round((amount - fee) * 100.0) / 100.0;
+
+        user.deductWalletBalance(amount);
+        userRepository.save(user);
+
+        String accountClean = accountDetails.trim();
+        String payoutId = "pout_" + UUID.randomUUID().toString().replace("-", "").substring(0, 14);
+        String utr = "UTR" + System.currentTimeMillis() + (int)(Math.random() * 9000 + 1000);
+        String refId = "RZPX-" + payoutId;
+
+        String details = "Withdrawal Payout to " + accountClean + " (Gross: Rs. " + String.format("%.2f", amount) 
+                + ", Platform Fee: Rs. " + String.format("%.2f", fee) 
+                + ", Net: Rs. " + String.format("%.2f", netPayout) 
+                + ", Ref: " + utr + ")";
+
+        WalletTransaction tx = new WalletTransaction(
+            user, 
+            amount, 
+            "WITHDRAWAL", 
+            details
+        );
+        tx.setStatus("PENDING");
+        tx.setReferenceId(refId);
+        tx.setFee(fee);
+        tx.setNetAmount(netPayout);
+        walletTransactionRepository.save(tx);
+
+        notificationRepository.save(new Notification(user, null, 
+            "Withdrawal request of Rs. " + String.format("%.2f", amount) + " submitted. Net payout of Rs. " 
+            + String.format("%.2f", netPayout) + " to " + accountClean + " is PENDING review.", "WALLET"));
+
+        return org.springframework.http.ResponseEntity.ok(Map.of(
+            "status", "pending",
+            "message", "Withdrawal request submitted successfully. Funds will be credited to your account within 24 hours.",
+            "payoutId", payoutId,
+            "utr", utr,
+            "amount", amount,
+            "fee", fee,
+            "netAmount", netPayout,
+            "accountDetails", accountClean,
+            "balance", user.getWalletBalance()
+        ));
     }
 
     // ── ADMIN APPROVE & REJECT ENDPOINTS ──

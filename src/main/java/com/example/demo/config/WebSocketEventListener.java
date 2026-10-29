@@ -13,6 +13,7 @@ import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 @Component
 public class WebSocketEventListener {
@@ -29,7 +30,9 @@ public class WebSocketEventListener {
         Map<String, Object> sessionAttributes = headerAccessor.getSessionAttributes();
         if (sessionAttributes != null && sessionAttributes.containsKey("user")) {
             User user = (User) sessionAttributes.get("user");
-            updateUserStatus(user.getId(), true);
+            if (user != null && user.getId() != null) {
+                updateUserStatusAsync(user.getId(), true);
+            }
         }
     }
 
@@ -39,21 +42,33 @@ public class WebSocketEventListener {
         Map<String, Object> sessionAttributes = headerAccessor.getSessionAttributes();
         if (sessionAttributes != null && sessionAttributes.containsKey("user")) {
             User user = (User) sessionAttributes.get("user");
-            updateUserStatus(user.getId(), false);
+            if (user != null && user.getId() != null) {
+                updateUserStatusAsync(user.getId(), false);
+            }
         }
     }
 
-    private void updateUserStatus(Long userId, boolean isOnline) {
-        userRepository.findById(userId).ifPresent(user -> {
-            user.setLastActiveAt(LocalDateTime.now());
-            userRepository.save(user);
+    private void updateUserStatusAsync(Long userId, boolean isOnline) {
+        if (userId == null) return;
+        CompletableFuture.runAsync(() -> {
+            try {
+                LocalDateTime now = LocalDateTime.now();
+                // 1. Quick isolated DB update with immediate connection release
+                userRepository.findById(userId).ifPresent(user -> {
+                    user.setLastActiveAt(now);
+                    userRepository.save(user);
+                });
 
-            Map<String, Object> statusMessage = new HashMap<>();
-            statusMessage.put("userId", userId);
-            statusMessage.put("isOnline", isOnline);
-            statusMessage.put("lastActiveAt", user.getLastActiveAt());
+                // 2. Broadcast status on websocket without holding DB connection
+                Map<String, Object> statusMessage = new HashMap<>();
+                statusMessage.put("userId", userId);
+                statusMessage.put("isOnline", isOnline);
+                statusMessage.put("lastActiveAt", now);
 
-            messagingTemplate.convertAndSend((String) "/topic/online-status", (Object) statusMessage);
+                messagingTemplate.convertAndSend((String) "/topic/online-status", (Object) statusMessage);
+            } catch (Exception ignored) {
+                // Ignore transient errors on disconnect
+            }
         });
     }
 }

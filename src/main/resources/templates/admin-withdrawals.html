@@ -27,6 +27,16 @@
                 </div>
             </div>
 
+            <!-- Flash Message Alerts -->
+            <div th:if="${success}" style="background: rgba(16, 185, 129, 0.12); border: 1.5px solid #10b981; color: #065f46; padding: 14px 18px; border-radius: 12px; margin-bottom: 20px; font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-check-circle" style="font-size: 20px; color: #10b981;"></i>
+                <span th:text="${success}"></span>
+            </div>
+            <div th:if="${error}" style="background: rgba(239, 68, 68, 0.12); border: 1.5px solid #ef4444; color: #991b1b; padding: 14px 18px; border-radius: 12px; margin-bottom: 20px; font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-exclamation-triangle" style="font-size: 20px; color: #ef4444;"></i>
+                <span th:text="${error}"></span>
+            </div>
+
             <!-- Pending Withdrawals Card -->
             <div style="background: var(--card-bg); border: 1px solid var(--glass-border); border-radius: 20px; overflow: hidden; margin-bottom: 30px; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);">
                 <div style="padding: 20px 24px; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center;">
@@ -58,17 +68,29 @@
                                 <td style="padding: 14px 20px; font-size: 13px; color: var(--text-primary); max-width: 250px; word-break: break-all;" th:text="${tx.description}"></td>
                                 <td style="padding: 14px 20px; font-size: 13px; color: var(--text-secondary);" th:text="${#temporals.format(tx.timestamp, 'MMM dd, HH:mm')}"></td>
                                 <td style="padding: 14px 20px; text-align: right;">
-                                    <div style="display: inline-flex; gap: 8px;">
+                                    <div style="display: flex; flex-direction: column; gap: 6px; align-items: flex-end;">
+                                        <!-- Automated Razorpay Payout -->
                                         <form th:action="@{/admin/withdrawals/{id}/approve(id=${tx.id})}" method="post">
-                                            <button type="submit" class="nav-btn" style="background: #10b981; color: white; border: none; padding: 6px 14px; font-size: 12px; font-weight: 800;" onclick="return confirm('Approve this withdrawal payout?');">
-                                                Approve
+                                            <button type="submit" class="nav-btn" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 7px 14px; font-size: 12px; font-weight: 800; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(16,185,129,0.3);" onclick="return confirm('Execute automated direct payout to recipient via Razorpay?');">
+                                                <i class="fas fa-bolt"></i> Auto Payout &amp; Approve
                                             </button>
                                         </form>
-                                        <form th:action="@{/admin/withdrawals/{id}/reject(id=${tx.id})}" method="post">
-                                            <button type="submit" class="nav-btn" style="background: #ef4444; color: white; border: none; padding: 6px 14px; font-size: 12px; font-weight: 800;" onclick="return confirm('Reject request and refund coins to user?');">
-                                                Reject
-                                            </button>
-                                        </form>
+
+                                        <div style="display: inline-flex; gap: 6px;">
+                                            <!-- Manual Confirm -->
+                                            <form th:action="@{/admin/withdrawals/{id}/approve(id=${tx.id})}" method="post">
+                                                <input type="hidden" name="manual" value="true">
+                                                <button type="submit" class="nav-btn" style="background: #e2e8f0; color: #334155; border: 1px solid #cbd5e1; padding: 5px 10px; font-size: 11px; font-weight: 700; border-radius: 6px; cursor: pointer;" onclick="return confirm('Confirm that you have already transferred the money via PhonePe/GPay?');">
+                                                    Manual Paid
+                                                </button>
+                                            </form>
+                                            <!-- Reject -->
+                                            <form th:action="@{/admin/withdrawals/{id}/reject(id=${tx.id})}" method="post">
+                                                <button type="submit" class="nav-btn" style="background: rgba(239, 68, 68, 0.1); color: #dc2626; border: 1px solid rgba(239, 68, 68, 0.3); padding: 5px 10px; font-size: 11px; font-weight: 700; border-radius: 6px; cursor: pointer;" onclick="return confirm('Reject request and refund coins to user?');">
+                                                    Reject
+                                                </button>
+                                            </form>
+                                        </div>
                                     </div>
                                 </td>
                             </tr>
