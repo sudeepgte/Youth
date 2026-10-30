@@ -26,6 +26,7 @@ public class TournamentController {
     @Autowired private UserRepository userRepository;
     @Autowired private TournamentBattleRepository tournamentBattleRepository;
     @Autowired private WalletTransactionRepository walletTransactionRepository;
+    @Autowired private com.example.demo.service.EmailService emailService;
 
     private User getUserFromSession(HttpSession session) {
         Object userObj = session.getAttribute("user");
@@ -134,6 +135,7 @@ public class TournamentController {
             tp.setParticipantNumber(String.format("OFF-%03d", count + 1));
             tp.setCheckedIn(false);
             participantRepository.save(tp);
+            try { emailService.sendTournamentRegistrationConfirmation(tp); } catch (Exception ignored) {}
         }
 
         return "redirect:/tournaments/" + id;

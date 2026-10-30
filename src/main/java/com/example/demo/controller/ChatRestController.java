@@ -68,6 +68,10 @@ public class ChatRestController {
 
     @Autowired
     private ConversationRepository conversationRepository;
+    @Autowired
+    private com.example.demo.repository.PostRepository postRepository;
+    @Autowired
+    private com.example.demo.service.EmailService emailService;
 
     @Autowired
     private org.springframework.messaging.simp.SimpMessageSendingOperations messagingTemplate;
@@ -115,6 +119,12 @@ public class ChatRestController {
             // Notify recipient and sender via WebSocket (ignore WS serialize failures)
             try {
                 messagingTemplate.convertAndSendToUser(recipientId.toString(), "/queue/messages", message);
+                try {
+                    User recipient = userRepository.findById(recipientId).orElse(null);
+                    if (recipient != null) {
+                        emailService.sendUnreadMessageNotification(recipient, currentUser, content);
+                    }
+                } catch (Exception ignored) {}
                 messagingTemplate.convertAndSendToUser(currentUser.getId().toString(), "/queue/messages", message);
             } catch (Exception wsEx) {
                 System.err.println("[WARN] WS notify failed after send-direct: " + wsEx.getMessage());
@@ -333,6 +343,13 @@ public class ChatRestController {
         Long recipientId = Long.valueOf(payload.get("recipientId").toString());
 
         ChatMessage shared = chatService.sharePostToUser(postId, recipientId, user);
+        try {
+            User recipient = userRepository.findById(recipientId).orElse(null);
+            com.example.demo.model.Post post = postRepository.findById(postId).orElse(null);
+            boolean isReel = post != null && "REEL".equalsIgnoreCase(post.getPostType());
+            String title = post != null ? post.getContent() : "shared content";
+            emailService.sendPostOrReelSharedNotification(recipient, user, title, "/dashboard", isReel);
+        } catch (Exception ignored) {}
 
         // Notify recipient via WebSocket
         messagingTemplate.convertAndSendToUser(recipientId.toString(), "/queue/messages", shared);

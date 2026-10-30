@@ -33,6 +33,8 @@ public class PostInteractionController {
     private UserActivityRepository userActivityRepository;
     @Autowired
     private FeedAlgorithmService feedAlgorithmService;
+    @Autowired
+    private com.example.demo.service.EmailService emailService;
     @Autowired(required = false)
     private HttpServletRequest httpServletRequest;
     @Autowired(required = false)
@@ -265,6 +267,7 @@ public class PostInteractionController {
                     String msg = "@" + user.getUsername() + " replied to your comment (" + parentSnippet + "): \"" + 
                                  (commentText.length() > 20 ? commentText.substring(0, 17) + "..." : commentText.trim()) + "\"";
                     notificationRepository.save(new Notification(parentAuthor, user, msg, "COMMENT_REPLY", post.getId()));
+                    try { emailService.sendPostCommentNotification(parentAuthor, user, (post.getContent() != null ? post.getContent() : "post"), commentText.trim()); } catch (Exception ignored) {}
                 }
             } else {
                 User postAuthor = post.getUser();
@@ -275,6 +278,7 @@ public class PostInteractionController {
                     String msg = "@" + user.getUsername() + " commented on (" + postSnippet + "): \"" + 
                                  (commentText.length() > 20 ? commentText.substring(0, 17) + "..." : commentText.trim()) + "\"";
                     notificationRepository.save(new Notification(postAuthor, user, msg, "COMMENT", post.getId()));
+                    try { emailService.sendPostCommentNotification(postAuthor, user, (post.getContent() != null ? post.getContent() : "post"), commentText.trim()); } catch (Exception ignored) {}
                 }
             }
         } catch (Exception ignored) {}

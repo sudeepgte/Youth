@@ -40,6 +40,8 @@ public class WalletController {
 
     @Autowired
     private NotificationRepository notificationRepository;
+    @Autowired
+    private com.example.demo.service.EmailService emailService;
 
     @Autowired
     private HttpServletRequest httpServletRequest;
@@ -330,6 +332,7 @@ public class WalletController {
 
             notificationRepository.save(new Notification(recipient, sender, "@" + sender.getUsername() + " sent you " + coinAmount + " Coins!" + noteClean, "TRANSFER"));
             redirectAttributes.addFlashAttribute("success", "Successfully sent " + coinAmount + " Coins to @" + recipient.getUsername() + "!");
+        try { emailService.sendFundsTransferNotification(recipient, sender, (double) coinAmount); } catch (Exception ignored) {}
         } else {
             // INR Cash
             if (amount < 1.0) {
@@ -362,6 +365,7 @@ public class WalletController {
 
             notificationRepository.save(new Notification(recipient, sender, "@" + sender.getUsername() + " sent you Rs. " + String.format("%.2f", amount) + "!" + noteClean, "TRANSFER"));
             redirectAttributes.addFlashAttribute("success", "Successfully transferred Rs. " + String.format("%.2f", amount) + " to @" + recipient.getUsername() + "!");
+            try { emailService.sendFundsTransferNotification(recipient, sender, amount); } catch (Exception ignored) {}
         }
 
         return "redirect:/wallet";
@@ -573,6 +577,7 @@ public class WalletController {
         tx.setFee(fee);
         tx.setNetAmount(netPayout);
         walletTransactionRepository.save(tx);
+        try { emailService.sendWithdrawalStatusEmail(user, amount, "PENDING", "Withdrawal submitted to " + accountClean); } catch (Exception ignored) {}
 
         notificationRepository.save(new Notification(user, null, 
             "Withdrawal request of Rs. " + String.format("%.2f", amount) + " submitted. Platform charge (5%): Rs. " 
@@ -688,6 +693,7 @@ public class WalletController {
             // Withdrawal approval: Balance was already deducted when requested; mark approved without re-crediting! (DEF-10)
             tx.setStatus("APPROVED");
             walletTransactionRepository.save(tx);
+            try { emailService.sendWithdrawalStatusEmail(user, tx.getAmount(), "APPROVED", "Transfer processed (Ref: " + tx.getReferenceId() + ")"); } catch (Exception ignored) {}
             if (user != null) {
                 notificationRepository.save(new Notification(user, null, "Your withdrawal of Rs. " + String.format("%.2f", tx.getAmount()) + " (Ref: " + tx.getReferenceId() + ") has been approved and processed!", "WALLET"));
             }
@@ -738,6 +744,7 @@ public class WalletController {
         }
 
         tx.setStatus("REJECTED");
+        try { emailService.sendWithdrawalStatusEmail(user, tx.getAmount(), "REJECTED", "Withdrawal request was rejected and refunded to your wallet"); } catch (Exception ignored) {}
         walletTransactionRepository.save(tx);
         redirectAttributes.addFlashAttribute("success", "Rejected transaction for user @" + (user != null ? user.getUsername() : "") + ".");
         return "redirect:/admin";

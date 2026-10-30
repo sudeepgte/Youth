@@ -31,6 +31,7 @@ public class BattleTimerService {
     @Autowired private NotificationService notificationService;
     @Autowired private AuditLogService auditLogService;
     @Autowired private com.example.demo.repository.BattlePredictionRepository predictionRepository;
+    @Autowired private EmailService emailService;
 
     @Scheduled(fixedRate = 2000)
     public void checkBattleTimers() {
@@ -295,6 +296,7 @@ public class BattleTimerService {
                     bettor.addWalletBalance(payout);
                     userRepository.save(bettor);
                     notificationService.sendNotification(bettor.getId(), "Prediction Won!", "Your bet on " + battle.getWinner().getUsername() + " was correct! You won " + payout + " coins.", "fas fa-coins", "/wallet");
+                    try { emailService.sendBattlePredictionWinNotification(bettor, battle.getTitle(), (int) payout); } catch (Exception ignored) {}
                 } else {
                     // Lost the bet
                     notificationService.sendNotification(bettor.getId(), "Prediction Lost", "Your bet on " + pred.getPredictedWinner().getUsername() + " was incorrect.", "fas fa-times-circle", "/wallet");
@@ -386,6 +388,7 @@ public class BattleTimerService {
                     bettor.addWalletBalance(payout);
                     userRepository.save(bettor);
                     notificationService.sendNotification(bettor.getId(), "Prediction Won!", "Your bet on " + winner.getUsername() + " was correct! You won " + payout + " coins.", "fas fa-coins", "/wallet");
+                    try { emailService.sendBattlePredictionWinNotification(bettor, battle.getTitle(), (int) payout); } catch (Exception ignored) {}
                 } else {
                     notificationService.sendNotification(bettor.getId(), "Prediction Lost", "Your bet on " + pred.getPredictedWinner().getUsername() + " was incorrect.", "fas fa-times-circle", "/wallet");
                 }

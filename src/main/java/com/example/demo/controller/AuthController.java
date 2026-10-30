@@ -47,6 +47,8 @@ public class AuthController {
 
     @Autowired
     private TokenBlacklist tokenBlacklist;
+    @Autowired
+    private com.example.demo.service.EmailService emailService;
 
     @Autowired
     private com.example.demo.config.ActiveLoginRegistry activeLoginRegistry;
@@ -84,6 +86,7 @@ public class AuthController {
         user.setPassword(passwordEncoder.encode(pwd));
         userRepository.save(user);
         auditLogService.log("USER_REGISTER", user.getId(), "User " + user.getUsername() + " registered successfully.");
+        try { emailService.sendWelcomeEmail(user); } catch (Exception ignored) {}
         return "redirect:/login?registered=true";
     }
 
@@ -255,6 +258,7 @@ public class AuthController {
         userRepository.save(user);
         
         auditLogService.log("PASSWORD_RESET", user.getId(), "User " + user.getUsername() + " reset their password.");
+        try { emailService.sendPasswordChangedNotification(user); } catch (Exception ignored) {}
 
         return "redirect:/forgot-password?success=true";
     }

@@ -98,6 +98,8 @@ public class ProfileController {
 
     @Autowired
     private com.example.demo.repository.EventRegistrationRepository eventRegistrationRepository;
+    @Autowired
+    private com.example.demo.service.EmailService emailService;
 
     @Autowired
     private com.example.demo.repository.BattleRepository battleRepository;
@@ -131,6 +133,9 @@ public class ProfileController {
         // Refresh current user to get latest following list
         currentUser = userRepository.findById(currentUser.getId()).orElse(currentUser);
         session.setAttribute("user", currentUser);
+        if (currentUser != null && targetUser != null && !currentUser.getId().equals(targetUser.getId())) {
+            emailService.sendProfileSearchNotification(targetUser, currentUser);
+        }
 
         // Calculate Talent Score Stats
         long gamesJoined = eventRegistrationRepository.countByUser(targetUser);
@@ -530,6 +535,7 @@ public class ProfileController {
             dbUser.setPassword(newPassword);
             userRepository.save(dbUser);
             auditLogService.log("PASSWORD_CHANGE", dbUser.getId(), "User " + dbUser.getUsername() + " changed their password.");
+            emailService.sendPasswordChangedNotification(dbUser);
         }
         return "redirect:/profile?passwordReset";
     }
@@ -653,6 +659,7 @@ public class ProfileController {
             com.example.demo.model.PostCollaboration collaboration = new com.example.demo.model.PostCollaboration(
                     post, collabUser, com.example.demo.model.CollaborationStatus.PENDING);
             postCollaborationRepository.save(collaboration);
+            try { emailService.sendCollaborationInviteNotification(collabUser, user, post.getContent()); } catch (Exception ignored) {}
         }
         rewardService.awardTalentPost(user, post.getId(), postType); // Coins for Posting/Reels 🎨 with deduplication & limit
         if ("THOUGHT".equalsIgnoreCase(postType)) {
@@ -721,6 +728,7 @@ public class ProfileController {
                 userRepository.save(dbCurrentUser);
                 notificationRepository.save(new Notification(dbTargetUser, dbCurrentUser,
                         "@" + dbCurrentUser.getUsername() + " started following you!", "FOLLOW_ACCEPT"));
+                try { emailService.sendNewFollowerNotification(dbTargetUser, dbCurrentUser, false); } catch (Exception ignored) {}
             } else {
                 // Create FollowRequest
                 FollowRequest request = new FollowRequest(dbCurrentUser, dbTargetUser);
@@ -729,6 +737,7 @@ public class ProfileController {
                 // Create Notification
                 Notification notif = new Notification(dbTargetUser, dbCurrentUser,
                         "@" + dbCurrentUser.getUsername() + " wants to follow you!", "FOLLOW_REQUEST");
+                try { emailService.sendNewFollowerNotification(dbTargetUser, dbCurrentUser, true); } catch (Exception ignored) {}
                 notificationRepository.save(notif);
             }
         }
@@ -777,6 +786,7 @@ public class ProfileController {
                 // Also create a follow-back notification
                 notificationRepository.save(new Notification(dbTargetUser, dbCurrentUser,
                         "@" + dbCurrentUser.getUsername() + " followed you back!", "FOLLOW_ACCEPT"));
+                try { emailService.sendNewFollowerNotification(dbTargetUser, dbCurrentUser, false); } catch (Exception ignored) {}
 
                 return org.springframework.http.ResponseEntity.ok(java.util.Map.of("status", "FOLLOWING"));
             }
@@ -793,6 +803,7 @@ public class ProfileController {
                     userRepository.save(dbCurrentUser);
                     notificationRepository.save(new Notification(dbTargetUser, dbCurrentUser,
                             "@" + dbCurrentUser.getUsername() + " started following you!", "FOLLOW_ACCEPT"));
+                try { emailService.sendNewFollowerNotification(dbTargetUser, dbCurrentUser, false); } catch (Exception ignored) {}
                     return org.springframework.http.ResponseEntity.ok(java.util.Map.of("status", "FOLLOWING"));
                 } else {
                     // Follow request for private accounts
@@ -801,6 +812,7 @@ public class ProfileController {
 
                     Notification notif = new Notification(dbTargetUser, dbCurrentUser,
                             "@" + dbCurrentUser.getUsername() + " wants to follow you!", "FOLLOW_REQUEST");
+                try { emailService.sendNewFollowerNotification(dbTargetUser, dbCurrentUser, true); } catch (Exception ignored) {}
                     notificationRepository.save(notif);
                     return org.springframework.http.ResponseEntity.ok(java.util.Map.of("status", "REQUESTED"));
                 }
@@ -976,6 +988,7 @@ public class ProfileController {
 
                     notificationRepository.save(new Notification(sender, receiver,
                             "@" + receiver.getUsername() + " accepted your follow request!", "FOLLOW_ACCEPT"));
+                    try { emailService.sendFollowAcceptedNotification(sender, receiver); } catch (Exception ignored) {}
 
                     final Long senderId = sender.getId();
                     boolean followsBack = receiver.getFollowing().stream().anyMatch(u -> u.getId().equals(senderId));
@@ -1006,6 +1019,7 @@ public class ProfileController {
 
             notificationRepository.save(new Notification(sender, receiver,
                     "@" + receiver.getUsername() + " accepted your follow request!", "FOLLOW_ACCEPT"));
+                    try { emailService.sendFollowAcceptedNotification(sender, receiver); } catch (Exception ignored) {}
 
             final Long senderId = sender.getId();
             boolean followsBack = receiver.getFollowing().stream().anyMatch(u -> u.getId().equals(senderId));
