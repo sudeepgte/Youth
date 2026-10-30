@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 @Controller
 @RequestMapping(value = "/battles")
 public class BattleController {
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(BattleController.class);
 
     @Autowired private BattleLiveWebSocketController battleLiveWebSocketController;
 
@@ -502,6 +503,44 @@ public class BattleController {
         } catch (Exception ex) {
             return Map.of("success", false, "error", ex.getMessage());
         }
+    }
+
+    
+    private String createRazorpayOrder(long amountInPaise, String receipt) {
+        if (razorpayKeyId == null || razorpayKeyId.isBlank() || razorpayKeySecret == null || razorpayKeySecret.isBlank()) {
+            return null;
+        }
+        try {
+            String jsonPayload = String.format("{\"amount\":%d,\"currency\":\"INR\",\"receipt\":\"%s\"}", amountInPaise, receipt);
+            String auth = razorpayKeyId + ":" + razorpayKeySecret;
+            String encodedAuth = java.util.Base64.getEncoder().encodeToString(auth.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+
+            java.net.http.HttpClient client = java.net.http.HttpClient.newBuilder()
+                    .connectTimeout(java.time.Duration.ofSeconds(6))
+                    .build();
+            java.net.http.HttpRequest request = java.net.http.HttpRequest.newBuilder()
+                    .uri(java.net.URI.create("https://api.razorpay.com/v1/orders"))
+                    .header("Authorization", "Basic " + encodedAuth)
+                    .header("Content-Type", "application/json")
+                    .timeout(java.time.Duration.ofSeconds(8))
+                    .POST(java.net.http.HttpRequest.BodyPublishers.ofString(jsonPayload))
+                    .build();
+
+            java.net.http.HttpResponse<String> response = client.send(request, java.net.http.HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() == 200 || response.statusCode() == 201) {
+                com.fasterxml.jackson.databind.JsonNode rootNode = new com.fasterxml.jackson.databind.ObjectMapper().readTree(response.body());
+                if (rootNode.has("id")) {
+                    String orderId = rootNode.get("id").asText();
+                    logger.info("Successfully created Razorpay live order: {} for {} paise", orderId, amountInPaise);
+                    return orderId;
+                }
+            } else {
+                logger.warn("Razorpay order creation status {}: {}", response.statusCode(), response.body());
+            }
+        } catch (Exception e) {
+            logger.warn("Razorpay online order creation failed: {}", e.getMessage());
+        }
+        return null;
     }
 
     private boolean verifyRazorpaySignature(String orderId, String paymentId, String signature, String secret) {
