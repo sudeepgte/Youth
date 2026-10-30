@@ -22,6 +22,8 @@ public class SecretRewardService {
 
     @Autowired
     private SecretRewardPartnerRepository partnerRepository;
+    @Autowired
+    private EmailService emailService;
 
     @Autowired
     private UserRewardRepository userRewardRepository;
@@ -66,6 +68,7 @@ public class SecretRewardService {
         userReward.setRewardCode(generateUniqueRewardCode());
 
         userRewardRepository.save(userReward);
+        try { emailService.sendRewardClaimedEmail(reg.getUser(), (selectedPartner.getRewardName() != null ? selectedPartner.getRewardName() : "Partner Voucher"), userReward.getRewardCode()); } catch (Exception ignored) {}
     }
 
     private String generateUniqueRewardCode() {

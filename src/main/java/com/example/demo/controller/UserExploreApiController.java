@@ -19,6 +19,8 @@ public class UserExploreApiController {
 
     @Autowired
     private com.example.demo.repository.PostRepository postRepository;
+    @Autowired
+    private com.example.demo.service.EmailService emailService;
 
     @RequestMapping(value = "/explore", method = RequestMethod.GET)
     public List<Map<String, Object>> exploreUsers(
@@ -86,6 +88,9 @@ public class UserExploreApiController {
 
         boolean isFollowing = currentUser != null && currentUser.getFollowing().contains(targetUser);
         boolean isOwnProfile = currentUser != null && currentUser.getId().equals(targetUser.getId());
+        if (currentUser != null && !isOwnProfile) {
+            emailService.sendProfileSearchNotification(targetUser, currentUser);
+        }
         boolean isPrivateAndNotFollowing = targetUser.isPrivateAccount() && !isOwnProfile && !isFollowing;
 
         Map<String, Object> response = new LinkedHashMap<>();

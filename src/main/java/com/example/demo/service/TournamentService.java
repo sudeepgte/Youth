@@ -18,6 +18,7 @@ public class TournamentService {
     @Autowired private TournamentBattleRepository tournamentBattleRepository;
     @Autowired private BattleRepository battleRepository;
     @Autowired private BattleParticipantRepository battleParticipantRepository;
+    @Autowired private EmailService emailService;
 
     @Transactional
     public Tournament createTournament(Tournament tournament) {
@@ -174,6 +175,12 @@ public class TournamentService {
         bp2.setBattle(battle);
         bp2.setUser(tb.getPlayer2());
         battleParticipantRepository.save(bp2);
+
+        if (tb.getPlayer1() != null && tb.getPlayer2() != null) {
+            String roundName = tb.getRound() != null ? tb.getRound().getName() : "Round";
+            emailService.sendTournamentMatchReadyNotification(tb.getPlayer1(), tb.getTournament().getName(), tb.getPlayer2().getUsername(), roundName);
+            emailService.sendTournamentMatchReadyNotification(tb.getPlayer2(), tb.getTournament().getName(), tb.getPlayer1().getUsername(), roundName);
+        }
     }
     
     private void advanceToNext(User winner, TournamentBattle nextTb, boolean isPlayer1) {
@@ -226,6 +233,7 @@ public class TournamentService {
             Tournament t = tb.getTournament();
             t.setWinner(winner);
             t.setStatus("COMPLETED");
+            emailService.sendTournamentWinnerNotification(winner, t.getName(), "1st Place - Champion", "Prize Pool");
 
             // AUTOMATED REWARDS
             if (t.getEntryFee() != null && t.getEntryFee() > 0) {

@@ -72,6 +72,8 @@ public class EventController {
 
     @Autowired
     private EventSeatTierRepository eventSeatTierRepository;
+    @Autowired
+    private com.example.demo.service.EmailService emailService;
 
     @Autowired
     private VoteRepository voteRepository;
@@ -1295,6 +1297,10 @@ public class EventController {
             bikeRidingDetailsRepository.save(bd);
         }
 
+        try {
+            java.util.List<User> allUsers = userRepository.findAll();
+            emailService.sendEventCreatedBroadcast(event, allUsers);
+        } catch (Exception ignored) {}
         return "redirect:/events/admin/manage?created=true";
     }
 
@@ -1726,6 +1732,7 @@ public class EventController {
         eventRegistrationRepository.save(reg);
         
         secretRewardService.assignReward(reg);
+        try { emailService.sendEventCheckInNotification(reg); } catch (Exception ignored) {}
         rewardService.awardAttendance(reg.getUser()); // award coins for attending 🪙
         return "redirect:/events/admin/" + id + "/attendance?marked=" + ticketId;
     }
@@ -1745,6 +1752,7 @@ public class EventController {
                     reg.setAttendanceMarked(true);
                     reg.setAttendedAt(LocalDateTime.now());
                     secretRewardService.assignReward(reg);
+        try { emailService.sendEventCheckInNotification(reg); } catch (Exception ignored) {}
                     rewardService.awardAttendance(reg.getUser()); // Coins for attending 🪙
                 }
             }
@@ -1891,6 +1899,7 @@ public class EventController {
         eventRegistrationRepository.save(reg);
         eventRepository.save(event); // Save the incremented tier count
         rewardService.awardRegistration(user, reg.getTicketId()); // Award coins for registering 🍪 with ticket-level deduplication
+        try { emailService.sendTicketConfirmation(reg); } catch (Exception ignored) {}
         return "redirect:/events/booking-success?ticketId=" + reg.getTicketId();
     }
 
