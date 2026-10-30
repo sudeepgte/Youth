@@ -919,7 +919,7 @@
             <a th:href="@{/dashboard}" class="active"><i class="fas fa-home"></i></a>
             <a th:href="@{/messages}" style="position: relative;">
                 <i class="fas fa-comment-dots"></i>
-                <span th:if="${unreadMessageCount != null && unreadMessageCount > 0}" id="msg-badge"
+                <span th:if="${unreadMessageCount != null and unreadMessageCount > 0}" id="msg-badge"
                     style="position: absolute; top: -5px; right: -5px; background: red; color: white; border-radius: 50%; padding: 2px 5px; font-size: 10px; font-weight: bold;"
                     th:text="${unreadMessageCount}"></span>
             </a>
@@ -1060,7 +1060,7 @@
                                 <div style="font-size:11.5px; color:var(--text-secondary); display:flex; align-items:center; gap:8px;">
                                     <span><i class="fas fa-users" style="color:#3b82f6;"></i> <span th:text="${(t.participants != null ? t.participants.size() : 0) + ' / ' + t.maxParticipants}">0/16</span></span>
                                     <span>&middot;</span>
-                                    <span th:text="${t.entryFee != null && t.entryFee > 0 ? '₹' + t.entryFee : 'Free Entry'}">Free</span>
+                                    <span th:text="${t.entryFee != null and t.entryFee > 0 ? '₹' + t.entryFee : 'Free Entry'}">Free</span>
                                 </div>
                             </a>
                         </div>
@@ -1097,11 +1097,11 @@
                                 </div>
                             </div>
                             <div th:id="'follow-wrapper-mobile-' + ${suggestedUser.id}">
-                                <button th:if="${requestedUserIds != null && requestedUserIds.contains(suggestedUser.id)}"
+                                <button th:if="${requestedUserIds != null and requestedUserIds.contains(suggestedUser.id)}"
                                     class="follow-pill-btn requested" disabled>
                                     <i class="fas fa-check"></i> Requested
                                 </button>
-                                <button th:if="${requestedUserIds == null || !requestedUserIds.contains(suggestedUser.id)}"
+                                <button th:if="${requestedUserIds == null or !requestedUserIds.contains(suggestedUser.id)}"
                                     th:onclick="'followUserAjax(' + ${suggestedUser.id} + ', this)'"
                                     class="follow-pill-btn">
                                     <i class="fas fa-plus"></i> Follow
@@ -1226,7 +1226,7 @@
 
                 <div th:if="${activeCategory != null}" class="filter-chip">
                     <span th:text="${activeCategory}">TRAVEL</span>
-                    <a th:href="@{/dashboard}" title="Clear filter">Ã&mdash;</a>
+                    <a th:href="@{/dashboard}" title="Clear filter">&times;</a>
                 </div>
             </div>
 
@@ -1284,7 +1284,7 @@
                                 </div>
                                 <div style="font-size: 12px; color: var(--text-secondary); display: flex; align-items: center; gap: 6px;">
                                     <i class="fas fa-coins" style="color: #f59e0b;"></i>
-                                    <span>Fee: <strong style="color: var(--text-primary);" th:text="${t.entryFee != null && t.entryFee > 0 ? '₹' + t.entryFee : 'FREE'}">FREE</strong></span>
+                                    <span>Fee: <strong style="color: var(--text-primary);" th:text="${t.entryFee != null and t.entryFee > 0 ? '₹' + t.entryFee : 'FREE'}">FREE</strong></span>
                                 </div>
                                 <div th:if="${t.type != null}" style="font-size: 12px; color: var(--text-secondary); display: flex; align-items: center; gap: 6px;">
                                     <i class="fas fa-sitemap" style="color: #8b5cf6;"></i>
@@ -1610,7 +1610,7 @@
                             <div style="font-size:11.5px; color:var(--text-secondary); display:flex; align-items:center; gap:8px;">
                                 <span><i class="fas fa-users" style="color:#3b82f6;"></i> <span th:text="${(t.participants != null ? t.participants.size() : 0) + ' / ' + t.maxParticipants}">0/16</span></span>
                                 <span>&middot;</span>
-                                <span th:text="${t.entryFee != null && t.entryFee > 0 ? '₹' + t.entryFee : 'Free Entry'}">Free</span>
+                                <span th:text="${t.entryFee != null and t.entryFee > 0 ? '₹' + t.entryFee : 'Free Entry'}">Free</span>
                             </div>
                         </a>
                     </div>
@@ -1682,11 +1682,11 @@
                             </div>
                         </div>
                         <div th:id="'follow-wrapper-' + ${suggestedUser.id}">
-                            <button th:if="${requestedUserIds != null && requestedUserIds.contains(suggestedUser.id)}"
+                            <button th:if="${requestedUserIds != null and requestedUserIds.contains(suggestedUser.id)}"
                                 class="follow-pill-btn requested" disabled>
                                 <i class="fas fa-check"></i> Requested
                             </button>
-                            <button th:if="${requestedUserIds == null || !requestedUserIds.contains(suggestedUser.id)}"
+                            <button th:if="${requestedUserIds == null or !requestedUserIds.contains(suggestedUser.id)}"
                                 th:onclick="'followUserAjax(' + ${suggestedUser.id} + ', this)'"
                                 class="follow-pill-btn">
                                 <i class="fas fa-plus"></i> Follow

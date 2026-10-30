@@ -495,6 +495,13 @@ public class MainController {
         model.addAttribute("trendingEvents", trendingEvents);
 
         List<Tournament> allTournaments = tournamentRepository.findAllByOrderByIdDesc();
+        if (allTournaments != null) {
+            for (Tournament t : allTournaments) {
+                if (t.getParticipants() != null) {
+                    t.getParticipants().size();
+                }
+            }
+        }
         model.addAttribute("tournaments", allTournaments);
 
         return "dashboard";

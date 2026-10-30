@@ -286,13 +286,29 @@ public class EventController {
         ).map(Event::getId).distinct().collect(Collectors.toList());
 
         java.util.Map<Long, Long> bookingCounts = new java.util.HashMap<>();
+        java.util.Set<Long> fullEventIds = new java.util.HashSet<>();
         if (!allEventIds.isEmpty()) {
             java.util.List<Object[]> counts = eventRegistrationRepository.countActiveBookingsForEvents(allEventIds);
             for (Object[] row : counts) {
                 bookingCounts.put((Long) row[0], (Long) row[1]);
             }
+            List<Event> allEvts = eventRepository.findAllById(allEventIds);
+            for (Event ev : allEvts) {
+                if (ev.getTotalRows() != null && ev.getTotalRows() > 0) {
+                    List<EventSeat> evSeats = eventSeatRepository.findByEvent(ev);
+                    if (evSeats != null && !evSeats.isEmpty() && evSeats.stream().noneMatch(s -> "AVAILABLE".equalsIgnoreCase(s.getStatus()))) {
+                        fullEventIds.add(ev.getId());
+                    }
+                } else if (ev.getMaxParticipants() != null && ev.getMaxParticipants() > 0) {
+                    Long booked = bookingCounts.getOrDefault(ev.getId(), 0L);
+                    if (booked >= ev.getMaxParticipants()) {
+                        fullEventIds.add(ev.getId());
+                    }
+                }
+            }
         }
         model.addAttribute("bookingCounts", bookingCounts);
+        model.addAttribute("fullEventIds", fullEventIds);
 
         return "events";
     }
@@ -528,7 +544,29 @@ public class EventController {
         }
 
         List<EventSeat> seats = event.getSeats();
-        seats.sort(Comparator.comparing(EventSeat::getRowLabel).thenComparing(EventSeat::getSeatNumber));
+        if ((seats == null || seats.isEmpty()) && event.getTotalRows() != null && event.getTotalRows() > 0 && event.getSeatsPerRow() != null && event.getSeatsPerRow() > 0) {
+            generateSeatGrid(event);
+            eventRepository.save(event);
+            seats = event.getSeats();
+        }
+        if (seats != null) {
+            seats.sort(Comparator.comparing(EventSeat::getRowLabel).thenComparing(EventSeat::getSeatNumber));
+        }
+
+        boolean isSeatsFull = false;
+        if (event.getTotalRows() != null && event.getTotalRows() > 0) {
+            long totalSeats = (seats != null) ? seats.size() : 0;
+            long availableSeats = (seats != null) ? seats.stream().filter(s -> "AVAILABLE".equalsIgnoreCase(s.getStatus())).count() : 0;
+            if (totalSeats > 0 && availableSeats == 0) {
+                isSeatsFull = true;
+            }
+            spotsLeft = (int) availableSeats;
+        } else {
+            if (totalCapacity != null && totalCapacity > 0 && spotsLeft <= 0) {
+                isSeatsFull = true;
+            }
+        }
+        model.addAttribute("isSeatsFull", isSeatsFull);
 
         // Fetch category-specific details based on the event's category
         if ("House Party".equalsIgnoreCase(event.getCategory())) {
@@ -621,6 +659,17 @@ public class EventController {
             return response;
         }
 
+        // Check if all seats are full
+        List<EventSeat> allSeats = eventSeatRepository.findByEvent(event);
+        if (allSeats != null && !allSeats.isEmpty()) {
+            long availCount = allSeats.stream().filter(s -> "AVAILABLE".equalsIgnoreCase(s.getStatus())).count();
+            if (availCount == 0) {
+                response.put("success", false);
+                response.put("message", "Seats are full! No more bookings available for this event.");
+                return response;
+            }
+        }
+
         List<EventSeat> seatsToHold = eventSeatRepository.findAllById(seatIds);
         LocalDateTime now = LocalDateTime.now();
 
@@ -629,7 +678,7 @@ public class EventController {
             boolean isHoldExpired = "HOLD".equals(seat.getStatus()) && seat.getHoldExpiresAt() != null && seat.getHoldExpiresAt().isBefore(now);
             if (!"AVAILABLE".equals(seat.getStatus()) && !isHoldExpired) {
                 response.put("success", false);
-                response.put("message", "Seat " + seat.getSeatIdentifier() + " is currently unavailable.");
+                response.put("message", "Seat " + seat.getSeatIdentifier() + " is already booked or full.");
                 return response;
             }
         }
@@ -683,6 +732,19 @@ public class EventController {
         Event event = eventRepository.findById(id).orElse(null);
         if (event == null || isEventCompletedOrCancelled(event)) return "redirect:/events/" + id + "?error=event_completed";
 
+        // Check if all seats or capacity are full
+        if (event.getTotalRows() != null && event.getTotalRows() > 0) {
+            List<EventSeat> allSeats = eventSeatRepository.findByEvent(event);
+            if (allSeats != null && !allSeats.isEmpty() && allSeats.stream().noneMatch(s -> "AVAILABLE".equalsIgnoreCase(s.getStatus()))) {
+                return "redirect:/events/" + id + "?error=seats_full";
+            }
+        } else if (event.getMaxParticipants() != null && event.getMaxParticipants() > 0) {
+            long currentCount = eventRegistrationRepository.sumQuantityByEvent(event);
+            if (currentCount + quantity > event.getMaxParticipants()) {
+                return "redirect:/events/" + id + "?error=seats_full";
+            }
+        }
+
         double seatTotal = 0.0;
         int vipCount = 0;
         int regularCount = 0;
@@ -693,6 +755,9 @@ public class EventController {
             quantity = selectedSeatIds.size();
             List<EventSeat> chosenSeats = eventSeatRepository.findAllById(selectedSeatIds);
             for (EventSeat s : chosenSeats) {
+                if ("BOOKED".equalsIgnoreCase(s.getStatus())) {
+                    return "redirect:/events/" + id + "?error=seats_full";
+                }
                 double sPrice = (s.getPrice() != null && s.getPrice() > 0) ? s.getPrice() :
                         ("VIP".equalsIgnoreCase(s.getSeatType()) ? (event.getVipPrice() != null ? event.getVipPrice() : 0.0)
                                 : (event.getRegularPrice() != null ? event.getRegularPrice() : parsePrice(event.getPrice())));
