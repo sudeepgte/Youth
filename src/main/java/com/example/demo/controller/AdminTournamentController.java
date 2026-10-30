@@ -36,7 +36,7 @@ public class AdminTournamentController {
     @GetMapping
     public String listTournaments(Model model, HttpSession session) {
         if (!isAdmin(session)) return "redirect:/login";
-        List<Tournament> tournaments = tournamentRepository.findAllByOrderByTournamentStartDesc();
+        List<Tournament> tournaments = tournamentRepository.findAllByOrderByIdDesc();
         model.addAttribute("tournaments", tournaments);
         return "admin-tournaments";
     }
@@ -52,9 +52,16 @@ public class AdminTournamentController {
     }
 
     @PostMapping("/create")
-    public String createTournament(@ModelAttribute Tournament tournament, HttpSession session) {
+    public String createTournament(@ModelAttribute Tournament tournament, 
+                                   @RequestParam(required = false) List<Long> judgeIds,
+                                   HttpSession session) {
         if (!isAdmin(session)) return "redirect:/login";
-        tournament.setStatus("DRAFT");
+        if (judgeIds != null && !judgeIds.isEmpty()) {
+            tournament.setJudges(userRepository.findAllById(judgeIds));
+        }
+        if (tournament.getStatus() == null || tournament.getStatus().trim().isEmpty() || "DRAFT".equalsIgnoreCase(tournament.getStatus())) {
+            tournament.setStatus("REGISTRATION_OPEN");
+        }
         tournamentService.createTournament(tournament);
         return "redirect:/admin/tournaments";
     }

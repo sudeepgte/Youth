@@ -1063,10 +1063,11 @@ public class EventController {
             }
         }
 
-        if ("Free".equals(entryFeeType)) {
+        String cleanPrice = price != null ? price.trim().replace("\u20b9", "").replace("₹", "").trim() : "";
+        if ("Free".equalsIgnoreCase(entryFeeType) || cleanPrice.isEmpty() || "0".equals(cleanPrice)) {
             event.setPrice("Free");
         } else {
-            event.setPrice(price != null && !price.isBlank() ? "\u20b9" + price : "Paid");
+            event.setPrice("\u20b9" + cleanPrice);
         }
 
         try {
@@ -1402,10 +1403,11 @@ public class EventController {
             event.setLongitude(longitude);
         }
 
-        if ("Free".equals(entryFeeType)) {
+        String cleanPrice = price != null ? price.trim().replace("\u20b9", "").replace("₹", "").trim() : "";
+        if ("Free".equalsIgnoreCase(entryFeeType) || cleanPrice.isEmpty() || "0".equals(cleanPrice)) {
             event.setPrice("Free");
         } else {
-            event.setPrice(price != null && !price.isBlank() ? "\u20b9" + price : "Paid");
+            event.setPrice("\u20b9" + cleanPrice);
         }
 
         if ("VOTING".equals(status)) {

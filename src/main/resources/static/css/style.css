@@ -2122,27 +2122,35 @@ input[type="file"].form-input::file-selector-button:hover {
 
 .events-page .events-cards {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 18px;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 265px));
+    gap: 20px;
     margin-bottom: 36px;
+    justify-content: flex-start;
 }
 
 .events-page .event-card {
-    display: block;
-    border-radius: 18px;
-    border: 1px solid var(--glass-border);
-    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    flex-direction: column;
+    border-radius: 14px;
+    border: 1px solid rgba(226, 232, 240, 0.95);
+    background: #ffffff;
     overflow: hidden;
-    box-shadow: 0 10px 24px rgba(17, 24, 39, 0.08);
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+    text-decoration: none;
+    max-width: 275px;
+    width: 100%;
 }
 
 .events-page .event-card:hover {
-    border-color: rgba(147, 51, 234, 0.25);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(37, 99, 235, 0.12);
+    border-color: rgba(59, 130, 246, 0.4);
 }
 
 .events-page .event-card-media {
     width: 100%;
-    aspect-ratio: 16 / 9;
+    height: 142px;
     position: relative;
     overflow: hidden;
     background: #0f172a;
@@ -2154,86 +2162,188 @@ input[type="file"].form-input::file-selector-button:hover {
     object-fit: cover;
     object-position: center;
     display: block;
-    transition: transform 420ms ease;
+    transition: transform 0.4s ease;
 }
 
 .events-page .event-card:hover .event-card-media img {
     transform: scale(1.06);
 }
 
-.events-page .event-card-top,
-.events-page .event-card-bottom {
+.events-page .event-card-top {
     position: absolute;
-    left: 12px;
-    right: 12px;
+    top: 8px;
+    left: 8px;
+    right: 8px;
     display: flex;
     justify-content: space-between;
+    align-items: center;
+    gap: 6px;
     pointer-events: none;
-}
-
-.events-page .event-card-top {
-    top: 12px;
+    z-index: 2;
 }
 
 .events-page .event-card-bottom {
-    bottom: 12px;
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    display: flex;
+    justify-content: flex-end;
+    pointer-events: none;
+    z-index: 2;
 }
 
 .events-page .event-pill {
     pointer-events: none;
-    background: rgba(255, 255, 255, 0.82);
+    background: rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(4px);
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .events-page .event-pill-price {
-    background: rgba(147, 51, 234, 0.14);
-    border-color: rgba(147, 51, 234, 0.18);
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.35);
+}
+
+.events-page .countdown-timer {
+    background: rgba(220, 38, 38, 0.88) !important;
+    backdrop-filter: blur(4px);
+    color: #ffffff !important;
+    font-size: 9.5px !important;
+    font-weight: 700 !important;
+    padding: 3px 7px !important;
+    border-radius: 6px !important;
+    border: 1px solid rgba(255, 255, 255, 0.25) !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    letter-spacing: 0.2px;
 }
 
 .events-page .event-card-body {
-    padding: 16px 16px 14px;
+    padding: 12px 14px 14px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.events-page .event-date {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #2563eb;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.events-page .event-date i {
+    font-size: 10.5px;
+    color: #3b82f6;
 }
 
 .events-page .event-title {
-    font-size: 18px;
-    font-weight: 900;
-    line-height: 1.25;
-    margin-bottom: 10px;
-    color: var(--text-primary);
+    font-size: 14.5px;
+    font-weight: 700;
+    line-height: 1.35;
+    margin-bottom: 6px;
+    color: #0f172a;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    height: 39px;
 }
 
 .events-page .event-venue {
     display: flex;
     align-items: center;
-    gap: 8px;
-    color: var(--text-secondary);
-    font-size: 13px;
-    margin-bottom: 14px;
+    gap: 6px;
+    color: #64748b;
+    font-size: 11.5px;
+    margin-bottom: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .events-page .event-venue i {
-    color: var(--purple);
+    color: #94a3b8;
+    font-size: 11px;
+    flex-shrink: 0;
+}
+
+.events-page .event-venue span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .events-page .event-card-footer {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
-    padding-top: 12px;
-    border-top: 1px solid rgba(55, 65, 81, 0.08);
+    gap: 8px;
+    padding-top: 10px;
+    margin-top: auto;
+    border-top: 1px solid #f1f5f9;
 }
 
 .events-page .attendees {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    color: var(--text-secondary);
-    font-size: 12px;
-    opacity: 0.9;
+    gap: 5px;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.events-page .attendees i {
+    color: #94a3b8;
+    font-size: 11px;
+}
+
+.events-page .event-card-footer .btn {
+    padding: 5px 12px !important;
+    font-size: 11.5px !important;
+    font-weight: 700 !important;
+    border-radius: 6px !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    text-decoration: none;
+    box-shadow: none !important;
+}
+
+.events-page .event-card-footer .btn-primary {
+    background: linear-gradient(135deg, #2563eb, #3b82f6) !important;
+    color: #ffffff !important;
+    border: none !important;
+}
+
+.events-page .event-card-footer .btn-primary:hover {
+    background: linear-gradient(135deg, #1d4ed8, #2563eb) !important;
+}
+
+.events-page .event-card-footer .btn-secondary {
+    background: #64748b !important;
+    color: #ffffff !important;
+    border: none !important;
 }
 
 @media (max-width: 900px) {

@@ -40,7 +40,7 @@ public class TournamentController {
         User user = getUserFromSession(session);
         if (user == null) return "redirect:/login";
 
-        List<Tournament> tournaments = tournamentRepository.findAllByOrderByTournamentStartDesc();
+        List<Tournament> tournaments = tournamentRepository.findAllByOrderByIdDesc();
         model.addAttribute("tournaments", tournaments);
         model.addAttribute("user", user);
         return "tournaments";
