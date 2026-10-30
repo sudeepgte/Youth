@@ -581,13 +581,112 @@
             background: linear-gradient(180deg, rgba(2, 132, 199, 0.12) 0%, rgba(2, 132, 199, 0.02) 100%);
             border: 1px dashed rgba(2, 132, 199, 0.35);
             border-radius: 8px;
-            padding: 8px;
-            margin: 16px 0;
+            padding: 10px;
+            margin: 16px 0 12px;
             font-size: 12px;
-            font-weight: 700;
+            font-weight: 800;
             letter-spacing: 2px;
             text-transform: uppercase;
             color: #0284c7;
+        }
+
+        .admin-seat-legend {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin: 12px 0 16px;
+            flex-wrap: wrap;
+        }
+
+        .admin-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12.5px;
+            color: #475569;
+            font-weight: 600;
+        }
+
+        .admin-legend-box {
+            width: 18px;
+            height: 18px;
+            border-radius: 6px;
+            display: inline-block;
+        }
+
+        .admin-legend-box.vip { background: #fef08a; border: 1.5px solid #eab308; }
+        .admin-legend-box.regular { background: #ffffff; border: 1.5px solid #cbd5e1; }
+        .admin-legend-box.booked { background: #fee2e2; border: 1.5px solid #ef4444; }
+
+        .admin-seat-map-scroll {
+            overflow-x: auto;
+            padding: 20px 16px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .admin-seat-map-rows {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-width: max-content;
+        }
+
+        .admin-seat-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .admin-row-label {
+            width: 28px;
+            font-weight: 800;
+            font-size: 13px;
+            color: #64748b;
+            text-align: center;
+        }
+
+        .admin-seat-cell {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            position: relative;
+        }
+
+        .admin-seat-cell:hover {
+            transform: scale(1.15);
+            z-index: 5;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .admin-seat-cell.available.regular {
+            background: #ffffff;
+            border: 1.5px solid #cbd5e1;
+            color: #334155;
+        }
+
+        .admin-seat-cell.available.vip {
+            background: #fef08a;
+            border: 1.5px solid #eab308;
+            color: #854d0e;
+        }
+
+        .admin-seat-cell.booked {
+            background: #fee2e2;
+            border: 1.5px solid #ef4444;
+            color: #dc2626;
         }
 
         /* Attendees Table */
@@ -742,8 +841,19 @@
                                 <i th:class="${event.eventMode == 'Online' ? 'fas fa-video' : 'fas fa-map-marker-alt'}"></i>
                                 <span th:text="${event.eventMode != null ? event.eventMode : 'Offline'}">Offline</span>
                             </span>
-                            <span class="tag-pill tag-fee"
-                                  th:text="${event.price != null and !event.price.isEmpty() ? #strings.replace(event.price, '$', '₹') : 'Free'}">Free</span>
+                            <th:block th:if="${event.totalRows != null and event.totalRows > 0}">
+                                <span class="tag-pill tag-fee" th:if="${event.vipPrice != null and event.vipPrice > 0 and event.regularPrice != null and event.regularPrice > 0}"
+                                      th:text="'VIP ₹' + ${#numbers.formatDecimal(event.vipPrice, 1, 0)} + ' • Normal ₹' + ${#numbers.formatDecimal(event.regularPrice, 1, 0)}">VIP ₹500 • Normal ₹200</span>
+                                <span class="tag-pill tag-fee" th:if="${(event.vipPrice == null or event.vipPrice == 0) and event.regularPrice != null and event.regularPrice > 0}"
+                                      th:text="'₹' + ${#numbers.formatDecimal(event.regularPrice, 1, 0)}">₹200</span>
+                                <span class="tag-pill tag-fee" th:if="${event.vipPrice != null and event.vipPrice > 0 and (event.regularPrice == null or event.regularPrice == 0)}"
+                                      th:text="'VIP ₹' + ${#numbers.formatDecimal(event.vipPrice, 1, 0)}">VIP ₹500</span>
+                                <span class="tag-pill tag-fee" th:if="${(event.vipPrice == null or event.vipPrice == 0) and (event.regularPrice == null or event.regularPrice == 0)}">Free</span>
+                            </th:block>
+                            <th:block th:unless="${event.totalRows != null and event.totalRows > 0}">
+                                <span class="tag-pill tag-fee"
+                                      th:text="${event.price != null and !event.price.isEmpty() and event.price != 'Free' and event.price != '0' ? #strings.replace(event.price, '$', '₹') : 'Free'}">Free</span>
+                            </th:block>
                             <span class="tag-pill tag-id" th:text="'ID: #' + ${event.id}">ID: #11</span>
                         </div>
 
@@ -863,7 +973,7 @@
                 <div class="specs-grid-4col">
                     <div class="spec-box-unit">
                         <div class="spec-box-key"><i class="fas fa-arrows-alt-v"></i> Total Seating Rows</div>
-                        <div class="spec-box-val" th:text="${event.totalRows} + ' Rows (A-' + ${#strings.substring('ABCDEFGHIJKLMNOPQRSTUVWXYZ', event.totalRows - 1, event.totalRows)} + ')'">10 Rows</div>
+                        <div class="spec-box-val" th:text="${event.totalRows} + ' Rows' + (${event.totalRows > 0 and event.totalRows <= 26} ? ' (A-' + ${#strings.substring('ABCDEFGHIJKLMNOPQRSTUVWXYZ', event.totalRows - 1, event.totalRows)} + ')' : '')">10 Rows</div>
                     </div>
 
                     <div class="spec-box-unit">
@@ -873,22 +983,56 @@
 
                     <div class="spec-box-unit">
                         <div class="spec-box-key"><i class="fas fa-calculator"></i> Total Grid Capacity</div>
-                        <div class="spec-box-val" th:text="${event.totalRows * (event.seatsPerRow != null ? event.seatsPerRow : 0)} + ' Total Seats'">200 Seats</div>
+                        <div class="spec-box-val" th:text="${(event.totalRows != null ? event.totalRows : 0) * (event.seatsPerRow != null ? event.seatsPerRow : 0)} + ' Total Seats'">200 Seats</div>
                     </div>
 
                     <div class="spec-box-unit" th:if="${event.vipSeatCount != null and event.vipSeatCount > 0}">
                         <div class="spec-box-key" style="color:#d97706;"><i class="fas fa-crown"></i> VIP Seats Allocation</div>
-                        <div class="spec-box-val" th:text="${event.vipSeatCount} + ' VIP Seats @ ₹' + ${event.vipPrice}">10 VIP @ ₹500</div>
+                        <div class="spec-box-val" th:text="${event.vipSeatCount} + ' VIP Seats @ ₹' + (${event.vipPrice != null ? #numbers.formatDecimal(event.vipPrice, 1, 0) : '0'})">10 VIP @ ₹500</div>
                     </div>
 
                     <div class="spec-box-unit" th:if="${event.regularPrice != null and event.regularPrice > 0}">
                         <div class="spec-box-key"><i class="fas fa-tag"></i> Regular Seat Price</div>
-                        <div class="spec-box-val" th:text="'₹' + ${event.regularPrice}">₹150</div>
+                        <div class="spec-box-val" th:text="'₹' + ${#numbers.formatDecimal(event.regularPrice, 1, 0)}">₹150</div>
                     </div>
+
+                    <div class="spec-box-unit">
+                        <div class="spec-box-key" style="color:#ef4444;"><i class="fas fa-user-check"></i> Booked Seats</div>
+                        <div class="spec-box-val" style="color:#dc2626;" th:text="${bookedSeatsCount != null ? bookedSeatsCount : 0} + ' Booked'">0 Booked</div>
+                    </div>
+
+                    <div class="spec-box-unit">
+                        <div class="spec-box-key" style="color:#10b981;"><i class="fas fa-chair"></i> Available Seats</div>
+                        <div class="spec-box-val" style="color:#059669;" th:text="${availableSeatsCount != null ? availableSeatsCount : 0} + ' Available'">0 Available</div>
+                    </div>
+                </div>
+
+                <!-- Seat Legend -->
+                <div class="admin-seat-legend">
+                    <div class="admin-legend-item"><span class="admin-legend-box vip"></span> VIP Available</div>
+                    <div class="admin-legend-item"><span class="admin-legend-box regular"></span> Normal Available</div>
+                    <div class="admin-legend-item"><span class="admin-legend-box booked"></span> Booked / Occupied</div>
                 </div>
 
                 <div class="seating-stage-banner">
                     <i class="fas fa-desktop"></i> SCREEN / STAGE THIS WAY
+                </div>
+
+                <!-- Interactive Visual Seat Grid -->
+                <div class="admin-seat-map-scroll" th:if="${seats != null and !#lists.isEmpty(seats)}">
+                    <div class="admin-seat-map-rows">
+                        <div th:each="rowLabel : ${#numbers.sequence(0, event.totalRows - 1)}" class="admin-seat-row">
+                            <span class="admin-row-label" th:text="${T(java.lang.Character).toString(65 + rowLabel)}">A</span>
+                            <th:block th:each="seat : ${seats}" th:if="${seat.rowLabel == T(java.lang.Character).toString(65 + rowLabel)}">
+                                <div class="admin-seat-cell"
+                                     th:classappend="${seat.status == 'BOOKED' ? 'booked' : ('available ' + #strings.toLowerCase(seat.seatType))}"
+                                     th:title="${seat.seatIdentifier} + ' - ' + ${seat.seatType} + ' (₹' + ${seat.price} + ') [' + ${seat.status} + ']' + (${seat.bookedByUser != null ? ' - Booked by: ' + seat.bookedByUser.username : ''})"
+                                     th:text="${seat.seatNumber}">
+                                    1
+                                </div>
+                            </th:block>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -1098,7 +1242,8 @@
                                 <th>Attendee Name</th>
                                 <th>Email</th>
                                 <th>Phone</th>
-                                <th>Seat / Tier</th>
+                                <th>Seats / Tier</th>
+                                <th>Amount Paid</th>
                                 <th>Registered Date</th>
                                 <th>Attendance</th>
                             </tr>
@@ -1110,14 +1255,22 @@
                                 <td>
                                     <div style="display:flex; align-items:center; gap:8px;">
                                         <i class="fas fa-user-circle" style="color:#64748b; font-size:16px;"></i>
-                                        <strong th:text="${reg.user != null ? reg.user.name : (reg.name != null ? reg.name : 'Guest Participant')}">John Doe</strong>
+                                        <strong th:text="${reg.fullName != null and !reg.fullName.isEmpty() ? reg.fullName : (reg.user != null ? reg.user.username : 'Guest Participant')}">John Doe</strong>
                                     </div>
                                 </td>
-                                <td th:text="${reg.user != null ? reg.user.email : (reg.email != null ? reg.email : '-')}">john@example.com</td>
+                                <td th:text="${reg.email != null and !reg.email.isEmpty() ? reg.email : (reg.user != null ? reg.user.email : '-')}">john@example.com</td>
                                 <td th:text="${reg.phone != null and !reg.phone.isEmpty() ? reg.phone : '-'}">+91 9876543210</td>
                                 <td>
-                                    <span class="tag-pill tag-mode"
-                                          th:text="${reg.seatNumber != null and !reg.seatNumber.isEmpty() ? reg.seatNumber : (reg.tierName != null ? reg.tierName : 'General')}">General</span>
+                                    <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                                        <span th:if="${regSeatMap != null and regSeatMap.containsKey(reg.id)}"
+                                              style="font-weight:700; color:#0284c7; font-size:12px; background:#e0f2fe; padding:2px 8px; border-radius:6px;"
+                                              th:text="'Seat ' + ${regSeatMap.get(reg.id)}">Seat A1</span>
+                                        <span class="tag-pill tag-mode"
+                                              th:text="${reg.selectedTier != null and !reg.selectedTier.isEmpty() ? reg.selectedTier : 'General'}">General</span>
+                                    </div>
+                                </td>
+                                <td style="font-weight:700; color:#0f172a;">
+                                    <span th:text="${reg.totalPrice != null and reg.totalPrice > 0 ? '₹' + #numbers.formatDecimal(reg.totalPrice, 1, 0) : 'Free'}">Free</span>
                                 </td>
                                 <td th:text="${reg.registrationDate != null ? #temporals.format(reg.registrationDate, 'dd MMM yyyy, hh:mm a') : '-'}">29 Oct 2026</td>
                                 <td>

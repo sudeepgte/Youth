@@ -286,6 +286,24 @@
                 <div class="venue-address" th:text="${event.venue != null and !event.venue.isEmpty() ? event.venue : 'Location to be announced'}">Venue Address</div>
             </div>
 
+            <!-- Seat Breakdown (Dynamic Tiered Details) -->
+            <div th:if="${seatLabels != null and !#strings.isEmpty(seatLabels)}" style="background: #ffffff; border: 1px solid var(--border-color); border-radius: 12px; padding: 14px; margin-bottom: 14px;">
+                <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: #64748b; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                    <i class="fas fa-chair" style="color: #2563eb;"></i> Selected Seats
+                </div>
+                <div style="font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; word-break: break-word;" th:text="${seatLabels}">A1 (VIP), B1 (Normal)</div>
+                <div style="font-size: 12.5px; color: var(--text-secondary); display: flex; flex-direction: column; gap: 5px; border-top: 1px dashed var(--border-color); padding-top: 8px;">
+                    <div th:if="${vipCount != null and vipCount > 0}" style="display: flex; justify-content: space-between; align-items: center;">
+                        <span><i class="fas fa-star" style="color: #f59e0b; font-size: 11px;"></i> VIP (<span th:text="${vipCount}">1</span> Seat<span th:if="${vipCount > 1}">s</span> @ &#8377;<span th:text="${#numbers.formatDecimal(vipPrice, 1, 0)}">500</span>)</span>
+                        <strong style="color: var(--text-primary);">&#8377;<span th:text="${#numbers.formatDecimal(vipCount * vipPrice, 1, 0)}">500</span></strong>
+                    </div>
+                    <div th:if="${regularCount != null and regularCount > 0}" style="display: flex; justify-content: space-between; align-items: center;">
+                        <span><i class="fas fa-ticket-alt" style="color: #3b82f6; font-size: 11px;"></i> Normal (<span th:text="${regularCount}">1</span> Seat<span th:if="${regularCount > 1}">s</span> @ &#8377;<span th:text="${#numbers.formatDecimal(regularPrice, 1, 0)}">200</span>)</span>
+                        <strong style="color: var(--text-primary);">&#8377;<span th:text="${#numbers.formatDecimal(regularCount * regularPrice, 1, 0)}">200</span></strong>
+                    </div>
+                </div>
+            </div>
+
             <div class="summary-row">
                 <span><i class="fas fa-ticket-alt" style="color: var(--primary-color); margin-right: 6px;"></i> Quantity</span>
                 <span class="qty-badge" th:text="${quantity != null ? quantity : 1} + ' Ticket' + (${quantity != null and quantity > 1} ? 's' : '')">1 Ticket</span>
