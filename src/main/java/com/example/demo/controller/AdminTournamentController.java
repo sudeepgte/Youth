@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpSession;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/admin/tournaments")
@@ -36,17 +37,28 @@ public class AdminTournamentController {
     @GetMapping
     public String listTournaments(Model model, HttpSession session) {
         if (!isAdmin(session)) return "redirect:/login";
-        List<Tournament> tournaments = tournamentRepository.findAllByOrderByIdDesc();
+        List<Tournament> tournaments = tournamentRepository.findAllByOrderByIdDesc().stream()
+                .filter(t -> !"ONLINE".equalsIgnoreCase(t.getMode()))
+                .collect(Collectors.toList());
         model.addAttribute("tournaments", tournaments);
         return "admin-tournaments";
     }
 
     @GetMapping("/create")
-    public String createTournamentForm(@RequestParam(required = false, defaultValue = "ONLINE") String mode, Model model, HttpSession session) {
+    public String createTournamentForm(@RequestParam(required = false, defaultValue = "OFFLINE") String mode, Model model, HttpSession session) {
         if (!isAdmin(session)) return "redirect:/login";
         Tournament t = new Tournament();
-        t.setMode(mode);
+        t.setMode("OFFLINE");
+        t.setBattleDurationMinutes(10);
+        t.setMaxParticipants(16);
+        t.setEntryFee(0.0);
+        t.setAdminCommissionPercent(0.0);
+        t.setPrize1Percent(60.0);
+        t.setPrize2Percent(30.0);
         model.addAttribute("tournament", t);
+
+        User adminUser = userRepository.findByUsername("admin");
+        model.addAttribute("adminUser", adminUser);
         model.addAttribute("users", userRepository.findAll());
         return "admin-tournament-create";
     }
@@ -56,9 +68,38 @@ public class AdminTournamentController {
                                    @RequestParam(required = false) List<Long> judgeIds,
                                    HttpSession session) {
         if (!isAdmin(session)) return "redirect:/login";
-        if (judgeIds != null && !judgeIds.isEmpty()) {
-            tournament.setJudges(userRepository.findAllById(judgeIds));
+        tournament.setMode("OFFLINE");
+
+        // Date validation: Registration start cannot be in the past (yesterday or older)
+        LocalDateTime now = LocalDateTime.now();
+        if (tournament.getRegistrationStart() != null && tournament.getRegistrationStart().isBefore(now.minusMinutes(10))) {
+            return "redirect:/admin/tournaments/create?error=date_past";
         }
+        if (tournament.getRegistrationStart() != null && tournament.getRegistrationEnd() != null && 
+            tournament.getRegistrationEnd().isBefore(tournament.getRegistrationStart())) {
+            return "redirect:/admin/tournaments/create?error=invalid_range";
+        }
+        if (tournament.getRegistrationEnd() != null && tournament.getTournamentStart() != null && 
+            tournament.getTournamentStart().isBefore(tournament.getRegistrationEnd())) {
+            return "redirect:/admin/tournaments/create?error=kickoff_before_reg";
+        }
+
+        // Judges: Admin is always the primary judge, plus any selected additional judges
+        User adminUser = userRepository.findByUsername("admin");
+        List<User> judgesList = new java.util.ArrayList<>();
+        if (adminUser != null) {
+            judgesList.add(adminUser);
+        }
+        if (judgeIds != null && !judgeIds.isEmpty()) {
+            List<User> selected = userRepository.findAllById(judgeIds);
+            for (User u : selected) {
+                if (adminUser == null || !u.getId().equals(adminUser.getId())) {
+                    judgesList.add(u);
+                }
+            }
+        }
+        tournament.setJudges(judgesList);
+
         if (tournament.getStatus() == null || tournament.getStatus().trim().isEmpty() || "DRAFT".equalsIgnoreCase(tournament.getStatus())) {
             tournament.setStatus("REGISTRATION_OPEN");
         }
@@ -101,49 +142,5 @@ public class AdminTournamentController {
             return "redirect:/admin/tournaments/" + id + "/manage?error=" + e.getMessage();
         }
         return "redirect:/admin/tournaments/" + id + "/manage";
-    }
-
-    @GetMapping("/{id}/checkin")
-    public String checkinTournament(@PathVariable Long id, Model model, HttpSession session) {
-        if (!isAdmin(session)) return "redirect:/login";
-        Tournament t = tournamentRepository.findById(id).orElse(null);
-        if (t == null) return "redirect:/admin/tournaments";
-
-        List<TournamentParticipant> participants = participantRepository.findByTournament(t);
-        model.addAttribute("tournament", t);
-        model.addAttribute("participants", participants);
-        
-        long checkedInCount = participants.stream().filter(TournamentParticipant::getCheckedIn).count();
-        model.addAttribute("checkedInCount", checkedInCount);
-        model.addAttribute("registeredCount", participants.size());
-        
-        return "admin-tournament-checkin";
-    }
-
-    @PostMapping("/{id}/checkin/scan")
-    public String scanCheckin(@PathVariable Long id, @RequestParam String qrPassCode, HttpSession session, org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
-        if (!isAdmin(session)) return "redirect:/login";
-        String finalCode = qrPassCode;
-        if (finalCode != null && finalCode.contains("/")) {
-            finalCode = finalCode.substring(finalCode.lastIndexOf("/") + 1);
-        }
-        Tournament t = tournamentRepository.findById(id).orElse(null);
-        if (t == null) return "redirect:/admin/tournaments";
-
-        List<TournamentParticipant> participants = participantRepository.findByTournament(t);
-        final String searchCode = finalCode;
-        TournamentParticipant match = participants.stream()
-            .filter(p -> p.getQrPassCode() != null && p.getQrPassCode().equals(searchCode))
-            .findFirst().orElse(null);
-            
-        if (match != null) {
-            match.setCheckedIn(true);
-            participantRepository.save(match);
-            redirectAttributes.addFlashAttribute("successMessage", "Successfully checked in: " + match.getUser().getUsername() + " (" + match.getParticipantNumber() + ")");
-        } else {
-            redirectAttributes.addFlashAttribute("errorMessage", "Invalid QR code or participant not found in this tournament.");
-        }
-        
-        return "redirect:/admin/tournaments/" + id + "/checkin";
     }
 }

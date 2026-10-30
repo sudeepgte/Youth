@@ -12,6 +12,7 @@ import java.util.List;
 public interface TournamentParticipantRepository extends JpaRepository<TournamentParticipant, Long> {
     List<TournamentParticipant> findByTournament(Tournament tournament);
     List<TournamentParticipant> findByTournamentOrderBySeedAsc(Tournament tournament);
+    List<TournamentParticipant> findByUser(User user);
     boolean existsByTournamentAndUser(Tournament tournament, User user);
     TournamentParticipant findByTournamentAndUser(Tournament tournament, User user);
     long countByTournament(Tournament tournament);

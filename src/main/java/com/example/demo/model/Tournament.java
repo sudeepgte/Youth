@@ -156,5 +156,37 @@ public class Tournament {
 
     public List<User> getJudges() { return judges; }
     public void setJudges(List<User> judges) { this.judges = judges; }
+
+    @jakarta.persistence.Transient
+    public Double getTotalPrizePool() {
+        double fee = entryFee != null ? entryFee : 0.0;
+        int count = maxParticipants != null && maxParticipants > 0 ? maxParticipants : (participants != null ? participants.size() : 0);
+        if (count <= 0) count = 2;
+        double total = fee * count;
+        double comm = adminCommissionPercent != null ? adminCommissionPercent : 0.0;
+        double pool = total * (1.0 - (comm / 100.0));
+        return Math.round(pool * 100.0) / 100.0;
+    }
+
+    @jakarta.persistence.Transient
+    public Double getPrize1Amount() {
+        double pool = getTotalPrizePool();
+        double pct = prize1Percent != null ? prize1Percent : 0.0;
+        return Math.round(pool * (pct / 100.0) * 100.0) / 100.0;
+    }
+
+    @jakarta.persistence.Transient
+    public Double getPrize2Amount() {
+        double pool = getTotalPrizePool();
+        double pct = prize2Percent != null ? prize2Percent : 0.0;
+        return Math.round(pool * (pct / 100.0) * 100.0) / 100.0;
+    }
+
+    @jakarta.persistence.Transient
+    public Double getPrize3Amount() {
+        double pool = getTotalPrizePool();
+        double pct = prize3Percent != null ? prize3Percent : 0.0;
+        return Math.round(pool * (pct / 100.0) * 100.0) / 100.0;
+    }
 }
 

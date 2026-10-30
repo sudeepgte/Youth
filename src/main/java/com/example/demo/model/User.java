@@ -191,6 +191,27 @@ public class User implements Serializable {
         this.profilePhotoUrl = profilePhotoUrl;
     }
 
+    public String getAvatarUrl() {
+        if (profilePhotoUrl != null && !profilePhotoUrl.trim().isEmpty()) {
+            if (profilePhotoUrl.startsWith("http://") || profilePhotoUrl.startsWith("https://") || profilePhotoUrl.startsWith("/")) {
+                return profilePhotoUrl;
+            }
+            return "/" + profilePhotoUrl;
+        }
+        if (profilePicture != null && !profilePicture.trim().isEmpty()) {
+            if (profilePicture.startsWith("http://") || profilePicture.startsWith("https://") || profilePicture.startsWith("/")) {
+                return profilePicture;
+            }
+            return "/" + profilePicture;
+        }
+        String name = (username != null && !username.trim().isEmpty()) ? username : "User";
+        try {
+            return "https://ui-avatars.com/api/?name=" + java.net.URLEncoder.encode(name, "UTF-8") + "&background=F84464&color=fff&size=120";
+        } catch (Exception e) {
+            return "https://ui-avatars.com/api/?name=" + name + "&background=F84464&color=fff&size=120";
+        }
+    }
+
     public String getAboutMe() {
         return aboutMe;
     }

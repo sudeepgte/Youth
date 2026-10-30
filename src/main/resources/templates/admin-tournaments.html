@@ -25,9 +25,9 @@
                         Create, monitor bracket rounds, manage participants, and award winners.
                     </p>
                 </div>
-                <button onclick="document.getElementById('modeModal').classList.add('active')" class="nav-btn" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 12px 22px; font-size: 14px; cursor: pointer; border-radius: 12px; box-shadow: 0 4px 12px rgba(16,185,129,0.3);">
-                    <i class="fas fa-plus"></i> Create Tournament
-                </button>
+                <a th:href="@{/admin/tournaments/create(mode='OFFLINE')}" class="nav-btn" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 12px 22px; font-size: 14px; cursor: pointer; border-radius: 12px; box-shadow: 0 4px 12px rgba(16,185,129,0.3); text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-weight: 800;">
+                    <i class="fas fa-plus"></i> Create Offline Tournament
+                </a>
             </div>
 
             <!-- Table Card -->
@@ -82,44 +82,7 @@
         </main>
     </div>
 
-    <!-- MODE MODAL -->
-    <div class="admin-modal-overlay" id="modeModal">
-        <div style="background: var(--card-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); padding: 36px; border-radius: 24px; text-align: center; max-width: 520px; width: 90%; box-shadow: 0 20px 50px rgba(0,0,0,0.2);">
-            <h2 style="margin-top: 0; color: var(--text-primary); font-weight: 900; font-size: 22px;">Select Tournament Mode</h2>
-            <p style="color: var(--text-secondary); margin-bottom: 24px; font-size: 14px;">Choose whether this is an online digital clash or physical venue tournament:</p>
-            
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                <a th:href="@{/admin/tournaments/create(mode='ONLINE')}" style="border: 2px solid rgba(59,130,246,0.3); background: rgba(59,130,246,0.05); border-radius: 16px; padding: 24px 16px; cursor: pointer; text-decoration: none; color: inherit; display: block; transition: all 0.2s;">
-                    <i class="fas fa-globe" style="font-size: 36px; color: #0284c7; margin-bottom: 12px; display: block;"></i>
-                    <h3 style="margin: 0 0 6px 0; font-weight: 800; font-size: 16px; color: var(--text-primary);">Online Battle</h3>
-                    <p style="margin: 0; font-size: 12px; color: var(--text-secondary);">Virtual event on the platform</p>
-                </a>
-                
-                <a th:href="@{/admin/tournaments/create(mode='OFFLINE')}" style="border: 2px solid rgba(248,68,100,0.3); background: rgba(248,68,100,0.05); border-radius: 16px; padding: 24px 16px; cursor: pointer; text-decoration: none; color: inherit; display: block; transition: all 0.2s;">
-                    <i class="fas fa-map-marker-alt" style="font-size: 36px; color: #f84464; margin-bottom: 12px; display: block;"></i>
-                    <h3 style="margin: 0 0 6px 0; font-weight: 800; font-size: 16px; color: var(--text-primary);">Offline Event</h3>
-                    <p style="margin: 0; font-size: 12px; color: var(--text-secondary);">Physical venue with QR tickets</p>
-                </a>
-            </div>
-            
-            <button onclick="document.getElementById('modeModal').classList.remove('active');" style="margin-top: 24px; background: none; border: none; color: var(--text-secondary); font-weight: bold; cursor: pointer; font-size: 14px;">Cancel</button>
-        </div>
-    </div>
-
     <!-- Unified Admin Realtime Scripts -->
     <div th:replace="~{fragments/admin-fragments :: admin-scripts}"></div>
-    <script>
-        var modal = document.getElementById('modeModal');
-        var origAdd = modal.classList.add;
-        // Ensure flex display when active
-        var observer = new MutationObserver(function() {
-            if (modal.classList.contains('active')) {
-                modal.style.display = 'flex';
-            } else {
-                modal.style.display = 'none';
-            }
-        });
-        observer.observe(modal, { attributes: true, attributeFilter: ['class'] });
-    </script>
 </body>
 </html>

@@ -34,7 +34,7 @@
                 <!-- Games/Events page: minimal header (Dashboard button only) -->
                 <th:block th:if="${active} == 'games' or ${active} == 'events' or ${active} == 'event-details'">
                     <div class="nav-links minimalist-links" style="justify-content:flex-start;">
-                        <a th:href="@{/dashboard}" class="btn btn-outline">Dashboard</a>
+                        <a th:href="${session.admin != null or session.role == 'ADMIN' or (session.user != null and (session.user == 'admin' or session.user.username == 'admin'))} ? @{/admin} : @{/dashboard}" class="btn btn-outline">Dashboard</a>
                     </div>
                 </th:block>
 
@@ -55,12 +55,12 @@
 						<a href="javascript:void(0)" onclick="scrollToHeatmap()">Heat Map</a>
                     </div>
                     <div class="nav-actions">
-                        <th:block th:if="${session.user == null}">
+                        <th:block th:if="${session.user == null and session.admin == null}">
                             <a th:href="@{/login}" class="btn btn-outline">Login</a>
                             <a th:href="@{/register}" class="btn btn-primary">Register</a>
                         </th:block>
-                        <th:block th:if="${session.user != null}">
-                            <a th:href="@{/dashboard}" class="btn btn-outline">Dashboard</a>
+                        <th:block th:if="${session.user != null or session.admin != null}">
+                            <a th:href="${session.admin != null or session.role == 'ADMIN' or (session.user != null and (session.user == 'admin' or session.user.username == 'admin'))} ? @{/admin} : @{/dashboard}" class="btn btn-outline">Dashboard</a>
                             <a th:href="@{/logout}" class="btn btn-primary">Logout</a>
                         </th:block>
                     </div>
@@ -83,12 +83,12 @@
                             <a href="javascript:void(0)" onclick="toggleMobileNav(); scrollToHeatmap()">Heat Map</a>
                         </div>
                         <div class="nav-actions">
-                            <th:block th:if="${session.user == null}">
+                            <th:block th:if="${session.user == null and session.admin == null}">
                                 <a th:href="@{/login}" class="btn btn-outline" onclick="toggleMobileNav()">Login</a>
                                 <a th:href="@{/register}" class="btn btn-primary" onclick="toggleMobileNav()">Register</a>
                             </th:block>
-                            <th:block th:if="${session.user != null}">
-                                <a th:href="@{/dashboard}" class="btn btn-outline" onclick="toggleMobileNav()">Dashboard</a>
+                            <th:block th:if="${session.user != null or session.admin != null}">
+                                <a th:href="${session.admin != null or session.role == 'ADMIN' or (session.user != null and (session.user == 'admin' or session.user.username == 'admin'))} ? @{/admin} : @{/dashboard}" class="btn btn-outline" onclick="toggleMobileNav()">Dashboard</a>
                                 <a th:href="@{/logout}" class="btn btn-primary" onclick="toggleMobileNav()">Logout</a>
                             </th:block>
                         </div>

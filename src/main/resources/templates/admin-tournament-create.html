@@ -38,7 +38,18 @@
                     <i class="fas fa-map-marker-alt" style="font-size: 22px;"></i> Creating Offline In-Person Tournament (QR Check-in Enabled)
                 </div>
                 
-                <form th:action="@{/admin/tournaments/create}" th:object="${tournament}" method="post" style="display: flex; flex-direction: column; gap: 20px;">
+                <!-- Error alerts -->
+                <div th:if="${param.error == 'date_past'}" style="background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; padding: 12px 16px; border-radius: 12px; margin-bottom: 20px; font-size: 14px; font-weight: 600;">
+                    <i class="fas fa-exclamation-triangle"></i> Cannot select past dates. Registration and Kickoff dates must be today or future dates.
+                </div>
+                <div th:if="${param.error == 'invalid_range'}" style="background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; padding: 12px 16px; border-radius: 12px; margin-bottom: 20px; font-size: 14px; font-weight: 600;">
+                    <i class="fas fa-exclamation-triangle"></i> Registration End date must be after Registration Start date.
+                </div>
+                <div th:if="${param.error == 'kickoff_before_reg'}" style="background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; padding: 12px 16px; border-radius: 12px; margin-bottom: 20px; font-size: 14px; font-weight: 600;">
+                    <i class="fas fa-exclamation-triangle"></i> Tournament Kickoff date must be on or after Registration End date.
+                </div>
+                
+                <form th:action="@{/admin/tournaments/create}" th:object="${tournament}" method="post" id="tournamentForm" onsubmit="return validateTournamentDates()" style="display: flex; flex-direction: column; gap: 20px;">
                     <input type="hidden" th:field="*{mode}" id="modeSelect" />
 
                     <div>
@@ -57,33 +68,27 @@
                             <input type="text" th:field="*{type}" placeholder="e.g. Dance, Music, Gaming, Tech" required style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.8); font-size: 14px;" />
                         </div>
                         <div>
-                            <label style="display: block; font-weight: 800; margin-bottom: 8px; font-size: 13px; text-transform: uppercase; color: var(--text-secondary);">Bracket Size</label>
-                            <select th:field="*{maxParticipants}" style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.8); font-size: 14px;">
-                                <option value="4">4 Competitors (Semifinals)</option>
-                                <option value="8">8 Competitors (Quarterfinals)</option>
-                                <option value="16">16 Competitors (Round of 16)</option>
-                                <option value="32">32 Competitors (Round of 32)</option>
-                                <option value="64">64 Competitors</option>
-                            </select>
+                            <label style="display: block; font-weight: 800; margin-bottom: 8px; font-size: 13px; text-transform: uppercase; color: var(--text-secondary);">Number of Participants</label>
+                            <input type="number" th:field="*{maxParticipants}" min="2" max="512" step="1" placeholder="e.g. 16" required style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.8); font-size: 14px;" />
                         </div>
                     </div>
 
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
                         <div>
                             <label style="display: block; font-weight: 800; margin-bottom: 8px; font-size: 13px; text-transform: uppercase; color: var(--text-secondary);">Registration Start</label>
-                            <input type="datetime-local" th:field="*{registrationStart}" required style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.8); font-size: 14px;" />
+                            <input type="datetime-local" id="registrationStart" th:field="*{registrationStart}" required style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.8); font-size: 14px;" />
                         </div>
                         <div>
                             <label style="display: block; font-weight: 800; margin-bottom: 8px; font-size: 13px; text-transform: uppercase; color: var(--text-secondary);">Registration End</label>
-                            <input type="datetime-local" th:field="*{registrationEnd}" required style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.8); font-size: 14px;" />
+                            <input type="datetime-local" id="registrationEnd" th:field="*{registrationEnd}" required style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.8); font-size: 14px;" />
                         </div>
                         <div>
                             <label style="display: block; font-weight: 800; margin-bottom: 8px; font-size: 13px; text-transform: uppercase; color: var(--text-secondary);">Tournament Kickoff</label>
-                            <input type="datetime-local" th:field="*{tournamentStart}" required style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.8); font-size: 14px;" />
+                            <input type="datetime-local" id="tournamentStart" th:field="*{tournamentStart}" required style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.8); font-size: 14px;" />
                         </div>
                         <div>
                             <label style="display: block; font-weight: 800; margin-bottom: 8px; font-size: 13px; text-transform: uppercase; color: var(--text-secondary);">Round Duration (Mins)</label>
-                            <input type="number" th:field="*{battleDurationMinutes}" min="1" value="10" required style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.8); font-size: 14px;" />
+                            <input type="number" th:field="*{battleDurationMinutes}" min="1" step="1" value="10" required style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.8); font-size: 14px;" />
                         </div>
                     </div>
 
@@ -97,12 +102,56 @@
                     </div>
 
                     <!-- Judges -->
-                    <div>
-                        <label style="display: block; font-weight: 800; margin-bottom: 8px; font-size: 13px; text-transform: uppercase; color: var(--text-secondary);">Tournament Judges</label>
-                        <select name="judgeIds" multiple style="width: 100%; min-height: 110px; padding: 10px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.8); font-size: 14px;">
-                            <option th:each="u : ${users}" th:value="${u.id}" th:text="${u.username + ' (' + u.email + ')'}"></option>
-                        </select>
-                        <small style="color: var(--text-secondary); margin-top: 4px; display: block;">Hold Ctrl (Windows) or Cmd (Mac) to select multiple verified judges.</small>
+                    <div style="background: rgba(15,23,42,0.02); padding: 18px; border-radius: 16px; border: 1px solid var(--glass-border);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <div>
+                                <label style="display: block; font-weight: 800; font-size: 13px; text-transform: uppercase; color: var(--text-secondary); margin: 0;">Tournament Judges</label>
+                                <span style="font-size: 12px; color: var(--text-secondary);">Admin is the primary judge by default. You can add extra co-judges.</span>
+                            </div>
+                            <button type="button" id="toggleAddJudgeBtn" onclick="toggleAddJudge()" style="padding: 6px 14px; font-size: 12.5px; font-weight: 700; background: #3b82f6; color: white; border: none; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                                <i class="fas fa-user-plus"></i> Add Judge
+                            </button>
+                        </div>
+
+                        <!-- Primary Judge Card (Admin) -->
+                        <div style="display: flex; align-items: center; justify-content: space-between; background: #ffffff; padding: 10px 14px; border-radius: 10px; border: 1px solid #bfdbfe; margin-bottom: 10px;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div style="width: 32px; height: 32px; border-radius: 50%; background: #eff6ff; color: #2563eb; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px;">
+                                    <i class="fas fa-crown" style="color: #f59e0b;"></i>
+                                </div>
+                                <div>
+                                    <strong style="font-size: 13.5px; color: #1e293b;" th:text="${adminUser != null ? adminUser.username + ' (Admin)' : 'Admin'}">Admin</strong>
+                                    <span style="font-size: 11px; color: #64748b; margin-left: 6px;">Primary Judge • Default</span>
+                                </div>
+                            </div>
+                            <span style="background: #dbeafe; color: #1e40af; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px;">
+                                <i class="fas fa-lock" style="font-size: 9px;"></i> Assigned
+                            </span>
+                        </div>
+
+                        <!-- Container for dynamic added judges -->
+                        <div id="selectedJudgesContainer" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px;">
+                            <!-- Dynamically added judges will show up here -->
+                        </div>
+
+                        <!-- Dropdown panel to add extra judge (hidden by default) -->
+                        <div id="addJudgeDropdownPanel" style="display: none; background: #f8fafc; border: 1px dashed #cbd5e1; padding: 12px; border-radius: 10px; margin-top: 8px;">
+                            <label style="font-size: 12px; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Select Additional Judge:</label>
+                            <div style="display: flex; gap: 8px;">
+                                <select id="extraJudgeSelect" style="flex: 1; padding: 8px 12px; border-radius: 8px; border: 1px solid #cbd5e1; background: white; font-size: 13px;">
+                                    <option value="">-- Choose a user to add as Judge --</option>
+                                    <option th:each="u : ${users}" th:if="${adminUser == null or u.id != adminUser.id}" th:value="${u.id}" th:data-name="${u.username}" th:data-email="${u.email}" th:text="${u.username + ' (' + u.email + ')'}"></option>
+                                </select>
+                                <button type="button" onclick="confirmAddJudge()" style="padding: 8px 16px; background: #10b981; color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer;">
+                                    Add
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Hidden inputs container for form submission -->
+                        <div id="judgeHiddenInputs">
+                            <input th:if="${adminUser != null}" type="hidden" name="judgeIds" th:value="${adminUser.id}">
+                        </div>
                     </div>
 
                     <div style="border-top: 1px solid var(--glass-border); margin: 10px 0;"></div>
@@ -111,19 +160,19 @@
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
                         <div>
                             <label style="display: block; font-weight: 700; margin-bottom: 6px; font-size: 13px;">Entry Fee (₹)</label>
-                            <input type="number" step="0.01" th:field="*{entryFee}" placeholder="0.0" style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.8); font-size: 14px;" />
+                            <input type="number" step="1" min="0" th:field="*{entryFee}" th:value="${tournament.entryFee != null ? #numbers.formatDecimal(tournament.entryFee, 1, 0) : '0'}" placeholder="0" style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.8); font-size: 14px;" />
                         </div>
                         <div>
                             <label style="display: block; font-weight: 700; margin-bottom: 6px; font-size: 13px;">Admin Commission (%)</label>
-                            <input type="number" step="0.01" th:field="*{adminCommissionPercent}" placeholder="e.g. 10" style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.8); font-size: 14px;" />
+                            <input type="number" step="1" min="0" max="100" th:field="*{adminCommissionPercent}" th:value="${tournament.adminCommissionPercent != null ? #numbers.formatDecimal(tournament.adminCommissionPercent, 1, 0) : '10'}" placeholder="10" style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.8); font-size: 14px;" />
                         </div>
                         <div>
                             <label style="display: block; font-weight: 700; margin-bottom: 6px; font-size: 13px;">1st Place Split (%)</label>
-                            <input type="number" step="0.1" th:field="*{prize1Percent}" placeholder="e.g. 60" style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.8); font-size: 14px;" />
+                            <input type="number" step="1" min="0" max="100" th:field="*{prize1Percent}" th:value="${tournament.prize1Percent != null ? #numbers.formatDecimal(tournament.prize1Percent, 1, 0) : '60'}" placeholder="60" style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.8); font-size: 14px;" />
                         </div>
                         <div>
                             <label style="display: block; font-weight: 700; margin-bottom: 6px; font-size: 13px;">2nd Place Split (%)</label>
-                            <input type="number" step="0.1" th:field="*{prize2Percent}" placeholder="e.g. 30" style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.8); font-size: 14px;" />
+                            <input type="number" step="1" min="0" max="100" th:field="*{prize2Percent}" th:value="${tournament.prize2Percent != null ? #numbers.formatDecimal(tournament.prize2Percent, 1, 0) : '30'}" placeholder="30" style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.8); font-size: 14px;" />
                         </div>
                     </div>
 
@@ -139,6 +188,136 @@
                         </button>
                     </div>
                 </form>
+
+                <script>
+                    // Date Validation & Min Date logic (prevent past dates and enforce sequence)
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const regStart = document.getElementById('registrationStart');
+                        const regEnd = document.getElementById('registrationEnd');
+                        const tourStart = document.getElementById('tournamentStart');
+
+                        // Current local datetime formatted for input min (YYYY-MM-DDTHH:MM)
+                        const now = new Date();
+                        const pad = n => String(n).padStart(2, '0');
+                        const currentIso = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+
+                        if (regStart) regStart.min = currentIso;
+                        if (regEnd) regEnd.min = currentIso;
+                        if (tourStart) tourStart.min = currentIso;
+
+                        if (regStart && regEnd) {
+                            regStart.addEventListener('change', function() {
+                                if (regStart.value) {
+                                    regEnd.min = regStart.value;
+                                    if (regEnd.value && regEnd.value < regStart.value) {
+                                        regEnd.value = regStart.value;
+                                    }
+                                }
+                            });
+                        }
+
+                        if (regEnd && tourStart) {
+                            regEnd.addEventListener('change', function() {
+                                if (regEnd.value) {
+                                    tourStart.min = regEnd.value;
+                                    if (tourStart.value && tourStart.value < regEnd.value) {
+                                        tourStart.value = regEnd.value;
+                                    }
+                                }
+                            });
+                        }
+                    });
+
+                    function validateTournamentDates() {
+                        const regStart = document.getElementById('registrationStart').value;
+                        const regEnd = document.getElementById('registrationEnd').value;
+                        const tourStart = document.getElementById('tournamentStart').value;
+
+                        const now = new Date();
+                        const pad = n => String(n).padStart(2, '0');
+                        const currentIso = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+
+                        if (regStart < currentIso) {
+                            alert('Registration Start date cannot be in the past (yesterday or earlier). Please choose a valid upcoming date.');
+                            return false;
+                        }
+                        if (regEnd < regStart) {
+                            alert('Registration End date must be after Registration Start date.');
+                            return false;
+                        }
+                        if (tourStart < regEnd) {
+                            alert('Tournament Kickoff must be on or after Registration End date.');
+                            return false;
+                        }
+                        return true;
+                    }
+
+                    // Judge Selection UI
+                    const addedJudgeIds = new Set();
+                    function toggleAddJudge() {
+                        const panel = document.getElementById('addJudgeDropdownPanel');
+                        panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+                    }
+
+                    function confirmAddJudge() {
+                        const select = document.getElementById('extraJudgeSelect');
+                        const judgeId = select.value;
+                        if (!judgeId) return;
+
+                        if (addedJudgeIds.has(judgeId)) {
+                            alert('This judge is already added.');
+                            return;
+                        }
+
+                        const option = select.options[select.selectedIndex];
+                        const name = option.getAttribute('data-name');
+                        const email = option.getAttribute('data-email');
+
+                        addedJudgeIds.add(judgeId);
+
+                        // Append row in container
+                        const container = document.getElementById('selectedJudgesContainer');
+                        const row = document.createElement('div');
+                        row.id = `judge-row-${judgeId}`;
+                        row.style = 'display: flex; align-items: center; justify-content: space-between; background: #ffffff; padding: 10px 14px; border-radius: 10px; border: 1px solid #e2e8f0;';
+                        row.innerHTML = `
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div style="width: 32px; height: 32px; border-radius: 50%; background: #f1f5f9; color: #475569; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px;">
+                                    <i class="fas fa-gavel"></i>
+                                </div>
+                                <div>
+                                    <strong style="font-size: 13.5px; color: #1e293b;">${name}</strong>
+                                    <span style="font-size: 11px; color: #64748b; margin-left: 6px;">Co-Judge (${email})</span>
+                                </div>
+                            </div>
+                            <button type="button" onclick="removeJudge('${judgeId}')" style="background: none; border: none; color: #ef4444; font-size: 13px; font-weight: 700; cursor: pointer; padding: 4px 8px;">
+                                <i class="fas fa-times"></i> Remove
+                            </button>
+                        `;
+                        container.appendChild(row);
+
+                        // Append hidden input
+                        const hiddenInputs = document.getElementById('judgeHiddenInputs');
+                        const hidden = document.createElement('input');
+                        hidden.type = 'hidden';
+                        hidden.name = 'judgeIds';
+                        hidden.value = judgeId;
+                        hidden.id = `judge-hidden-${judgeId}`;
+                        hiddenInputs.appendChild(hidden);
+
+                        // Reset select and hide dropdown
+                        select.value = '';
+                        document.getElementById('addJudgeDropdownPanel').style.display = 'none';
+                    }
+
+                    function removeJudge(judgeId) {
+                        addedJudgeIds.delete(judgeId);
+                        const row = document.getElementById(`judge-row-${judgeId}`);
+                        if (row) row.remove();
+                        const hidden = document.getElementById(`judge-hidden-${judgeId}`);
+                        if (hidden) hidden.remove();
+                    }
+                </script>
             </div>
         </main>
     </div>

@@ -65,19 +65,28 @@ public class AuthController {
     }
 
     @RequestMapping(value = "/register", method = RequestMethod.POST)
-    public String registerUser(@ModelAttribute("user") User user, Model model) {
+    public String registerUser(@ModelAttribute("user") User user,
+                               @org.springframework.web.bind.annotation.RequestParam(name = "confirmPassword", required = false) String confirmPassword,
+                               Model model) {
         if (userRepository.findByUsername(user.getUsername()) != null) {
             return "redirect:/register?error=duplicate";
         }
         if (userRepository.findByEmail(user.getEmail()) != null) {
             return "redirect:/register?error=duplicate_email";
         }
-        if (user.getDob() != null && user.getDob().isAfter(java.time.LocalDate.now())) {
+        if (user.getDob() == null || user.getDob().isAfter(java.time.LocalDate.now())) {
             return "redirect:/register?error=future_dob";
+        }
+        // Age must be greater than 16 (i.e. strictly before 16 years ago)
+        if (!user.getDob().isBefore(java.time.LocalDate.now().minusYears(16))) {
+            return "redirect:/register?error=underage";
         }
         String pwd = user.getPassword();
         if (pwd == null || pwd.length() < 8 || !pwd.matches(".*[A-Z].*") || !pwd.matches(".*[a-z].*") || !pwd.matches(".*\\d.*") || !pwd.matches(".*[@$!%*?&].*")) {
             return "redirect:/register?error=weak_password";
+        }
+        if (confirmPassword == null || !confirmPassword.equals(pwd)) {
+            return "redirect:/register?error=password_mismatch";
         }
 
         if (user.getEmail() == null || !user.getEmail().trim().matches("^[a-zA-Z0-9][a-zA-Z0-9._%+-]*@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")) {
@@ -143,7 +152,7 @@ public class AuthController {
 
             rewardService.awardDailyLogin(user); // Zen Coins Awarded here
             
-            // ── Welcome Bonus for new users (Awarded once on first login) ──
+            // â”€â”€ Welcome Bonus for new users (Awarded once on first login) â”€â”€
             if (!user.isWelcomeBonusClaimed()) {
                 user.setWelcomeBonusClaimed(true);
                 user.addCoins(100);
@@ -189,7 +198,7 @@ public class AuthController {
             jakarta.servlet.http.HttpServletResponse response) {
 
         String tokenToRevoke = null;
-        // ── 1. Blacklist the JWT from cookie (most common path) ──
+        // â”€â”€ 1. Blacklist the JWT from cookie (most common path) â”€â”€
         if (request.getCookies() != null) {
             for (jakarta.servlet.http.Cookie c : request.getCookies()) {
                 if ("jwtToken".equals(c.getName())) {
@@ -200,7 +209,7 @@ public class AuthController {
             }
         }
 
-        // ── 2. Also blacklist any ?auth= token in the URL ──
+        // â”€â”€ 2. Also blacklist any ?auth= token in the URL â”€â”€
         String queryToken = request.getParameter("auth");
         if (queryToken != null && !queryToken.isBlank()) {
             tokenToRevoke = queryToken;
@@ -214,10 +223,10 @@ public class AuthController {
             } catch (Exception e) {}
         }
 
-        // ── 3. Destroy server-side session ──
+        // â”€â”€ 3. Destroy server-side session â”€â”€
         session.invalidate();
 
-        // ── 4. Expire the jwtToken cookie in the browser ──
+        // â”€â”€ 4. Expire the jwtToken cookie in the browser â”€â”€
         jakarta.servlet.http.Cookie cookie = new jakarta.servlet.http.Cookie("jwtToken", "");
         String ctx = request.getContextPath();
         cookie.setPath(ctx.isEmpty() ? "/" : ctx);

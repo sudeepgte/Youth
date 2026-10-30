@@ -31,11 +31,6 @@
                 </div>
 
                 <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
-                    <!-- Offline check-in button -->
-                    <a th:if="${tournament.mode == 'OFFLINE'}" th:href="@{/admin/tournaments/{id}/checkin(id=${tournament.id})}" class="nav-btn" style="background: #3b82f6; color: white; border: none;">
-                        <i class="fas fa-qrcode"></i> QR Ticket Check-in
-                    </a>
-
                     <!-- Status Changer -->
                     <form th:action="@{/admin/tournaments/{id}/status(id=${tournament.id})}" method="post" style="display: flex; align-items: center; gap: 8px; background: var(--card-bg); padding: 6px 12px; border-radius: 12px; border: 1px solid var(--glass-border);">
                         <select name="status" style="padding: 6px 10px; border: 1px solid var(--glass-border); border-radius: 8px; font-size: 13px; font-weight: 700; background: rgba(255,255,255,0.8);">
@@ -108,7 +103,7 @@
                         <i class="fas fa-user-circle" style="color: #0284c7; font-size: 20px;"></i>
                         <div>
                             <strong style="color: var(--text-primary); font-size: 14px;" th:text="${p.user.username}">Username</strong>
-                            <small th:if="${p.checkedIn}" style="display: block; color: #10b981; font-weight: 800; font-size: 11px;">✓ CHECKED IN</small>
+                            <small th:if="${p.checkedIn}" style="display: block; color: #10b981; font-weight: 800; font-size: 11px;">âœ“ CHECKED IN</small>
                         </div>
                     </div>
                     <div th:if="${tournament.participants == null or tournament.participants.isEmpty()}" style="grid-column: 1 / -1; text-align: center; color: var(--text-secondary); padding: 30px;">

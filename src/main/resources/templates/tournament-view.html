@@ -3,21 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tournament Bracket | Youthians</title>
+    <title>Tournament Details | Youthians</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <style>
+        @keyframes modalPop {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
         body {
             font-family: 'Inter', sans-serif;
-            background: #f8fafc;
+            background: #f1f5f9;
             margin: 0;
             padding: 0;
+            color: #0f172a;
         }
         .main-container {
-            max-width: 1200px;
+            max-width: 1140px;
             margin: 0 auto;
-            padding: 30px 20px;
+            padding: 24px 20px 60px;
         }
         .btn-back {
             display: inline-flex;
@@ -26,204 +32,509 @@
             color: #475569;
             text-decoration: none;
             font-weight: 700;
-            margin-bottom: 25px;
+            font-size: 13.5px;
+            margin-bottom: 20px;
             background: white;
-            padding: 10px 20px;
+            padding: 8px 18px;
             border-radius: 30px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            transition: 0.2s;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+            transition: all 0.2s ease;
         }
         .btn-back:hover {
             transform: translateX(-3px);
             color: #0f172a;
-            box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+            border-color: #cbd5e1;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.06);
         }
-        .tournament-header {
-            background: #FFFFFF;
-            border: 1px solid rgba(15, 23, 42, 0.08);
+
+        /* Tournament Hero Header */
+        .tournament-hero-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
             border-radius: 20px;
-            padding: 30px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+            padding: 28px 32px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.04);
             position: relative;
+        }
+        .hero-top-badges {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+        .badge-category {
+            background: #eff6ff;
+            color: #2563eb;
+            font-size: 12px;
+            font-weight: 800;
+            padding: 4px 12px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .badge-mode {
+            background: #fdf2f8;
+            color: #db2777;
+            font-size: 12px;
+            font-weight: 800;
+            padding: 4px 12px;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .badge-status {
+            font-size: 12px;
+            font-weight: 800;
+            padding: 4px 12px;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .badge-status.open { background: #ecfdf5; color: #059669; }
+        .badge-status.progress { background: #fffbeb; color: #d97706; }
+        .badge-status.completed { background: #f1f5f9; color: #64748b; }
+
+        .hero-title {
+            margin: 0 0 10px 0;
+            font-size: 28px;
+            font-weight: 900;
+            color: #0f172a;
+            line-height: 1.25;
+        }
+        .hero-desc {
+            margin: 0 0 20px 0;
+            color: #475569;
+            font-size: 14.5px;
+            line-height: 1.6;
+            max-width: 800px;
+        }
+
+        /* Hero Quick Meta Chips */
+        .hero-meta-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            padding-top: 18px;
+            border-top: 1px solid #f1f5f9;
+        }
+        .meta-chip {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 10px 14px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .meta-chip-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+        .meta-chip-icon.venue { background: #fee2e2; color: #ef4444; }
+        .meta-chip-icon.time { background: #eff6ff; color: #3b82f6; }
+        .meta-chip-icon.users { background: #f0fdf4; color: #16a34a; }
+        .meta-chip-icon.fee { background: #fef3c7; color: #d97706; }
+
+        .meta-chip-body span { display: block; font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+        .meta-chip-body strong { font-size: 13.5px; color: #1e293b; font-weight: 800; }
+
+        /* Join Button & Header Action */
+        .hero-action-bar {
+            margin-top: 22px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
         }
         .btn-join {
             background: linear-gradient(135deg, #10B981, #059669);
             color: white;
-            padding: 12px 24px;
+            padding: 12px 28px;
             border-radius: 12px;
             font-weight: 800;
-            text-decoration: none;
+            font-size: 15px;
             border: none;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            transition: 0.3s;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+            transition: all 0.2s ease;
         }
-        .btn-join:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(16,185,129,0.3); }
+        .btn-join:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35);
+        }
 
-        .btn-battle {
-            background: linear-gradient(135deg, #F84464, #E11D48);
+        /* OFFICIAL BATTLE PASS TICKET CARD (Clean, Balanced & No Awkward Whitespace) */
+        .battle-pass-container {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 28px;
             color: white;
-            padding: 15px 30px;
-            border-radius: 15px;
-            font-weight: 800;
-            text-decoration: none;
-            border: none;
-            cursor: pointer;
-            display: inline-flex;
+            box-shadow: 0 15px 35px -10px rgba(15, 23, 42, 0.4);
+            position: relative;
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 24px;
             align-items: center;
-            gap: 10px;
-            font-size: 16px;
-            animation: pulse-red 2s infinite;
+            border: 1px solid rgba(255,255,255,0.1);
         }
-        @keyframes pulse-red {
-            0% { box-shadow: 0 0 0 0 rgba(248, 68, 100, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(248, 68, 100, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(248, 68, 100, 0); }
+        .battle-pass-container::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: rgba(248, 68, 100, 0.15);
+            filter: blur(40px);
         }
-
-        .bracket-container {
-            display: flex;
-            gap: 40px;
-            overflow-x: auto;
-            padding: 20px 0;
-            align-items: center;
-        }
-        
-        .bracket-round {
+        .pass-info-left {
             display: flex;
             flex-direction: column;
-            gap: 20px;
-            min-width: 250px;
+            gap: 14px;
         }
-
-        .match-card {
-            background: white;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-            position: relative;
-        }
-        .match-card.active { border-color: #F84464; }
-        .match-card.completed { border-color: #cbd5e1; }
-        
-        .match-player {
-            padding: 12px 15px;
+        .pass-badge-header {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            font-weight: 600;
-            font-size: 14px;
+            gap: 10px;
+            flex-wrap: wrap;
         }
-        .match-player:first-child { border-bottom: 1px solid #f1f5f9; }
-        .match-player.winner { background: rgba(16, 185, 129, 0.05); color: #059669; }
-        .match-player.loser { color: #94a3b8; text-decoration: line-through; }
-        .match-player.tbd { color: #94a3b8; font-style: italic; }
-
-        .round-title {
+        .pass-status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
             font-weight: 800;
-            color: #475569;
-            text-transform: uppercase;
-            font-size: 13px;
-            letter-spacing: 1px;
-            margin-bottom: 15px;
-            text-align: center;
         }
-            .tab-nav {
-            display: flex; gap: 20px; margin-bottom: 25px; border-bottom: 2px solid #e2e8f0;
+        .pass-status-pill.pending { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); }
+        .pass-status-pill.checkedin { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
+
+        .pass-participant-name {
+            font-size: 22px;
+            font-weight: 900;
+            color: #ffffff;
+            margin: 0;
+            letter-spacing: -0.3px;
+        }
+        .pass-meta-row {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            font-size: 13px;
+            color: #94a3b8;
+        }
+        .pass-meta-row strong { color: #f8fafc; }
+        
+        .pass-id-tag {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px dashed rgba(255, 255, 255, 0.25);
+            padding: 4px 12px;
+            border-radius: 8px;
+            color: #38bdf8;
+            font-family: monospace;
+            font-size: 14px;
+            font-weight: 800;
+        }
+
+        /* Pass QR Code Card */
+        .pass-qr-box {
+            background: #ffffff;
+            padding: 14px;
+            border-radius: 16px;
+            text-align: center;
+            flex-shrink: 0;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+            max-width: 170px;
+        }
+        .pass-qr-box img {
+            width: 130px;
+            height: 130px;
+            border-radius: 8px;
+            display: block;
+            margin: 0 auto 8px;
+        }
+        .pass-qr-box span {
+            display: block;
+            font-size: 10.5px;
+            font-weight: 800;
+            color: #0f172a;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        @media (max-width: 768px) {
+            .battle-pass-container {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+            .pass-info-left {
+                align-items: center;
+            }
+            .pass-qr-box {
+                margin: 0 auto;
+            }
+        }
+
+        /* Tab Navigation */
+        .tab-nav {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            background: #ffffff;
+            padding: 6px;
+            border-radius: 14px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            width: fit-content;
         }
         .tab-nav button {
-            background: none; border: none; padding: 10px 20px; font-weight: 800; font-size: 16px; color: #64748b; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; transition: 0.2s;
+            background: none;
+            border: none;
+            padding: 10px 22px;
+            font-weight: 800;
+            font-size: 14px;
+            color: #64748b;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.2s ease;
         }
-        .tab-nav button:hover { color: #0f172a; }
-        .tab-nav button.active { color: #F84464; border-bottom-color: #F84464; }
+        .tab-nav button:hover { color: #0f172a; background: #f8fafc; }
+        .tab-nav button.active {
+            color: #ffffff;
+            background: #0f172a;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.15);
+        }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         
-        .grid-dashboard { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
-        .info-card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); margin-bottom: 20px; border: 1px solid #e2e8f0; }
-        .info-card h3 { margin-top: 0; color: #0f172a; font-weight: 800; }
-        .stat-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed #e2e8f0; font-weight: 600; font-size: 14px; }
+        .grid-dashboard { display: grid; grid-template-columns: 1.4fr 1fr; gap: 20px; }
+        @media (max-width: 860px) { .grid-dashboard { grid-template-columns: 1fr; } }
+
+        .info-card {
+            background: white;
+            padding: 24px;
+            border-radius: 18px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+            margin-bottom: 20px;
+            border: 1px solid #e2e8f0;
+        }
+        .info-card h3 { margin-top: 0; color: #0f172a; font-weight: 800; font-size: 17px; margin-bottom: 16px; }
+        .stat-row { display: flex; justify-content: space-between; padding: 11px 0; border-bottom: 1px dashed #e2e8f0; font-weight: 600; font-size: 14px; }
         .stat-row:last-child { border-bottom: none; }
 
-        .advanced-bracket {
-            display: flex; gap: 50px; overflow-x: auto; padding: 20px; align-items: center;
+
+        .participant-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; }
+        .p-card { 
+            background: white; 
+            border: 1px solid #e2e8f0; 
+            border-radius: 16px; 
+            padding: 20px 14px; 
+            text-align: center; 
+            font-weight: 700; 
+            color: #0f172a; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03); 
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
-        .bracket-col { display: flex; flex-direction: column; gap: 30px; justify-content: space-around; position: relative; }
-        .match-wrap { position: relative; }
-        /* Connectors */
-        .bracket-col:not(:last-child) .match-wrap::after {
-            content: ''; position: absolute; right: -25px; top: 50%; width: 25px; height: 2px; background: #cbd5e1;
+        .p-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+            border-color: #cbd5e1;
         }
-        .bracket-col:not(:first-child) .match-wrap::before {
-            content: ''; position: absolute; left: -25px; top: 50%; width: 25px; height: 2px; background: #cbd5e1;
+        .p-card img { 
+            width: 58px; 
+            height: 58px; 
+            border-radius: 50%; 
+            margin-bottom: 10px; 
+            background: #f1f5f9; 
+            object-fit: cover; 
+            border: 2px solid #f1f5f9;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+            display: block;
         }
-        
-        .participant-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }
-        .p-card { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; text-align: center; font-weight: 700; color: #0f172a; }
-        .p-card img { width: 50px; height: 50px; border-radius: 50%; margin-bottom: 10px; background: #f1f5f9; }
+        .p-card .p-name {
+            font-size: 14px;
+            font-weight: 800;
+            color: #0f172a;
+            max-width: 130px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
     </style>
 </head>
 <body>
     <div class="main-container">
         
+        <a th:href="@{/dashboard(tab='tournaments')}" class="btn-back"><i class="fas fa-arrow-left"></i> Back to Tournaments</a>
+        
 
 
-        <div class="tournament-header">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 20px;">
+        <!-- Status & Error Alert Banners -->
+        <div th:if="${param.error == 'insufficient_funds'}" style="background: #fffbeb; border: 1.5px solid #fde68a; color: #b45309; padding: 16px 20px; border-radius: 14px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.08);">
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <div style="width: 42px; height: 42px; border-radius: 50%; background: #fef3c7; color: #d97706; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">
+                    <i class="fas fa-wallet"></i>
+                </div>
                 <div>
-                    <h1 style="margin: 0 0 10px 0; font-size: 28px; font-weight: 900; color: #0f172a;" th:text="${tournament.name}">Tournament Name</h1>
-                    <p style="margin: 0 0 15px 0; color: #475569; max-width: 600px; line-height: 1.6;" th:text="${tournament.description}"></p>
-                    <div style="display: flex; gap: 15px; font-size: 13px; font-weight: 700; color: #64748b;">
-                        <span><i class="fas fa-users"></i> <span th:text="${participantCount}"></span> / <span th:text="${tournament.maxParticipants}"></span> Registered</span>
-                        <span><i class="fas fa-clock"></i> Status: <span th:text="${tournament.status}" style="color: #F84464;"></span></span>
+                    <strong style="display: block; font-size: 15px; color: #92400e; font-weight: 800; margin-bottom: 2px;">Insufficient Wallet Balance</strong>
+                    <span style="font-size: 13.5px; color: #b45309;">Your wallet balance (&#8377;<span th:text="${user != null and user.walletBalance != null ? #numbers.formatDecimal(user.walletBalance, 1, 0) : '0'}">0</span>) is lower than the &#8377;<span th:text="${tournament.entryFee != null ? #numbers.formatDecimal(tournament.entryFee, 1, 0) : '100'}">100</span> entry fee. You can pay directly with <strong>Razorpay (UPI / Card)</strong> or recharge your wallet.</span>
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <button type="button" onclick="openTournamentModal()" style="background: #10b981; color: white; border: none; padding: 9px 18px; border-radius: 10px; font-weight: 700; font-size: 13px; cursor: pointer;">
+                    <i class="fas fa-shield-alt"></i> Pay via Razorpay
+                </button>
+                <a th:href="@{/wallet}" style="background: white; border: 1px solid #fde68a; color: #92400e; padding: 9px 16px; border-radius: 10px; font-weight: 700; font-size: 13px; text-decoration: none;">
+                    + Top Up Wallet
+                </a>
+            </div>
+        </div>
+
+        <div th:if="${param.error == 'full'}" style="background: #fef2f2; border: 1.5px solid #fecaca; color: #dc2626; padding: 16px 20px; border-radius: 14px; margin-bottom: 20px; display: flex; align-items: center; gap: 14px;">
+            <div style="width: 42px; height: 42px; border-radius: 50%; background: #fee2e2; color: #ef4444; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">
+                <i class="fas fa-ban"></i>
+            </div>
+            <div>
+                <strong style="display: block; font-size: 15px; color: #991b1b; font-weight: 800; margin-bottom: 2px;">Tournament Capacity Full</strong>
+                <span style="font-size: 13.5px; color: #b91c1c;">All spots for this tournament have been filled. No further registrations can be accepted.</span>
+            </div>
+        </div>
+
+        <div th:if="${param.error == 'registration_closed'}" style="background: #fef2f2; border: 1.5px solid #fecaca; color: #dc2626; padding: 16px 20px; border-radius: 14px; margin-bottom: 20px; display: flex; align-items: center; gap: 14px;">
+            <div style="width: 42px; height: 42px; border-radius: 50%; background: #fee2e2; color: #ef4444; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div>
+                <strong style="display: block; font-size: 15px; color: #991b1b; font-weight: 800; margin-bottom: 2px;">Registration Closed</strong>
+                <span style="font-size: 13.5px; color: #b91c1c;">Registration for this tournament has ended.</span>
+            </div>
+        </div>
+
+        <div th:if="${param.error == 'payment_failed'}" style="background: #fef2f2; border: 1.5px solid #fecaca; color: #dc2626; padding: 16px 20px; border-radius: 14px; margin-bottom: 20px; display: flex; align-items: center; gap: 14px;">
+            <div style="width: 42px; height: 42px; border-radius: 50%; background: #fee2e2; color: #ef4444; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div>
+                <strong style="display: block; font-size: 15px; color: #991b1b; font-weight: 800; margin-bottom: 2px;">Payment Verification Failed</strong>
+                <span style="font-size: 13.5px; color: #b91c1c;">The online payment transaction was cancelled or could not be verified. Please try again.</span>
+            </div>
+        </div>
+
+        <div th:if="${param.success == 'registered'}" style="background: #f0fdf4; border: 1.5px solid #bbf7d0; color: #16a34a; padding: 16px 20px; border-radius: 14px; margin-bottom: 20px; display: flex; align-items: center; gap: 14px;">
+            <div style="width: 42px; height: 42px; border-radius: 50%; background: #dcfce7; color: #16a34a; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0;">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div>
+                <strong style="display: block; font-size: 15px; color: #166534; font-weight: 800; margin-bottom: 2px;">Registration Confirmed!</strong>
+                <span style="font-size: 13.5px; color: #15803d;">You are officially registered for this tournament! Your Offline Battle Pass &amp; QR Code are generated below.</span>
+            </div>
+        </div>
+
+        <!-- Tournament Hero Header -->
+        <div class="tournament-hero-card">
+            <div class="hero-top-badges">
+                <span class="badge-category" th:text="${tournament.type}">DANCE</span>
+                <span class="badge-mode" th:if="${tournament.mode == 'OFFLINE'}">
+                    <i class="fas fa-map-marker-alt"></i> OFFLINE (IN-PERSON)
+                </span>
+                <span class="badge-status open" th:if="${tournament.status == 'REGISTRATION_OPEN'}">
+                    <i class="fas fa-dot-circle" style="font-size: 8px;"></i> REGISTRATION OPEN
+                </span>
+                <span class="badge-status progress" th:if="${tournament.status == 'IN_PROGRESS'}">
+                    <i class="fas fa-play-circle"></i> TOURNAMENT IN PROGRESS
+                </span>
+                <span class="badge-status completed" th:if="${tournament.status == 'COMPLETED'}">
+                    <i class="fas fa-check-circle"></i> COMPLETED
+                </span>
+            </div>
+
+            <h1 class="hero-title" th:text="${tournament.name}">Tournament Name</h1>
+            <p class="hero-desc" th:text="${tournament.description}">Tournament Description</p>
+
+            <div class="hero-meta-grid">
+                <div class="meta-chip" th:if="${tournament.mode == 'OFFLINE'}">
+                    <div class="meta-chip-icon venue"><i class="fas fa-map-marker-alt"></i></div>
+                    <div class="meta-chip-body">
+                        <span>Physical Venue</span>
+                        <strong th:text="${tournament.venue != null ? tournament.venue : 'TBA'}">Auditorium Hall 2</strong>
                     </div>
                 </div>
-                
-                <div>
-                    <form th:if="${!isRegistered and tournament.status == 'REGISTRATION_OPEN'}" th:action="@{/tournaments/{id}/join(id=${tournament.id})}" method="post">
-                        <button type="submit" class="btn-join"><i class="fas fa-ticket-alt"></i> Join Tournament</button>
-                    </form>
-                    
-                    <div th:if="${isRegistered}" style="background: rgba(16, 185, 129, 0.1); color: #059669; padding: 12px 20px; border-radius: 12px; font-weight: 800; display: inline-flex; align-items: center; gap: 8px; margin-bottom: 15px;">
-                        <i class="fas fa-check-circle"></i> You are registered!
+
+                <div class="meta-chip">
+                    <div class="meta-chip-icon time"><i class="far fa-calendar-alt"></i></div>
+                    <div class="meta-chip-body">
+                        <span>Kickoff Date</span>
+                        <strong th:text="${tournament.tournamentStart != null ? #temporals.format(tournament.tournamentStart, 'dd-MMM-yyyy hh:mm a') : 'TBD'}">30-Oct-2026</strong>
                     </div>
-                    
-                    <div th:if="${isRegistered and tournament.mode == 'OFFLINE' and myParticipant != null}" style="background: white; border: 2px dashed #cbd5e1; border-radius: 15px; padding: 20px; text-align: center; max-width: 300px;">
-                        <h4 style="margin: 0 0 10px 0; color: #334155;">🎫 OFFLINE BATTLE PASS</h4>
-                        <div style="background: #f1f5f9; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
-                            <img id="qrPassImg" alt="QR Code" style="width: 150px; height: 150px; border-radius: 10px;">
-                            <script th:inline="javascript">
-                                /*<![CDATA[*/
-                                var qrCodeStr = /*[[${myParticipant.qrPassCode}]]*/ 'default';
-                                var passUrl = window.location.origin + '/tournaments/pass/' + qrCodeStr;
-                                document.getElementById('qrPassImg').src = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' + encodeURIComponent(passUrl);
-                                /*]]>*/
-                            </script>
-                        </div>
-                        <p style="margin: 0 0 5px 0; font-weight: 700; color: #0f172a;" th:text="${myParticipant.user.username}"></p>
-                        <p style="margin: 0; font-size: 13px; color: #64748b;" th:text="'Participant ID: ' + ${myParticipant.participantNumber}"></p>
-                        <div style="margin-top: 15px;">
-                            <span th:if="${myParticipant.checkedIn}" style="background: #d1fae5; color: #059669; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 800;"><i class="fas fa-check-double"></i> Checked In</span>
-                            <span th:if="${!myParticipant.checkedIn}" style="background: #f1f5f9; color: #64748b; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 800;">Pending Check-in</span>
-                        </div>
+                </div>
+
+                <div class="meta-chip">
+                    <div class="meta-chip-icon users"><i class="fas fa-users"></i></div>
+                    <div class="meta-chip-body">
+                        <span>Participants</span>
+                        <strong>
+                            <span th:text="${participantCount}">1</span> / <span th:text="${tournament.maxParticipants}">16</span> Slots
+                            <span th:if="${isFull != null and isFull}" style="color: #ef4444; font-size: 11px; margin-left: 4px;">(Full)</span>
+                        </strong>
+                    </div>
+                </div>
+
+                <div class="meta-chip">
+                    <div class="meta-chip-icon fee"><i class="fas fa-ticket-alt"></i></div>
+                    <div class="meta-chip-body">
+                        <span>Entry Fee</span>
+                        <strong th:text="${tournament.entryFee != null and tournament.entryFee > 0 ? 'â‚¹' + #numbers.formatDecimal(tournament.entryFee, 1, 0) : 'FREE'}">â‚¹100</strong>
                     </div>
                 </div>
             </div>
 
-            <div th:if="${tournament.judges.contains(user)}" style="margin-top: 15px;">
-                <a th:href="@{'/tournaments/' + ${tournament.id} + '/judge'}" class="btn-action" style="background:#8b5cf6; color:white; text-decoration:none; display:block; text-align:center; padding:12px; border-radius:12px; font-weight:bold;">
-                    <i class="fas fa-gavel"></i> Go to Judge Portal
-                </a>
+            <!-- Header Action Row -->
+            <div class="hero-action-bar">
+                <div th:if="${!isRegistered and tournament.status == 'REGISTRATION_OPEN' and (isFull == null or !isFull)}">
+                    <button type="button" class="btn-join" onclick="openTournamentModal()">
+                        <i class="fas fa-ticket-alt"></i> Join / Register for Tournament
+                    </button>
+                </div>
+
+                <div th:if="${!isRegistered and (tournament.status != 'REGISTRATION_OPEN' or (isFull != null and isFull))}">
+                    <button type="button" disabled style="background: #fee2e2; color: #dc2626; border: 1.5px solid #fecaca; padding: 12px 24px; border-radius: 12px; font-weight: 800; font-size: 14px; cursor: not-allowed; display: inline-flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-ban"></i> <span th:text="${isFull != null and isFull ? 'Slots Full (Registration Closed)' : 'Registration Closed'}">Slots Full</span>
+                    </button>
+                </div>
+
+                <div th:if="${tournament.judges.contains(user)}">
+                    <a th:href="@{'/tournaments/' + ${tournament.id} + '/judge'}" style="background: #8b5cf6; color: white; padding: 12px 22px; border-radius: 12px; font-weight: 800; font-size: 14px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-gavel"></i> Go to Judge Portal
+                    </a>
+                </div>
             </div>
 
             <!-- Call to Action for Active Match -->
             <div th:if="${currentMatch != null}" style="margin-top: 25px; padding-top: 25px; border-top: 1px solid #f1f5f9; text-align: center;">
-                <h3 style="margin: 0 0 15px 0; color: #0f172a;">🔥 Your Next Match is Ready!</h3>
-                <p style="margin: 0 0 20px 0; color: #64748b;">
+                <h3 style="margin: 0 0 10px 0; color: #0f172a;">Ã°Å¸â€Â¥ Your Next Match is Ready!</h3>
+                <p style="margin: 0 0 18px 0; color: #64748b;">
                     <strong th:text="${currentMatch.player1.username}"></strong> vs <strong th:text="${currentMatch.player2.username}"></strong><br>
                     (<span th:text="${currentMatch.round.name}"></span>)
                 </p>
@@ -231,10 +542,65 @@
             </div>
         </div>
 
+        <!-- OFFICIAL TOURNAMENT BATTLE PASS (Balanced, No Awkward Whitespace) -->
+        <div th:if="${isRegistered and tournament.mode == 'OFFLINE' and myParticipant != null}" class="battle-pass-container">
+            <div class="pass-info-left">
+                <div class="pass-badge-header">
+                    <span style="background: #F84464; color: white; font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 6px; letter-spacing: 0.5px;">
+                        Ã°Å¸Å½Â« OFFICIAL BATTLE PASS
+                    </span>
+                    <span th:if="${myParticipant.checkedIn}" class="pass-status-pill checkedin">
+                        <i class="fas fa-check-circle"></i> Checked In
+                    </span>
+                    <span th:unless="${myParticipant.checkedIn}" class="pass-status-pill pending">
+                        <i class="fas fa-clock"></i> Pending Check-in at Venue
+                    </span>
+                </div>
+
+                <div>
+                    <span style="font-size: 11.5px; text-transform: uppercase; color: #94a3b8; font-weight: 700; letter-spacing: 0.5px; display: block; margin-bottom: 2px;">Registered Competitor</span>
+                    <h2 class="pass-participant-name" th:text="${myParticipant.user.username}">Competitor Name</h2>
+                </div>
+
+                <div class="pass-meta-row">
+                    <div>
+                        <span style="display: block; font-size: 11px; color: #94a3b8; text-transform: uppercase;">Participant ID</span>
+                        <span class="pass-id-tag" th:text="${myParticipant.participantNumber}">OFF-001</span>
+                    </div>
+                    <div>
+                        <span style="display: block; font-size: 11px; color: #94a3b8; text-transform: uppercase;">Kickoff Time</span>
+                        <strong th:text="${tournament.tournamentStart != null ? #temporals.format(tournament.tournamentStart, 'hh:mm a, dd MMM') : 'TBD'}">05:00 PM</strong>
+                    </div>
+                    <div>
+                        <span style="display: block; font-size: 11px; color: #94a3b8; text-transform: uppercase;">Physical Venue</span>
+                        <strong th:text="${tournament.venue != null ? tournament.venue : 'Official Hall'}">Hall 2</strong>
+                    </div>
+                </div>
+
+                <div style="padding-top: 4px;">
+                    <a th:href="@{'/tournaments/pass/' + ${myParticipant.qrPassCode}}" target="_blank" onclick="window.open(this.href, '_blank'); return false;" style="display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 800; color: #38bdf8; text-decoration: none;">
+                        <i class="fas fa-external-link-alt"></i> View / Download Full Digital Pass &rarr;
+                    </a>
+                </div>
+            </div>
+
+            <!-- QR Code Ticket Stub -->
+            <div class="pass-qr-box">
+                <img id="qrPassImg" alt="Entry QR Code">
+                <span>Scan for Check-in</span>
+                <script th:inline="javascript">
+                    /*<![CDATA[*/
+                    var qrCodeStr = /*[[${myParticipant.qrPassCode}]]*/ 'default';
+                    var passUrl = window.location.origin + '/tournaments/pass/' + qrCodeStr;
+                    document.getElementById('qrPassImg').src = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' + encodeURIComponent(passUrl);
+                    /*]]>*/
+                </script>
+            </div>
+        </div>
+
         <!-- TABS NAV -->
         <div class="tab-nav">
             <button class="active" onclick="showTab('overview')">Overview</button>
-            <button onclick="showTab('bracket')">Bracket</button>
             <button onclick="showTab('participants')">Participants</button>
         </div>
 
@@ -259,11 +625,30 @@
                 <div>
                     <div class="info-card" style="border-color:#F84464;">
                         <h3><i class="fas fa-gift" style="color:#F84464;"></i> Prize Pool</h3>
-                        <div class="stat-row"><span>Entry Fee</span> <span th:text="'₹' + ${tournament.entryFee}"></span></div>
-                        <div class="stat-row"><span>1st Place</span> <span th:text="${tournament.prize1Percent} + '%'"></span></div>
-                        <div class="stat-row"><span>2nd Place</span> <span th:text="${tournament.prize2Percent} + '%'"></span></div>
-                        <div class="stat-row"><span>3rd Place</span> <span th:text="${tournament.prize3Percent} + '%'"></span></div>
-                        <div class="stat-row" th:if="${tournament.customPrizes != null}">
+                        <div class="stat-row">
+                            <span>Entry Fee</span> 
+                            <span th:text="${tournament.entryFee != null and tournament.entryFee > 0 ? 'Ã¢â€šÂ¹' + #numbers.formatDecimal(tournament.entryFee, 1, 0) : 'Free'}">Ã¢â€šÂ¹100</span>
+                        </div>
+                        <div class="stat-row" th:if="${totalPrizePool != null and totalPrizePool > 0}">
+                            <span>Total Pool</span> 
+                            <span style="font-weight: 800; color: #10b981;" th:text="'Ã¢â€šÂ¹' + ${#numbers.formatDecimal(totalPrizePool, 1, 0)}">Ã¢â€šÂ¹800</span>
+                        </div>
+                        <div class="stat-row" th:if="${tournament.prize1Percent != null and tournament.prize1Percent > 0}">
+                            <span>1st Place</span> 
+                            <span style="font-weight: 800; color: #10b981;" th:if="${prize1Amount != null and prize1Amount > 0}" th:text="'Ã¢â€šÂ¹' + ${#numbers.formatDecimal(prize1Amount, 1, 0)}">Ã¢â€šÂ¹800</span>
+                            <span style="font-weight: 800; color: #10b981;" th:unless="${prize1Amount != null and prize1Amount > 0}" th:text="${#numbers.formatDecimal(tournament.prize1Percent, 1, 0)} + '%'">80%</span>
+                        </div>
+                        <div class="stat-row" th:if="${tournament.prize2Percent != null and tournament.prize2Percent > 0}">
+                            <span>2nd Place</span> 
+                            <span style="font-weight: 800; color: #3b82f6;" th:if="${prize2Amount != null and prize2Amount > 0}" th:text="'Ã¢â€šÂ¹' + ${#numbers.formatDecimal(prize2Amount, 1, 0)}">Ã¢â€šÂ¹100</span>
+                            <span style="font-weight: 800; color: #3b82f6;" th:unless="${prize2Amount != null and prize2Amount > 0}" th:text="${#numbers.formatDecimal(tournament.prize2Percent, 1, 0)} + '%'">10%</span>
+                        </div>
+                        <div class="stat-row" th:if="${tournament.prize3Percent != null and tournament.prize3Percent > 0}">
+                            <span>3rd Place</span> 
+                            <span style="font-weight: 800; color: #8b5cf6;" th:if="${prize3Amount != null and prize3Amount > 0}" th:text="'Ã¢â€šÂ¹' + ${#numbers.formatDecimal(prize3Amount, 1, 0)}">Ã¢â€šÂ¹100</span>
+                            <span style="font-weight: 800; color: #8b5cf6;" th:unless="${prize3Amount != null and prize3Amount > 0}" th:text="${#numbers.formatDecimal(tournament.prize3Percent, 1, 0)} + '%'">10%</span>
+                        </div>
+                        <div class="stat-row" th:if="${tournament.customPrizes != null and !#strings.isEmpty(tournament.customPrizes)}">
                             <span>Other</span> <span th:text="${tournament.customPrizes}"></span>
                         </div>
                     </div>
@@ -278,60 +663,12 @@
                 <div th:if="${participantCount == 0}" style="text-align:center; padding: 20px; color:#94a3b8;">No participants registered yet.</div>
                 <div class="participant-grid">
                     <div th:each="p : ${tournament.participants}" class="p-card">
-                        <img th:src="@{/img/default-avatar.png}" alt="User">
-                        <div th:text="${p.user.username}"></div>
-                        <div style="font-size:11px; color:#64748b;" th:if="${tournament.mode == 'OFFLINE'}">
+                        <img th:src="${p.user != null ? p.user.avatarUrl : 'https://ui-avatars.com/api/?name=User&background=F84464&color=fff&size=120'}"
+                             th:attr="onerror='this.onerror=null;this.src=\'https://ui-avatars.com/api/?name=' + (${p.user != null and p.user.username != null} ? ${p.user.username} : 'User') + '&background=F84464&color=fff&size=120\';'"
+                             alt="User">
+                        <div class="p-name" th:text="${p.user != null ? p.user.username : 'Anonymous'}"></div>
+                        <div style="font-size:11px; color:#64748b; margin-top:4px;" th:if="${tournament.mode == 'OFFLINE'}">
                             <i class="fas fa-ticket-alt"></i> <span th:text="${p.participantNumber}"></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- BRACKET TAB -->
-        <div id="tab-bracket" class="tab-content">
-            <div class="info-card" style="padding:0; overflow:hidden;">
-                <div style="padding:25px; border-bottom:1px solid #e2e8f0;">
-                    <h3 style="margin:0;"><i class="fas fa-sitemap" style="color: #F84464;"></i> Official Tournament Bracket</h3>
-                </div>
-                
-                <div th:if="${rounds.isEmpty()}" style="text-align: center; color: #94a3b8; padding: 50px 0;">
-                    <i class="fas fa-project-diagram" style="font-size: 40px; margin-bottom: 10px; opacity: 0.5;"></i>
-                    <p>Bracket will be generated once registration closes.</p>
-                </div>
-
-                <div class="advanced-bracket" th:if="${!rounds.isEmpty()}">
-                    <div class="bracket-col" th:each="round : ${rounds}">
-                        <div class="round-title" th:text="${round.name}">Round</div>
-                        
-                        <div th:each="battle : ${round.battles}" class="match-wrap">
-                            <div th:class="'match-card ' + ${battle.status == 'COMPLETED' ? 'completed' : (battle.status == 'READY' or battle.status == 'LIVE' ? 'active' : '')}">
-                                <!-- Player 1 -->
-                                <div th:class="'match-player ' + ${battle.player1 == null ? 'tbd' : (battle.winner != null ? (battle.winner.id == battle.player1.id ? 'winner' : 'loser') : '')}">
-                                    <span th:text="${battle.player1 != null ? battle.player1.username : 'TBD / BYE'}"></span>
-                                    <i th:if="${battle.winner != null and battle.player1 != null and battle.winner.id == battle.player1.id}" class="fas fa-check"></i>
-                                </div>
-                                <!-- Player 2 -->
-                                <div th:class="'match-player ' + ${battle.player2 == null ? 'tbd' : (battle.winner != null ? (battle.winner.id == battle.player2.id ? 'winner' : 'loser') : '')}">
-                                    <span th:text="${battle.player2 != null ? battle.player2.username : 'TBD / BYE'}"></span>
-                                    <i th:if="${battle.winner != null and battle.player2 != null and battle.winner.id == battle.player2.id}" class="fas fa-check"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Grand Winner Column -->
-                    <div class="bracket-col" th:if="${tournament.winner != null}">
-                        <div class="round-title"><i class="fas fa-crown" style="color: #FFD700;"></i> Champion</div>
-                        <div class="match-wrap">
-                            <div class="match-card" style="border-color: #FFD700; background: rgba(255, 215, 0, 0.05);">
-                                <div class="match-player winner" style="justify-content: center; padding: 20px;">
-                                    <div style="text-align: center;">
-                                        <i class="fas fa-trophy" style="font-size: 24px; color: #FFD700; margin-bottom: 10px;"></i>
-                                        <div style="font-size: 18px; font-weight: 900;" th:text="${tournament.winner.username}"></div>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -340,13 +677,193 @@
 
     </div>
 
-    <script>
+    <!-- TOURNAMENT REGISTRATION MODAL -->
+    <div id="tournamentRegModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.65); backdrop-filter:blur(6px); z-index:9999; align-items:center; justify-content:center; padding:16px;">
+        <div style="background:white; border-radius:20px; max-width:500px; width:100%; box-shadow:0 25px 50px -12px rgba(0,0,0,0.3); overflow:hidden; animation:modalPop 0.25s ease-out; position:relative;">
+            
+            <!-- Modal Header (Light modern theme for crystal clear readability) -->
+            <div style="background:#f8fafc; border-bottom:1px solid #e2e8f0; padding:22px 24px; position:relative;">
+                <button type="button" onclick="closeTournamentModal()" style="position:absolute; right:18px; top:18px; background:#e2e8f0; border:none; color:#475569; width:32px; height:32px; border-radius:50%; font-size:20px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s;" onmouseover="this.style.background='#cbd5e1'; this.style.color='#0f172a';" onmouseout="this.style.background='#e2e8f0'; this.style.color='#475569';">&times;</button>
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                    <span style="background:#fee2e2; color:#dc2626; border:1px solid #fecaca; font-size:11px; font-weight:800; padding:3px 8px; border-radius:6px; text-transform:uppercase; letter-spacing:0.02em;">OFFLINE</span>
+                    <span style="color:#64748b; font-size:13px; font-weight:700;" th:text="${tournament.type}">Category</span>
+                </div>
+                <h3 style="margin:0; font-size:22px; font-weight:900; color:#0f172a !important; line-height:1.25;" th:text="${tournament.name}">Tournament Name</h3>
+            </div>
+
+            <!-- Modal Body -->
+            <div style="padding:22px 24px; max-height:80vh; overflow-y:auto;">
+                
+                <!-- Venue & Schedule Reminder -->
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:12px 14px; margin-bottom:18px; font-size:12.5px; color:#475569; display:flex; flex-direction:column; gap:6px;">
+                    <div><i class="fas fa-map-marker-alt" style="color:#F84464; width:16px;"></i> <strong>Venue:</strong> <span th:text="${tournament.venue != null ? tournament.venue : 'TBA'}">Venue</span></div>
+                    <div><i class="fas fa-calendar-alt" style="color:#3b82f6; width:16px;"></i> <strong>Kickoff:</strong> <span th:text="${tournament.tournamentStart != null ? #temporals.format(tournament.tournamentStart, 'dd-MMM-yyyy hh:mm a') : 'TBD'}">Date</span></div>
+                </div>
+
+                <!-- Competitor Form -->
+                <form id="tournamentJoinForm" th:action="@{/tournaments/{id}/join(id=${tournament.id})}" method="POST">
+                    
+                    <div style="margin-bottom:14px;">
+                        <label style="display:block; font-size:12px; font-weight:800; text-transform:uppercase; color:#64748b; margin-bottom:6px;">Competitor Name</label>
+                        <input type="text" th:value="${user != null ? user.username : ''}" readonly style="width:100%; padding:10px 14px; border-radius:10px; border:1px solid #e2e8f0; background:#f1f5f9; font-size:14px; font-weight:700; color:#334155; cursor:not-allowed;" />
+                    </div>
+
+                    <div style="margin-bottom:14px;">
+                        <label style="display:block; font-size:12px; font-weight:800; text-transform:uppercase; color:#64748b; margin-bottom:6px;">Email Address</label>
+                        <input type="email" th:value="${user != null ? user.email : ''}" readonly style="width:100%; padding:10px 14px; border-radius:10px; border:1px solid #e2e8f0; background:#f1f5f9; font-size:14px; color:#334155; cursor:not-allowed;" />
+                    </div>
+
+                    <div style="margin-bottom:18px;">
+                        <label style="display:block; font-size:12px; font-weight:800; text-transform:uppercase; color:#64748b; margin-bottom:6px;">College / Organization</label>
+                        <input type="text" name="college" id="modalCollege" th:value="${user != null ? user.collegeName : ''}" placeholder="e.g. Youthian University" style="width:100%; padding:10px 14px; border-radius:10px; border:1px solid #cbd5e1; font-size:14px; color:#1e293b;" />
+                    </div>
+
+                    <!-- Fee & Payment Section -->
+                    <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:14px; padding:16px; margin-bottom:20px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                            <span style="font-size:13px; font-weight:700; color:#166534;">Tournament Entry Fee</span>
+                            <strong style="font-size:18px; font-weight:900; color:#15803d;" th:text="${tournament.entryFee != null and tournament.entryFee > 0 ? '&#8377;' + #numbers.formatDecimal(tournament.entryFee, 1, 0) : 'FREE'}">&#8377;100</strong>
+                        </div>
+
+                        <!-- If Paid Tournament -->
+                        <div th:if="${tournament.entryFee != null and tournament.entryFee > 0}">
+                            <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; color:#475569; padding-top:8px; border-top:1px dashed #bbf7d0; margin-bottom:14px;">
+                                <span>Your Wallet Balance:</span>
+                                <strong>&#8377;<span th:text="${user != null and user.walletBalance != null ? #numbers.formatDecimal(user.walletBalance, 1, 0) : '0'}">0</span></strong>
+                            </div>
+
+                            <!-- Payment Options -->
+                            <div style="display:flex; flex-direction:column; gap:10px;">
+                                <!-- Option 1: Wallet (If balance >= fee) -->
+                                <button th:if="${user != null and user.walletBalance != null and user.walletBalance >= tournament.entryFee}" type="submit" name="paymentMethod" value="WALLET" style="width:100%; padding:12px; background:#10b981; color:white; border:none; border-radius:12px; font-weight:800; font-size:14px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">
+                                    <i class="fas fa-wallet"></i> Pay &#8377;<span th:text="${#numbers.formatDecimal(tournament.entryFee, 1, 0)}">100</span> from Wallet
+                                </button>
+
+                                <!-- Option 1b: Wallet Warning if balance < fee -->
+                                <div th:if="${user == null or user.walletBalance == null or user.walletBalance < tournament.entryFee}" style="background:#fffbeb; border:1px solid #fef3c7; padding:8px 12px; border-radius:8px; font-size:12px; color:#b45309; display:flex; justify-content:space-between; align-items:center;">
+                                    <span><i class="fas fa-exclamation-circle"></i> Wallet balance insufficient</span>
+                                    <a th:href="@{/wallet}" target="_blank" style="color:#b45309; font-weight:800; text-decoration:underline;">+ Add Money</a>
+                                </div>
+
+                                <!-- Option 2: Razorpay (Always Available for Online Pay) -->
+                                <button type="button" onclick="startRazorpayCheckout()" style="width:100%; padding:12px; background:linear-gradient(135deg, #0284c7, #2563eb); color:white; border:none; border-radius:12px; font-weight:800; font-size:14px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">
+                                    <i class="fas fa-shield-alt"></i> Pay &#8377;<span th:text="${#numbers.formatDecimal(tournament.entryFee, 1, 0)}">100</span> with Razorpay (UPI / Card)
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- If Free Tournament -->
+                        <div th:unless="${tournament.entryFee != null and tournament.entryFee > 0}">
+                            <button type="submit" name="paymentMethod" value="FREE" style="width:100%; padding:12px; background:#10b981; color:white; border:none; border-radius:12px; font-weight:800; font-size:14px; cursor:pointer;">
+                                <i class="fas fa-check-circle"></i> Confirm Free Registration
+                            </button>
+                        </div>
+                    </div>
+
+                    <div style="font-size:11.5px; color:#64748b; line-height:1.4; text-align:center;">
+                        <i class="fas fa-info-circle"></i> By registering, you confirm your participation and agree to attend the physical venue on kickoff day.
+                    </div>
+                </form>
+
+                <!-- Hidden form for Razorpay callback verification -->
+                <form id="razorpayVerifyForm" th:action="@{/tournaments/{id}/verify-razorpay-join(id=${tournament.id})}" method="POST" style="display:none;">
+                    <input type="hidden" name="razorpay_payment_id" id="rzp_payment_id">
+                    <input type="hidden" name="razorpay_order_id" id="rzp_order_id">
+                    <input type="hidden" name="razorpay_signature" id="rzp_signature">
+                    <input type="hidden" name="college" id="rzp_college">
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
         function showTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab-nav button').forEach(el => el.classList.remove('active'));
             
             document.getElementById('tab-' + tabId).classList.add('active');
             event.target.classList.add('active');
+        }
+
+        function openTournamentModal() {
+            var isFull = /*[[${isFull != null and isFull}]]*/ false;
+            if (isFull) {
+                alert('This tournament is full! No further registrations can be accepted.');
+                return;
+            }
+            document.getElementById('tournamentRegModal').style.display = 'flex';
+        }
+
+        function closeTournamentModal() {
+            document.getElementById('tournamentRegModal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside box
+        window.addEventListener('click', function(e) {
+            const modal = document.getElementById('tournamentRegModal');
+            if (e.target === modal) {
+                closeTournamentModal();
+            }
+        });
+
+        // Auto-open modal if redirected with error, open_pay or open_reg
+        document.addEventListener('DOMContentLoaded', function() {
+            const params = new URLSearchParams(window.location.search);
+            const isFull = /*[[${isFull != null and isFull}]]*/ false;
+            if (!isFull && (params.get('open_pay') === 'true' || params.get('error') === 'insufficient_funds' || params.get('open_reg') === 'true')) {
+                openTournamentModal();
+            }
+        });
+
+        function startRazorpayCheckout() {
+            const tournamentId = /*[[${tournament.id}]]*/ '2';
+            const college = document.getElementById('modalCollege')?.value || '';
+
+            fetch(`/tournaments/${tournamentId}/create-razorpay-order`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+
+                const options = {
+                    "key": data.keyId,
+                    "amount": data.amountPaise,
+                    "currency": "INR",
+                    "name": "Youthians Tournament",
+                    "description": data.tournamentName + " - Entry Fee",
+                    "order_id": data.orderId,
+                    "handler": function (response) {
+                        document.getElementById('rzp_payment_id').value = response.razorpay_payment_id;
+                        document.getElementById('rzp_order_id').value = response.razorpay_order_id;
+                        document.getElementById('rzp_signature').value = response.razorpay_signature || 'test_sig';
+                        document.getElementById('rzp_college').value = college;
+                        document.getElementById('razorpayVerifyForm').submit();
+                    },
+                    "prefill": {
+                        "name": data.userName,
+                        "email": data.userEmail
+                    },
+                    "theme": {
+                        "color": "#F84464"
+                    }
+                };
+
+                const rzp = new Razorpay(options);
+                rzp.on('payment.failed', function (response) {
+                    alert('Payment failed: ' + response.error.description);
+                });
+                rzp.open();
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Could not start online payment. Please try again.');
+            });
         }
     </script>
 </body>

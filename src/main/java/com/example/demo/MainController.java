@@ -47,7 +47,7 @@ public class MainController {
 
     /**
      * Validates the jwtToken cookie on PUBLIC pages (which bypass the AuthInterceptor).
-     * If the token is missing, blacklisted, expired, or invalid — the session user
+     * If the token is missing, blacklisted, expired, or invalid Ã¢â‚¬â€ the session user
      * is cleared so the navbar shows Login/Register instead of Dashboard/Logout.
      */
     private void validateSessionOnPublicPage(HttpSession session, HttpServletRequest request) {
@@ -66,7 +66,7 @@ public class MainController {
             }
         }
 
-        // No cookie at all → browser session ended / user never logged in properly
+        // No cookie at all Ã¢â€ â€™ browser session ended / user never logged in properly
         if (token == null || token.isBlank()) {
             session.removeAttribute("user");
             session.removeAttribute("userId");
@@ -196,6 +196,9 @@ public class MainController {
 
     @Autowired
     private TournamentRepository tournamentRepository;
+
+    @Autowired
+    private com.example.demo.repository.TournamentParticipantRepository tournamentParticipantRepository;
 
     @GetMapping("/")
     public String root() {
@@ -335,9 +338,8 @@ public class MainController {
             @RequestParam(required = false) String category,
             @RequestParam(required = false) String tab
     ) {
-        Object sessionUser = session.getAttribute("user");
         // Admin should land on admin dashboard, not student dashboard
-        if ("admin".equals(sessionUser))
+        if (isAdminSession(session))
             return "redirect:/admin";
 
         User user = getUserFromSession(session);
@@ -391,8 +393,7 @@ public class MainController {
     @Transactional
     @GetMapping("/reels")
     public String reels(Model model, HttpSession session) {
-        Object sessionUser = session.getAttribute("user");
-        if ("admin".equals(sessionUser))
+        if (isAdminSession(session))
             return "redirect:/admin";
 
         User user = getUserFromSession(session);
@@ -494,7 +495,9 @@ public class MainController {
                 .collect(Collectors.toList());
         model.addAttribute("trendingEvents", trendingEvents);
 
-        List<Tournament> allTournaments = tournamentRepository.findAllByOrderByIdDesc();
+        List<Tournament> allTournaments = tournamentRepository.findAllByOrderByIdDesc().stream()
+                .filter(t -> !"ONLINE".equalsIgnoreCase(t.getMode()))
+                .collect(Collectors.toList());
         if (allTournaments != null) {
             for (Tournament t : allTournaments) {
                 if (t.getParticipants() != null) {
@@ -504,18 +507,29 @@ public class MainController {
         }
         model.addAttribute("tournaments", allTournaments);
 
+        java.util.Set<Long> registeredTournamentIds = new java.util.HashSet<>();
+        if (user != null) {
+            registeredTournamentIds = tournamentParticipantRepository.findByUser(user).stream()
+                    .filter(p -> p.getTournament() != null)
+                    .map(p -> p.getTournament().getId())
+                    .collect(Collectors.toSet());
+        }
+        model.addAttribute("registeredTournamentIds", registeredTournamentIds);
+
         return "dashboard";
     }
 
     private boolean isAdminSession(HttpSession session) {
         if (session == null) return false;
+        if ("ADMIN".equalsIgnoreCase(String.valueOf(session.getAttribute("role")))) return true;
+        if ("admin".equalsIgnoreCase(String.valueOf(session.getAttribute("admin")))) return true;
         Object u = session.getAttribute("user");
-        if ("admin".equals(u)) return true;
+        if ("admin".equalsIgnoreCase(String.valueOf(u))) return true;
         if (u instanceof User && "admin".equalsIgnoreCase(((User) u).getUsername())) return true;
-        return "admin".equals(session.getAttribute("admin"));
+        return false;
     }
 
-    @GetMapping("/admin")
+    @GetMapping({"/admin", "/admin/dashboard"})
     @Transactional
     public String admin(Model model, HttpSession session) {
         // Only let admin session through (DEF-08)
@@ -734,7 +748,7 @@ public class MainController {
         return "redirect:/admin#posts-section";
     }
 
-    // ── Stub routes: sidebar links that don't have full pages yet ──
+    // Ã¢â€â‚¬Ã¢â€â‚¬ Stub routes: sidebar links that don't have full pages yet Ã¢â€â‚¬Ã¢â€â‚¬
 
     @GetMapping("/explore")
     public String explore(Model model, HttpSession session) {
