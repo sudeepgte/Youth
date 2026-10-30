@@ -604,7 +604,7 @@
             <a th:href="@{/dashboard}" class="active"><i class="fas fa-home"></i></a>
             <a th:href="@{/messages}" style="position: relative;">
                 <i class="fas fa-comment-dots"></i>
-                <span th:if="${unreadMessageCount != null && unreadMessageCount > 0}" id="msg-badge"
+                <span th:if="${unreadMessageCount != null and unreadMessageCount > 0}" id="msg-badge"
                     style="position: absolute; top: -5px; right: -5px; background: red; color: white; border-radius: 50%; padding: 2px 5px; font-size: 10px; font-weight: bold;"
                     th:text="${unreadMessageCount}"></span>
             </a>

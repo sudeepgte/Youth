@@ -1042,12 +1042,18 @@
                 </div>
             </div>
 
-            <!-- CAPACITY -->
+            <!-- CAPACITY / AVAILABILITY -->
             <div class="info-card-item">
-                <div class="info-card-icon green"><i class="fas fa-users"></i></div>
+                <div class="info-card-icon" th:classappend="${isSeatsFull} ? 'red' : 'green'" th:style="${isSeatsFull} ? 'background: rgba(239, 68, 68, 0.1); color: #dc2626;' : ''">
+                    <i class="fas" th:classappend="${isSeatsFull} ? 'fa-ban' : 'fa-users'"></i>
+                </div>
                 <div class="info-card-body">
-                    <span class="info-card-label">CAPACITY</span>
-                    <span class="info-card-value" th:text="${event.maxParticipants != null ? event.maxParticipants + ' max' : (totalCapacity != null and totalCapacity > 0 ? totalCapacity + ' max' : 'Open')}">22 max</span>
+                    <span class="info-card-label" th:text="${event.totalRows != null and event.totalRows > 0 ? 'SEAT STATUS' : 'AVAILABILITY'}">AVAILABILITY</span>
+                    <span th:if="${isSeatsFull}" class="info-card-value" style="color: #dc2626; font-weight: 800;">
+                        Seats Full (0 Left)
+                    </span>
+                    <span th:unless="${isSeatsFull}" class="info-card-value" 
+                          th:text="${spotsLeft != null and spotsLeft >= 0 ? spotsLeft + ' Left' : (event.maxParticipants != null and event.maxParticipants > 0 ? event.maxParticipants + ' max' : (totalCapacity != null and totalCapacity > 0 ? totalCapacity + ' max' : 'Open'))}">22 max</span>
                 </div>
             </div>
 
@@ -1056,20 +1062,54 @@
                 <div class="info-card-icon blue"><i class="fas fa-ticket-alt"></i></div>
                 <div class="info-card-body">
                     <span class="info-card-label">PRICE</span>
-                    <span class="info-card-value" 
-                          th:classappend="${(event.entryFeeType == 'Paid' or (event.price != null and event.price != 'Free' and event.price != '0'))} ? '' : 'price-free'"
-                          th:text="${(event.price != null and event.price != 'Free' and event.price != '0') ? #strings.replace(event.price, '$', '₹') : 'Free'}">Free</span>
+                    <th:block th:if="${event.totalRows != null and event.totalRows > 0}">
+                        <div th:if="${event.vipPrice != null and event.vipPrice > 0 and event.regularPrice != null and event.regularPrice > 0}" class="info-card-value" style="font-size: 13px; line-height: 1.25;">
+                            <span style="color: #b45309; font-weight: 800;">VIP: &#8377;<span th:text="${#numbers.formatDecimal(event.vipPrice, 1, 0)}">500</span></span>
+                            <span style="color: #94a3b8; margin: 0 4px;">•</span>
+                            <span style="color: #2563eb; font-weight: 800;">Normal: &#8377;<span th:text="${#numbers.formatDecimal(event.regularPrice, 1, 0)}">200</span></span>
+                        </div>
+                        <div th:if="${(event.vipPrice == null or event.vipPrice == 0) and event.regularPrice != null and event.regularPrice > 0}" class="info-card-value">
+                            &#8377;<span th:text="${#numbers.formatDecimal(event.regularPrice, 1, 0)}">200</span>
+                        </div>
+                        <div th:if="${event.vipPrice != null and event.vipPrice > 0 and (event.regularPrice == null or event.regularPrice == 0)}" class="info-card-value">
+                            VIP: &#8377;<span th:text="${#numbers.formatDecimal(event.vipPrice, 1, 0)}">500</span>
+                        </div>
+                        <div th:if="${(event.vipPrice == null or event.vipPrice == 0) and (event.regularPrice == null or event.regularPrice == 0)}" class="info-card-value price-free">
+                            Free
+                        </div>
+                    </th:block>
+                    <th:block th:unless="${event.totalRows != null and event.totalRows > 0}">
+                        <span class="info-card-value" 
+                              th:classappend="${(event.entryFeeType == 'Paid' or (event.price != null and event.price != 'Free' and event.price != '0'))} ? '' : 'price-free'"
+                              th:text="${(event.price != null and event.price != 'Free' and event.price != '0') ? #strings.replace(event.price, '$', '₹') : 'Free'}">Free</span>
+                    </th:block>
                 </div>
             </div>
         </div>
 
         <!-- System Alerts -->
+        <!-- All Seats Full / Housefull Alert Banner -->
+        <div th:if="${isSeatsFull and not isCompleted and event.status != 'CANCELLED'}" class="section-card" style="background: #fef2f2; border: 1.5px solid #fecaca; color: #dc2626; padding: 18px 22px; border-radius: 14px; display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 24px; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.08);">
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <div style="width: 44px; height: 44px; border-radius: 50%; background: #fee2e2; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #ef4444; flex-shrink: 0;">
+                    <i class="fas fa-ban"></i>
+                </div>
+                <div>
+                    <strong style="display: block; font-size: 16px; color: #991b1b; font-weight: 800; margin-bottom: 2px;">All Seats Are Full • Housefull!</strong>
+                    <span style="font-size: 13.5px; color: #b91c1c; font-weight: 500;">All seats for this event have been completely filled. No more bookings can be accepted.</span>
+                </div>
+            </div>
+            <span style="background: #dc2626; color: #ffffff; padding: 7px 16px; border-radius: 20px; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; white-space: nowrap;">
+                Sold Out
+            </span>
+        </div>
+
         <div th:if="${param.alreadyRegistered}" class="section-card" style="background:#fffbeb; border-color:#fef3c7; color:#b45309; padding:16px;">
             <i class="fas fa-exclamation-circle"></i> You are already registered for this event!
         </div>
 
-        <div th:if="${param.error == 'full'}" class="section-card" style="background:#fef2f2; border-color:#fecaca; color:#dc2626; padding:16px;">
-            <i class="fas fa-exclamation-triangle"></i> Sorry, this event has reached full capacity.
+        <div th:if="${param.error == 'full' or param.error == 'seats_full'}" class="section-card" style="background:#fef2f2; border-color:#fecaca; color:#dc2626; padding:16px;">
+            <i class="fas fa-exclamation-triangle"></i> All seats are full! No more bookings can be accepted for this event.
         </div>
 
         <div th:if="${param.error == 'tier_full'}" class="section-card" style="background:#fef2f2; border-color:#fecaca; color:#dc2626; padding:16px;">
@@ -1365,7 +1405,17 @@
                     
                     <div class="card-section-header">
                         <h3 class="card-title">Select Your Seats</h3>
-                        <p class="card-section-subtitle">Tap on available seat to select it.</p>
+                        <p class="card-section-subtitle" th:if="${isSeatsFull}" style="color: #dc2626; font-weight: 700;">
+                            <i class="fas fa-ban"></i> All seats are full! No more seats available.
+                        </p>
+                        <p class="card-section-subtitle" th:unless="${isSeatsFull}">Tap on available seat to select it.</p>
+                    </div>
+
+                    <!-- All Seats Full Notification inside Seat Map -->
+                    <div th:if="${isSeatsFull}" style="background: #fef2f2; border: 1.5px dashed #ef4444; border-radius: 12px; padding: 14px 18px; margin-bottom: 20px; text-align: center; color: #991b1b;">
+                        <i class="fas fa-info-circle" style="color: #ef4444; font-size: 18px; vertical-align: middle; margin-right: 8px;"></i>
+                        <strong style="font-size: 14px;">All seats for this show are currently filled!</strong>
+                        <span style="font-size: 13px; color: #b91c1c; display: block; margin-top: 4px;">No seats are available for booking at this time.</span>
                     </div>
 
                     <!-- Seat Legend -->
@@ -1469,17 +1519,27 @@
                     <!-- 3. SEAT-BASED INFO GROUP -->
                     <div th:if="${event.totalRows != null and event.totalRows > 0}" class="sidebar-info-group">
                         <div class="sidebar-info-row">
-                            <span class="sidebar-label">Seat</span>
+                            <span class="sidebar-label">Seats</span>
                             <span class="sidebar-val" id="sidebarSeatVal">None</span>
                         </div>
                         <div class="sidebar-info-row">
-                            <span class="sidebar-label">Category</span>
-                            <span class="sidebar-val category-text" id="sidebarCategoryVal">Regular</span>
+                            <span class="sidebar-label">Count</span>
+                            <span class="sidebar-val" id="sidebarCountVal">0 Selected</span>
                         </div>
                         <div class="sidebar-info-row">
-                            <span class="sidebar-label">Price</span>
-                            <span class="sidebar-val" id="sidebarPriceVal"
-                                  th:text="${(event.price != null and event.price != 'Free' and event.price != '0') ? #strings.replace(event.price, '$', '₹') : 'Free'}">Free</span>
+                            <span class="sidebar-label">Rates</span>
+                            <span class="sidebar-val category-text" id="sidebarCategoryVal"
+                                  th:text="${(event.regularPrice != null and event.regularPrice > 0 ? 'Normal: ₹' + #numbers.formatDecimal(event.regularPrice, 1, 0) : '') + (event.vipPrice != null and event.vipPrice > 0 and event.regularPrice != null and event.regularPrice > 0 ? ' | ' : '') + (event.vipPrice != null and event.vipPrice > 0 ? 'VIP: ₹' + #numbers.formatDecimal(event.vipPrice, 1, 0) : '')}">
+                                Rates
+                            </span>
+                        </div>
+                        <div class="sidebar-info-row" id="sidebarBreakdownRow" style="display:none; align-items:flex-start;">
+                            <span class="sidebar-label">Breakdown</span>
+                            <span class="sidebar-val" id="sidebarBreakdownVal" style="font-size:12px; font-weight:600; text-align:right;"></span>
+                        </div>
+                        <div class="sidebar-info-row" th:if="${isSeatsFull}">
+                            <span class="sidebar-label">Status</span>
+                            <span class="sidebar-val" style="color: #dc2626; font-weight: 800;"><i class="fas fa-ban"></i> Seats Full (Sold Out)</span>
                         </div>
                     </div>
 
@@ -1500,9 +1560,10 @@
                                   th:classappend="${(event.entryFeeType == 'Paid' or (event.price != null and event.price != 'Free' and event.price != '0'))} ? '' : 'price-free'"
                                   th:text="${(event.price != null and event.price != 'Free' and event.price != '0') ? #strings.replace(event.price, '$', '₹') : 'Free'}">Free</span>
                         </div>
-                        <div th:if="${event.maxParticipants != null and event.maxParticipants > 0}" class="sidebar-info-row">
-                            <span class="sidebar-label">Available Slots</span>
-                            <span class="sidebar-val" th:text="${spotsLeft != null and spotsLeft >= 0 ? spotsLeft + ' Left' : event.maxParticipants + ' Max'}">20 Left</span>
+                        <div class="sidebar-info-row">
+                            <span class="sidebar-label">Availability</span>
+                            <span class="sidebar-val" th:if="${isSeatsFull}" style="color: #dc2626; font-weight: 800;">Full (0 Left)</span>
+                            <span class="sidebar-val" th:unless="${isSeatsFull}" th:text="${spotsLeft != null and spotsLeft >= 0 ? spotsLeft + ' Left' : (event.maxParticipants != null ? event.maxParticipants + ' Max' : 'Open')}">20 Left</span>
                         </div>
                     </div>
 
@@ -1511,7 +1572,7 @@
                     <div class="sidebar-total-block">
                         <div class="total-block-label">TOTAL AMOUNT</div>
                         <div class="total-block-amount" id="sidebarTotalVal" 
-                             th:text="${(event.price != null and event.price != 'Free' and event.price != '0') ? #strings.replace(event.price, '$', '₹') : '₹0'}">₹0</div>
+                             th:text="${(event.totalRows != null and event.totalRows > 0) ? '₹0' : ((event.price != null and event.price != 'Free' and event.price != '0') ? #strings.replace(event.price, '$', '₹') : '₹0')}">₹0</div>
                     </div>
 
                     <!-- Secret Reward Reminder inside Sidebar -->
@@ -1543,7 +1604,18 @@
                     </div>
 
                     <!-- Continue / Book Now Button -->
-                    <th:block th:if="${!isAdmin and not isCompleted and event.status != 'CANCELLED'}">
+                    <!-- When seats/event are full -->
+                    <th:block th:if="${!isAdmin and not isCompleted and event.status != 'CANCELLED' and isSeatsFull}">
+                        <button type="button" class="btn-continue-action" style="background: #94a3b8; cursor: not-allowed; opacity: 0.85;" disabled>
+                            <i class="fas fa-ban"></i> Seats Are Full • Sold Out
+                        </button>
+                        <div style="text-align: center; margin-top: 8px; font-size: 12.5px; font-weight: 700; color: #ef4444;">
+                            <i class="fas fa-exclamation-circle"></i> No more bookings available for this event.
+                        </div>
+                    </th:block>
+
+                    <!-- When seats are available -->
+                    <th:block th:if="${!isAdmin and not isCompleted and event.status != 'CANCELLED' and not isSeatsFull}">
                         <button type="button" class="btn-continue-action" id="sidebarContinueBtn" onclick="handleSidebarContinue()">
                             Book Now <i class="fas fa-arrow-right"></i>
                         </button>
@@ -1700,31 +1772,75 @@
             if (totalRows <= 0) return;
 
             const seatVal = document.getElementById('sidebarSeatVal');
+            const countVal = document.getElementById('sidebarCountVal');
             const catVal = document.getElementById('sidebarCategoryVal');
-            const priceVal = document.getElementById('sidebarPriceVal');
+            const breakdownRow = document.getElementById('sidebarBreakdownRow');
+            const breakdownVal = document.getElementById('sidebarBreakdownVal');
             const totalVal = document.getElementById('sidebarTotalVal');
+
+            const vipPrice = parseFloat('[[${event.vipPrice != null ? event.vipPrice : 0}]]') || 0;
+            const regPrice = parseFloat('[[${event.regularPrice != null ? event.regularPrice : 0}]]') || 0;
 
             if (selectedSeats.length > 0) {
                 if (seatVal) seatVal.innerText = selectedSeats.map(s => s.label).join(', ');
+                
+                const vipSeats = selectedSeats.filter(s => (s.tier || '').toUpperCase() === 'VIP');
+                const regSeats = selectedSeats.filter(s => (s.tier || '').toUpperCase() !== 'VIP');
+                
+                if (countVal) {
+                    let countText = `${selectedSeats.length} Seat${selectedSeats.length > 1 ? 's' : ''}`;
+                    let parts = [];
+                    if (vipSeats.length > 0) parts.push(`${vipSeats.length} VIP`);
+                    if (regSeats.length > 0) parts.push(`${regSeats.length} Normal`);
+                    if (parts.length > 0) countText += ` (${parts.join(', ')})`;
+                    countVal.innerText = countText;
+                }
+
                 if (catVal) {
-                    const tiers = [...new Set(selectedSeats.map(s => s.tier))];
-                    catVal.innerText = tiers.join(', ');
+                    const tiers = [...new Set(selectedSeats.map(s => (s.tier || '').toUpperCase() === 'VIP' ? 'VIP' : 'Normal'))];
+                    catVal.innerText = tiers.join(' + ');
                 }
-                if (priceVal) {
-                    priceVal.innerText = totalPrice > 0 ? ('₹' + totalPrice.toFixed(2)) : 'Free';
+
+                if (breakdownRow && breakdownVal) {
+                    let bParts = [];
+                    if (vipSeats.length > 0) {
+                        const vipSubtotal = vipSeats.reduce((sum, s) => sum + s.price, 0);
+                        bParts.push(`${vipSeats.length} VIP @ ₹${vipSeats[0].price.toFixed(0)} = ₹${vipSubtotal.toFixed(0)}`);
+                    }
+                    if (regSeats.length > 0) {
+                        const regSubtotal = regSeats.reduce((sum, s) => sum + s.price, 0);
+                        bParts.push(`${regSeats.length} Normal @ ₹${regSeats[0].price.toFixed(0)} = ₹${regSubtotal.toFixed(0)}`);
+                    }
+                    breakdownVal.innerHTML = bParts.join('<br>');
+                    breakdownRow.style.display = 'flex';
                 }
+
                 if (totalVal) {
-                    totalVal.innerText = totalPrice > 0 ? ('₹' + totalPrice.toFixed(2)) : '₹0';
+                    totalVal.innerText = totalPrice > 0 ? ('₹' + totalPrice.toFixed(0)) : '₹0';
                 }
             } else {
                 if (seatVal) seatVal.innerText = 'None';
-                if (catVal) catVal.innerText = 'Regular';
-                if (priceVal) priceVal.innerText = 'Free';
+                if (countVal) countVal.innerText = '0 Selected';
+                if (catVal) {
+                    let rateText = '';
+                    if (vipPrice > 0 && regPrice > 0) rateText = `Normal: ₹${regPrice.toFixed(0)} | VIP: ₹${vipPrice.toFixed(0)}`;
+                    else if (regPrice > 0) rateText = `Normal: ₹${regPrice.toFixed(0)}`;
+                    else if (vipPrice > 0) rateText = `VIP: ₹${vipPrice.toFixed(0)}`;
+                    else rateText = 'Free';
+                    catVal.innerText = rateText;
+                }
+                if (breakdownRow) breakdownRow.style.display = 'none';
                 if (totalVal) totalVal.innerText = '₹0';
             }
         }
 
         function handleSidebarContinue() {
+            const isSeatsFull = /*[[${isSeatsFull != null and isSeatsFull}]]*/ false;
+            if (isSeatsFull) {
+                alert('All seats are full! No more bookings are available for this event.');
+                return;
+            }
+
             const totalRows = parseInt('[[${event.totalRows != null ? event.totalRows : 0}]]') || 0;
             if (totalRows > 0) {
                 if (selectedSeats.length === 0) {
@@ -1739,7 +1855,7 @@
         }
 
         function showRegModalWithSeats() {
-            openRegModal('paid');
+            openRegModal(totalPrice > 0 ? 'paid' : 'free');
 
             const summaryDiv = document.getElementById('bookingSummaryContent');
             if (summaryDiv) {
@@ -1763,7 +1879,7 @@
                     updateBookingSummaryUI();
 
                     const form = document.getElementById('regForm');
-                    const existing = form.querySelectorAll('input[name="selectedSeatIds"]');
+                    const existing = form.querySelectorAll('input[name="selectedSeatIds"], input[name="selectedTier"], input[name="quantity"]');
                     existing.forEach(e => e.remove());
 
                     seatIds.forEach(id => {
@@ -1773,6 +1889,31 @@
                         input.value = id;
                         form.appendChild(input);
                     });
+
+                    // Add tier & quantity
+                    const vipCount = selectedSeats.filter(s => (s.tier || '').toUpperCase() === 'VIP').length;
+                    const regCount = selectedSeats.filter(s => (s.tier || '').toUpperCase() !== 'VIP').length;
+                    let tierDesc = '';
+                    if (vipCount > 0 && regCount > 0) tierDesc = `${vipCount} VIP + ${regCount} Normal`;
+                    else if (vipCount > 0) tierDesc = 'VIP';
+                    else tierDesc = 'Normal';
+
+                    const tierInput = document.createElement('input');
+                    tierInput.type = 'hidden';
+                    tierInput.name = 'selectedTier';
+                    tierInput.value = tierDesc;
+                    form.appendChild(tierInput);
+
+                    const qtyInput = document.createElement('input');
+                    qtyInput.type = 'hidden';
+                    qtyInput.name = 'quantity';
+                    qtyInput.value = selectedSeats.length;
+                    form.appendChild(qtyInput);
+
+                    const btnText = document.getElementById('modalBtnText');
+                    if (btnText) {
+                        btnText.textContent = totalPrice > 0 ? (`Proceed to Payment (₹${totalPrice.toFixed(0)})`) : 'Confirm Registration';
+                    }
 
                     if (payBtn) payBtn.disabled = false;
                 } else {
@@ -1816,11 +1957,26 @@
                 return;
             }
 
+            const vipSeats = selectedSeats.filter(s => (s.tier || '').toUpperCase() === 'VIP');
+            const regSeats = selectedSeats.filter(s => (s.tier || '').toUpperCase() !== 'VIP');
+
             let html = '<div style="margin-bottom:8px;">';
             selectedSeats.forEach(s => {
-                html += `<div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>Seat ${s.label} (${s.tier})</span><strong>₹${s.price.toFixed(2)}</strong></div>`;
+                const tierLabel = (s.tier || '').toUpperCase() === 'VIP' ? 'VIP' : 'Normal';
+                html += `<div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>Seat ${s.label} (${tierLabel})</span><strong>₹${s.price.toFixed(0)}</strong></div>`;
             });
-            html += `</div><div style="display:flex; justify-content:space-between; border-top:1px solid var(--border-color); padding-top:8px; font-weight:800; color:var(--primary-blue);"><span>Total:</span><span>₹${totalPrice.toFixed(2)}</span></div>`;
+            html += '</div>';
+
+            if (vipSeats.length > 0 && regSeats.length > 0) {
+                const vipSum = vipSeats.reduce((sum, s) => sum + s.price, 0);
+                const regSum = regSeats.reduce((sum, s) => sum + s.price, 0);
+                html += `<div style="font-size:12px; color:var(--text-secondary); margin-bottom:6px; border-top:1px dashed var(--border-color); padding-top:6px;">
+                    <div style="display:flex; justify-content:space-between;"><span>${vipSeats.length} VIP Seat(s)</span><span>₹${vipSum.toFixed(0)}</span></div>
+                    <div style="display:flex; justify-content:space-between;"><span>${regSeats.length} Normal Seat(s)</span><span>₹${regSum.toFixed(0)}</span></div>
+                </div>`;
+            }
+
+            html += `<div style="display:flex; justify-content:space-between; border-top:1px solid var(--border-color); padding-top:8px; font-weight:800; color:var(--primary-blue); font-size:14px;"><span>Total (${selectedSeats.length} Seat${selectedSeats.length > 1 ? 's' : ''}):</span><span>₹${totalPrice.toFixed(0)}</span></div>`;
 
             summaryDiv.innerHTML = html;
         }

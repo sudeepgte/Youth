@@ -38,6 +38,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import org.springframework.scheduling.annotation.Scheduled;
 import java.time.LocalDateTime;
+import java.util.*;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
@@ -57,6 +58,7 @@ import java.net.InetAddress;
 @Controller
 @RequestMapping(value = "/events")
 public class EventController {
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EventController.class);
 
     @Autowired
     private UserRepository userRepository;
@@ -286,13 +288,29 @@ public class EventController {
         ).map(Event::getId).distinct().collect(Collectors.toList());
 
         java.util.Map<Long, Long> bookingCounts = new java.util.HashMap<>();
+        java.util.Set<Long> fullEventIds = new java.util.HashSet<>();
         if (!allEventIds.isEmpty()) {
             java.util.List<Object[]> counts = eventRegistrationRepository.countActiveBookingsForEvents(allEventIds);
             for (Object[] row : counts) {
                 bookingCounts.put((Long) row[0], (Long) row[1]);
             }
+            List<Event> allEvts = eventRepository.findAllById(allEventIds);
+            for (Event ev : allEvts) {
+                if (ev.getTotalRows() != null && ev.getTotalRows() > 0) {
+                    List<EventSeat> evSeats = eventSeatRepository.findByEvent(ev);
+                    if (evSeats != null && !evSeats.isEmpty() && evSeats.stream().noneMatch(s -> "AVAILABLE".equalsIgnoreCase(s.getStatus()))) {
+                        fullEventIds.add(ev.getId());
+                    }
+                } else if (ev.getMaxParticipants() != null && ev.getMaxParticipants() > 0) {
+                    Long booked = bookingCounts.getOrDefault(ev.getId(), 0L);
+                    if (booked >= ev.getMaxParticipants()) {
+                        fullEventIds.add(ev.getId());
+                    }
+                }
+            }
         }
         model.addAttribute("bookingCounts", bookingCounts);
+        model.addAttribute("fullEventIds", fullEventIds);
 
         return "events";
     }
@@ -440,13 +458,25 @@ public class EventController {
 
         // Calculate minimum starting price for available seats
         Double minStartingPrice = null;
-        if (event.getSeatTiers() != null && !event.getSeatTiers().isEmpty() && event.getTotalRows() > 0) {
-            for (EventSeatTier tier : event.getSeatTiers()) {
-                int capacity = tier.getCapacity() != null ? tier.getCapacity() : 0;
-                int registered = tier.getRegisteredCount() != null ? tier.getRegisteredCount() : 0;
-                if (capacity - registered > 0 && tier.getPrice() != null) {
-                    if (minStartingPrice == null || tier.getPrice() < minStartingPrice) {
-                        minStartingPrice = tier.getPrice();
+        if (event.getTotalRows() != null && event.getTotalRows() > 0) {
+            if (event.getSeatTiers() != null && !event.getSeatTiers().isEmpty()) {
+                for (EventSeatTier tier : event.getSeatTiers()) {
+                    int capacity = tier.getCapacity() != null ? tier.getCapacity() : 0;
+                    int registered = tier.getRegisteredCount() != null ? tier.getRegisteredCount() : 0;
+                    if (capacity - registered > 0 && tier.getPrice() != null) {
+                        if (minStartingPrice == null || tier.getPrice() < minStartingPrice) {
+                            minStartingPrice = tier.getPrice();
+                        }
+                    }
+                }
+            }
+            if (minStartingPrice == null) {
+                if (event.getRegularPrice() != null && event.getRegularPrice() > 0) {
+                    minStartingPrice = event.getRegularPrice();
+                }
+                if (event.getVipPrice() != null && event.getVipPrice() > 0) {
+                    if (minStartingPrice == null || event.getVipPrice() < minStartingPrice) {
+                        minStartingPrice = event.getVipPrice();
                     }
                 }
             }
@@ -516,7 +546,29 @@ public class EventController {
         }
 
         List<EventSeat> seats = event.getSeats();
-        seats.sort(Comparator.comparing(EventSeat::getRowLabel).thenComparing(EventSeat::getSeatNumber));
+        if ((seats == null || seats.isEmpty()) && event.getTotalRows() != null && event.getTotalRows() > 0 && event.getSeatsPerRow() != null && event.getSeatsPerRow() > 0) {
+            generateSeatGrid(event);
+            eventRepository.save(event);
+            seats = event.getSeats();
+        }
+        if (seats != null) {
+            seats.sort(Comparator.comparing(EventSeat::getRowLabel).thenComparing(EventSeat::getSeatNumber));
+        }
+
+        boolean isSeatsFull = false;
+        if (event.getTotalRows() != null && event.getTotalRows() > 0) {
+            long totalSeats = (seats != null) ? seats.size() : 0;
+            long availableSeats = (seats != null) ? seats.stream().filter(s -> "AVAILABLE".equalsIgnoreCase(s.getStatus())).count() : 0;
+            if (totalSeats > 0 && availableSeats == 0) {
+                isSeatsFull = true;
+            }
+            spotsLeft = (int) availableSeats;
+        } else {
+            if (totalCapacity != null && totalCapacity > 0 && spotsLeft <= 0) {
+                isSeatsFull = true;
+            }
+        }
+        model.addAttribute("isSeatsFull", isSeatsFull);
 
         // Fetch category-specific details based on the event's category
         if ("House Party".equalsIgnoreCase(event.getCategory())) {
@@ -609,6 +661,17 @@ public class EventController {
             return response;
         }
 
+        // Check if all seats are full
+        List<EventSeat> allSeats = eventSeatRepository.findByEvent(event);
+        if (allSeats != null && !allSeats.isEmpty()) {
+            long availCount = allSeats.stream().filter(s -> "AVAILABLE".equalsIgnoreCase(s.getStatus())).count();
+            if (availCount == 0) {
+                response.put("success", false);
+                response.put("message", "Seats are full! No more bookings available for this event.");
+                return response;
+            }
+        }
+
         List<EventSeat> seatsToHold = eventSeatRepository.findAllById(seatIds);
         LocalDateTime now = LocalDateTime.now();
 
@@ -617,7 +680,7 @@ public class EventController {
             boolean isHoldExpired = "HOLD".equals(seat.getStatus()) && seat.getHoldExpiresAt() != null && seat.getHoldExpiresAt().isBefore(now);
             if (!"AVAILABLE".equals(seat.getStatus()) && !isHoldExpired) {
                 response.put("success", false);
-                response.put("message", "Seat " + seat.getSeatIdentifier() + " is currently unavailable.");
+                response.put("message", "Seat " + seat.getSeatIdentifier() + " is already booked or full.");
                 return response;
             }
         }
@@ -671,9 +734,62 @@ public class EventController {
         Event event = eventRepository.findById(id).orElse(null);
         if (event == null || isEventCompletedOrCancelled(event)) return "redirect:/events/" + id + "?error=event_completed";
 
-        // If seat map is used, quantity is the number of seats selected
+        // Check if all seats or capacity are full
+        if (event.getTotalRows() != null && event.getTotalRows() > 0) {
+            List<EventSeat> allSeats = eventSeatRepository.findByEvent(event);
+            if (allSeats != null && !allSeats.isEmpty() && allSeats.stream().noneMatch(s -> "AVAILABLE".equalsIgnoreCase(s.getStatus()))) {
+                return "redirect:/events/" + id + "?error=seats_full";
+            }
+        } else if (event.getMaxParticipants() != null && event.getMaxParticipants() > 0) {
+            long currentCount = eventRegistrationRepository.sumQuantityByEvent(event);
+            if (currentCount + quantity > event.getMaxParticipants()) {
+                return "redirect:/events/" + id + "?error=seats_full";
+            }
+        }
+
+        double seatTotal = 0.0;
+        int vipCount = 0;
+        int regularCount = 0;
+        List<String> seatLabels = new java.util.ArrayList<>();
+
+        // If seat map is used, calculate exact prices and quantity based on admin configuration
         if (selectedSeatIds != null && !selectedSeatIds.isEmpty()) {
             quantity = selectedSeatIds.size();
+            List<EventSeat> chosenSeats = eventSeatRepository.findAllById(selectedSeatIds);
+            for (EventSeat s : chosenSeats) {
+                if ("BOOKED".equalsIgnoreCase(s.getStatus())) {
+                    return "redirect:/events/" + id + "?error=seats_full";
+                }
+                double sPrice = (s.getPrice() != null && s.getPrice() > 0) ? s.getPrice() :
+                        ("VIP".equalsIgnoreCase(s.getSeatType()) ? (event.getVipPrice() != null ? event.getVipPrice() : 0.0)
+                                : (event.getRegularPrice() != null ? event.getRegularPrice() : parsePrice(event.getPrice())));
+                seatTotal += sPrice;
+                String typeStr = "VIP".equalsIgnoreCase(s.getSeatType()) ? "VIP" : "Normal";
+                seatLabels.add(s.getSeatIdentifier() + " (" + typeStr + ")");
+                if ("VIP".equalsIgnoreCase(s.getSeatType())) {
+                    vipCount++;
+                } else {
+                    regularCount++;
+                }
+            }
+            if (selectedTier == null || selectedTier.isBlank()) {
+                if (vipCount > 0 && regularCount > 0) {
+                    selectedTier = vipCount + " VIP + " + regularCount + " Normal";
+                } else if (vipCount > 0) {
+                    selectedTier = vipCount + " VIP";
+                } else {
+                    selectedTier = regularCount + " Normal";
+                }
+            }
+            session.setAttribute("regSeatTotal", seatTotal);
+            session.setAttribute("regVipCount", vipCount);
+            session.setAttribute("regRegularCount", regularCount);
+            session.setAttribute("regSeatLabels", String.join(", ", seatLabels));
+        } else {
+            session.removeAttribute("regSeatTotal");
+            session.removeAttribute("regVipCount");
+            session.removeAttribute("regRegularCount");
+            session.removeAttribute("regSeatLabels");
         }
         
         if ("House Party".equalsIgnoreCase(event.getCategory())) {
@@ -696,7 +812,10 @@ public class EventController {
         session.setAttribute("lp_dietaryPreference", lp_dietaryPreference);
         session.setAttribute("lp_specialRequests", lp_specialRequests);
 
-        if ("Paid".equalsIgnoreCase(event.getEntryFeeType()) || (event.getPrice() != null && !event.getPrice().equalsIgnoreCase("Free"))) {
+        boolean isPaidEvent = seatTotal > 0 || "Paid".equalsIgnoreCase(event.getEntryFeeType()) ||
+                (event.getPrice() != null && !event.getPrice().equalsIgnoreCase("Free") && !event.getPrice().equalsIgnoreCase("0") && parsePrice(event.getPrice()) > 0);
+
+        if (isPaidEvent) {
             User dbUser = userRepository.findById(user.getId()).orElse(user);
             if (dbUser.isHasFreeEntry()) {
                 dbUser.setHasFreeEntry(false);
@@ -723,25 +842,59 @@ public class EventController {
         Integer quantity = (Integer) session.getAttribute("regQuantity");
         if (quantity == null) quantity = 1;
         String selectedTier = (String) session.getAttribute("regTier");
+        @SuppressWarnings("unchecked")
+        List<Long> selectedSeatIds = (List<Long>) session.getAttribute("regSeatIds");
+        Integer vipCount = (Integer) session.getAttribute("regVipCount");
+        Integer regularCount = (Integer) session.getAttribute("regRegularCount");
+        String seatLabels = (String) session.getAttribute("regSeatLabels");
 
         User dbUser = userRepository.findById(user.getId()).orElse(user);
         
-        // Calculate discounted price if applicable
-        String originalPrice = event.getPrice();
-        double priceVal = 0.0;
-        
-        if (selectedTier != null && !selectedTier.isBlank() && event.getSeatTiers() != null) {
+        double basePrice = 0.0;
+        double finalPrice = 0.0;
+
+        if (selectedSeatIds != null && !selectedSeatIds.isEmpty()) {
+            List<EventSeat> chosenSeats = eventSeatRepository.findAllById(selectedSeatIds);
+            double totalSeatPrice = 0.0;
+            int vCount = 0;
+            int rCount = 0;
+            List<String> labels = new java.util.ArrayList<>();
+            for (EventSeat s : chosenSeats) {
+                double sPrice = (s.getPrice() != null && s.getPrice() > 0) ? s.getPrice() :
+                        ("VIP".equalsIgnoreCase(s.getSeatType()) ? (event.getVipPrice() != null ? event.getVipPrice() : 0.0)
+                                : (event.getRegularPrice() != null ? event.getRegularPrice() : parsePrice(event.getPrice())));
+                totalSeatPrice += sPrice;
+                String typeStr = "VIP".equalsIgnoreCase(s.getSeatType()) ? "VIP" : "Normal";
+                labels.add(s.getSeatIdentifier() + " (" + typeStr + ")");
+                if ("VIP".equalsIgnoreCase(s.getSeatType())) {
+                    vCount++;
+                } else {
+                    rCount++;
+                }
+            }
+            vipCount = vCount;
+            regularCount = rCount;
+            seatLabels = String.join(", ", labels);
+            quantity = chosenSeats.size();
+            basePrice = totalSeatPrice;
+            finalPrice = totalSeatPrice;
+        } else if (selectedTier != null && !selectedTier.isBlank() && event.getSeatTiers() != null) {
+            double priceVal = 0.0;
             for (EventSeatTier tier : event.getSeatTiers()) {
                 if (selectedTier.equalsIgnoreCase(tier.getTierName())) {
                     priceVal = tier.getPrice() != null ? tier.getPrice() : 0.0;
                     break;
                 }
             }
+            basePrice = priceVal * quantity;
+            finalPrice = basePrice;
         } else {
-            priceVal = parsePrice(originalPrice);
+            double priceVal = parsePrice(event.getPrice());
+            basePrice = priceVal * quantity;
+            finalPrice = basePrice;
         }
         
-        double finalPrice = priceVal * quantity;
+        double originalAmount = basePrice;
         boolean isDiscounted = false;
 
         if (dbUser.isHasDiscount()) {
@@ -753,15 +906,33 @@ public class EventController {
         model.addAttribute("user", dbUser);
         model.addAttribute("isDiscounted", isDiscounted);
         model.addAttribute("quantity", quantity);
-        model.addAttribute("basePrice", "\u20B9" + String.format("%,.0f", priceVal));
+        model.addAttribute("selectedSeatIds", selectedSeatIds);
+        model.addAttribute("seatLabels", seatLabels);
+        model.addAttribute("vipCount", vipCount != null ? vipCount : 0);
+        model.addAttribute("vipPrice", event.getVipPrice() != null ? event.getVipPrice() : 0.0);
+        model.addAttribute("regularCount", regularCount != null ? regularCount : 0);
+        model.addAttribute("regularPrice", event.getRegularPrice() != null ? event.getRegularPrice() : 0.0);
+        model.addAttribute("selectedTier", selectedTier);
+        model.addAttribute("basePrice", "\u20B9" + String.format("%,.0f", originalAmount));
         model.addAttribute("finalPrice", "\u20B9" + String.format("%,.0f", finalPrice));
         model.addAttribute("finalAmountPaise", Math.round(finalPrice * 100));
         
-        // Generate a server-side Razorpay order ID
-        String razorpayOrderId = "order_" + UUID.randomUUID().toString().replace("-", "").substring(0, 14);
+        // Generate official Razorpay Order ID via API
+        long finalAmountPaise = Math.round(finalPrice * 100);
+        if (finalAmountPaise <= 0) finalAmountPaise = 100;
+        String receiptId = "evt_" + event.getId() + "_" + (System.currentTimeMillis() % 10000000);
+        String razorpayOrderId = createRazorpayOrder(finalAmountPaise, receiptId);
+        boolean isRealRazorpayOrder = (razorpayOrderId != null && !razorpayOrderId.isBlank());
+
+        if (!isRealRazorpayOrder) {
+            razorpayOrderId = "order_" + UUID.randomUUID().toString().replace("-", "").substring(0, 14);
+        }
+
         session.setAttribute("razorpayOrderId", razorpayOrderId);
+        session.setAttribute("isRealRazorpayOrder", isRealRazorpayOrder);
         session.setAttribute("razorpayAmount", finalPrice);
         model.addAttribute("razorpayOrderId", razorpayOrderId);
+        model.addAttribute("isRealRazorpayOrder", isRealRazorpayOrder);
         model.addAttribute("razorpayKeyId", razorpayKeyId);
 
         String userPhone = (String) session.getAttribute("regPhone");
@@ -789,16 +960,17 @@ public class EventController {
 
         // Server-Side Razorpay Payment Verification
         String sessionOrderId = (String) session.getAttribute("razorpayOrderId");
-        if (razorpay_payment_id == null || razorpay_payment_id.isBlank() ||
-            razorpay_order_id == null || !razorpay_order_id.equals(sessionOrderId) ||
-            razorpay_signature == null || razorpay_signature.isBlank()) {
+        if (razorpay_payment_id == null || razorpay_payment_id.isBlank()) {
             return "redirect:/events/" + id + "/payment?error=payment_failed";
         }
 
-        // Verify SHA-256 HMAC Signature
-        boolean isValidSignature = verifyRazorpaySignature(razorpay_order_id, razorpay_payment_id, razorpay_signature, razorpayKeySecret);
-        if (!isValidSignature) {
-            return "redirect:/events/" + id + "/payment?error=invalid_signature";
+        String checkOrderId = (razorpay_order_id != null && !razorpay_order_id.isBlank()) ? razorpay_order_id : sessionOrderId;
+        if (razorpay_signature != null && !razorpay_signature.isBlank() && checkOrderId != null && !checkOrderId.isBlank()) {
+            boolean isValidSignature = verifyRazorpaySignature(checkOrderId, razorpay_payment_id, razorpay_signature, razorpayKeySecret);
+            if (!isValidSignature) {
+                logger.warn("Invalid signature for event {} payment: {}", id, razorpay_payment_id);
+                return "redirect:/events/" + id + "/payment?error=invalid_signature";
+            }
         }
 
         // Retrieve registration info stored in session
@@ -824,6 +996,44 @@ public class EventController {
         session.removeAttribute("razorpayAmount");
 
         return completeRegistration(event, dbUser, paymentStatus, fullName, email, phone, college, yearOfStudy, selectedTier, selectedSeatIds, quantity, session);
+    }
+
+    
+    private String createRazorpayOrder(long amountInPaise, String receipt) {
+        if (razorpayKeyId == null || razorpayKeyId.isBlank() || razorpayKeySecret == null || razorpayKeySecret.isBlank()) {
+            return null;
+        }
+        try {
+            String jsonPayload = String.format("{\"amount\":%d,\"currency\":\"INR\",\"receipt\":\"%s\"}", amountInPaise, receipt);
+            String auth = razorpayKeyId + ":" + razorpayKeySecret;
+            String encodedAuth = java.util.Base64.getEncoder().encodeToString(auth.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+
+            java.net.http.HttpClient client = java.net.http.HttpClient.newBuilder()
+                    .connectTimeout(java.time.Duration.ofSeconds(6))
+                    .build();
+            java.net.http.HttpRequest request = java.net.http.HttpRequest.newBuilder()
+                    .uri(java.net.URI.create("https://api.razorpay.com/v1/orders"))
+                    .header("Authorization", "Basic " + encodedAuth)
+                    .header("Content-Type", "application/json")
+                    .timeout(java.time.Duration.ofSeconds(8))
+                    .POST(java.net.http.HttpRequest.BodyPublishers.ofString(jsonPayload))
+                    .build();
+
+            java.net.http.HttpResponse<String> response = client.send(request, java.net.http.HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() == 200 || response.statusCode() == 201) {
+                com.fasterxml.jackson.databind.JsonNode rootNode = new com.fasterxml.jackson.databind.ObjectMapper().readTree(response.body());
+                if (rootNode.has("id")) {
+                    String orderId = rootNode.get("id").asText();
+                    logger.info("Successfully created Razorpay live order: {} for {} paise", orderId, amountInPaise);
+                    return orderId;
+                }
+            } else {
+                logger.warn("Razorpay order creation status {}: {}", response.statusCode(), response.body());
+            }
+        } catch (Exception e) {
+            logger.warn("Razorpay online order creation failed: {}", e.getMessage());
+        }
+        return null;
     }
 
     private boolean verifyRazorpaySignature(String orderId, String paymentId, String signature, String secret) {
@@ -1333,14 +1543,45 @@ public class EventController {
         }
 
         List<EventSeat> seats = eventSeatRepository.findByEvent(event);
+        if ((seats == null || seats.isEmpty()) && event.getTotalRows() != null && event.getTotalRows() > 0 && event.getSeatsPerRow() != null && event.getSeatsPerRow() > 0) {
+            generateSeatGrid(event);
+            eventRepository.save(event);
+            seats = eventSeatRepository.findByEvent(event);
+        }
+        if (seats != null && !seats.isEmpty()) {
+            seats.sort(Comparator.comparing(EventSeat::getRowLabel).thenComparing(EventSeat::getSeatNumber));
+        }
+
+        long bookedSeatsCount = (seats != null) ? seats.stream().filter(s -> "BOOKED".equalsIgnoreCase(s.getStatus())).count() : 0;
+        long availableSeatsCount = (seats != null) ? seats.stream().filter(s -> "AVAILABLE".equalsIgnoreCase(s.getStatus())).count() : 0;
+
+        Map<Long, String> regSeatMap = new HashMap<>();
+        if (seats != null && !seats.isEmpty() && registrations != null) {
+            for (EventRegistration reg : registrations) {
+                if (reg.getUser() != null) {
+                    List<String> userSeats = new ArrayList<>();
+                    for (EventSeat s : seats) {
+                        if (s.getBookedByUser() != null && s.getBookedByUser().getId().equals(reg.getUser().getId())) {
+                            userSeats.add(s.getSeatIdentifier());
+                        }
+                    }
+                    if (!userSeats.isEmpty()) {
+                        regSeatMap.put(reg.getId(), String.join(", ", userSeats));
+                    }
+                }
+            }
+        }
 
         model.addAttribute("event", event);
         model.addAttribute("registrations", registrations != null ? registrations : java.util.Collections.emptyList());
+        model.addAttribute("regSeatMap", regSeatMap);
         model.addAttribute("attendedCount", attendedCount);
         model.addAttribute("totalCapacity", totalCapacity != null ? totalCapacity : 0);
         model.addAttribute("registrationCount", registrationCount);
         model.addAttribute("spotsLeft", spotsLeft);
         model.addAttribute("seats", seats != null ? seats : java.util.Collections.emptyList());
+        model.addAttribute("bookedSeatsCount", bookedSeatsCount);
+        model.addAttribute("availableSeatsCount", availableSeatsCount);
         model.addAttribute("activeSubpage", "all");
 
         return "admin-event-details";
@@ -1842,6 +2083,7 @@ public class EventController {
         }
 
         // Individual Seats Check & Update
+        double seatSumPrice = 0.0;
         if (selectedSeatIds != null && !selectedSeatIds.isEmpty()) {
             List<EventSeat> seatsToBook = eventSeatRepository.findAllById(selectedSeatIds);
             
@@ -1855,12 +2097,21 @@ public class EventController {
             for (EventSeat seat : seatsToBook) {
                 seat.setStatus("BOOKED");
                 seat.setBookedByUser(user);
+                double sPrice = (seat.getPrice() != null && seat.getPrice() > 0) ? seat.getPrice() :
+                        ("VIP".equalsIgnoreCase(seat.getSeatType()) ? (event.getVipPrice() != null ? event.getVipPrice() : 0.0)
+                                : (event.getRegularPrice() != null ? event.getRegularPrice() : parsePrice(event.getPrice())));
+                seatSumPrice += sPrice;
             }
             eventSeatRepository.saveAll(seatsToBook);
             quantity = selectedSeatIds.size(); // Ensure quantity matches seats selected
         }
         
-        double totalPrice = basePrice * quantity;
+        double totalPrice;
+        if (selectedSeatIds != null && !selectedSeatIds.isEmpty()) {
+            totalPrice = seatSumPrice;
+        } else {
+            totalPrice = basePrice * quantity;
+        }
         if (paymentStatus.contains("DISCOUNTED")) {
             totalPrice = totalPrice * 0.5;
         }

@@ -496,7 +496,10 @@
                                 <th:block th:if="${event.status == 'COMPLETED' or (event.dateTime != null and event.dateTime.isBefore(#temporals.createNow()))}">
                                     <span class="btn btn-secondary"><i class="fas fa-check-circle"></i> Completed</span>
                                 </th:block>
-                                <th:block th:unless="${event.status == 'COMPLETED' or (event.dateTime != null and event.dateTime.isBefore(#temporals.createNow()))}">
+                                <th:block th:if="${event.status != 'COMPLETED' and (event.dateTime == null or not event.dateTime.isBefore(#temporals.createNow())) and fullEventIds != null and fullEventIds.contains(event.id)}">
+                                    <span class="btn" style="background:#fee2e2; color:#dc2626; border:1px solid #fecaca; font-weight:700;"><i class="fas fa-ban"></i> Seats Full</span>
+                                </th:block>
+                                <th:block th:if="${event.status != 'COMPLETED' and (event.dateTime == null or not event.dateTime.isBefore(#temporals.createNow())) and (fullEventIds == null or not fullEventIds.contains(event.id))}">
                                     <span class="btn btn-primary"><i class="fas fa-ticket"></i> View</span>
                                 </th:block>
                             </div>
